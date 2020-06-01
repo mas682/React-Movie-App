@@ -12,7 +12,7 @@
   background-size: cover;
 }
 
-.mainBody {
+.mainBodyContainer {
     width: 70%;
     height: 1000px;
     margin-left: 15%;
@@ -20,6 +20,9 @@
     margin-top: 120px;
     background-color: #FFFFFF;
     position: absolute;
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
 }
 
 .mainTitle {
@@ -31,4 +34,12 @@ header {
     height: 120px;
     width: 100%;
     position: absolute;
+}
+
+.testButton {
+    font-size: 20px;
+    border-radius: 4px;
+    background-color: blue;
+    width: 15%;
+    margin: 10px;
 }
