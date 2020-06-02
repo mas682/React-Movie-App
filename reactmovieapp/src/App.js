@@ -1,21 +1,24 @@
 import React from 'react';
 import logo from './logo.svg';
 import background from './images/background3.jpg';
+import Routes from './Router.js'
 import './App.css';
 
 class MainBody extends React.Component {
 
+    buttonClicked = () => {
+        this.props.history.push('/signup/')
+    }
+
     render() {
         return (
             <div className="mainBodyContainer">
-                <div className="testButton">
-                    Next Page
+                <div className="mainBodyChild">
+                    <Routes />
                 </div>
             </div>
         );
     }
-
-
 }
 
 
