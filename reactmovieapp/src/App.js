@@ -5,18 +5,9 @@ import Routes from './Router.js'
 import './App.css';
 
 class MainBody extends React.Component {
-
-    buttonClicked = () => {
-        this.props.history.push('/signup/')
-    }
-
     render() {
         return (
-            <div className="mainBodyContainer">
-                <div className="mainBodyChild">
-                    <Routes />
-                </div>
-            </div>
+            <Routes />
         );
     }
 }
@@ -26,7 +17,7 @@ function App() {
   return (
     <div className="App">
         <header className = "App-Header">
-            <h1 class="mainTitle"> Movie App </h1>
+            <h1 className="mainTitle"> Movie App </h1>
         </header>
         <main>
             <MainBody/>

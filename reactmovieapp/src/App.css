@@ -42,6 +42,10 @@ header {
     background-color: blue;
 }
 
+.userNameBox {
+    width: 100%;
+}
+
 .mainBodyHeader {
     width: 100%;
 }
