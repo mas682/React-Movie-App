@@ -42,7 +42,11 @@ header {
     background-color: blue;
 }
 
+.mainBodyHeader {
+    width: 100%;
+}
+
+
 .mainBodyChild {
-    width: 15%;
-    margin: 5%;
+    width: 100%;
 }
