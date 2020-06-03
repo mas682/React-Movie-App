@@ -16,7 +16,8 @@ class MainBody extends React.Component {
 function App() {
   return (
     <div className="App">
-        <header className = "App-Header">
+        <header className="App-Header">
+            <div><button className="openMenu" onClick={() => alert('click')}>☰</button></div>
             <h1 className="mainTitle"> Movie App </h1>
         </header>
         <main>

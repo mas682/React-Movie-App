@@ -25,12 +25,18 @@
     align-content: flex-start;
 }
 
+/* hamburger menu */
+.openMenu {
+    color: #FFFFFF;
+    margin-right: 90%;
+}
+
 .mainTitle {
     color: #FFFFFF;
 }
 
 header {
-    background-color: #282c34;
+    background-color: #C62705;
     height: 120px;
     width: 100%;
     position: absolute;
@@ -54,3 +60,4 @@ header {
 .mainBodyChild {
     width: 100%;
 }
+
