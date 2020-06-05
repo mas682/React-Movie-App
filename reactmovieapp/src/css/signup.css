@@ -1,0 +1,71 @@
+/*
+    css below here is for the popup box
+*/
+.modal {
+  font-size: 12px;
+  width: 100%;
+}
+.modal > .header {
+  width: 100%;
+  border-bottom: 1px solid gray;
+  font-size: 18px;
+  text-align: center;
+  padding: 5px;
+}
+.modal > .content {
+  width: 100%;
+  padding: 10px 5px;
+}
+.modal > .actions {
+  width: 100%;
+  padding: 10px 5px;
+  margin: auto;
+  text-align: center;
+}
+
+/* this class controls the popup box width
+   it can only be seen when inspecting the doc
+   the default width is 50%
+   !important overrides the html style */
+.popup-content {
+    width: 40% !important;
+}
+
+.modal > .close {
+  cursor: pointer;
+  position: absolute;
+  display: block;
+  padding: 2px 5px;
+  line-height: 20px;
+  right: -10px;
+  top: -10px;
+  font-size: 24px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #cfcece;
+}
+
+/*
+    All the css below should be for the form itself
+*/
+.inputFieldContainer {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/*
+    this controls the input field itself
+*/
+.inputFieldBox {
+    width: 60%;
+    margin-left: 5px;
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+/*
+    this controls the text for next to the input fields
+*/
+label h4 {
+    display: inline
+}

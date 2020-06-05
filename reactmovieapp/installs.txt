@@ -1,1 +1,2 @@
 npm install -save react-router-dom
+npm install -save reactjs-popup
