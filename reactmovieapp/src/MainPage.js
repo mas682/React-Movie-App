@@ -1,6 +1,7 @@
 import React from 'react';
 import history from './History'
 import {Link } from 'react-router-dom';
+import SignUpPopup from './SignUp.js';
 
 const MainPage = () => {
     return (
@@ -9,7 +10,8 @@ const MainPage = () => {
                 <h2>Main Page</h2>
             </div>
             <div className="mainBodyChild">
-                <Link to="/signup"><button className ="testButton">Sign Up page</button></Link>
+                <Link to="/movie"><button className ="testButton">Movie page</button></Link>
+                <SignUpPopup />
             </div>
         </div>
     );

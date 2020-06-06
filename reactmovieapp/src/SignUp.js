@@ -286,19 +286,4 @@ class SignUpPopup extends React.Component {
     }
 }
 
-const SignUp = () => {
-    return (
-        <div className="mainBodyContainer">
-            <div className="mainBodyHeader">
-                <h2>Sign Up Page</h2>
-            </div>
-            <div>
-                <p> This will be changed to some other page..just a placeholder for now</p>
-            </div>
-            <Link to="/"><button className ="testButton">Home Page</button></Link>
-            <SignUpPopup />
-        </div>
-    );
-};
-
-export default SignUp;
+export default SignUpPopup;
