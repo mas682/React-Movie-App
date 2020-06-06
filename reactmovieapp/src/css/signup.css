@@ -63,11 +63,6 @@
     margin-bottom: 10px;
 }
 
-.nameFieldHeader {
-    width: 100%;
-    align-content: flex-start;
-}
-
 /*
     this controls the input field itself
 */
@@ -75,9 +70,16 @@
     width: 90%;
     margin-top: 5px;
     margin-left: 5px;
-    font-size: 1.7em;
+    font-size: 1.9em;
     border-radius: 6px;
-    border: .5px solid #C0C0C0;
+}
+
+#inputBoxError {
+    border: .5px solid red;
+}
+
+#validInputBox {
+    border: .5px solid #C0C0C0; /* silver */
 }
 
 .inputFieldBoxLong {
@@ -86,20 +88,36 @@
     margin-left: 5px;
     font-size: 1.7em;
     border-radius: 6px;
-    border: .5px solid #C0C0C0; /* silver */
 }
 
-input:focus {
+#validInputBox:focus {
     border: .5px solid #4682B4;
     border-radius: 6px;
     outline: none;
     box-shadow:0 0 8px #4682B4; /* blue */
 }
 
+#errorLabel {
+    color: red;
+}
+
+#inputBoxError:focus {
+    border: .5px solid red;
+    border-radius: 6px;
+    outline: none;
+    box-shadow:0 0 8px red; /* blue */
+}
+
 h4 {
     display: inline;
     font-size: 1.5em;
     margin-left: 5px;
+}
+
+small {
+    margin-left: 5px;
+    color: red;
+    font-size: 1.2em;
 }
 
 .submitButton {
