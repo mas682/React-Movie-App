@@ -35,30 +35,41 @@ class ControlledPopup extends React.Component {
                 <a className="close" onClick={this.closeModal}>
                 &times;
                 </a>
-                <div className="header"> Sign Up! </div>
+                <div className="header">
+                    <h3> Sign Up! </h3>
+                </div>
                 <div className="content">
-                    <form id="form1"/>
-                    <div className="inputFieldContainer">
+                    <form id="form1" method="post" target="/signup"/>
+                    <div className="nameContainer">
                         <label>
-                            <h4>First name:</h4>
-                            <input type="text" name="firstName" form = "form1" className="inputFieldBox"/>
+                            <h4 className="nameFieldHeader">First name</h4>
                         </label>
+                        <input type="text" name="firstName" form = "form1" className="inputFieldBoxShort"/>
+                    </div>
+                    <div className="nameContainer">
+                        <label>
+                            <h4>Last name</h4>
+                        </label>
+                        <input type="text" name="lastName" form = "form1" className="inputFieldBoxShort"/>
                     </div>
                     <div className="inputFieldContainer">
                         <label>
-                            <h4>Last name:</h4>
-                            <input type="text" name="lastName" form = "form1" className="inputFieldBox"/>
+                            <h4>Email</h4>
                         </label>
+                        <input type="text" name="email" form = "form1" className="inputFieldBoxLong"/>
                     </div>
                     <div className="inputFieldContainer">
                         <label>
-                            <h4>Email:</h4>
-                            <input type="text" name="email" form = "form1" className="inputFieldBox"/>
+                            <h4>Password</h4>
                         </label>
+                        <input type="password" name="password" form = "form1" className="inputFieldBoxLong"/>
                     </div>
                 </div>
                 <div className="actions">
-                    <input type="submit" value="Submit" form = "form1"/>
+                    <button form="form1" value="create_account" className="submitButton">CREATE YOUR ACCOUNT</button>
+                </div>
+                <div className="accountExistsText">
+                    Already have an account? <a href="">Log In Here</a>
                 </div>
             </div>
         </Popup>
