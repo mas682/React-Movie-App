@@ -16,7 +16,7 @@
     height: 1000px;
     margin-left: 15%;
     margin-right: 15%;
-    margin-top: 120px;
+    margin-top: 100px;
     background-color: #FFFFFF;
     position: absolute;
     display: flex;
@@ -30,15 +30,47 @@
     margin-right: 90%;
 }
 
-.mainTitle {
-    color: #FFFFFF;
+.App-Header {
+    background-color: #333;
+    height: 125px;
+    width: 100%;
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
 }
 
-header {
-    background-color: #C62705;
-    height: 120px;
-    width: 100%;
-    position: absolute;
+li {
+  float: left;
+}
+
+.mainTitle {
+    color: #FFFFFF;
+	padding-left: 45px;
+	padding-right: 700px;
+	padding-top: 20px;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  padding-top: 55px;
+}
+
+li a:hover {
+  background-color: white;
+  padding-bottom: 55px;
+}
+
+.searchBar {
+	padding-top: 55px;
+	float: right;
 }
 
 .testButton {
