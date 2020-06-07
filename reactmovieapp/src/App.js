@@ -20,10 +20,9 @@ function App() {
         <div className="App-Header">
 			<li><h1 className="mainTitle" href="#">Logo</h1></li>
 			<li><a className="homeButton" href="/">Home</a></li>
-			<li><a href="#">...</a></li>
-			<li><a href="#">...</a></li>
-			<li><a href="#">...</a></li>
-			<li><a href="#">...</a></li>
+			<li><a className="movieButton" href="/movie">Movies</a></li>
+			<li><a href="#">Shows</a></li>
+			<li><a href="#">Profile</a></li>
 			<div class="searchBar">
 				<form>
 					<input type="text" placeholder=" Search" name="search"></input>
