@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import SignUpPopup from './SignUp.js';
+import './css/moviereview.css';
 
 const Movie = () => {
     return (

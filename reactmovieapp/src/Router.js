@@ -1,6 +1,6 @@
 import React from 'react';
 import {BrowserRouter as Router, Route, Redirect, Switch} from 'react-router-dom';
-import Movie from './Movie.js'
+import Movie from './MovieReview.js'
 import MainPage from'./MainPage.js'
 import history from './History';
 
