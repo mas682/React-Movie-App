@@ -20,8 +20,21 @@ function App() {
         <div className="App-Header">
 			<li><h1 className="mainTitle" href="#">Logo</h1></li>
 			<li><a className="homeButton" href="/">Home</a></li>
-			<li><a className="movieButton" href="/movie">Movies</a></li>
-			<li><a href="#">Shows</a></li>
+			<li class="movieDropdown">
+				<button class="movieButton">Movies</button>
+				<div class="movieDropdownContent">
+					<a href="/movie">Top Rated</a>
+					<a href="/movie">Upcoming</a>
+					<a href="/movie">In Theaters</a>
+				</div>
+			</li>
+			<li class="showDropdown">
+				<button class="showButton">Shows</button>
+				<div class="showDropdownContent">
+					<a href="/">Top Rated</a>
+					<a href="/">Schedule</a>
+				</div>
+			</li>
 			<li><a href="#">Profile</a></li>
 			<div class="searchBar">
 				<form>
