@@ -26,6 +26,38 @@ class ReviewPopUp extends React.Component {
     }
 
     render() {
+
+        let titleInput = (
+                <React.Fragment>
+                    <label>
+                        <h4>Movie Title</h4>
+                    </label>
+                    <input
+                        type="text"
+                        name="movie"
+                        form = "form2"
+                        id="validInputBox"
+                        className="inputFieldBoxLong"
+                        onChange={this.changeHandler}
+                    />
+                </React.Fragment>);
+
+        let reviewInput = (
+                <React.Fragment>
+                    <label>
+                        <h4>Optional Review</h4>
+                    </label>
+                    <textarea
+                        type="text"
+                        name="review"
+                        form = "form2"
+                        id="reviewInputField"
+                        className="inputFieldBoxLong"
+                        onChange={this.changeHandler}
+                        rows="10"
+                    />
+                </React.Fragment>);
+
         return (
             <div>
                 <button className="button" onClick={this.openModal}>
@@ -47,6 +79,9 @@ class ReviewPopUp extends React.Component {
                         <div className="content">
                             {/* This will eventually be a post form */}
                             <form id="form2" onSubmit={this.validateForm} noValidate/>
+                            <div className = "inputFieldContainer">
+                                {titleInput}
+                            </div>
                             <div className = "ratingContainer">
                                 <fieldset class="rating">
                                     <input type="radio" id="star5" name="rating" value="5" form="form2"/><label class = "full" for="star5" title="Awesome - 5 stars"></label>
@@ -60,6 +95,33 @@ class ReviewPopUp extends React.Component {
                                     <input type="radio" id="star1" name="rating" value="1" form="form2"/><label class = "full" for="star1" title="Sucks big time - 1 star"></label>
                                     <input type="radio" id="starhalf" name="rating" value="0.5" form="form2"/><label class="half" for="starhalf" title="Don't waste your time - 0.5 stars"></label>
                                 </fieldset>
+                            </div>
+                            <div className="proConContainter">
+                                <div className="halfHeaderContainer">
+                                    <h4 className = "h4NoMargin">The Good</h4>
+                                </div>
+                                <div>Select from the options below</div>
+                                <div className="selectedDivider"></div>
+                                <button value="button1" className="formButton" id="goodButton">Acting</button>
+                                <button value="button1" className="formButton" id="goodButton">Jokes</button>
+                                <button value="button1" className="formButton" id="goodButton">Story</button>
+                                <button value="button1" className="formButton" id="goodButton">Too Short</button>
+                                <button value="button1" className="formButton" id="goodButton">Too Long</button>
+                            </div>
+                            <div className="proConContainter">
+                                <div className="halfHeaderContainer">
+                                    <h4 className = "h4NoMargin">The Bad</h4>
+                                </div>
+                                <div>Select from the options below</div>
+                                <div className="selectedDivider"></div>
+                                <button value="button1" className="formButton" id="badButton">Acting</button>
+                                <button value="button1" className="formButton" id="badButton">Jokes</button>
+                                <button value="button1" className="formButton" id="badButton">Story</button>
+                                <button value="button1" className="formButton" id="badButton">Too Short</button>
+                                <button value="button1" className="formButton" id="badButton">Too Long</button>
+                            </div>
+                            <div className = "inputFieldContainer">
+                                {reviewInput}
                             </div>
                         </div>
                         <div className="actions">
