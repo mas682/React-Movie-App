@@ -19,7 +19,9 @@ function App() {
     <div className="App">
         <div className="App-Header">
 			<li><h1 className="mainTitle" href="#">Logo</h1></li>
-			<li><a className="homeButton" href="/">Home</a></li>
+			<li class="home">
+				<a class="homeButton" href="/">Home</a>
+			</li>
 			<li class="movieDropdown">
 				<button class="movieButton">Movies</button>
 				<div class="movieDropdownContent">
@@ -35,7 +37,9 @@ function App() {
 					<a href="/">Schedule</a>
 				</div>
 			</li>
-			<li><a href="#">Profile</a></li>
+			<li class="profile">
+				<a class="profileButton" href="#">Profile</a>
+			</li>
 			<div class="searchBar">
 				<form>
 					<input type="text" placeholder=" Search" name="search"></input>

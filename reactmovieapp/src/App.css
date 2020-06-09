@@ -54,6 +54,28 @@ li {
 	padding-top: 1px;
 }
 
+.home, .profile{
+	display: block;
+	color: white;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+	padding-top: 10px;
+	z-index: 2;
+	position: relative;
+}
+
+.homeButton, .profileButton {
+	font-size: 16px;  
+	border: none;
+	outline: none;
+	color: white;
+	padding: 14px 0px;
+	background-color: inherit;
+	font-family: inherit;
+	margin: 0;
+}
+
 li a {
   display: block;
   color: white;
@@ -61,6 +83,10 @@ li a {
   padding: 14px 16px;
   text-decoration: none;
   padding-top: 25px;
+}
+
+.homeButton:link, .homeButton:visited, .profileButton:link, .profileButton:visited{
+	color: white;
 }
 
 .movieDropdown {
@@ -109,6 +135,10 @@ li a {
 
 li a:hover {
   background-color: red;
+}
+
+.home:hover, .profile:hover{
+	background-color: red;
 }
 
 .movieDropdown:hover {
