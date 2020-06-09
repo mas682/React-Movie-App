@@ -74,11 +74,13 @@
 }
 
 .proConContainter {
-    width: 50%;
+    width: 45%;
     margin-bottom: 10px;
     display: flex;
     flex-flow: row wrap;
     justify-content: center;
+    margin-right: 2.5%;
+    margin-left: 2.5%;
 }
 
 .h4NoMargin {
@@ -86,10 +88,8 @@
 }
 
 .selectedDivider {
-    margin-right: 5%;
-    margin-left: 5%;
     height: 3%;
-    width: 90%;
+    width: 100%;
     background: #C0C0C0;
 }
 

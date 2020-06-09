@@ -10,9 +10,39 @@ class ReviewPopUp extends React.Component {
         super(props);
         this.state = {
             open: false,
+            usedGoodButtons: ['Jokes', 'Too short', 'Too long'],
+            usedBadButtons: ['Story', 'Acting', 'Jokes'],
+            unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story'],
+            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story']
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
+        this.generateButtons = this.generateButtons.bind(this);
+        this.goodBadButtonHandler = this.goodBadButtonHandler.bind(this);
+    }
+
+    goodBadButtonHandler(event)
+    {
+        console.log(event.target.id);
+        let moveFromUnused = true;
+        /*
+        if(this.state.unusedGoodButtons.contains(event.value))
+        {
+
+        }
+        */
+    }
+
+    generateButtons(value, type)
+    {
+        if(type == "good")
+        {
+            return <button value={value} className="formButton" id="goodButton" onClick={(e)=> this.goodBadButtonHandler(e)}>{value}</button>;
+        }
+        else
+        {
+            return <button value={value} className="formButton" id="badButton" onClick={(e)=> this.goodBadButtonHandler(e)}>{value}</button>;
+        }
     }
 
     openModal() {
@@ -58,6 +88,47 @@ class ReviewPopUp extends React.Component {
                     />
                 </React.Fragment>);
 
+        let counter = 0;
+        let unusedGoodButtonArr = [];
+        let unusedBadButtonArr = [];
+        let usedGoodButtonArr = [];
+        let usedBadButtonArr = [];
+
+        // generate the unused good buttons
+        while(counter < this.state.unusedGoodButtons.length)
+        {
+            unusedGoodButtonArr.push(this.generateButtons(this.state.unusedGoodButtons[counter], "good"));
+            counter = counter + 1;
+        }
+
+        // reset the counter
+        counter = 0;
+        // generate the unused bad buttons
+        while(counter < this.state.unusedBadButtons.length)
+        {
+            unusedBadButtonArr.push(this.generateButtons(this.state.unusedBadButtons[counter], "bad"));
+            counter = counter + 1;
+        }
+
+        // reset the counter
+        counter = 0;
+        // generate the used good buttons
+        while(counter < this.state.usedGoodButtons.length)
+        {
+            usedGoodButtonArr.push(this.generateButtons(this.state.usedGoodButtons[counter], "good"));
+            counter = counter + 1;
+        }
+
+
+        // reset the counter
+        counter = 0;
+        // generate the unused bad buttons
+        while(counter < this.state.usedBadButtons.length)
+        {
+            usedBadButtonArr.push(this.generateButtons(this.state.usedBadButtons[counter], "bad"));
+            counter = counter + 1;
+        }
+
         return (
             <div>
                 <button className="button" onClick={this.openModal}>
@@ -100,25 +171,19 @@ class ReviewPopUp extends React.Component {
                                 <div className="halfHeaderContainer">
                                     <h4 className = "h4NoMargin">The Good</h4>
                                 </div>
+                                {usedGoodButtonArr}
                                 <div>Select from the options below</div>
                                 <div className="selectedDivider"></div>
-                                <button value="button1" className="formButton" id="goodButton">Acting</button>
-                                <button value="button1" className="formButton" id="goodButton">Jokes</button>
-                                <button value="button1" className="formButton" id="goodButton">Story</button>
-                                <button value="button1" className="formButton" id="goodButton">Too Short</button>
-                                <button value="button1" className="formButton" id="goodButton">Too Long</button>
+                                {unusedGoodButtonArr}
                             </div>
                             <div className="proConContainter">
                                 <div className="halfHeaderContainer">
                                     <h4 className = "h4NoMargin">The Bad</h4>
                                 </div>
+                                {usedBadButtonArr}
                                 <div>Select from the options below</div>
                                 <div className="selectedDivider"></div>
-                                <button value="button1" className="formButton" id="badButton">Acting</button>
-                                <button value="button1" className="formButton" id="badButton">Jokes</button>
-                                <button value="button1" className="formButton" id="badButton">Story</button>
-                                <button value="button1" className="formButton" id="badButton">Too Short</button>
-                                <button value="button1" className="formButton" id="badButton">Too Long</button>
+                                {unusedBadButtonArr}
                             </div>
                             <div className = "inputFieldContainer">
                                 {reviewInput}
