@@ -24,12 +24,7 @@
     align-content: flex-start;
 }
 
-/* hamburger menu */
-.openMenu {
-    color: #FFFFFF;
-    margin-right: 90%;
-}
-
+/* Header */
 .App-Header {
     background-color: #333;
     height: 73px;
@@ -207,16 +202,33 @@ li a:hover {
 	float: right;
 }
 
+/* Main Page*/
+.post {
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+	max-width: 300px;
+	margin: auto;
+	text-align: center;
+	font-family: arial;
+	width: 700px;
+}
+
+hr.divider {
+  border-top: 3px solid #bbb;
+}
+
+.theGood {
+	position: left;
+}
+
+.theBad {
+	position: right;
+}
+
 .testButton {
     font-size: 20px;
     border-radius: 4px;
     background-color: blue;
 }
-
-.mainBodyHeader {
-    width: 100%;
-}
-
 
 .mainBodyChild {
     width: 100%;
