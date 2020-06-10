@@ -10,38 +10,135 @@ class ReviewPopUp extends React.Component {
         super(props);
         this.state = {
             open: false,
-            usedGoodButtons: ['Jokes', 'Too short', 'Too long'],
-            usedBadButtons: ['Story', 'Acting', 'Jokes'],
+            usedGoodButtons: [],
+            usedBadButtons: [],
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story']
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.generateButtons = this.generateButtons.bind(this);
-        this.goodBadButtonHandler = this.goodBadButtonHandler.bind(this);
+        this.usedButtonHandler = this.usedButtonHandler.bind(this);
     }
 
-    goodBadButtonHandler(event)
+    usedButtonHandler(event)
     {
-        console.log(event.target.id);
-        let moveFromUnused = true;
-        /*
-        if(this.state.unusedGoodButtons.contains(event.value))
-        {
+        // holds the new array to set the state to for the unused good buttons
+        let unusedGoodArr = this.addButtonToArray(this.state.unusedGoodButtons, event.target.value);
+        // holds the new array to set the state to for the unused bad buttons
+        let unusedBadArr = this.addButtonToArray(this.state.unusedBadButtons, event.target.value);
 
-        }
-        */
-    }
-
-    generateButtons(value, type)
-    {
-        if(type == "good")
+        // if the button clicked was a good button
+        if(event.target.id == "goodButton")
         {
-            return <button value={value} className="formButton" id="goodButton" onClick={(e)=> this.goodBadButtonHandler(e)}>{value}</button>;
+            // remove the button from the used good buttons
+            let usedGoodArr = this.removeButtonFromArray(this.state.usedGoodButtons, event.target.value);
+            // update the state
+            this.setState({usedGoodButtons: usedGoodArr, unusedGoodButtons: unusedGoodArr,
+                unusedBadButtons: unusedBadArr});
         }
         else
         {
-            return <button value={value} className="formButton" id="badButton" onClick={(e)=> this.goodBadButtonHandler(e)}>{value}</button>;
+            // remove the button from the used bad buttons
+            let usedBadArr = this.removeButtonFromArray(this.state.usedBadButtons, event.target.value);
+            // update the state
+            this.setState({usedBadButtons: usedBadArr, unusedGoodButtons: unusedGoodArr,
+                unusedBadButtons: unusedBadArr});
+        }
+    }
+
+    // function to add a new value to the buttons arrays
+    addButtonToArray(oldArray, value)
+    {
+        // initialize loop counter
+        let counter = 0;
+        let newArray = [];
+        let arrayLength = oldArray.length + 1;
+        while(counter < arrayLength)
+        {
+            // if counter is less than the old array length, simply copy the value
+            if(counter < oldArray.length)
+            {
+                newArray.push(oldArray[counter]);
+            }
+            else
+            {
+                // add the new value
+                newArray.push(value);
+            }
+            counter = counter + 1;
+        }
+        return newArray;
+    }
+
+    // function to remove a old value from the buttons arrays
+    removeButtonFromArray(oldArray, value)
+    {
+        console.log(oldArray);
+        let counter = 0;
+        let newArray = [];
+        let arrayValue = "";
+
+        while(counter < oldArray.length)
+        {
+            arrayValue = oldArray[counter];
+            // skip the value if this is the value to remove
+            if(arrayValue == value)
+            {
+                counter = counter + 1;
+                continue;
+            }
+            newArray.push(arrayValue);
+            counter = counter + 1;
+        }
+        return newArray;
+    }
+
+    unusedButtonHandler(event)
+    {
+        // remove the button from the unused buttons
+        let unusedGoodArr = this.removeButtonFromArray(this.state.unusedGoodButtons, event.target.value);
+        let unusedBadArr = this.removeButtonFromArray(this.state.unusedBadButtons, event.target.value);
+
+        // if the button clicked was a good button
+        if(event.target.id == "goodButton")
+        {
+            // add the button to the used good buttons array
+            let usedGoodArr = this.addButtonToArray(this.state.usedGoodButtons, event.target.value);
+            // update the state
+            this.setState({usedGoodButtons: usedGoodArr, unusedGoodButtons: unusedGoodArr,
+                unusedBadButtons: unusedBadArr});
+        }
+        else
+        {
+            // add the button to the used bad buttons
+            let usedBadArr = this.addButtonToArray(this.state.usedBadButtons, event.target.value);
+            // update the state
+            this.setState({usedBadButtons: usedBadArr, unusedGoodButtons: unusedGoodArr,
+                unusedBadButtons: unusedBadArr});
+        }
+    }
+
+    // value is the value of the button
+    // type is either good or bad
+    // used is true or false
+    generateButtons(value, type, used)
+    {
+        if(type == "good" && used)
+        {
+            return <button value={value} className="formButton" id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
+        }
+        else if(type == "good" && !used)
+        {
+            return <button value={value} className="formButton" id="goodButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
+        }
+        else if(type == "bad" && used)
+        {
+            return <button value={value} className="formButton" id="badButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
+        }
+        else
+        {
+            return <button value={value} className="formButton" id="badButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
         }
     }
 
@@ -97,7 +194,7 @@ class ReviewPopUp extends React.Component {
         // generate the unused good buttons
         while(counter < this.state.unusedGoodButtons.length)
         {
-            unusedGoodButtonArr.push(this.generateButtons(this.state.unusedGoodButtons[counter], "good"));
+            unusedGoodButtonArr.push(this.generateButtons(this.state.unusedGoodButtons[counter], "good", false));
             counter = counter + 1;
         }
 
@@ -106,7 +203,7 @@ class ReviewPopUp extends React.Component {
         // generate the unused bad buttons
         while(counter < this.state.unusedBadButtons.length)
         {
-            unusedBadButtonArr.push(this.generateButtons(this.state.unusedBadButtons[counter], "bad"));
+            unusedBadButtonArr.push(this.generateButtons(this.state.unusedBadButtons[counter], "bad", false));
             counter = counter + 1;
         }
 
@@ -115,7 +212,7 @@ class ReviewPopUp extends React.Component {
         // generate the used good buttons
         while(counter < this.state.usedGoodButtons.length)
         {
-            usedGoodButtonArr.push(this.generateButtons(this.state.usedGoodButtons[counter], "good"));
+            usedGoodButtonArr.push(this.generateButtons(this.state.usedGoodButtons[counter], "good", true));
             counter = counter + 1;
         }
 
@@ -125,7 +222,7 @@ class ReviewPopUp extends React.Component {
         // generate the unused bad buttons
         while(counter < this.state.usedBadButtons.length)
         {
-            usedBadButtonArr.push(this.generateButtons(this.state.usedBadButtons[counter], "bad"));
+            usedBadButtonArr.push(this.generateButtons(this.state.usedBadButtons[counter], "bad", true));
             counter = counter + 1;
         }
 
