@@ -12,8 +12,8 @@ class ReviewPopUp extends React.Component {
             open: false,
             usedGoodButtons: [],
             usedBadButtons: [],
-            unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story'],
-            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story']
+            unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
+            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme']
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -29,7 +29,7 @@ class ReviewPopUp extends React.Component {
         let unusedBadArr = this.addButtonToArray(this.state.unusedBadButtons, event.target.value);
 
         // if the button clicked was a good button
-        if(event.target.id == "goodButton")
+        if(event.target.id == "usedGoodButton")
         {
             // remove the button from the used good buttons
             let usedGoodArr = this.removeButtonFromArray(this.state.usedGoodButtons, event.target.value);
@@ -101,7 +101,7 @@ class ReviewPopUp extends React.Component {
         let unusedBadArr = this.removeButtonFromArray(this.state.unusedBadButtons, event.target.value);
 
         // if the button clicked was a good button
-        if(event.target.id == "goodButton")
+        if(event.target.id == "unusedGoodButton")
         {
             // add the button to the used good buttons array
             let usedGoodArr = this.addButtonToArray(this.state.usedGoodButtons, event.target.value);
@@ -122,23 +122,37 @@ class ReviewPopUp extends React.Component {
     // value is the value of the button
     // type is either good or bad
     // used is true or false
-    generateButtons(value, type, used)
+    generateButtons(value, type, used, selectedButtonLength)
     {
         if(type == "good" && used)
         {
-            return <button value={value} className="formButton" id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
+            return <button value={value} Title = "Click to remove" className="formButton" id="usedGoodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
         }
         else if(type == "good" && !used)
         {
-            return <button value={value} className="formButton" id="goodButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
+            if(selectedButtonLength < 5)
+            {
+                return <button value={value} Title = "Click to select" className="formButton" id="unusedGoodButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
+            }
+            else
+            {
+                return <div Title="Remove one of the choices above to select this one"><button value={value} className="formButton" id="unusedGoodButtonMAX" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button></div>;
+            }
         }
         else if(type == "bad" && used)
         {
-            return <button value={value} className="formButton" id="badButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
+            return <button value={value} className="formButton" Title = "Click to remove" id="usedBadButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
         }
         else
         {
-            return <button value={value} className="formButton" id="badButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
+            if(selectedButtonLength < 5)
+            {
+                return <button value={value} className="formButton" id="unusedBadButton" Title = "Click to select" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
+            }
+            else
+            {
+                return <div Title="Remove one of the choices above to select this one" ><button value={value} className="formButton" id="unusedBadButtonMAX" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button></div>;
+            }
         }
     }
 
@@ -185,6 +199,29 @@ class ReviewPopUp extends React.Component {
                     />
                 </React.Fragment>);
 
+        let instructionTextGood = (
+            <React.Fragment>
+                    <div className="instructionText">Select up to 5 of the options below</div>
+            </React.Fragment>);
+
+        let instructionTextBad = (
+            <React.Fragment>
+                <div className="halfTextContainer">
+                    <div className="instructionText">Select up to 5 of the options below</div>
+                </div>
+            </React.Fragment>);
+
+        if(this.state.usedGoodButtons.length > 0)
+        {
+            instructionTextGood = "";
+        }
+
+        if(this.state.usedBadButtons.length > 0)
+        {
+            instructionTextBad = "";
+        }
+
+
         let counter = 0;
         let unusedGoodButtonArr = [];
         let unusedBadButtonArr = [];
@@ -194,7 +231,7 @@ class ReviewPopUp extends React.Component {
         // generate the unused good buttons
         while(counter < this.state.unusedGoodButtons.length)
         {
-            unusedGoodButtonArr.push(this.generateButtons(this.state.unusedGoodButtons[counter], "good", false));
+            unusedGoodButtonArr.push(this.generateButtons(this.state.unusedGoodButtons[counter], "good", false, this.state.usedGoodButtons.length));
             counter = counter + 1;
         }
 
@@ -203,7 +240,7 @@ class ReviewPopUp extends React.Component {
         // generate the unused bad buttons
         while(counter < this.state.unusedBadButtons.length)
         {
-            unusedBadButtonArr.push(this.generateButtons(this.state.unusedBadButtons[counter], "bad", false));
+            unusedBadButtonArr.push(this.generateButtons(this.state.unusedBadButtons[counter], "bad", false, this.state.usedBadButtons.length));
             counter = counter + 1;
         }
 
@@ -212,7 +249,7 @@ class ReviewPopUp extends React.Component {
         // generate the used good buttons
         while(counter < this.state.usedGoodButtons.length)
         {
-            usedGoodButtonArr.push(this.generateButtons(this.state.usedGoodButtons[counter], "good", true));
+            usedGoodButtonArr.push(this.generateButtons(this.state.usedGoodButtons[counter], "good", true, 0));
             counter = counter + 1;
         }
 
@@ -222,7 +259,7 @@ class ReviewPopUp extends React.Component {
         // generate the unused bad buttons
         while(counter < this.state.usedBadButtons.length)
         {
-            usedBadButtonArr.push(this.generateButtons(this.state.usedBadButtons[counter], "bad", true));
+            usedBadButtonArr.push(this.generateButtons(this.state.usedBadButtons[counter], "bad", true, 0));
             counter = counter + 1;
         }
 
@@ -242,7 +279,7 @@ class ReviewPopUp extends React.Component {
                         &times;
                         </a>
                         <div className="header">
-                            <h3> Movie Review </h3>
+                            <h3 className = "inlineH3"> Movie Review </h3>
                         </div>
                         <div className="content">
                             {/* This will eventually be a post form */}
@@ -250,7 +287,10 @@ class ReviewPopUp extends React.Component {
                             <div className = "inputFieldContainer">
                                 {titleInput}
                             </div>
-                            <div className = "ratingContainer">
+                            <div className = "centeredMaxWidthContainer" id="containerMarginBottom10">
+                                <h4 className="h4NoMargin">Rating</h4>
+                            </div>
+                            <div className = "centeredMaxWidthContainer" id="containerMarginBottom10">
                                 <fieldset class="rating">
                                     <input type="radio" id="star5" name="rating" value="5" form="form2"/><label class = "full" for="star5" title="Awesome - 5 stars"></label>
                                     <input type="radio" id="star4half" name="rating" value="4.5" form="form2"/><label class="half" for="star4half" title="Pretty good - 4.5 stars"></label>
@@ -265,22 +305,30 @@ class ReviewPopUp extends React.Component {
                                 </fieldset>
                             </div>
                             <div className="proConContainter">
-                                <div className="halfHeaderContainer">
+                                <div className="centeredMaxWidthContainer">
                                     <h4 className = "h4NoMargin">The Good</h4>
                                 </div>
-                                {usedGoodButtonArr}
-                                <div>Select from the options below</div>
+                                <div className="buttonContainer" id="usedButtonContainerHeight">
+                                    {usedGoodButtonArr}
+                                    {instructionTextGood}
+                                </div>
                                 <div className="selectedDivider"></div>
-                                {unusedGoodButtonArr}
+                                <div className="buttonContainer" id="marginTopBottom20">
+                                    {unusedGoodButtonArr}
+                                </div>
                             </div>
                             <div className="proConContainter">
-                                <div className="halfHeaderContainer">
+                                <div className="centeredMaxWidthContainer">
                                     <h4 className = "h4NoMargin">The Bad</h4>
                                 </div>
-                                {usedBadButtonArr}
-                                <div>Select from the options below</div>
+                                <div className="buttonContainer" id="usedButtonContainerHeight">
+                                    {usedBadButtonArr}
+                                    {instructionTextBad}
+                                </div>
                                 <div className="selectedDivider"></div>
-                                {unusedBadButtonArr}
+                                <div className="buttonContainer" id="marginTopBottom20">
+                                    {unusedBadButtonArr}
+                                </div>
                             </div>
                             <div className = "inputFieldContainer">
                                 {reviewInput}
