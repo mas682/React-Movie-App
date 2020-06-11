@@ -205,11 +205,34 @@ li a:hover {
 /* Main Page*/
 .post {
 	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-	max-width: 300px;
+	max-width: 500px;
 	margin: auto;
 	text-align: center;
 	font-family: arial;
 	width: 700px;
+}
+
+header.postHeader p {
+	float: left;
+	padding-left: 10px;
+}
+
+header.postHeader img {
+	float: right;
+	height: 50px;
+	weight: 50px;
+	padding-right: 5px;
+}
+
+section.postBody img {
+	position: relative;
+}
+
+.profilePic {
+	height: 50px;
+	weight: 50px;
+	position: relative;
+	right: -120px;
 }
 
 hr.divider {
