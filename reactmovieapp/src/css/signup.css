@@ -70,7 +70,7 @@
     box-shadow:0 0 8px red; /* blue */
 }
 
-small {
+.signUpSmall {
     margin-left: 5px;
     color: red;
     font-size: 1.2em;
@@ -90,7 +90,7 @@ small {
     font-size: 16px;
 }
 
-h3 {
+.h3Inline {
     display: inline;
 }
 
@@ -99,10 +99,10 @@ h3 {
     width: 100%;
 }
 
-a:visited {
+.logInLink:visited {
     color: #4682B4;
 }
 
-a {
+.logInLink {
     color: #4682B4;
 }

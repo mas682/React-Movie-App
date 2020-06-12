@@ -174,7 +174,7 @@ class SignUpPopup extends React.Component {
                     className="inputFieldBoxShort"
                     onChange={this.changeHandler}
                 />
-                <small>{this.state.firstNameError}</small>
+                <small className="signUpSmall">{this.state.firstNameError}</small>
             </React.Fragment>);
         }
 
@@ -193,7 +193,7 @@ class SignUpPopup extends React.Component {
                         className="inputFieldBoxShort"
                         onChange={this.changeHandler}
                     />
-                    <small>{this.state.lastNameError}</small>
+                    <small className="signUpSmall">{this.state.lastNameError}</small>
                 </React.Fragment>);
         }
 
@@ -212,7 +212,7 @@ class SignUpPopup extends React.Component {
                         className="inputFieldBoxLong"
                         onChange={this.changeHandler}
                     />
-                    <small>{this.state.emailError}</small>
+                    <small className="signUpSmall">{this.state.emailError}</small>
                 </React.Fragment>);
         }
 
@@ -231,7 +231,7 @@ class SignUpPopup extends React.Component {
                         className="inputFieldBoxLong"
                         onChange={this.changeHandler}
                     />
-                    <small>{this.state.passwordError}</small>
+                    <small className="signUpSmall">{this.state.passwordError}</small>
                 </React.Fragment>);
         }
 
@@ -251,7 +251,7 @@ class SignUpPopup extends React.Component {
                     &times;
                     </a>
                     <div className="header">
-                        <h3> Sign Up! </h3>
+                        <h3 className="h3Inline"> Sign Up! </h3>
                     </div>
                     <div className="content">
                         {/* This will eventually be a post form */}
@@ -277,7 +277,7 @@ class SignUpPopup extends React.Component {
                         >CREATE YOUR ACCOUNT</button>
                     </div>
                     <div className="accountExistsText">
-                        Already have an account? <a href="">Log In Here</a>
+                        Already have an account? <a className="logInLink" href="">Log In Here</a>
                     </div>
                 </div>
             </Popup>
