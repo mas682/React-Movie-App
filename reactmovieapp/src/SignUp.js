@@ -103,7 +103,7 @@ class SignUpPopup extends React.Component {
         let firstNameInput = (
             <React.Fragment>
                 <label>
-                    <h4 id="validLabel">First name</h4>
+                    <h4 className="inputFieldH4" id="validLabel">First name</h4>
                 </label>
                 <input
                     type="text"
@@ -117,7 +117,7 @@ class SignUpPopup extends React.Component {
         let lastNameInput = (
             <React.Fragment>
                 <label>
-                    <h4 id="validLabel">Last name</h4>
+                    <h4 className="inputFieldH4" id="validLabel">Last name</h4>
                 </label>
                 <input
                     type="text"
@@ -132,7 +132,7 @@ class SignUpPopup extends React.Component {
         let emailInput = (
             <React.Fragment>
                 <label>
-                    <h4 id="validLabel">Email</h4>
+                    <h4 className="inputFieldH4" id="validLabel">Email</h4>
                 </label>
                 <input
                     type="text"
@@ -147,7 +147,7 @@ class SignUpPopup extends React.Component {
         let passwordInput = (
             <React.Fragment>
                 <label>
-                    <h4 id = "validLabel">Password</h4>
+                    <h4 className="inputFieldH4" id = "validLabel">Password</h4>
                 </label>
                 <input
                     type="password"
@@ -164,7 +164,7 @@ class SignUpPopup extends React.Component {
             firstNameInput = (
             <React.Fragment>
                 <label>
-                    <h4 id="errorLabel">First name</h4>
+                    <h4 className="inputFieldH4" id="errorLabel">First name</h4>
                 </label>
                 <input
                     type="text"
@@ -183,7 +183,7 @@ class SignUpPopup extends React.Component {
             lastNameInput = (
                 <React.Fragment>
                     <label>
-                        <h4 id="errorLabel">Last name</h4>
+                        <h4 className="inputFieldH4" id="errorLabel">Last name</h4>
                     </label>
                     <input
                         type="text"
@@ -202,7 +202,7 @@ class SignUpPopup extends React.Component {
             emailInput = (
                 <React.Fragment>
                     <label>
-                        <h4 id="errorLabel">Email</h4>
+                        <h4 className="inputFieldH4" id="errorLabel">Email</h4>
                     </label>
                     <input
                         type="text"
@@ -221,7 +221,7 @@ class SignUpPopup extends React.Component {
             passwordInput = (
                 <React.Fragment>
                     <label>
-                        <h4 id = "errorLabel">Password</h4>
+                        <h4 className="inputFieldH4" id = "errorLabel">Password</h4>
                     </label>
                     <input
                         type="password"

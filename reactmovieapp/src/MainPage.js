@@ -2,7 +2,8 @@ import React from 'react';
 import history from './History'
 import {Link } from 'react-router-dom';
 import SignUpPopup from './SignUp.js';
-import ReviewForm from './ReviewForm.js'
+import './css/forms.css';
+import ReviewForm from './ReviewForm.js';
 
 
 class Post extends React.Component {

@@ -1,2 +1,3 @@
 npm install -save react-router-dom
 npm install -save reactjs-popup
+npm install css-loader style-loader --save-dev

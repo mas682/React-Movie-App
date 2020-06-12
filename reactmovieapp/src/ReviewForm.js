@@ -2,7 +2,8 @@ import React from 'react';
 import history from './History'
 import { Link } from 'react-router-dom';
 import Popup from 'reactjs-popup';
-import './css/reviewform.css';
+import style from './css/reviewform.module.css';
+import'./css/reviewform.css';
 
 
 class ReviewPopUp extends React.Component {
@@ -28,8 +29,9 @@ class ReviewPopUp extends React.Component {
         // holds the new array to set the state to for the unused bad buttons
         let unusedBadArr = this.addButtonToArray(this.state.unusedBadButtons, event.target.value);
 
+        console.log(event.target);
         // if the button clicked was a good button
-        if(event.target.id == "usedGoodButton")
+        if(event.target.id == "goodButton")
         {
             // remove the button from the used good buttons
             let usedGoodArr = this.removeButtonFromArray(this.state.usedGoodButtons, event.target.value);
@@ -101,7 +103,7 @@ class ReviewPopUp extends React.Component {
         let unusedBadArr = this.removeButtonFromArray(this.state.unusedBadButtons, event.target.value);
 
         // if the button clicked was a good button
-        if(event.target.id == "unusedGoodButton")
+        if(event.target.id == "goodButton")
         {
             // add the button to the used good buttons array
             let usedGoodArr = this.addButtonToArray(this.state.usedGoodButtons, event.target.value);
@@ -126,32 +128,32 @@ class ReviewPopUp extends React.Component {
     {
         if(type == "good" && used)
         {
-            return <button value={value} Title = "Click to remove" className="formButton" id="usedGoodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
+            return <button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton}`} id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
         }
         else if(type == "good" && !used)
         {
             if(selectedButtonLength < 5)
             {
-                return <button value={value} Title = "Click to select" className="formButton" id="unusedGoodButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
+                return <button value={value} title = "Click to select" className={`${style.formButton} ${style.unusedButtonOpacity} ${style.goodButton}`} id="goodButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
             }
             else
             {
-                return <div Title="Remove one of the choices above to select this one"><button value={value} className="formButton" id="unusedGoodButtonMAX" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button></div>;
+                return <div title="Remove one of the choices above to select this one"><button value={value} className={`${style.formButton} ${style.unusedButtonOpacity} ${style.unclickableButton} ${style.goodButton}`} id="goodButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button></div>;
             }
         }
         else if(type == "bad" && used)
         {
-            return <button value={value} className="formButton" Title = "Click to remove" id="usedBadButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
+            return <button value={value} className={`${style.formButton} ${style.badButton}`} title = "Click to remove" id="badButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
         }
         else
         {
             if(selectedButtonLength < 5)
             {
-                return <button value={value} className="formButton" id="unusedBadButton" Title = "Click to select" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
+                return <button value={value} className={`${style.formButton} ${style.unusedButtonOpacity} ${style.badButton}`} id="badButton" title = "Click to select" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
             }
             else
             {
-                return <div Title="Remove one of the choices above to select this one" ><button value={value} className="formButton" id="unusedBadButtonMAX" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button></div>;
+                return <div title="Remove one of the choices above to select this one" ><button value={value} className={`${style.formButton} ${style.unusedButtonOpacity} ${style.unclickableButton} ${style.badButton}`} id="badButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button></div>;
             }
         }
     }
@@ -171,14 +173,13 @@ class ReviewPopUp extends React.Component {
         let titleInput = (
                 <React.Fragment>
                     <label>
-                        <h4>Movie Title</h4>
+                        <h4 className={style.h4NoMargin}>Movie Title</h4>
                     </label>
                     <input
                         type="text"
                         name="movie"
                         form = "form2"
-                        id="validInputBox"
-                        className="inputFieldBoxLong"
+                        className={`${style.inputFieldBoxLong} ${style.validInputBox}`}
                         onChange={this.changeHandler}
                     />
                 </React.Fragment>);
@@ -186,14 +187,13 @@ class ReviewPopUp extends React.Component {
         let reviewInput = (
                 <React.Fragment>
                     <label>
-                        <h4>Optional Review</h4>
+                        <h4 className={style.h4NoMargin}>Optional Review</h4>
                     </label>
                     <textarea
                         type="text"
                         name="review"
                         form = "form2"
-                        id="reviewInputField"
-                        className="inputFieldBoxLong"
+                        className={`${style.inputFieldBoxLong} ${style.reviewInputField}`}
                         onChange={this.changeHandler}
                         rows="10"
                     />
@@ -201,13 +201,13 @@ class ReviewPopUp extends React.Component {
 
         let instructionTextGood = (
             <React.Fragment>
-                    <div className="instructionText">Select up to 5 of the options below</div>
+                    <div className={style.instructionText}>Select up to 5 of the options below</div>
             </React.Fragment>);
 
         let instructionTextBad = (
             <React.Fragment>
-                <div className="halfTextContainer">
-                    <div className="instructionText">Select up to 5 of the options below</div>
+                <div className={style.halfTextContainer}>
+                    <div className={style.instructionText}>Select up to 5 of the options below</div>
                 </div>
             </React.Fragment>);
 
@@ -279,18 +279,18 @@ class ReviewPopUp extends React.Component {
                         &times;
                         </a>
                         <div className="header">
-                            <h3 className = "inlineH3"> Movie Review </h3>
+                            <h3 className = {style.inlineH3}> Movie Review </h3>
                         </div>
                         <div className="content">
                             {/* This will eventually be a post form */}
                             <form id="form2" onSubmit={this.validateForm} noValidate/>
-                            <div className = "inputFieldContainer">
+                            <div className = {style.inputFieldContainer}>
                                 {titleInput}
                             </div>
-                            <div className = "centeredMaxWidthContainer" id="containerMarginBottom10">
-                                <h4 className="h4NoMargin">Rating</h4>
+                            <div className = {`${style.centeredMaxWidthContainer} ${style.containerMarginBottom10}`}>
+                                <h4 className={style.h4NoMargin}>Rating</h4>
                             </div>
-                            <div className = "centeredMaxWidthContainer" id="containerMarginBottom10">
+                            <div className = {`${style.centeredMaxWidthContainer} ${style.containerMarginBottom10}`}>
                                 <fieldset class="rating">
                                     <input type="radio" id="star5" name="rating" value="5" form="form2"/><label class="full" for="star5" title="Awesome - 5 stars"></label>
                                     <input type="radio" id="star4half" name="rating" value="4.5" form="form2"/><label class="half" for="star4half" title="Pretty good - 4.5 stars"></label>
@@ -304,33 +304,33 @@ class ReviewPopUp extends React.Component {
                                     <input type="radio" id="starhalf" name="rating" value="0.5" form="form2"/><label class="half" for="starhalf" title="Don't waste your time - 0.5 stars"></label>
                                 </fieldset>
                             </div>
-                            <div className="proConContainter">
-                                <div className="centeredMaxWidthContainer">
-                                    <h4 className = "h4NoMargin">The Good</h4>
+                            <div className={style.proConContainter}>
+                                <div className={style.centeredMaxWidthContainer}>
+                                    <h4 className={style.h4NoMargin}>The Good</h4>
                                 </div>
-                                <div className="buttonContainer" id="usedButtonContainerHeight">
+                                <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
                                     {usedGoodButtonArr}
                                     {instructionTextGood}
                                 </div>
-                                <div className="selectedDivider"></div>
-                                <div className="buttonContainer" id="marginTopBottom20">
+                                <div className={style.selectedDivider}></div>
+                                <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.marginTopBottom20}`}>
                                     {unusedGoodButtonArr}
                                 </div>
                             </div>
-                            <div className="proConContainter">
-                                <div className="centeredMaxWidthContainer">
-                                    <h4 className = "h4NoMargin">The Bad</h4>
+                            <div className={style.proConContainter}>
+                                <div className={style.centeredMaxWidthContainer}>
+                                    <h4 className={style.h4NoMargin}>The Bad</h4>
                                 </div>
-                                <div className="buttonContainer" id="usedButtonContainerHeight">
+                                <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
                                     {usedBadButtonArr}
                                     {instructionTextBad}
                                 </div>
-                                <div className="selectedDivider"></div>
-                                <div className="buttonContainer" id="marginTopBottom20">
+                                <div className={style.selectedDivider}></div>
+                                <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.marginTopBottom20}`}>
                                     {unusedBadButtonArr}
                                 </div>
                             </div>
-                            <div className = "inputFieldContainer">
+                            <div className = {style.inputFieldContainer}>
                                 {reviewInput}
                             </div>
                         </div>
@@ -338,7 +338,7 @@ class ReviewPopUp extends React.Component {
                             <button
                                 form="form1"
                                 value="create_account"
-                                className="submitButton"
+                                className={style.submitButton}
                             >POST YOUR REVIEW</button>
                         </div>
                     </div>

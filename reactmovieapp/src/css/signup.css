@@ -1,53 +1,9 @@
-/*
-    css below here is for the popup box
-*/
-.modal {
-  font-size: 12px;
-  width: 100%;
-}
-.modal > .header {
-    width: 95%;
-    border-bottom: 1px solid #C0C0C0;
-    font-size: 18px;
-    margin-right: 2.5%;
-    margin-left: 2.5%;
-    text-align: center;
-}
-.modal > .content {
-  width: 100%;
-  padding: 10px 5px;
-  display: flex;
-  flex-flow: row wrap;
-  align-content: flex-start;
-}
-
-.modal > .actions {
-  width: 100%;
-  padding: 10px 5px;
-  margin: auto;
-  text-align: center;
-}
-
 /* this class controls the popup box width
    it can only be seen when inspecting the doc
    the default width is 50%
    !important overrides the html style */
 .popup-content {
     width: 40% !important;
-}
-
-.modal > .close {
-  cursor: pointer;
-  position: absolute;
-  display: block;
-  padding: 2px 5px;
-  line-height: 20px;
-  right: -10px;
-  top: -10px;
-  font-size: 24px;
-  background: #ffffff;
-  border-radius: 18px;
-  border: 1px solid #cfcece;
 }
 
 /*
@@ -90,6 +46,12 @@
     border-radius: 6px;
 }
 
+.inputFieldH4 {
+    display: inline;
+    font-size: 1.5em;
+    margin-left: 5px;
+}
+
 #validInputBox:focus {
     border: .5px solid #4682B4;
     border-radius: 6px;
@@ -106,12 +68,6 @@
     border-radius: 6px;
     outline: none;
     box-shadow:0 0 8px red; /* blue */
-}
-
-h4 {
-    display: inline;
-    font-size: 1.5em;
-    margin-left: 5px;
 }
 
 small {
