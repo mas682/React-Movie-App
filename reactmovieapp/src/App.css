@@ -1,3 +1,4 @@
+@import url(//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css);
 .App {
   /* The image used */
   background-image: url("images/background3.jpg");
@@ -210,22 +211,90 @@ li a:hover {
 	text-align: center;
 	font-family: arial;
 	width: 700px;
+	display: grid;
+	grid-template-columns: auto;
+	padding: 10px;
 }
 
-header.postHeader p {
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-gap: 10px;
+  background-color: #2196F3;
+  padding: 10px;
+  position: relative;
+}
+
+div.postHeader p {
 	float: left;
 	padding-left: 10px;
 }
 
-header.postHeader img {
+div.postHeader img {
 	float: right;
 	height: 50px;
 	weight: 50px;
 	padding-right: 5px;
 }
 
-section.postBody img {
+.postImage {
+	grid-gap: 0px;
+	padding: 0px;
+	text-align: center;
+}
+
+.checked {
+	color: orange;
+	padding-top: 10px;
+}
+
+.postGoodBad {
+	display: grid;
+	grid-template-columns: auto auto;
 	position: relative;
+}
+
+.postGoodButtons {
+	display: grid;
+	grid-template-columns: auto auto;
+	grid-gap: 10px;
+	position: relative;
+}
+
+.socialButtons {
+	display: grid;
+	grid-template-columns: auto auto auto;
+	grid-gap: 10px;
+	position: relative;
+}
+
+.goodButtons {
+	display: grid;
+	text-align: center;
+	grid-template-columns: auto auto auto;
+}
+
+.goodButtons button {
+	background-color: #4CAF50;
+}
+
+.badButtons button {
+	background-color: #F32121;
+}
+
+.badButtons {
+	display: grid;
+	text-align: center;
+	grid-template-columns: auto auto auto;
+}
+
+.review {
+	padding-top: 10px;
+}
+
+.reviewTextArea {
+	pointer-events: none;
+	width: 100%;
 }
 
 .profilePic {

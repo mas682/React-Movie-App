@@ -292,7 +292,7 @@ class ReviewPopUp extends React.Component {
                             </div>
                             <div className = "centeredMaxWidthContainer" id="containerMarginBottom10">
                                 <fieldset class="rating">
-                                    <input type="radio" id="star5" name="rating" value="5" form="form2"/><label class = "full" for="star5" title="Awesome - 5 stars"></label>
+                                    <input type="radio" id="star5" name="rating" value="5" form="form2"/><label class="full" for="star5" title="Awesome - 5 stars"></label>
                                     <input type="radio" id="star4half" name="rating" value="4.5" form="form2"/><label class="half" for="star4half" title="Pretty good - 4.5 stars"></label>
                                     <input type="radio" id="star4" name="rating" value="4" form="form2"/><label class = "full" for="star4" title="Pretty good - 4 stars"></label>
                                     <input type="radio" id="star3half" name="rating" value="3.5" form="form2"/><label class="half" for="star3half" title="Meh - 3.5 stars"></label>
