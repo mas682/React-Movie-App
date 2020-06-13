@@ -179,7 +179,7 @@ class ReviewPopUp extends React.Component {
                         type="text"
                         name="movie"
                         form = "form2"
-                        className={`${style.inputFieldBoxLong} ${style.validInputBox}`}
+                        className={`inputFieldBoxLong ${style.validInputBox}`}
                         onChange={this.changeHandler}
                     />
                 </React.Fragment>);
@@ -193,7 +193,7 @@ class ReviewPopUp extends React.Component {
                         type="text"
                         name="review"
                         form = "form2"
-                        className={`${style.inputFieldBoxLong} ${style.reviewInputField}`}
+                        className={`inputFieldBoxLong ${style.reviewInputField}`}
                         onChange={this.changeHandler}
                         rows="10"
                     />
@@ -279,12 +279,12 @@ class ReviewPopUp extends React.Component {
                         &times;
                         </a>
                         <div className="header">
-                            <h3 className = {style.inlineH3}> Movie Review </h3>
+                            <h3 className ="inlineH3"> Movie Review </h3>
                         </div>
                         <div className="content">
                             {/* This will eventually be a post form */}
                             <form id="form2" onSubmit={this.validateForm} noValidate/>
-                            <div className = {style.inputFieldContainer}>
+                            <div className = "inputFieldContainer">
                                 {titleInput}
                             </div>
                             <div className = {`${style.centeredMaxWidthContainer} ${style.containerMarginBottom10}`}>
@@ -330,7 +330,7 @@ class ReviewPopUp extends React.Component {
                                     {unusedBadButtonArr}
                                 </div>
                             </div>
-                            <div className = {style.inputFieldContainer}>
+                            <div className = "inputFieldContainer">
                                 {reviewInput}
                             </div>
                         </div>
@@ -338,7 +338,7 @@ class ReviewPopUp extends React.Component {
                             <button
                                 form="form1"
                                 value="create_account"
-                                className={style.submitButton}
+                                className="submitButton"
                             >POST YOUR REVIEW</button>
                         </div>
                     </div>

@@ -1,21 +1,5 @@
 /* this holds css specific to the ReviewForm.js file */
 
-
-/* for the submit button */
-.submitButton {
-    border-radius: 4px;
-    background-color: blue;
-    border: none;
-    background-color: #008CBA; /* button blue */
-    border: none;
-    color: white;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-}
-
 /* used to create a container that is 100% of the screen and centered */
 .centeredMaxWidthContainer {
     width: 100%;
@@ -52,7 +36,7 @@
 /* used to create a divider that is the screen size with the color gray */
 .selectedDivider {
     height: 3%;
-    width: 100%;
+    width: 95%;
     background: #C0C0C0;
 }
 
@@ -135,26 +119,6 @@
     opacity: 100%;
 }
 
-.inputFieldContainer {
-    width: 100%;
-    margin-bottom: 10px;
-}
-
 .validInputBox {
     border: .5px solid #C0C0C0; /* silver */
-}
-
-/* format input box */
-/* may need to remove as in other css file */
-.inputFieldBoxLong {
-    width: 95%;
-    margin-top: 5px;
-    margin-left: 5px;
-    font-size: 1.7em;
-    border-radius: 6px;
-}
-
-/* make a h3 header inline */
-.inlineH3 {
-    display: inline;
 }
