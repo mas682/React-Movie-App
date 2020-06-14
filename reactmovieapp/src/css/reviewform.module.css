@@ -118,7 +118,3 @@
 .unusedButtonOpacity:hover {
     opacity: 100%;
 }
-
-.validInputBox {
-    border: .5px solid #C0C0C0; /* silver */
-}

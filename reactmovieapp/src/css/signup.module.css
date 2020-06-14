@@ -1,10 +1,5 @@
-/* this class controls the popup box width
-   it can only be seen when inspecting the doc
-   the default width is 50%
-   !important overrides the html style */
-.popup-content {
-    width: 40% !important;
-}
+/* this holds css specific to the SignUp.js file */
+
 
 /* container for the first and last name fields */
 .nameContainer {

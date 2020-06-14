@@ -179,7 +179,7 @@ class ReviewPopUp extends React.Component {
                         type="text"
                         name="movie"
                         form = "form2"
-                        className={`inputFieldBoxLong ${style.validInputBox}`}
+                        className="inputFieldBoxLong validInputBox"
                         onChange={this.changeHandler}
                     />
                 </React.Fragment>);

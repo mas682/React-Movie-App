@@ -1,3 +1,13 @@
 npm install -save react-router-dom
 npm install -save reactjs-popup
 npm install css-loader style-loader --save-dev
+
+npx express-generator movie-app-api
+once in the folder for the api, run npm install to get all the packages
+for the api
+
+in the movie-app-api directory:
+allows react application to communicate to server
+npm instal --save cors
+video to get started with express js
+https://www.youtube.com/watch?v=fnpmR6Q5lEc
