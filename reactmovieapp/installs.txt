@@ -6,8 +6,20 @@ npx express-generator movie-app-api
 once in the folder for the api, run npm install to get all the packages
 for the api
 
-in the movie-app-api directory:
+
 allows react application to communicate to server
-npm instal --save cors
+npm install --save cors
 video to get started with express js
 https://www.youtube.com/watch?v=fnpmR6Q5lEc
+
+
+ORM to use to handle database
+npm install pg sequelize --save
+link to set up database:
+https://www.robinwieruch.de/postgres-express-setup-tutorial
+Sequelize documentation:
+https://sequelize.org/v5/
+
+Needed to use database
+npm install babel-preset-env
+npm install babel-cli -g

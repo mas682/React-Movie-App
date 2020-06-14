@@ -7,6 +7,9 @@
 var app = require('../app');
 var debug = require('debug')('movie-app-api:server');
 var http = require('http');
+var models = require('./src/models');
+var sequelize = require('./src/models');
+
 
 /**
  * Get port from environment and store in Express.

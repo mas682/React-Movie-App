@@ -1,3 +1,5 @@
+import models, { sequelize } from './src/models';
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -9,6 +11,24 @@ var usersRouter = require('./routes/users');
 var testAPIRouter = require('./routes/testAPI');
 
 var app = express();
+
+// connect to the database
+sequelize.sync().then(() => {
+  app.listen(9000, () => {
+    console.log(`Example app listening on port 9000!`);
+  });
+});
+
+/*
+to restart database every time
+const eraseDatabaseOnSync = true;
+
+sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
+  app.listen(process.env.PORT, () =>
+    console.log(`Example app listening on port ${process.env.PORT}!`),
+  );
+});
+*/
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
