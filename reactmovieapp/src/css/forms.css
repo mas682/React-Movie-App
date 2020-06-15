@@ -104,7 +104,6 @@
 
 /* error text */
 .errorTextSmall {
-    margin-left: 5px;
     color: red;
     font-size: 1.2em;
 }

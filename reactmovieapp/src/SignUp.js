@@ -11,10 +11,12 @@ class SignUpPopup extends React.Component {
         super(props);
         this.state = {
             open: false,
+            username: "",
             firstName: "",
             lastName: "",
             email: "",
             password: "",
+            usernameError: "",
             firstNameError: "",
             lastNameError: "",
             emailError: "",
@@ -34,10 +36,12 @@ class SignUpPopup extends React.Component {
     closeModal() {
         this.setState({
             open: false,
+            username: "",
             firstName: "",
             lastName: "",
             email: "",
             password: "",
+            usernameError: "",
             firstNameError: "",
             lastNameError: "",
             emailError: "",
@@ -52,6 +56,7 @@ class SignUpPopup extends React.Component {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                username: this.state.username,
                 firstName: this.state.firstName,
                 lastName: this.state.lastName,
                 email: this.state.email,
@@ -65,22 +70,35 @@ class SignUpPopup extends React.Component {
 
     validateForm(event) {
         event.preventDefault();
+        let error = false;
         // checks to see if email in format string@string.string
         let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.state.email);
         // if firstName is empty
         if(!this.state.firstName)
         {
             this.setState({"firstNameError": "First name is required"});
+            error = true;
         }
         else
         {
             this.setState({"firstNameError": ""});
         }
 
+        if(!this.state.username)
+        {
+            this.setState({"usernameError": "Username is required"});
+            error = true;
+        }
+        else
+        {
+            this.setState({"usernameError": ""});
+        }
+
         // if lastName is empty
         if(!this.state.lastName)
         {
             this.setState({"lastNameError": "Last name is required"});
+            error = true;
         }
         else
         {
@@ -91,10 +109,12 @@ class SignUpPopup extends React.Component {
         if(!this.state.email)
         {
             this.setState({"emailError": "Email is required"});
+            error = true;
         }
         else if(!this.state.email.includes("@") | !validEmail)
         {
             this.setState({"emailError": "You must enter a valid email address"});
+            error = true;
         }
         else
         {
@@ -105,12 +125,18 @@ class SignUpPopup extends React.Component {
         if(this.state.password.length < 8)
         {
             this.setState({"passwordError": "Your password must be at least 8 characters"});
+            error = true;
         }
         else
         {
             this.setState({"passwordError": ""})
         }
         this.callApi();
+        if(!error)
+        {
+            // eventually want to do something else here
+            this.closeModal();
+        }
     }
 
     changeHandler(event) {
@@ -120,6 +146,21 @@ class SignUpPopup extends React.Component {
     }
 
     render() {
+
+        let usernameInput =  (
+            <React.Fragment>
+                <label>
+                    <h4 className={style.inputFieldH4} id="validLabel">Username</h4>
+                </label>
+                <input
+                    type="text"
+                    name="username"
+                    form = "form1"
+                    className="inputFieldBoxLong validInputBox"
+                    onChange={this.changeHandler}
+                />
+            </React.Fragment>);
+
         let firstNameInput = (
             <React.Fragment>
                 <label>
@@ -174,6 +215,24 @@ class SignUpPopup extends React.Component {
                     onChange={this.changeHandler}
                 />
             </React.Fragment>);
+
+        if(this.state.usernameError)
+        {
+            usernameInput = (
+                <React.Fragment>
+                    <label>
+                        <h4 className={`${style.inputFieldH4} errorLabel`}>Username</h4>
+                    </label>
+                    <input
+                        type="text"
+                        name="username"
+                        form = "form1"
+                        className="inputFieldBoxLong inputBoxError"
+                        onChange={this.changeHandler}
+                    />
+                    <small className="errorTextSmall">{this.state.usernameError}</small>
+                </React.Fragment>);
+            }
 
         if(this.state.firstNameError)
         {
@@ -274,10 +333,13 @@ class SignUpPopup extends React.Component {
                         <div className={style.nameContainer}>
                             {lastNameInput}
                         </div>
-                        <div className={`inputFieldContainer`}>
+                        <div className="inputFieldContainer">
+                            {usernameInput}
+                        </div>
+                        <div className="inputFieldContainer">
                             {emailInput}
                         </div>
-                        <div className={`inputFieldContainer`}>
+                        <div className="inputFieldContainer">
                             {passwordInput}
                         </div>
                     </div>
