@@ -24,6 +24,7 @@ class SignUpPopup extends React.Component {
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.validateForm = this.validateForm.bind(this);
+        this.callApi = this.callApi.bind(this);
     }
 
     openModal() {
@@ -42,6 +43,24 @@ class SignUpPopup extends React.Component {
             emailError: "",
             passwordError: ""
         });
+    }
+
+    callApi()
+    {
+        // Simple POST request with a JSON body using fetch
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                firstName: this.state.firstName,
+                lastName: this.state.lastName,
+                email: this.state.email,
+                password: this.state.password
+            })
+        };
+        fetch("http://localhost:9000/signup", requestOptions)
+            .then(res => res.text())
+            .then(res => console.log(res));
     }
 
     validateForm(event) {
@@ -91,7 +110,7 @@ class SignUpPopup extends React.Component {
         {
             this.setState({"passwordError": ""})
         }
-
+        this.callApi();
     }
 
     changeHandler(event) {

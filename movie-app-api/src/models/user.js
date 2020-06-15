@@ -5,16 +5,45 @@ const user = (sequelize, DataTypes) => {
     const User = sequelize.define('user', {
         // create a username field
         username: {
-        // set the data type to string
-        type: DataTypes.STRING,
-        // make the value be unique
-        unique: true,
-        // do not allow this to be empty
-        allowNull: false,
-        // validate that it is not empty
-        validate: {
-            notEmpty: true,
+            // set the data type to string
+            type: DataTypes.STRING,
+            // make the value be unique
+            unique: true,
+            // do not allow this to be empty
+            allowNull: false,
+            // validate that it is not empty
+            validate: {
+                notEmpty: true,
+            }
         },
+        email: {
+            type: DataTypes.STRING,
+            unique: true,
+            allowNull: false,
+            validate: {
+                notEmpty: true,
+            }
+        },
+        password: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: true,
+            }
+        },
+        firstName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: true,
+            }
+        },
+        lastName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: true,
+            }
         },
     });
 

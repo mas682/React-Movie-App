@@ -9,26 +9,59 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var testAPIRouter = require('./routes/testAPI');
+var signUpRouter = require('./routes/signup');
 
 var app = express();
 
+/*
 // connect to the database
 sequelize.sync().then(() => {
   app.listen(9000, () => {
     console.log(`Example app listening on port 9000!`);
   });
 });
-
-/*
-to restart database every time
+*/
+// restart db each time
 const eraseDatabaseOnSync = true;
 
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
-  app.listen(process.env.PORT, () =>
-    console.log(`Example app listening on port ${process.env.PORT}!`),
-  );
+    if (eraseDatabaseOnSync) {
+        createUsers();
+    }
+
+    app.listen(9000, () =>
+        console.log(`Example app listening on port 9000!`),
+    );
 });
-*/
+
+const createUsers = async () => {
+    await models.User.create(
+        {
+            username: 'admin',
+            email: 'admin@email.com',
+            password: 'password',
+            firstName: 'admin',
+            lastName: 'admin',
+            /*
+            use this to add a review associated with a user
+            reviews: [
+                {
+                    title: 'the other guys',
+                    ...
+                },
+                {
+                    review 2
+                }
+            ],
+            */
+        },
+        /*
+        {
+            include: [models.Review],
+        },
+        */
+    );
+};
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -43,7 +76,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/testAPI', testAPIRouter)
+app.use('/testAPI', testAPIRouter);
+app.use('/signup', signUpRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
