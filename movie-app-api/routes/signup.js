@@ -16,11 +16,22 @@ router.post("/", function(req, res, next){
     ).then(([user, created]) => {
         if(created)
         {
-            res.send(user.username + " has been created");
+            res.send("username has been created");
         }
         else
         {
-            res.send("User already existed");
+            if(user.username == req.body.username)
+            {
+                res.send("username already in use");
+            }
+            else if(user.email == req.body.email)
+            {
+                res.send("email already in use");
+            }
+            else
+            {
+                res.send("some other error occurred");
+            }
         }
     });
 });

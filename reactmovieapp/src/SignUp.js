@@ -63,11 +63,15 @@ class SignUpPopup extends React.Component {
                 password: this.state.password
             })
         };
-        fetch("http://localhost:9000/signup", requestOptions)
-            .then(res => res.text())
-            .then(res => console.log(res));
+
+        let returnValue = 0;
+        return fetch("http://localhost:9000/signup", requestOptions)
+            .then(res => {return res.text()});
     }
 
+    // function called when CREATE AN ACCOUNT button is clicked
+    // to validate that the fields are correct and handle sending
+    // data to server
     validateForm(event) {
         event.preventDefault();
         let error = false;
@@ -87,6 +91,11 @@ class SignUpPopup extends React.Component {
         if(!this.state.username)
         {
             this.setState({"usernameError": "Username is required"});
+            error = true;
+        }
+        else if(this.state.username < 8)
+        {
+            this.setState({"usernameError": "Username must be at least 8 characters"});
             error = true;
         }
         else
@@ -131,11 +140,28 @@ class SignUpPopup extends React.Component {
         {
             this.setState({"passwordError": ""})
         }
-        this.callApi();
         if(!error)
         {
-            // eventually want to do something else here
-            this.closeModal();
+            this.callApi().then(created => {
+                if(created == "username has been created")
+                {
+                    alert("User successfully created");
+                    // eventually want to do something else here
+                    this.closeModal();
+                }
+                else if(created == "username already in use")
+                {
+                    this.setState({"usernameError": "Username is already in use"});
+                }
+                else if(created == "email already in use")
+                {
+                    this.setState({"emailError": "Email account is already in use"});
+                }
+                else
+                {
+                    alert("Some error occurred with creating the user");
+                }
+            });
         }
     }
 
