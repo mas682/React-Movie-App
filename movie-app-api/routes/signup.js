@@ -5,6 +5,8 @@ var express = require('express');
 var router = express.Router();
 
 router.post("/", function(req, res, next){
+    // if the username or email are not found, create the user
+    // otherwise, do not create the user
     models.User.findOrCreate({where: {[Op.or]: [{username: req.body.username}, {email: req.body.email}]},
         defaults: {
             username: req.body.username,

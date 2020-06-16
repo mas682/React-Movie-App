@@ -11,15 +11,46 @@ class ReviewPopUp extends React.Component {
         super(props);
         this.state = {
             open: false,
+            title: "",
+            rating: 0,
             usedGoodButtons: [],
             usedBadButtons: [],
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme']
+            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
+            review: ""
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.generateButtons = this.generateButtons.bind(this);
         this.usedButtonHandler = this.usedButtonHandler.bind(this);
+        this.validateForm = this.validateForm.bind(this);
+        this.callApi = this.callApi.bind(this);
+    }
+
+    callApi()
+    {
+        // Simple POST request with a JSON body using fetch
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: this.state.title,
+                rating: this.state.rating,
+                good: this.state.usedGoodButtons,
+                bad: this.state.usedBadButtons,
+                review: this.state.review
+            })
+        };
+
+        let returnValue = 0;
+        return fetch("http://localhost:9000/postreview", requestOptions)
+            .then(res => {return res.text()});
+    }
+
+    validateForm(event) {
+        event.preventDefault();
+        //this.callApi();
+
     }
 
     usedButtonHandler(event)
