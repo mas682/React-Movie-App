@@ -14,7 +14,6 @@ class MainBody extends React.Component {
     }
 }
 
-<<<<<<< HEAD
 class Header extends React.Component {
 	render() {
 		return (
@@ -51,18 +50,7 @@ class Header extends React.Component {
 		);
 	}
 }
-
-
-function App() {
-  return (
-    <div className="App">
-		<Header/>
-        <main>
-            <MainBody/>
-        </main>
-    </div>
-  );
-=======
+  
 class App extends React.Component {
     constructor(props)
     {
@@ -85,35 +73,7 @@ class App extends React.Component {
     {
         return (
             <div className="App">
-                <div className="App-Header">
-        			<li><h1 className="mainTitle" href="#">Logo</h1></li>
-        			<li class="home">
-        				<a class="homeButton" href="/">Home</a>
-        			</li>
-        			<li class="movieDropdown">
-        				<button class="movieButton">Movies</button>
-        				<div class="movieDropdownContent">
-        					<a href="/movie">Top Rated</a>
-        					<a href="/movie">Upcoming</a>
-        					<a href="/movie">In Theaters</a>
-        				</div>
-        			</li>
-        			<li class="showDropdown">
-        				<button class="showButton">Shows</button>
-        				<div class="showDropdownContent">
-        					<a href="/">Top Rated</a>
-        					<a href="/">Schedule</a>
-        				</div>
-        			</li>
-        			<li class="profile">
-        				<a class="profileButton" href="#">Profile</a>
-        			</li>
-        			<div class="searchBar">
-        				<form>
-        					<input type="text" placeholder=" Search" name="search"></input>
-        				</form>
-        			</div>
-                </div>
+                <Header/>
                 <main>
                     <MainBody/>
                     <p>{this.state.apiResponse}</p>
@@ -121,7 +81,6 @@ class App extends React.Component {
             </div>
         );
     }
->>>>>>> ee9c36377857b1bb94276e6420fd1d4c7fdb5cf1
 }
 
 export default App;
