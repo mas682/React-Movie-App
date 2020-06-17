@@ -1,0 +1,31 @@
+/* this holds css specific to the SignUp.js file */
+
+
+/* container for the first and last name fields */
+.nameContainer {
+    width: 45%;
+    margin-bottom: 10px;
+    margin-left: 2.5%;
+}
+
+/*
+    this controls the input field itself
+*/
+.inputFieldBoxShort {
+    width: 100%;
+    margin-top: 5px;
+    font-size: 1.9em;
+    border-radius: 6px;
+}
+
+/* sets H4 size and to inline */
+.inputFieldH4 {
+    display: inline;
+    font-size: 1.5em;
+}
+
+/* center text asking for if account exists */
+.accountExistsText {
+    text-align: center;
+    width: 100%;
+}

@@ -11,15 +11,46 @@ class ReviewPopUp extends React.Component {
         super(props);
         this.state = {
             open: false,
+            title: "",
+            rating: 0,
             usedGoodButtons: [],
             usedBadButtons: [],
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme']
+            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
+            review: ""
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.generateButtons = this.generateButtons.bind(this);
         this.usedButtonHandler = this.usedButtonHandler.bind(this);
+        this.validateForm = this.validateForm.bind(this);
+        this.callApi = this.callApi.bind(this);
+    }
+
+    callApi()
+    {
+        // Simple POST request with a JSON body using fetch
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: this.state.title,
+                rating: this.state.rating,
+                good: this.state.usedGoodButtons,
+                bad: this.state.usedBadButtons,
+                review: this.state.review
+            })
+        };
+
+        let returnValue = 0;
+        return fetch("http://localhost:9000/postreview", requestOptions)
+            .then(res => {return res.text()});
+    }
+
+    validateForm(event) {
+        event.preventDefault();
+        //this.callApi();
+
     }
 
     usedButtonHandler(event)
@@ -179,7 +210,7 @@ class ReviewPopUp extends React.Component {
                         type="text"
                         name="movie"
                         form = "form2"
-                        className={`${style.inputFieldBoxLong} ${style.validInputBox}`}
+                        className="inputFieldBoxLong validInputBox"
                         onChange={this.changeHandler}
                     />
                 </React.Fragment>);
@@ -193,7 +224,7 @@ class ReviewPopUp extends React.Component {
                         type="text"
                         name="review"
                         form = "form2"
-                        className={`${style.inputFieldBoxLong} ${style.reviewInputField}`}
+                        className={`inputFieldBoxLong ${style.reviewInputField}`}
                         onChange={this.changeHandler}
                         rows="10"
                     />
@@ -279,12 +310,12 @@ class ReviewPopUp extends React.Component {
                         &times;
                         </a>
                         <div className="header">
-                            <h3 className = {style.inlineH3}> Movie Review </h3>
+                            <h3 className ="inlineH3"> Movie Review </h3>
                         </div>
                         <div className="content">
                             {/* This will eventually be a post form */}
                             <form id="form2" onSubmit={this.validateForm} noValidate/>
-                            <div className = {style.inputFieldContainer}>
+                            <div className = "inputFieldContainer">
                                 {titleInput}
                             </div>
                             <div className = {`${style.centeredMaxWidthContainer} ${style.containerMarginBottom10}`}>
@@ -330,7 +361,7 @@ class ReviewPopUp extends React.Component {
                                     {unusedBadButtonArr}
                                 </div>
                             </div>
-                            <div className = {style.inputFieldContainer}>
+                            <div className = "inputFieldContainer">
                                 {reviewInput}
                             </div>
                         </div>
@@ -338,7 +369,7 @@ class ReviewPopUp extends React.Component {
                             <button
                                 form="form1"
                                 value="create_account"
-                                className={style.submitButton}
+                                className="submitButton"
                             >POST YOUR REVIEW</button>
                         </div>
                     </div>

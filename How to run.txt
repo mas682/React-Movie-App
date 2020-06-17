@@ -1,0 +1,15 @@
+
+0. download pgAdmin if not alredy downloaded
+1. open pgAdmin
+2. click servers
+3. click local
+4. right click and create a new server called "movie-app"
+5. have port set at 5432
+6. set password to password
+7. (optional) in movie-app-api/src/models/index.js, can alter username, password, host, and port if needed
+8. open command prompt
+9. cd to movie-app-api
+10. run npm start(wait for server to be up and running...can check by going to localhost:9000)
+11. cd to reactmovieapp
+12. run npm start
+13. go to localhost:3000
