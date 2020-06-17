@@ -1,0 +1,106 @@
+.App-Header {
+    background-color: #333;
+    height: 85px;
+    width: 100%;
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	list-style-type: none;
+	margin: 0;
+	overflow: visible;
+	display: grid;
+	grid-template-columns: auto auto auto;
+	grid-gap: 10px;
+	padding: 5px;
+}
+
+.logo {
+	color: white;
+	text-align: left;
+	padding-left: 45px;
+}
+
+.navButtons {
+	text-align: center;
+	display: block;
+	color: white;
+	text-decoration: none;
+	z-index: 2;
+	position: relative;
+	display: grid;
+	grid-template-columns: auto auto auto auto auto;
+	grid-gap: 1px;
+}
+
+.home, .homeButton, .profile, .profileButton {
+  display: block;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  padding-top: 15px;
+  z-index: 2;
+  position: relative;
+}
+
+.movieDropdown, .movieButton, .showDropdown, .showButton {
+  font-size: 16px;  
+  border: none;
+  outline: none;
+  color: white;
+  padding: 14px 0px;
+  background-color: inherit;
+  font-family: inherit;
+  margin: 0;
+}
+
+.movieDropdownContent, .showDropdownContent {
+	display: none;
+	position: absolute;
+	background-color: #f9f9f9;
+	min-width: 160px;
+	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+	z-index: 2;
+	overflow: auto;
+}
+
+.movieDropdownContent a, .showDropdownContent a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.add, .addButton, .addButton:link, .addButton:visited {
+	background-color: red;
+	color: white;
+	display: block;
+	text-align: center;
+	padding-top: 15px;
+	text-decoration: none;
+	z-index: 1;
+	position: relative;
+}
+
+.searchBar {
+	padding-top: 25px;
+	padding-right: 25px;
+	text-align: right;
+}
+
+.homeButton:hover, .movieButton:hover, .home:hover, .profile:hover, .movieDropdown:hover, .showDropdown:hover {
+  background-color: red;
+}
+
+.homeButton:link, .homeButton:visited, .profileButton:link, .profileButton:visited {
+	color: white;
+}
+
+.movieDropdownContent a:hover, .showDropdownContent a:hover {
+  background-color: #ddd;
+}
+
+.movieDropdown:hover .movieDropdownContent, .showDropdown:hover .showDropdownContent {
+  display: block;
+}
