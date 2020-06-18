@@ -8,7 +8,7 @@ const review = (sequelize, DataTypes) => {
             },
         },
         rating: {
-            type: DataTypes.DECIMAL,
+            type: DataTypes.DECIMAL(10,2),
             allowNull: false,
             validate: {
                 notEmpty: true,
@@ -16,12 +16,20 @@ const review = (sequelize, DataTypes) => {
         },
         review: {
             type: DataTypes.STRING,
-            unique: true,
+            allowNull: true,
         },
     });
 
     Review.associate = models => {
         Review.belongsTo(models.User);
+    };
+
+    Review.associate = models => {
+        Review.belongsToMany(models.GoodTag, {through: models.Review_GoodTags});
+    };
+
+    Review.associate = models => {
+        Review.belongsToMany(models.BadTag, {through: 'Review_BadTags'});
     };
 
     return Review;

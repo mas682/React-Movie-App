@@ -8,6 +8,9 @@ const sequelize = new Sequelize('postgres://postgres:password@localhost:5432/mov
 const models = {
     User: sequelize.import('./user'),
     Review: sequelize.import('./review'),
+    Review_GoodTags: sequelize.import('./reviewGoodTags'),
+    GoodTag: sequelize.import('./goodTag'),
+    BadTag: sequelize.import('./badTag'),
 };
 
 Object.keys(models).forEach(key => {

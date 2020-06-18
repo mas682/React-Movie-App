@@ -12,7 +12,7 @@ class ReviewPopUp extends React.Component {
         this.state = {
             open: false,
             title: "",
-            rating: 0,
+            rating: "",
             usedGoodButtons: [],
             usedBadButtons: [],
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
@@ -25,10 +25,12 @@ class ReviewPopUp extends React.Component {
         this.usedButtonHandler = this.usedButtonHandler.bind(this);
         this.validateForm = this.validateForm.bind(this);
         this.callApi = this.callApi.bind(this);
+        this.changeHandler = this.changeHandler.bind(this);
     }
 
     callApi()
     {
+        alert(this.state.title);
         // Simple POST request with a JSON body using fetch
         const requestOptions = {
             method: 'POST',
@@ -36,21 +38,34 @@ class ReviewPopUp extends React.Component {
             body: JSON.stringify({
                 title: this.state.title,
                 rating: this.state.rating,
-                good: this.state.usedGoodButtons,
-                bad: this.state.usedBadButtons,
+                // this will be changed eventually
+                userId: 1,
+                // for now, storing this with the review
+                // but eventually want to associate each term
+                // with many movie reviews in a sepearte table
+                good: "",
+                bad: "",
                 review: this.state.review
             })
         };
 
         let returnValue = 0;
-        return fetch("http://localhost:9000/postreview", requestOptions)
+        alert("calling api");
+        return fetch("http://localhost:9000/review", requestOptions)
             .then(res => {return res.text()});
     }
 
     validateForm(event) {
         event.preventDefault();
-        //this.callApi();
+        this.callApi();
 
+    }
+
+    // used to update the state for the title, review, and the rating
+    changeHandler(event) {
+        let name = event.target.name;
+        let value = event.target.value;
+        this.setState({[name]: value});
     }
 
     usedButtonHandler(event)
@@ -208,7 +223,7 @@ class ReviewPopUp extends React.Component {
                     </label>
                     <input
                         type="text"
-                        name="movie"
+                        name="title"
                         form = "form2"
                         className="inputFieldBoxLong validInputBox"
                         onChange={this.changeHandler}
@@ -323,16 +338,16 @@ class ReviewPopUp extends React.Component {
                             </div>
                             <div className = {`${style.centeredMaxWidthContainer} ${style.containerMarginBottom10}`}>
                                 <fieldset class="rating">
-                                    <input type="radio" id="star5" name="rating" value="5" form="form2"/><label class="full" for="star5" title="Awesome - 5 stars"></label>
-                                    <input type="radio" id="star4half" name="rating" value="4.5" form="form2"/><label class="half" for="star4half" title="Pretty good - 4.5 stars"></label>
-                                    <input type="radio" id="star4" name="rating" value="4" form="form2"/><label class = "full" for="star4" title="Pretty good - 4 stars"></label>
-                                    <input type="radio" id="star3half" name="rating" value="3.5" form="form2"/><label class="half" for="star3half" title="Meh - 3.5 stars"></label>
-                                    <input type="radio" id="star3" name="rating" value="3" form="form2"/><label class = "full" for="star3" title="Meh - 3 stars"></label>
-                                    <input type="radio" id="star2half" name="rating" value="2.5" form="form2"/><label class="half" for="star2half" title="Kinda bad - 2.5 stars"></label>
-                                    <input type="radio" id="star2" name="rating" value="2" form="form2"/><label class = "full" for="star2" title="Kinda bad - 2 stars"></label>
-                                    <input type="radio" id="star1half" name="rating" value="1.5" form="form2"/><label class="half" for="star1half" title="Meh - 1.5 stars"></label>
-                                    <input type="radio" id="star1" name="rating" value="1" form="form2"/><label class = "full" for="star1" title="Sucks big time - 1 star"></label>
-                                    <input type="radio" id="starhalf" name="rating" value="0.5" form="form2"/><label class="half" for="starhalf" title="Don't waste your time - 0.5 stars"></label>
+                                    <input type="radio" id="star5" name="rating" value="5" form="form2" onClick={this.changeHandler}/><label class="full" for="star5" title="Awesome - 5 stars"></label>
+                                    <input type="radio" id="star4half" name="rating" value="4.5" form="form2" onClick={this.changeHandler}/><label class="half" for="star4half" title="Pretty good - 4.5 stars"></label>
+                                    <input type="radio" id="star4" name="rating" value="4" form="form2" onClick={this.changeHandler}/><label class = "full" for="star4" title="Pretty good - 4 stars"></label>
+                                    <input type="radio" id="star3half" name="rating" value="3.5" form="form2" onClick={this.changeHandler}/><label class="half" for="star3half" title="Meh - 3.5 stars"></label>
+                                    <input type="radio" id="star3" name="rating" value="3" form="form2" onClick={this.changeHandler}/><label class = "full" for="star3" title="Meh - 3 stars"></label>
+                                    <input type="radio" id="star2half" name="rating" value="2.5" form="form2" onClick={this.changeHandler}/><label class="half" for="star2half" title="Kinda bad - 2.5 stars"></label>
+                                    <input type="radio" id="star2" name="rating" value="2" form="form2" onClick={this.changeHandler}/><label class = "full" for="star2" title="Kinda bad - 2 stars"></label>
+                                    <input type="radio" id="star1half" name="rating" value="1.5" form="form2" onClick={this.changeHandler}/><label class="half" for="star1half" title="Meh - 1.5 stars"></label>
+                                    <input type="radio" id="star1" name="rating" value="1" form="form2" onClick={this.changeHandler}/><label class = "full" for="star1" title="Sucks big time - 1 star"></label>
+                                    <input type="radio" id="starhalf" name="rating" value="0.5" form="form2" onClick={this.changeHandler}/><label class="half" for="starhalf" title="Don't waste your time - 0.5 stars"></label>
                                 </fieldset>
                             </div>
                             <div className={style.proConContainter}>
@@ -370,6 +385,7 @@ class ReviewPopUp extends React.Component {
                                 form="form1"
                                 value="create_account"
                                 className="submitButton"
+                                onClick={this.validateForm}
                             >POST YOUR REVIEW</button>
                         </div>
                     </div>
