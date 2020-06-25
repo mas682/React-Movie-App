@@ -28,12 +28,23 @@ const eraseDatabaseOnSync = true;
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     if (eraseDatabaseOnSync) {
         createUsers();
+        createTag();
+        sampleReview();
     }
 
     app.listen(9000, () =>
         console.log(`Example app listening on port 9000!`),
     );
 });
+
+
+const createTag = async () => {
+    await models.GoodTag.create(
+        {
+            value: 'Funny',
+        },
+    );
+};
 
 const createUsers = async () => {
     await models.User.create(
@@ -63,6 +74,42 @@ const createUsers = async () => {
         */
     );
 };
+
+const sampleReview = async () => {
+    await models.Review.create(
+        {
+            title: 'Movie',
+            rating: "2.5",
+            userId: 1,
+            review: "",
+        }
+    ).then((review)=> {
+        //console.log(Object.keys(models.Review.__proto__));
+        let goodTag = models.GoodTag.findOne({where: {id: 1}})
+        .then((tag) =>{ console.log(tag)});
+        const tag = models.GoodTag.create(
+            {
+                value: 'Long',
+            },
+        );
+        review.addGoodTag(1, { through: { userID: 1 } })
+        .then((review)=>{
+            models.Review.findOne({
+                    where: { title: 'Movie' }, include: models.GoodTag
+            }).then((r)=>{
+                console.log(r);
+                console.log("Tag: ");
+                console.log(r.goodTags[0].value);
+                });
+        });
+    });
+
+};
+
+const result = async () => {
+    await models.Review.findOne({
+        where: { title: 'Movie' },
+})};
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

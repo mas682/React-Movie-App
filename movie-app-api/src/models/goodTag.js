@@ -10,7 +10,7 @@ const goodTag = (sequelize, DataTypes) => {
             // make the value be unique
             unique: true,
             // do not allow this to be empty
-            allowNull: true,
+            allowNull: false,
             // validate that it is not empty
             validate: {
                 notEmpty: true,
@@ -24,10 +24,9 @@ const goodTag = (sequelize, DataTypes) => {
     GoodTag.associate = models => {
         // the CASCADE says if the user is deleted, delete all
         // messages associated with the user
-        GoodTag.belongsToMany(models.Review, { onDelete: 'CASCADE',
-                                            through: models.Review_GoodTags
-                                            }
-        );
+        // onDelete: 'CASCADE',
+        GoodTag.belongsToMany(models.Review, {through: models.ReviewGoodTags});
+        console.log("HERE!!!!!!!!!!!!!!!!!!!!!");
     };
 
     return GoodTag;
