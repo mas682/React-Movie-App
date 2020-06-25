@@ -26,7 +26,6 @@ const goodTag = (sequelize, DataTypes) => {
         // messages associated with the user
         // onDelete: 'CASCADE',
         GoodTag.belongsToMany(models.Review, {through: models.ReviewGoodTags});
-        console.log("HERE!!!!!!!!!!!!!!!!!!!!!");
     };
 
     return GoodTag;

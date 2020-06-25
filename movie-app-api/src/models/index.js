@@ -1,7 +1,9 @@
 import Sequelize from 'sequelize';
 
 const sequelize = new Sequelize('postgres://postgres:password@localhost:5432/movie-app', {
-    dialect: 'postgres'
+    dialect: 'postgres',
+    // shuts off logging
+    logging: false
 });
 
 // get the models

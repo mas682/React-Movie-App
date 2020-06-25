@@ -85,13 +85,6 @@ const sampleReview = async () => {
         }
     ).then((review)=> {
         //console.log(Object.keys(models.Review.__proto__));
-        let goodTag = models.GoodTag.findOne({where: {id: 1}})
-        .then((tag) =>{ console.log(tag)});
-        const tag = models.GoodTag.create(
-            {
-                value: 'Long',
-            },
-        );
         review.addGoodTag(1, { through: { userID: 1 } })
         .then((review)=>{
             models.Review.findOne({
