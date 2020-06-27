@@ -35,7 +35,7 @@ class ReviewPopUp extends React.Component {
         let goodString = "";
         let counter = 0;
         // get the number of good buttons minus 1
-        let usedGoodButtonCount = this.state.usedBadButtons.length - 1;
+        let usedGoodButtonCount = this.state.usedGoodButtons.length - 1;
         // while still good buttons to get values for
         while(counter < this.state.usedGoodButtons.length)
         {

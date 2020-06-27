@@ -28,7 +28,7 @@ const eraseDatabaseOnSync = true;
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     if (eraseDatabaseOnSync) {
         createUsers();
-        createTag();
+        createGoodTags();
         sampleReview();
     }
 
@@ -37,15 +37,31 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     );
 });
 
-
-const createTag = async () => {
-    await models.GoodTag.create(
+// create the good tags in the database
+const createGoodTags = async () => {
+    await models.GoodTag.bulkCreate([
         {
-            value: 'Funny',
+            value: 'Acting',
         },
-    );
+        {
+            value: 'Jokes'
+        },
+        {
+            value: 'Too short'
+        },
+        {
+            value: 'Too long'
+        },
+        {
+            value: 'Story'
+        },
+        {
+            value: 'Theme'
+        }
+    ]);
 };
 
+// create a admin user on database creation
 const createUsers = async () => {
     await models.User.create(
         {
@@ -75,6 +91,8 @@ const createUsers = async () => {
     );
 };
 
+// for testing
+// create a sampleReview to add to the database
 const sampleReview = async () => {
     await models.Review.create(
         {
@@ -98,11 +116,6 @@ const sampleReview = async () => {
     });
 
 };
-
-const result = async () => {
-    await models.Review.findOne({
-        where: { title: 'Movie' },
-})};
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

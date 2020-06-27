@@ -11,11 +11,20 @@ router.post("/", function(req, res, next){
             userId: req.body.userId,
             review: req.body.review,
             }
-    );
-    // idea is that once review is created to you will have to
-    // find the tags in the database
-    // then do review.addTag(tag, {through: {userId: req.body.userId }})
-    // https://sequelize.org/master/manual/advanced-many-to-many.html
+    ).then((review)=> {
+        // get each of the good tags
+        let goodTags = req.body.good.split(",");
+        // iterate through the array of good tags
+        goodTags.forEach(tag => {
+            // find the tag in the database
+            models.GoodTag.findOne({ where: {value: tag }})
+            // then associate the tag with the review
+            // will want to do some error handling if tag not found
+            .then((foundTag) => {
+                review.addGoodTag(foundTag.id, { through: {userID: req.body.userId }});
+            });
+        });
+    });
 });
 
 module.exports=router;
