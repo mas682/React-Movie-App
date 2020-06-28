@@ -15,6 +15,8 @@ router.post("/", function(req, res, next){
         addGoodTags(req.body.good, review, req.body.userId);
         addBadTags(req.body.bad, review, req.body.userId);
     });
+    // review created
+    res.status(201).send({message:"Review successfully created!"});
 });
 
 const addGoodTags = (goodString, review, userId) =>{
@@ -35,11 +37,9 @@ const addGoodTags = (goodString, review, userId) =>{
 const addBadTags = (badString, review, userId) => {
     // get each of the bad tags
     let badTags = badString.split(",");
-    console.log(badString);
     // iterate through the array of bad tags
     badTags.forEach(tag => {
         // find the tag in the database
-        console.log("TAG: " + tag);
         models.BadTag.findOne({ where: {value: tag }})
         // then associate the tag with the review
         // will want to do some error handling if tag not found

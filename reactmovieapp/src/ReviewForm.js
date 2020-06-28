@@ -65,7 +65,6 @@ class ReviewPopUp extends React.Component {
             }
             counter = counter + 1;
         }
-        alert(badString);
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -82,7 +81,14 @@ class ReviewPopUp extends React.Component {
 
         let returnValue = 0;
         return fetch("http://localhost:9000/review", requestOptions)
-            .then(res => {return res.text()});
+            .then(res => {
+                if(res.status == 201)
+                {
+                    this.setState({open: false});
+                }
+                res.json().then(res => {console.log(res.message)});
+                // will want to add error handing otherwise
+            });
     }
 
     validateForm(event) {
