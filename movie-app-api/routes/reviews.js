@@ -12,19 +12,41 @@ router.post("/", function(req, res, next){
             review: req.body.review,
             }
     ).then((review)=> {
-        // get each of the good tags
-        let goodTags = req.body.good.split(",");
-        // iterate through the array of good tags
-        goodTags.forEach(tag => {
-            // find the tag in the database
-            models.GoodTag.findOne({ where: {value: tag }})
-            // then associate the tag with the review
-            // will want to do some error handling if tag not found
-            .then((foundTag) => {
-                review.addGoodTag(foundTag.id, { through: {userID: req.body.userId }});
-            });
-        });
+        addGoodTags(req.body.good, review, req.body.userId);
+        addBadTags(req.body.bad, review, req.body.userId);
     });
 });
+
+const addGoodTags = (goodString, review, userId) =>{
+    // get each of the good tags
+    let goodTags = goodString.split(",");
+    // iterate through the array of good tags
+    goodTags.forEach(tag => {
+        // find the tag in the database
+        models.GoodTag.findOne({ where: {value: tag }})
+        // then associate the tag with the review
+        // will want to do some error handling if tag not found
+        .then((foundTag) => {
+            review.addGoodTag(foundTag.id, { through: {userID: userId }});
+        });
+    });
+};
+
+const addBadTags = (badString, review, userId) => {
+    // get each of the bad tags
+    let badTags = badString.split(",");
+    console.log(badString);
+    // iterate through the array of bad tags
+    badTags.forEach(tag => {
+        // find the tag in the database
+        console.log("TAG: " + tag);
+        models.BadTag.findOne({ where: {value: tag }})
+        // then associate the tag with the review
+        // will want to do some error handling if tag not found
+        .then((foundTag) => {
+            review.addBadTag(foundTag.id, { through: {userID: userId }});
+        });
+    });
+};
 
 module.exports=router;

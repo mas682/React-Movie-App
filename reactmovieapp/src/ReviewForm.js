@@ -30,7 +30,6 @@ class ReviewPopUp extends React.Component {
 
     callApi()
     {
-        alert(this.state.title);
         // Simple POST request with a JSON body using fetch
         let goodString = "";
         let counter = 0;
@@ -49,6 +48,24 @@ class ReviewPopUp extends React.Component {
             }
             counter = counter + 1;
         }
+        let badString = "";
+        counter = 0;
+        // get the number of good buttons minus 1
+        let usedBadButtonCount = this.state.usedBadButtons.length - 1;
+        // while still good buttons to get values for
+        while(counter < this.state.usedBadButtons.length)
+        {
+            if(counter == usedBadButtonCount)
+            {
+                badString = badString + this.state.usedBadButtons[counter];
+            }
+            else
+            {
+                badString = badString + this.state.usedBadButtons[counter] + ",";
+            }
+            counter = counter + 1;
+        }
+        alert(badString);
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -57,17 +74,13 @@ class ReviewPopUp extends React.Component {
                 rating: this.state.rating,
                 // this will be changed eventually
                 userId: 1,
-                // for now, storing this with the review
-                // but eventually want to associate each term
-                // with many movie reviews in a sepearte table
                 good: goodString,
-                bad: "",
+                bad: badString,
                 review: this.state.review
             })
         };
 
         let returnValue = 0;
-        alert("calling api");
         return fetch("http://localhost:9000/review", requestOptions)
             .then(res => {return res.text()});
     }

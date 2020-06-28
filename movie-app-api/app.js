@@ -29,6 +29,7 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     if (eraseDatabaseOnSync) {
         createUsers();
         createGoodTags();
+        createBadTags();
         sampleReview();
     }
 
@@ -40,6 +41,30 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
 // create the good tags in the database
 const createGoodTags = async () => {
     await models.GoodTag.bulkCreate([
+        {
+            value: 'Acting',
+        },
+        {
+            value: 'Jokes'
+        },
+        {
+            value: 'Too short'
+        },
+        {
+            value: 'Too long'
+        },
+        {
+            value: 'Story'
+        },
+        {
+            value: 'Theme'
+        }
+    ]);
+};
+
+// create the good tags in the database
+const createBadTags = async () => {
+    await models.BadTag.bulkCreate([
         {
             value: 'Acting',
         },

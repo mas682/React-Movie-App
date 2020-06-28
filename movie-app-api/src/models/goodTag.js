@@ -18,13 +18,9 @@ const goodTag = (sequelize, DataTypes) => {
         },
     });
 
-    // associate users with reviews
-    // one to many relationship
-    // each user can have many reviews
+    // associate bad tags with reviews
+    // each tag can belong to many reviews
     GoodTag.associate = models => {
-        // the CASCADE says if the user is deleted, delete all
-        // messages associated with the user
-        // onDelete: 'CASCADE',
         GoodTag.belongsToMany(models.Review, {through: models.ReviewGoodTags});
     };
 

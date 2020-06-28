@@ -23,7 +23,7 @@ const review = (sequelize, DataTypes) => {
     Review.associate = models => {
         Review.belongsTo(models.User);
         Review.belongsToMany(models.GoodTag, {through: models.ReviewGoodTags});
-        Review.belongsToMany(models.BadTag, {through: 'Review_BadTags'});
+        Review.belongsToMany(models.BadTag, {through: models.ReviewBadTags});
     };
 
     return Review;
