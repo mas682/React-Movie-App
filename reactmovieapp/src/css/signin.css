@@ -1,0 +1,15 @@
+/* this class controls the popup box width
+   it can only be seen when inspecting the doc
+   the default width is 50%
+   !important overrides the html style */
+.popup-content {
+    width: 40% !important;
+}
+
+.logInLink:visited {
+    color: #4682B4;
+}
+
+.logInLink {
+    color: #4682B4;
+}

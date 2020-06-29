@@ -1,7 +1,7 @@
 @import url(//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css);
 .App {
-  /* The image used */
-  background-image: url("images/background3.jpg");
+  /* The image used 
+  background-image: url("images/background3.jpg"); */
 
   /* Full height */
   height: 1200px;
