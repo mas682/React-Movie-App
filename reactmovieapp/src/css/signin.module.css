@@ -29,3 +29,29 @@
     text-align: center;
     width: 100%;
 }
+
+.checkbox {
+    text-align: left;
+}
+
+.rememberText {
+    text-align: left;
+    width: 100%;
+	display: block;
+	position: relative;
+	padding-left: 35px;
+	margin-bottom: 12px;
+	cursor: pointer;
+	font-size: 22px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.forgotText {
+	text-align: right;
+	width: 100%;
+	font-size: 22px;
+	padding-right: 35px;
+}

@@ -335,7 +335,7 @@ class SignUpPopup extends React.Component {
     return (
         <div>
             <button className="button" onClick={this.openModal}>
-                Sign Up Popup
+                Sign Up
             </button>
             <Popup
                 open={this.state.open}
@@ -381,9 +381,10 @@ class SignUpPopup extends React.Component {
                     </div>
                 </div>
             </Popup>
-          </div>
+        </div>
         );
     }
 }
+
 
 export default SignUpPopup;

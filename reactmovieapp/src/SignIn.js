@@ -2,11 +2,11 @@ import React from 'react';
 import Popup from 'reactjs-popup';
 import { Link } from 'react-router-dom';
 import history from './History'
-import style from './css/signup.module.css';
-import './css/signup.css';
+import style from './css/signin.module.css';
+import './css/signin.css';
 
 
-// documentation for PopUp https://react-popup.elazizi.com/component-api/
+//documentation for PopUp https://react-popup.elazizi.com/component-api/
 class SignInPopup extends React.Component {
 	constructor(props) {
 		super(props);
@@ -76,33 +76,38 @@ class SignInPopup extends React.Component {
 					open={this.state.open}
 					closeOnDocumentClick
 					onClose={this.closeSignIn}
-				/>
-				<div className="modal">
-					{/* &times is the multiplication symbol (x) --> */}
-                    <a className="close" onClick={this.closeModal}>
-                    &times;
-                    </a>
-                    <div className="header">
-                        <h3 className="inlineH3"> Sign In! </h3>
-                    </div>
-					<div className="content">
-						{/* This will eventually be a post form */}
-						<form id="form1" onSubmit={this.validateForm} noValidate/>
-						<div className="inputFieldContainer">
-							{usernameInput}
+				>
+					<div className="modal">
+						{/* &times is the multiplication symbol (x) --> */}
+						<a className="close" onClick={this.closeSignIn}>
+						&times;
+						</a>
+						<div className="header">
+							<h3 className="inlineH3">Sign In!</h3>
 						</div>
-						<div className="inputFieldContainer">
-							{passwordInput}
-						</div>
-						<div className="actions">
-							<button
-								form="form1"
-								value="create_account"
-								className="submitButton"
-							>SIGN IN</button>
+						<div className="content">
+							{/* This will eventually be a post form */}
+							<form id="form1" onSubmit={this.validateForm} noValidate/>
+							<div className="inputFieldContainer">
+								{usernameInput}
+							</div>
+							<div className="inputFieldContainer">
+								{passwordInput}
+							</div>
+							<div className="actions">
+								<button
+									form="form1"
+									value="create_account"
+									className="submitButton"
+								>SIGN IN</button>
+							</div>
+							<label className={style.rememberText}>Remember Me
+								<input className="checkbox" type="checkbox"></input>
+							</label>
+							<div className={style.forgotText}><a className="logInLink" href="">Forgot Password?</a></div>
 						</div>
 					</div>
-				</div>
+				</Popup>
 			</div>
 		);
     }
