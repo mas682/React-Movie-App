@@ -169,3 +169,15 @@ fieldset, label {
 .rating > input:checked ~ label:hover ~ label {
     color: #FFED85;
 }
+
+.rememberForgot {
+	display: grid;
+	grid-template-columns: auto auto;
+	grid-gap: 10px;
+	padding: 5px;
+	text-align: center;
+}
+
+.newHere {
+	text-align: center;
+}
