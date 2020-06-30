@@ -1,15 +1,6 @@
 import models, { sequelize } from '../src/models';
+import {router} from './globals.js';
 const Op = require('Sequelize').Op;
-var cookieParser = require('cookie-parser');
-//import {router} from '../app.js';
-
-
-// eventually want to pass the router into here so this is not
-// needed any time we are messing with cookies
-var express = require('express');
-var router = express.Router();
-// used to sign the cookie
-router.use(cookieParser('somesecrettosigncookie'));
 
 router.get("/", function(req, res, next){
     // if the username or email are not found, create the user

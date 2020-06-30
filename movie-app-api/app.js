@@ -13,6 +13,7 @@ var signUpRouter = require('./routes/signup');
 var reviewRouter = require('./routes/reviews');
 var loginRouter = require('./routes/login');
 
+var app = express();
 /*
 // connect to the database
 sequelize.sync().then(() => {
