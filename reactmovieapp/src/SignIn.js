@@ -15,16 +15,16 @@ class SignInPopup extends React.Component {
 			username: "",
 			password: ""
 		};
-		this.openSignIn = this.openSignIn.bind(this);
-		this.closeSignIn = this.closeSignIn.bind(this);
+		this.openModal = this.openModal.bind(this);
+		this.closeModal = this.closeModal.bind(this);
 		this.changeHandler = this.changeHandler.bind(this);
 	}
 	
-	openSignIn() {
+	openModal() {
 		this.setState({ open: true });
 	}
 	
-	closeSignIn() {
+	closeModal() {
         this.setState({
             open: false,
 			username: "",
@@ -42,7 +42,7 @@ class SignInPopup extends React.Component {
 		let usernameInput =  (
             <React.Fragment>
                 <label>
-                    <h4 className={style.inputFieldH4} id="validLabel">Username</h4>
+                    <h4 className={style.inputFieldH4} id="validLabel">Username or Email</h4>
                 </label>
                 <input
                     type="text"
@@ -69,17 +69,17 @@ class SignInPopup extends React.Component {
 			
 		return (
 			<div>
-				<button className="signInButton" onClick={this.openSignIn}>
+				<button className="button" onClick={this.openModal}>
 					Already a Member? Sign In!
 				</button>
 				<Popup
 					open={this.state.open}
 					closeOnDocumentClick
-					onClose={this.closeSignIn}
+					onClose={this.closeModal}
 				>
 					<div className="modal">
 						{/* &times is the multiplication symbol (x) --> */}
-						<a className="close" onClick={this.closeSignIn}>
+						<a className="close" onClick={this.closeModal}>
 						&times;
 						</a>
 						<div className="header">
@@ -94,17 +94,22 @@ class SignInPopup extends React.Component {
 							<div className="inputFieldContainer">
 								{passwordInput}
 							</div>
-							<div className="actions">
-								<button
-									form="form1"
-									value="create_account"
-									className="submitButton"
-								>SIGN IN</button>
-							</div>
+						</div>
+						<div className="actions">
+							<button
+								form="form1"
+								value="create_account"
+								className="submitButton"
+							>SIGN IN</button>
+						</div>
+						<div className="rememberForgot">
 							<label className={style.rememberText}>Remember Me
 								<input className="checkbox" type="checkbox"></input>
 							</label>
 							<div className={style.forgotText}><a className="logInLink" href="">Forgot Password?</a></div>
+						</div>
+						<div className="newHere">
+							<div className={style.forgotText}><a className="logInLink" href="">New Here? Sign Up!</a></div>
 						</div>
 					</div>
 				</Popup>
