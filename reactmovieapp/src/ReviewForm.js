@@ -26,45 +26,38 @@ class ReviewPopUp extends React.Component {
         this.validateForm = this.validateForm.bind(this);
         this.callApi = this.callApi.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
+        //this.generateTagString = this.generateTagString.bind(this);
+    }
+
+    // function to generate the tags as a string to pass to the serever
+    generateTagString(tags)
+    {
+        // Simple POST request with a JSON body using fetch
+        let tagString = "";
+        let counter = 0;
+        // get the number of buttons minus 1
+        let tagCount = tags.length - 1;
+        // while still buttons to get values for
+        while(counter < tags.length)
+        {
+            if(counter == tagCount)
+            {
+                tagString = tagString + tags[counter];
+            }
+            else
+            {
+                tagString = tagString + tags[counter] + ",";
+            }
+            counter = counter + 1;
+        }
+        return tagString;
     }
 
     callApi()
     {
         // Simple POST request with a JSON body using fetch
-        let goodString = "";
-        let counter = 0;
-        // get the number of good buttons minus 1
-        let usedGoodButtonCount = this.state.usedGoodButtons.length - 1;
-        // while still good buttons to get values for
-        while(counter < this.state.usedGoodButtons.length)
-        {
-            if(counter == usedGoodButtonCount)
-            {
-                goodString = goodString + this.state.usedGoodButtons[counter];
-            }
-            else
-            {
-                goodString = goodString + this.state.usedGoodButtons[counter] + ",";
-            }
-            counter = counter + 1;
-        }
-        let badString = "";
-        counter = 0;
-        // get the number of good buttons minus 1
-        let usedBadButtonCount = this.state.usedBadButtons.length - 1;
-        // while still good buttons to get values for
-        while(counter < this.state.usedBadButtons.length)
-        {
-            if(counter == usedBadButtonCount)
-            {
-                badString = badString + this.state.usedBadButtons[counter];
-            }
-            else
-            {
-                badString = badString + this.state.usedBadButtons[counter] + ",";
-            }
-            counter = counter + 1;
-        }
+        let goodString = this.generateTagString(this.state.usedGoodButtons);
+        let badString = this.generateTagString(this.state.usedBadButtons);
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -86,6 +79,7 @@ class ReviewPopUp extends React.Component {
                 {
                     this.setState({open: false});
                 }
+                // get the json from the response and output the message
                 res.json().then(res => {console.log(res.message)});
                 // will want to add error handing otherwise
             });
