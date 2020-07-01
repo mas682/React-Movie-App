@@ -1,14 +1,11 @@
 import models, { sequelize } from '../src/models';
-import {router, verifyLogin} from './globals.js';
-const Op = require('Sequelize').Op;
+import {verifyLogin} from './globals.js';
 
 
-// this will need to be changed to post
-router.get("/", function(req, res, next){
+// function to see if a user can login and returns a cookie to use
+const login = (req, res, next) => {
     // get the signed cookies in the request if there are any
     let cookie = req.signedCookies.values;
-    // variable to indicate if user logged in
-    let valid = false;
     // if there is a signed cookie in the request
     if(cookie != undefined)
     {
@@ -17,8 +14,6 @@ router.get("/", function(req, res, next){
         {
             if(cookieValid)
             {
-                // set the variable to indicate cookie valid
-                valid = true;
                 res.send("You are already logged in");
             }
             // cookie not valid
@@ -35,7 +30,7 @@ router.get("/", function(req, res, next){
         // should redirect to home page at this point if login worked
         // or let client side handle the reroute?
     }
-});
+};
 
 const checkLogin = (req, res) =>
 {
@@ -66,4 +61,5 @@ const checkLogin = (req, res) =>
     });
 };
 
-module.exports=router;
+export {login};
+//module.exports=router;

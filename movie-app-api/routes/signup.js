@@ -1,10 +1,9 @@
 import models, { sequelize } from '../src/models';
 const Op = require('Sequelize').Op;
 
-var express = require('express');
-var router = express.Router();
 
-router.post("/", function(req, res, next){
+// function to create an account
+const signUp = (req, res, next) => {
     // if the username or email are not found, create the user
     // otherwise, do not create the user
     models.User.findOrCreate({where: {[Op.or]: [{username: req.body.username}, {email: req.body.email}]},
@@ -36,6 +35,6 @@ router.post("/", function(req, res, next){
             }
         }
     });
-});
+};
 
-module.exports=router;
+export {signUp};

@@ -1,10 +1,9 @@
 import models, { sequelize } from '../src/models';
-const Op = require('Sequelize').Op;
 
-var express = require('express');
-var router = express.Router();
 
-router.post("/", function(req, res, next){
+// function to post a reviews
+const review = (req, res, next) =>
+{
     models.Review.create({
             title: req.body.title,
             rating: req.body.rating,
@@ -17,7 +16,7 @@ router.post("/", function(req, res, next){
     });
     // review created
     res.status(201).send({message:"Review successfully created!"});
-});
+};
 
 const addGoodTags = (goodString, review, userId) =>{
     // get each of the good tags
@@ -49,4 +48,4 @@ const addBadTags = (badString, review, userId) => {
     });
 };
 
-module.exports=router;
+export {review};

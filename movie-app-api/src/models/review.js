@@ -1,3 +1,5 @@
+
+
 const review = (sequelize, DataTypes) => {
     const Review = sequelize.define('review', {
         title: {
@@ -25,6 +27,16 @@ const review = (sequelize, DataTypes) => {
         Review.belongsToMany(models.GoodTag, {through: models.ReviewGoodTags});
         Review.belongsToMany(models.BadTag, {through: models.ReviewBadTags});
     };
+
+    Review.findById = async (models,id) => {
+        let reviews = await Review.findAll({
+            where: {
+                userId: id
+            }, include:
+                [{model: models.GoodTag}, {model: models.BadTag}]
+        });
+        return reviews;
+    }
 
     return Review;
 };

@@ -7,12 +7,6 @@ var path = require('path');
 var logger = require('morgan');
 var cors = require('cors');
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var testAPIRouter = require('./routes/testAPI');
-var signUpRouter = require('./routes/signup');
-var reviewRouter = require('./routes/reviews');
-var loginRouter = require('./routes/login');
-
 var app = express();
 /*
 // connect to the database
@@ -136,12 +130,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser('somesecrettosigncookie'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// all routes to the server will go through this router
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/testAPI', testAPIRouter);
-app.use('/signup', signUpRouter);
-app.use('/review', reviewRouter);
-app.use('/login', loginRouter);
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
