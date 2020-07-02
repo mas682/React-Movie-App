@@ -13,14 +13,15 @@ class Routes extends React.Component
 
     render()
     {
+        /* FOR TESTING
         let test = <p> authenticated2: true </p>;
         if(!this.props.authenticated)
         {
             test = <p> authenticated2: false </p>
         }
+        */
         return (
             <Router history={history}>
-                {test}
                 <Switch>
                     <Route exact path="/" render={(props)=> <MainPage {...props} authenticated={this.props.authenticated} setAuthenticated={this.props.setAuthenticated}/>}/>
                     <Route exact path="/movie/" render={(props)=> <Movie {...props}/>}/>

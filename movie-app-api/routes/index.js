@@ -6,10 +6,11 @@ import {login} from './login.js';
 import {review} from './reviews.js';
 import {getProfile} from './profile.js';
 import {signUp} from './signup.js';
+import {homePage} from './homePage.js';
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+    homePage(req, res, next);
 });
 
 // used when trying to login

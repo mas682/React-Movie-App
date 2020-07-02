@@ -63,43 +63,92 @@ class MainPage extends React.Component {
 	{
 		super(props);
 		this.state={
-			authenticated: props.authenticated
+			authenticated: false
 		};
-		this.flipAuhtenticated = this.flipAuhtenticated.bind(this);
+
 	}
 
+	async componentDidMount()
+	{
+		// call the server to see if user logged in or not and wait for the response
+		let result = await this.apiCall();
+		// for testing
+		console.log("STATUS: " + result[1]);
+		console.log(result[0]);
+		if(result[0] == "No user logged in")
+		{
+			this.setState({authenticated: false});
+		}
+		/*
+		else if(result[0] == "User authenticated")
+
+
+		*/
+
+	}
 
 	flipAuhtenticated(event)
 	{
 		this.props.setAuthenticated(!this.props.authenticated);
 	}
 
+	async apiCall()
+	{
+		let status = 500;
+		// call server to see if user logged in or not
+		return fetch("http://localhost:9000/")
+			.then(res => {
+				// get the response code
+				status = res.status;
+				// get the message returned
+				return res.text().then(res => {return [res, status]});
+			});
+	}
 
 	render()
 	{
+		// for testing
 		let test = <p> authenticated3: true </p>;
 		if(!this.props.authenticated)
 		{
 			test = <p> authenticated3: false </p>
 		}
-		let test2 = <p> authenticated4: true </p>
+		let test2 = <p> authenticated to server: true </p>
 		if(!this.state.authenticated)
 		{
-			test2 = <p> authenticated4: false </p>
+			test2 = <p> authenticated to server: false </p>
 		}
-		return (
-			<div className="mainBodyContainer">
-				<Post />
-				<div className="mainBodyChild">
-					{test}
-					<p> state: {test2}</p>
-					<Link to="/movie"><button className="testButton">Movie page</button></Link>
-					<SignUpPopup />
-					<ReviewForm />
-					<button title = "Click to remove" id="goodButton" onClick={(e)=> this.flipAuhtenticated(e)}>flip</button>
+		if(!this.state.authenticated)
+		{
+			return (
+				<div className="mainBodyContainer">
+					<div className="mainBodyChild">
+						<p> You are not logged in yet! </p>
+						{test2}
+						<Link to="/movie"><button className="testButton">Movie page</button></Link>
+						<SignUpPopup />
+						<ReviewForm />
+						<button title = "Click to remove" id="goodButton" onClick={(e)=> this.flipAuhtenticated(e)}>flip</button>
+					</div>
 				</div>
-			</div>
-		);
+			);
+		}
+		else
+		{
+			return (
+				<div className="mainBodyContainer">
+					<Post />
+					<div className="mainBodyChild">
+						{test}
+						{test2}
+						<Link to="/movie"><button className="testButton">Movie page</button></Link>
+						<SignUpPopup />
+						<ReviewForm />
+						<button title = "Click to remove" id="goodButton" onClick={(e)=> this.flipAuhtenticated(e)}>flip</button>
+					</div>
+				</div>
+			);
+		}
 	}
 }
 /*

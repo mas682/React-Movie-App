@@ -57,19 +57,28 @@ class App extends React.Component {
     {
         super(props);
         this.state={
-            authenticated: true
+            authenticated: true,
+            checked: false
         };
+
     }
 
     callApi()
     {
-        fetch("http://localhost:9000/testAPI")
+        /*fetch("http://localhost:9000/testAPI")
             .then(res => res.text())
             .then(res => this.setState({apiResponse:res}));
+        */
+        if(!this.state.checked)
+        {
+            this.setState({checked: true});
+            //alert("setting checked");
+        }
     }
 
     componentWillMount()
     {
+        //this.callApi();
     }
 
     setAuthenticated = (auth) =>
@@ -79,19 +88,24 @@ class App extends React.Component {
 
     render()
     {
+        /* for testing
         let test = <p> authenticated: true </p>;
         if(!this.state.authenticated)
         {
             test = <p> authenticated: false </p>
         }
+        let test2 = <p> authentication already checked </p>
+        if(!this.state.checked)
+        {
+            test2 = <p> authentication was not checked yet </p>
+        }
+        */
 
         return (
             <div className="App">
                 <Header/>
                 <main>
                     <MainBody authenticated = {this.state.authenticated} setAuthenticated = {this.setAuthenticated}/>
-                    {test}
-                    <p>{this.state.apiResponse}</p>
                 </main>
             </div>
         );
