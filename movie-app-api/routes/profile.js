@@ -44,9 +44,8 @@ const getReviews = (cookie, res) =>
         models.Review.findById(models, user.id)
         .then((reviews)=>
         {
-            console.log(reviews);
-            console.log(reviews[0].goodTags);
-            res.send('done getting reviews');
+            // send the reveiws associated with the user
+            res.send(reviews);
         });
     });
 };

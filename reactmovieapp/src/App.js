@@ -7,9 +7,10 @@ import'./css/header.css';
 
 
 class MainBody extends React.Component {
+
     render() {
         return (
-            <Routes />
+            <Routes authenticated = {this.props.authenticated} setAuthenticated = {this.props.setAuthenticated}/>
         );
     }
 }
@@ -50,12 +51,14 @@ class Header extends React.Component {
 		);
 	}
 }
-  
+
 class App extends React.Component {
     constructor(props)
     {
         super(props);
-        this.state={apiResponse:""};
+        this.state={
+            authenticated: true
+        };
     }
 
     callApi()
@@ -67,15 +70,27 @@ class App extends React.Component {
 
     componentWillMount()
     {
-        this.callApi();
     }
+
+    setAuthenticated = (auth) =>
+    {
+        this.setState({authenticated: auth});
+    }
+
     render()
     {
+        let test = <p> authenticated: true </p>;
+        if(!this.state.authenticated)
+        {
+            test = <p> authenticated: false </p>
+        }
+
         return (
             <div className="App">
                 <Header/>
                 <main>
-                    <MainBody/>
+                    <MainBody authenticated = {this.state.authenticated} setAuthenticated = {this.setAuthenticated}/>
+                    {test}
                     <p>{this.state.apiResponse}</p>
                 </main>
             </div>

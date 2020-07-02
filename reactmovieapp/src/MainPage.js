@@ -56,6 +56,53 @@ class Post extends React.Component {
 }
 
 
+// left off here, need to make main page a class so it can have props
+class MainPage extends React.Component {
+
+	constructor(props)
+	{
+		super(props);
+		this.state={
+			authenticated: props.authenticated
+		};
+		this.flipAuhtenticated = this.flipAuhtenticated.bind(this);
+	}
+
+
+	flipAuhtenticated(event)
+	{
+		this.props.setAuthenticated(!this.props.authenticated);
+	}
+
+
+	render()
+	{
+		let test = <p> authenticated3: true </p>;
+		if(!this.props.authenticated)
+		{
+			test = <p> authenticated3: false </p>
+		}
+		let test2 = <p> authenticated4: true </p>
+		if(!this.state.authenticated)
+		{
+			test2 = <p> authenticated4: false </p>
+		}
+		return (
+			<div className="mainBodyContainer">
+				<Post />
+				<div className="mainBodyChild">
+					{test}
+					<p> state: {test2}</p>
+					<Link to="/movie"><button className="testButton">Movie page</button></Link>
+					<SignUpPopup />
+					<ReviewForm />
+					<button title = "Click to remove" id="goodButton" onClick={(e)=> this.flipAuhtenticated(e)}>flip</button>
+				</div>
+			</div>
+		);
+	}
+}
+/*
 const MainPage = () => {
     return (
         <div className="mainBodyContainer">
@@ -68,5 +115,5 @@ const MainPage = () => {
         </div>
     );
 };
-
+*/
 export default MainPage;

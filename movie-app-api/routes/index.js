@@ -1,6 +1,6 @@
 //var express = require('express');
 //var router = express.Router();
-import models, { sequelize } from '../src/models';
+
 import {router, verifyLogin} from './globals.js';
 import {login} from './login.js';
 import {review} from './reviews.js';

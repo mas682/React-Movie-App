@@ -25,6 +25,7 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
         createGoodTags();
         createBadTags();
         sampleReview();
+        sampleReview2();
     }
 
     app.listen(9000, () =>
@@ -106,6 +107,32 @@ const sampleReview = async () => {
     ).then((review)=> {
         //console.log(Object.keys(models.Review.__proto__));
         review.addGoodTag(1, { through: { userID: 1 } })
+        .then((review)=>{
+            models.Review.findOne({
+                    where: { title: 'Movie' }, include: models.GoodTag
+            }).then((r)=>{
+                console.log(r);
+                console.log("Tag: ");
+                console.log(r.goodTags[0].value);
+                });
+        });
+    });
+
+};
+
+// for testing
+// create a sampleReview to add to the database
+const sampleReview2 = async () => {
+    await models.Review.create(
+        {
+            title: 'another movie',
+            rating: "2.5",
+            userId: 1,
+            review: "",
+        }
+    ).then((review)=> {
+        //console.log(Object.keys(models.Review.__proto__));
+        review.addGoodTag(2, { through: { userID: 1 } })
         .then((review)=>{
             models.Review.findOne({
                     where: { title: 'Movie' }, include: models.GoodTag
