@@ -88,19 +88,6 @@ class App extends React.Component {
 
     render()
     {
-        /* for testing
-        let test = <p> authenticated: true </p>;
-        if(!this.state.authenticated)
-        {
-            test = <p> authenticated: false </p>
-        }
-        let test2 = <p> authentication already checked </p>
-        if(!this.state.checked)
-        {
-            test2 = <p> authentication was not checked yet </p>
-        }
-        */
-
         return (
             <div className="App">
                 <Header/>

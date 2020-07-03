@@ -1,6 +1,6 @@
 import React from 'react';
 import history from './History'
-import {Link } from 'react-router-dom';
+import {Link, Redirect } from 'react-router-dom';
 import SignUpPopup from './SignUp.js';
 import './css/forms.css';
 import ReviewForm from './ReviewForm.js';
@@ -63,7 +63,8 @@ class MainPage extends React.Component {
 	{
 		super(props);
 		this.state={
-			authenticated: false
+			authenticated: false,
+			redirect: false
 		};
 
 	}
@@ -81,7 +82,7 @@ class MainPage extends React.Component {
 		}
 		/*
 		else if(result[0] == "User authenticated")
-
+				redirect to landing??
 
 		*/
 
@@ -90,6 +91,7 @@ class MainPage extends React.Component {
 	flipAuhtenticated(event)
 	{
 		this.props.setAuthenticated(!this.props.authenticated);
+		this.setState({redirect: true});
 	}
 
 	async apiCall()
@@ -118,7 +120,22 @@ class MainPage extends React.Component {
 		{
 			test2 = <p> authenticated to server: false </p>
 		}
-		if(!this.state.authenticated)
+
+		/*
+			left off here:
+			can now authenticate from home page
+			still trying to decide if I want a global authentication or not
+			but for any given page, you will probably have to contact server to get some data
+			so may as well authenticate on each page...
+			so global probably not needed
+		*/
+		// this if is just for testing how to redirect once a button clicked such as
+		// signing up
+		if(this.state.redirect)
+		{
+			return <Redirect to="/landing/" />;
+		}
+		else if(!this.state.authenticated)
 		{
 			return (
 				<div className="mainBodyContainer">
@@ -151,18 +168,4 @@ class MainPage extends React.Component {
 		}
 	}
 }
-/*
-const MainPage = () => {
-    return (
-        <div className="mainBodyContainer">
-			<Post />
-            <div className="mainBodyChild">
-                <Link to="/movie"><button className="testButton">Movie page</button></Link>
-                <SignUpPopup />
-                <ReviewForm />
-            </div>
-        </div>
-    );
-};
-*/
 export default MainPage;

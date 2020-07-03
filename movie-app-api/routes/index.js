@@ -7,6 +7,7 @@ import {review} from './reviews.js';
 import {getProfile} from './profile.js';
 import {signUp} from './signup.js';
 import {homePage} from './homePage.js';
+import {getUserInfo} from './getUserInfo.js';
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -26,6 +27,10 @@ router.post('/review', function(req, res, next) {
 // used to create a account
 router.post('/signup', function(req, res, next) {
     signUp(req, res, next);
+});
+
+router.get('/getuserinfo', function(req, res, next) {
+    getUserInfo(req, res, next);
 });
 
 // used to see a users posts
