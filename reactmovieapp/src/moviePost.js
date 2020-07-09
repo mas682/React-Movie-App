@@ -11,14 +11,14 @@ class MoviePost extends React.Component {
             liked: false,
             user: this.props.data.userId,
             title: this.props.data.title,
-            rating: "",
+            form: "form" + this.props.data.id,
+            rating: this.props.data.rating,
             usedGoodButtons: this.getGoodButtons(),
-            usedBadButtons: [],
+            usedBadButtons: this.getBadButtons(),
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            review: ""
+            review: this.props.data.review
         };
-        this.getGoodButtons();
         //this.openModal = this.openModal.bind(this);
         //this.closeModal = this.closeModal.bind(this);
         //this.generateButtons = this.generateButtons.bind(this);
@@ -30,13 +30,123 @@ class MoviePost extends React.Component {
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
     }
 
+    /*
+        this function is used to extract the good tags out of the props that are passed
+        into the component and create an array with the values to put into the state
+    */
     getGoodButtons()
     {
         let tempArr = [];
         this.props.data.goodTags.forEach((tag) => {
             tempArr.push(tag.value);
+            // should also remove button from unused array if the post belongs to the current user
         });
         return tempArr;
+    }
+
+    /*
+        this function is used to extract the bad tags out of the props that are passed
+        into the component and create an array with the values to put into the state
+    */
+    getBadButtons()
+    {
+        let tempArr = [];
+        this.props.data.badTags.forEach((tag) => {
+            tempArr.push(tag.value);
+            // should also remove button from unused array if the post belongs to the current user
+        });
+        return tempArr;
+    }
+
+    /*
+        This function is used to generate the stars and set the appropriate ones to being colored or not
+        based off of the rating passed in by the props to the state
+    */
+    generateRatingStars()
+    {
+        let stars = [];
+        if(this.state.rating == 5.0)
+        {
+            stars.push(<React.Fragment><input type="radio" id="star5" name={style.rating} value="5" form={this.state.form} checked/><label class={style.full} for="star5" title="Awesome - 5 stars"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="star5" name={style.rating} value="5" form={this.state.form}/><label class={style.full} for="star5" title="Awesome - 5 stars"></label></React.Fragment>);
+        }
+        if(this.state.rating == 4.50)
+        {
+            stars.push(<React.Fragment><input type="radio" id="star4half" name={style.rating} value="4.5" form={this.state.form} checked/><label class={style.half} for="star4half" title="Pretty good - 4.5 stars"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="star4half" name={style.rating} value="4.5" form={this.state.form}/><label class={style.half} for="star4half" title="Pretty good - 4.5 stars"></label></React.Fragment>);
+        }
+        if(this.state.rating == 4.00)
+        {
+            stars.push(<React.Fragment><input type="radio" id="star4" name={style.rating} value="4" form={this.state.form} checked/><label class = {style.full} for="star4" title="Pretty good - 4 stars"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="star4" name={style.rating} value="4" form={this.state.form}/><label class = {style.full} for="star4" title="Pretty good - 4 stars"></label></React.Fragment>);
+        }
+        if(this.state.rating == 3.50)
+        {
+            stars.push(<React.Fragment><input type="radio" id="star3half" name={style.rating} value="3.5" form={this.state.form} checked/><label class={style.half} for="star3half" title="Meh - 3.5 stars"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="star3half" name={style.rating} value="3.5" form={this.state.form}/><label class={style.half} for="star3half" title="Meh - 3.5 stars"></label></React.Fragment>);
+        }
+        if(this.state.rating == 3.00)
+        {
+            stars.push(<React.Fragment><input type="radio" id="star3" name={style.rating} value="3" form={this.state.form} checked/><label class = {style.full} for="star3" title="Meh - 3 stars"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="star3" name={style.rating} value="3" form={this.state.form}/><label class = {style.full} for="star3" title="Meh - 3 stars"></label></React.Fragment>);
+        }
+        if(this.state.rating == 2.50)
+        {
+            stars.push(<React.Fragment><input type="radio" id="star2half" name={style.rating} value="2.5" form={this.state.form} checked/><label class={style.half} for="star2half" title="Kinda bad - 2.5 stars"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="star2half" name={style.rating} value="2.5" form={this.state.form}/><label class={style.half} for="star2half" title="Kinda bad - 2.5 stars"></label></React.Fragment>);
+        }
+
+        if(this.state.rating == 2.00)
+        {
+            stars.push(<React.Fragment><input type="radio" id="star2" name={style.rating} value="2" form={this.state.form} checked/><label class = {style.full} for="star2" title="Kinda bad - 2 stars"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="star2" name={style.rating} value="2" form={this.state.form}/><label class = {style.full} for="star2" title="Kinda bad - 2 stars"></label></React.Fragment>);
+        }
+        if(this.state.rating == 1.50)
+        {
+            stars.push(<React.Fragment><input type="radio" id="star1half" name={style.rating} value="1.5" form={this.state.form} checked/><label class={style.half} for="star1half" title="Meh - 1.5 stars"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="star1half" name={style.rating} value="1.5" form={this.state.form}/><label class={style.half} for="star1half" title="Meh - 1.5 stars"></label></React.Fragment>);
+        }
+        if(this.state.rating == 1.00)
+        {
+            stars.push(<React.Fragment><input type="radio" id="star1" name={style.rating} value="1" form={this.state.form} checked/><label class = {style.full} for="star1" title="Sucks big time - 1 star"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="star1" name={style.rating} value="1" form={this.state.form}/><label class = {style.full} for="star1" title="Sucks big time - 1 star"></label></React.Fragment>);
+        }
+        if(this.state.rating == 0.50)
+        {
+            stars.push(<React.Fragment><input type="radio" id="starhalf" name={style.rating} value="0.5" form={this.state.form} checked/><label class={style.half} for="starhalf" title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
+        }
+        else
+        {
+            stars.push(<React.Fragment><input type="radio" id="starhalf" name={style.rating} value="0.5" form={this.state.form}/><label class={style.half} for="starhalf" title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
+        }
+        return stars;
     }
 
     /*
@@ -80,6 +190,9 @@ class MoviePost extends React.Component {
         return <button className={`${style.postButton}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
     }
 
+    /*
+        This function is used to geneate the good/bad buttons with the appropriate values in the HTML
+    */
     generateGoodBadButton(value, type)
     {
         if(type == "good")
@@ -105,54 +218,25 @@ class MoviePost extends React.Component {
             7. will need to handle logic on individual pages of determining which posts to get(specific user, your friends, etc.)
             8. may want option to make posts public/private
         */
-        let stars = "";
-        if(this.props.form == "form1")
-        {
-            stars = (
-                    <React.Fragment>
-                       <input type="radio" id="star5" name={style.rating} value="5" form={this.props.form}/><label class={style.full} for="star5" title="Awesome - 5 stars"></label>
-                       <input type="radio" id="star4half" name={style.rating} value="4.5" form={this.props.form}/><label class={style.half} for="star4half" title="Pretty good - 4.5 stars"></label>
-                       <input type="radio" id="star4" name={style.rating} value="4" form={this.props.form}/><label class = {style.full} for="star4" title="Pretty good - 4 stars"></label>
-                       <input type="radio" id="star3half" name={style.rating} value="3.5" form={this.props.form}/><label class={style.half} for="star3half" title="Meh - 3.5 stars"></label>
-                       <input type="radio" id="star3" name={style.rating} value="3" form={this.props.form}/><label class = {style.full} for="star3" title="Meh - 3 stars"></label>
-                       <input type="radio" id="star2half" name={style.rating} value="2.5" form={this.props.form}/><label class={style.half} for="star2half" title="Kinda bad - 2.5 stars"></label>
-                       <input type="radio" id="star2" name={style.rating} value="2" form={this.props.form} checked/><label class = {style.full} for="star2" title="Kinda bad - 2 stars"></label>
-                       <input type="radio" id="star1half" name={style.rating} value="1.5" form={this.props.form}/><label class={style.half} for="star1half" title="Meh - 1.5 stars"></label>
-                       <input type="radio" id="star1" name={style.rating} value="1" form={this.props.form}/><label class = {style.full} for="star1" title="Sucks big time - 1 star"></label>
-                       <input type="radio" id="starhalf" name={style.rating} value="0.5" form={this.props.form}/><label class={style.half} for="starhalf" title="Don't waste your time - 0.5 stars"></label>
-                    </React.Fragment>);
-        }
-        else
-        {
-            stars = (
-                    <React.Fragment>
-                       <input type="radio" id="star5" name={style.rating} value="5" form={this.props.form}/><label class={style.full} for="star5" title="Awesome - 5 stars"></label>
-                       <input type="radio" id="star4half" name={style.rating} value="4.5" form={this.props.form}/><label class={style.half} for="star4half" title="Pretty good - 4.5 stars"></label>
-                       <input type="radio" id="star4" name={style.rating} value="4" form={this.props.form} checked/><label class = {style.full} for="star4" title="Pretty good - 4 stars"></label>
-                       <input type="radio" id="star3half" name={style.rating} value="3.5" form={this.props.form}/><label class={style.half} for="star3half" title="Meh - 3.5 stars"></label>
-                       <input type="radio" id="star3" name={style.rating} value="3" form={this.props.form}/><label class = {style.full} for="star3" title="Meh - 3 stars"></label>
-                       <input type="radio" id="star2half" name={style.rating} value="2.5" form={this.props.form}/><label class={style.half} for="star2half" title="Kinda bad - 2.5 stars"></label>
-                       <input type="radio" id="star2" name={style.rating} value="2" form={this.props.form}/><label class = {style.full} for="star2" title="Kinda bad - 2 stars"></label>
-                       <input type="radio" id="star1half" name={style.rating} value="1.5" form={this.props.form}/><label class={style.half} for="star1half" title="Meh - 1.5 stars"></label>
-                       <input type="radio" id="star1" name={style.rating} value="1" form={this.props.form}/><label class = {style.full} for="star1" title="Sucks big time - 1 star"></label>
-                       <input type="radio" id="starhalf" name={style.rating} value="0.5" form={this.props.form}/><label class={style.half} for="starhalf" title="Don't waste your time - 0.5 stars"></label>
-                    </React.Fragment>);
-        }
-
-        let value = "Test";
-        let text = "Sublimely funny, particularly in the first half-hour, with a gorgeous running gag about the band TLC and a fabulously moronic death scene for The Rock and Sam Jackson, "
-                    +"who play a couple of hero-cops with a propensity for wrecking half the city in pursuit of small-time cannabis dealers."
-                    +"\nWahlberg is excellent - as unexpectedly good as Channing Tatum was in 21 Jump Street, though here the Max Payne and The Departed actor plays a coiled,"
-                    +"perpetually furious bundle of resentment and frustration, ground down by the everyday humiliations that come with having accidentally shot Derek Jeter";
+        // generate the stars for the review
+        let stars = this.generateRatingStars();
         let likedButton = this.generateLikedButton();
         // array to hold the good buttons
         let goodButtonArray = [];
+        let badButtonArray = [];
         // counter for loop
         let counter = 0;
         // generate the used good buttons
         while(counter < this.state.usedGoodButtons.length)
         {
             goodButtonArray.push(this.generateGoodBadButton(this.state.usedGoodButtons[counter], "good"));
+            counter = counter + 1;
+        }
+        // reset counter
+        counter = 0;
+        while(counter < this.state.usedBadButtons.length)
+        {
+            badButtonArray.push(this.generateGoodBadButton(this.state.usedBadButtons[counter], "bad"));
             counter = counter + 1;
         }
 
@@ -190,14 +274,12 @@ class MoviePost extends React.Component {
                             <h4 className={style.h4NoMargin}>The Bad</h4>
                         </div>
                         <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
-                            <button value={value} className={`${style.formButton} ${style.badButton} ${style.unclickableButton}`} title = "Click to remove" id="badButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>
-                            <button value={value} className={`${style.formButton} ${style.badButton} ${style.unclickableButton}`} title = "Click to remove" id="badButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>
-                            <button value={value} className={`${style.formButton} ${style.badButton} ${style.unclickableButton}`} title = "Click to remove" id="badButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>
+                            {badButtonArray}
                         </div>
                     </div>
                 </div>
                 <div className={style.review}>
-                    {text}
+                    {this.state.review}
                 </div>
 				<div className="socialButtonContainer">
 					<div className="socialButtons">

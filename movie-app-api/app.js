@@ -102,10 +102,18 @@ const sampleReview = async () => {
             title: 'Movie',
             rating: "2.5",
             userId: 1,
-            review: "",
+            review: "Sublimely funny, particularly in the first half-hour, with a gorgeous running gag about the band TLC and a fabulously moronic death scene for The Rock and Sam Jackson, "
+                        +"who play a couple of hero-cops with a propensity for wrecking half the city in pursuit of small-time cannabis dealers."
+                        +"\nWahlberg is excellent - as unexpectedly good as Channing Tatum was in 21 Jump Street, though here the Max Payne and The Departed actor plays a coiled,"
+                        +"perpetually furious bundle of resentment and frustration, ground down by the everyday humiliations that come with having accidentally shot Derek Jeter",
         }
     ).then((review)=> {
         //console.log(Object.keys(models.Review.__proto__));
+        review.addGoodTag(2, { through: { userID: 1 } });
+        review.addGoodTag(3, { through: { userID: 1 } });
+        review.addBadTag(6, { through: { userID: 1 } });
+        review.addBadTag(4, { through: { userID: 1 } });
+        review.addBadTag(5, { through: { userID: 1 } });
         review.addGoodTag(1, { through: { userID: 1 } })
         .then((review)=>{
             models.Review.findOne({

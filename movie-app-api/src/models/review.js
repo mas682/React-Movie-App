@@ -17,8 +17,9 @@ const review = (sequelize, DataTypes) => {
             },
         },
         review: {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             allowNull: true,
+
         },
     });
 
