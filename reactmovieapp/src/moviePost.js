@@ -8,6 +8,8 @@ class MoviePost extends React.Component {
         super(props);
         this.state = {
             open: false,
+            liked: false,
+            user: "",
             title: "",
             rating: "",
             usedGoodButtons: [],
@@ -24,6 +26,25 @@ class MoviePost extends React.Component {
         //this.callApi = this.callApi.bind(this);
         //this.changeHandler = this.changeHandler.bind(this);
         //this.generateTagString = this.generateTagString.bind(this);
+        this.likeButtonHandler = this.likeButtonHandler.bind(this);
+    }
+
+    /*
+        This sets the state of the post to liked or not depending on if
+        it is currently liked or not when clicked
+        Will need to add handling to update database when clicked so the database
+        can keep track of which posts are liked by who
+    */
+    likeButtonHandler(event)
+    {
+        if(!this.state.liked)
+        {
+            this.setState({liked: true});
+        }
+        else
+        {
+            this.setState({liked: false});
+        }
     }
 
     componentDidMount() {
@@ -35,8 +56,33 @@ class MoviePost extends React.Component {
         document.body.appendChild(script);
     }
 
+    /*
+        This function is used to generate the appropriate liked button based off of
+        the value of the liked field in the state
+    */
+    generateLikedButton()
+    {
+        if(this.state.liked)
+        {
+            // turn the liked button to blue
+            return <button className={`${style.postButton} ${style.likeButtonSelected}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
+        }
+        return <button className={`${style.postButton}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
+    }
+
 	render() {
 
+        /*  to do in any order:
+            1. make comment button pull up a scrollable pop up showing all the comments with a input box at the bottom to add
+               your comment
+            2. will then have to set up database to store comments
+            3. have to redirect to a movies page on go to movie page button push
+            4. set up call to api to retrieve data for post
+            5. set up editing if this is the current users post
+            6. make user name a hyperlink to the users profile
+            7. will need to handle logic on individual pages of determining which posts to get(specific user, your friends, etc.)
+            8. may want option to make posts public/private
+        */
         let stars = "";
         if(this.props.form == "form1")
         {
@@ -76,6 +122,7 @@ class MoviePost extends React.Component {
                     +"who play a couple of hero-cops with a propensity for wrecking half the city in pursuit of small-time cannabis dealers."
                     +"\nWahlberg is excellent - as unexpectedly good as Channing Tatum was in 21 Jump Street, though here the Max Payne and The Departed actor plays a coiled,"
                     +"perpetually furious bundle of resentment and frustration, ground down by the everyday humiliations that come with having accidentally shot Derek Jeter";
+        let likedButton = this.generateLikedButton();
 
         /*
             left off here fixing stars formatting
@@ -127,7 +174,7 @@ class MoviePost extends React.Component {
                 </div>
 				<div className="socialButtonContainer">
 					<div className="socialButtons">
-                        <button className={`${style.postButton} ${style.likeButtonSelected}`}><i class={`fa fa-thumbs-up ${style.thumbsUpSelected}`}/> Like</button>
+                        {likedButton}
 						<button className={`${style.postButton}`}>Go to movie page</button>
 						<button className={`${style.postButton}`}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
 					</div>

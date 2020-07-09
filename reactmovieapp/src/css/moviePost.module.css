@@ -60,11 +60,17 @@
     background-color: DarkGray;
 }
 
+/* prevents outline on button when clicked */
+.postButton:focus
+{
+    outline: none;
+}
+
 .likeButtonSelected {
     background-color: blue;
 }
 
-.thumbsUpSelected
+.thumbsUp
 {
     color: white;
 }
