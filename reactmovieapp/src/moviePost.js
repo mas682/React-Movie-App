@@ -145,6 +145,7 @@ class MoviePost extends React.Component {
                     +"\nWahlberg is excellent - as unexpectedly good as Channing Tatum was in 21 Jump Street, though here the Max Payne and The Departed actor plays a coiled,"
                     +"perpetually furious bundle of resentment and frustration, ground down by the everyday humiliations that come with having accidentally shot Derek Jeter";
         let likedButton = this.generateLikedButton();
+        // array to hold the good buttons
         let goodButtonArray = [];
         // counter for loop
         let counter = 0;
