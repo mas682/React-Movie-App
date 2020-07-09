@@ -9,15 +9,16 @@ class MoviePost extends React.Component {
         this.state = {
             open: false,
             liked: false,
-            user: "",
-            title: "",
+            user: this.props.data.userId,
+            title: this.props.data.title,
             rating: "",
-            usedGoodButtons: [],
+            usedGoodButtons: this.getGoodButtons(),
             usedBadButtons: [],
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             review: ""
         };
+        this.getGoodButtons();
         //this.openModal = this.openModal.bind(this);
         //this.closeModal = this.closeModal.bind(this);
         //this.generateButtons = this.generateButtons.bind(this);
@@ -27,6 +28,15 @@ class MoviePost extends React.Component {
         //this.changeHandler = this.changeHandler.bind(this);
         //this.generateTagString = this.generateTagString.bind(this);
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
+    }
+
+    getGoodButtons()
+    {
+        let tempArr = [];
+        this.props.data.goodTags.forEach((tag) => {
+            tempArr.push(tag.value);
+        });
+        return tempArr;
     }
 
     /*
@@ -70,6 +80,18 @@ class MoviePost extends React.Component {
         return <button className={`${style.postButton}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
     }
 
+    generateGoodBadButton(value, type)
+    {
+        if(type == "good")
+        {
+            return <button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton} ${style.unclickableButton}`} id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
+        }
+        else
+        {
+            return <button value={value} className={`${style.formButton} ${style.badButton} ${style.unclickableButton}`} title = "Click to remove" id="badButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
+        }
+    }
+
 	render() {
 
         /*  to do in any order:
@@ -77,7 +99,7 @@ class MoviePost extends React.Component {
                your comment
             2. will then have to set up database to store comments
             3. have to redirect to a movies page on go to movie page button push
-            4. set up call to api to retrieve data for post
+            4. set up call to api to retrieve data for post(actually may want to pass this data into the post or a index of which post to use?)
             5. set up editing if this is the current users post
             6. make user name a hyperlink to the users profile
             7. will need to handle logic on individual pages of determining which posts to get(specific user, your friends, etc.)
@@ -123,6 +145,15 @@ class MoviePost extends React.Component {
                     +"\nWahlberg is excellent - as unexpectedly good as Channing Tatum was in 21 Jump Street, though here the Max Payne and The Departed actor plays a coiled,"
                     +"perpetually furious bundle of resentment and frustration, ground down by the everyday humiliations that come with having accidentally shot Derek Jeter";
         let likedButton = this.generateLikedButton();
+        let goodButtonArray = [];
+        // counter for loop
+        let counter = 0;
+        // generate the used good buttons
+        while(counter < this.state.usedGoodButtons.length)
+        {
+            goodButtonArray.push(this.generateGoodBadButton(this.state.usedGoodButtons[counter], "good"));
+            counter = counter + 1;
+        }
 
         /*
             left off here fixing stars formatting
@@ -150,12 +181,7 @@ class MoviePost extends React.Component {
                             <h4 className={style.h4NoMargin}>The Good</h4>
                         </div>
                         <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
-                            <button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton} ${style.unclickableButton}`} id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>
-                            <button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton} ${style.unclickableButton}`} id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>
-                            <button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton} ${style.unclickableButton}`} id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>
-                            <button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton} ${style.unclickableButton}`} id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>
-                            <button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton} ${style.unclickableButton}`} id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>
-                            <button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton} ${style.unclickableButton}`} id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>
+                            {goodButtonArray}
                         </div>
                     </div>
                     <div className={style.proConContainter}>

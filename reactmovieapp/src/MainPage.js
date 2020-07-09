@@ -15,7 +15,8 @@ class MainPage extends React.Component {
 		super(props);
 		this.state={
 			authenticated: false,
-			redirect: false
+			redirect: false,
+			posts: ""
 		};
 
 	}
@@ -36,6 +37,7 @@ class MainPage extends React.Component {
 				redirect to landing??
 
 		*/
+		this.setState({posts:[{"id":1,"title":"Movie","rating":"2.50","review":"","createdAt":"2020-07-09T06:26:27.827Z","updatedAt":"2020-07-09T06:26:27.827Z","userId":1,"goodTags":[{"id":1,"value":"Acting","createdAt":"2020-07-09T06:26:27.826Z","updatedAt":"2020-07-09T06:26:27.826Z","ReviewGoodTags":{"userID":1,"goodTagId":1,"reviewId":1}}],"badTags":[]},{"id":2,"title":"another movie","rating":"2.50","review":"","createdAt":"2020-07-09T06:26:27.828Z","updatedAt":"2020-07-09T06:26:27.828Z","userId":1,"goodTags":[{"id":2,"value":"Jokes","createdAt":"2020-07-09T06:26:27.826Z","updatedAt":"2020-07-09T06:26:27.826Z","ReviewGoodTags":{"userID":1,"goodTagId":2,"reviewId":2}}],"badTags":[]}]});
 
 	}
 
@@ -43,6 +45,23 @@ class MainPage extends React.Component {
 	{
 		this.props.setAuthenticated(!this.props.authenticated);
 		this.setState({redirect: true});
+	}
+
+	// for testing api, will need to be moved!
+	async getPosts()
+	{
+		let status = 500;
+		// call server to get the posts
+		return fetch("http://localhost:9000/")
+			.then(res => {
+				// get the response code
+				status = res.status;
+				// get the message returned
+				return res.text().then(res => {
+					this.setState({posts: res})
+					return [res, status]
+				});
+			});
 	}
 
 	async apiCall()
@@ -70,6 +89,11 @@ class MainPage extends React.Component {
 		if(!this.state.authenticated)
 		{
 			test2 = <p> authenticated to server: false </p>
+		}
+		let post1 = "";
+		if(this.state.posts[0] != undefined)
+		{
+			post1 = <MoviePost data={this.state.posts[0]} form="form1" />
 		}
 
 		/*
@@ -113,8 +137,7 @@ class MainPage extends React.Component {
 						Make this reusable so that it can be used on a individual users page
 						Or on a users timeline
 					*/
-					<MoviePost form="form1"/>
-					<MoviePost form="form2"/>
+					{post1}
 					<div className="mainBodyChild">
 						{test}
 						{test2}
