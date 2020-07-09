@@ -4,56 +4,7 @@ import {Link, Redirect } from 'react-router-dom';
 import SignUpPopup from './SignUp.js';
 import './css/forms.css';
 import ReviewForm from './ReviewForm.js';
-
-
-class Post extends React.Component {
-	render() {
-        return (
-			<div className="post">
-				<div className="postHeader">
-					<p className="username">_theonenonly</p>
-					<img src={require("./images/profile-pic.jpg")}/>
-				</div>
-				<div className="postImage">
-					<img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
-				</div>
-				<div className="postStars">
-					<span class="fa fa-star checked"></span>
-					<span class="fa fa-star checked"></span>
-					<span class="fa fa-star checked"></span>
-					<span class="fa fa-star checked"></span>
-					<span class="fa fa-star checked"></span>
-				</div>
-				<div className="postGoodBad">
-					<h2>The Good</h2>
-					<h2>The Bad</h2>
-				</div>
-				<div className="postGoodButtons">
-					<div className="goodButtons">
-						<button>good</button>
-						<button>good</button>
-						<button>good</button>
-					</div>
-					<div className="badButtons">
-						<button>bad</button>
-						<button>bad</button>
-						<button>bad</button>
-					</div>
-				</div>
-				<form className="review">
-					<textarea className="reviewTextArea">Review</textarea>
-				</form>
-				<div className="socialButtonContainer">
-					<div className="socialButtons">
-						<button>Like</button>
-						<button>Go to movie page</button>
-						<button>Comment</button>
-					</div>
-				</div>
-			</div>
-        );
-    }
-}
+import MoviePost from './moviePost.js';
 
 
 // left off here, need to make main page a class so it can have props
@@ -128,6 +79,7 @@ class MainPage extends React.Component {
 			but for any given page, you will probably have to contact server to get some data
 			so may as well authenticate on each page...
 			so global probably not needed
+			kind of stuck until able to login
 		*/
 		// this if is just for testing how to redirect once a button clicked such as
 		// signing up
@@ -135,6 +87,7 @@ class MainPage extends React.Component {
 		{
 			return <Redirect to="/landing/" />;
 		}
+		/* uncomment when not testing
 		else if(!this.state.authenticated)
 		{
 			return (
@@ -150,11 +103,18 @@ class MainPage extends React.Component {
 				</div>
 			);
 		}
+		*/
 		else
 		{
 			return (
 				<div className="mainBodyContainer">
-					<Post />
+					/*
+						Going to format the review post and how it looks
+						Make this reusable so that it can be used on a individual users page
+						Or on a users timeline
+					*/
+					<MoviePost form="form1"/>
+					<MoviePost form="form2"/>
 					<div className="mainBodyChild">
 						{test}
 						{test2}

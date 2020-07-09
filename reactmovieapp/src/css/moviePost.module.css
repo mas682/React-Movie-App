@@ -1,0 +1,161 @@
+
+/* used to create a container that is 100% of the screen and centered */
+.centeredMaxWidthContainer {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-flow: row wrap;
+    margin-top: 10px;
+}
+
+/* used to create a container that takes up half the screen */
+.proConContainter {
+    width: 45%;
+    margin-bottom: 10px;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    margin-right: 2.5%;
+    margin-left: 2.5%;
+}
+
+/* used to remove all margins from a h4 header */
+.h4NoMargin {
+    display: inline;
+    font-size: 1.5em;
+    margin-block-end: 0em;
+    margin-block-start: 0px;
+}
+
+/* used to format the buttons on the film review popup */
+.formButton {
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    border: none;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-top: 5px;
+}
+
+.postButton {
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-top: 5px;
+    background-color: DarkGray;
+}
+
+.likeButtonSelected {
+    background-color: blue;
+}
+
+.thumbsUpSelected
+{
+    color: white;
+}
+
+.commentIcon
+{
+    color: white;
+}
+
+/* used for the button container to denter vertically */
+.buttonContainer {
+    align-content: center;
+}
+
+/* this is used for buttons that were selected */
+.usedButtonContainerHeight {
+    height: auto;
+}
+
+/* set the color for good buttons */
+.goodButton{
+    background-color: #4CAF50;
+}
+
+/* this sets the color for a used bad button */
+.badButton {
+    background-color: red;
+}
+
+/* makes the button unclickable for a unused button */
+.unclickableButton {
+    pointer-events: none;
+}
+
+.review
+{
+    text-align: left;
+    white-space: pre-wrap;
+    width: 100%;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+/* Below is for the star ratings */
+fieldset, label {
+    margin: 0;
+    padding: 0;
+}
+
+/****** Style Star Rating Widget *****/
+
+.rating {
+    border: none;
+    float: left;
+}
+
+.rating > input { display: none; }
+.rating > label:before {
+    margin: 5px;
+    font-size: 3em;
+    font-family: FontAwesome;
+    display: inline-block;
+    content: "\f005";
+}
+
+.rating > .half:before {
+    content: "\f089";
+    position: absolute;
+}
+
+
+.rating > label {
+    color: #ddd;
+    float: right;
+}
+
+.rating > input:checked ~ label {
+    color: #FFD700;
+    float: right;
+}
+
+/***** CSS Magic to Highlight Stars on Hover ****
+
+/* hover previous stars in list */
+
+
+/*
+.rating > input:checked ~ label
+{
+    color: #FFD700;
+}
+*/

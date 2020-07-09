@@ -1,20 +1,20 @@
 @import url(//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css);
 .App {
-  /* The image used 
-  background-image: url("images/background3.jpg"); */
-
-  /* Full height */
-  height: 1200px;
+  /*The image used
+  background-image: url("images/background3.jpg");*/
 
   /* Center and scale the image nicely */
+  /*
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  */
 }
 
 .mainBodyContainer {
     width: 70%;
-    height: 1000px;
+    /*height: 1000px;*/
+    height: auto;
     margin-left: 15%;
     margin-right: 15%;
     margin-top: 20px;
@@ -22,16 +22,17 @@
     display: flex;
     flex-flow: row wrap;
     align-content: flex-start;
+    background-color: white;
+    margin-bottom: 20px;
 }
 
 /* Main Page*/
 .post {
 	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-	max-width: 500px;
 	margin: auto;
 	text-align: center;
 	font-family: arial;
-	width: 700px;
+	width: 60%;
 	display: grid;
 	grid-template-columns: auto;
 	padding: 10px;
@@ -70,6 +71,7 @@ div.postHeader img {
 	padding-top: 10px;
 }
 
+/*
 .postGoodBad {
 	display: grid;
 	grid-template-columns: auto auto;
@@ -82,6 +84,7 @@ div.postHeader img {
 	grid-gap: 10px;
 	position: relative;
 }
+*/
 
 .socialButtons {
 	display: grid;
@@ -90,6 +93,7 @@ div.postHeader img {
 	position: relative;
 }
 
+/*
 .goodButtons {
 	display: grid;
 	text-align: center;
@@ -99,6 +103,7 @@ div.postHeader img {
 .goodButtons button {
 	background-color: #4CAF50;
 }
+
 
 .badButtons button {
 	background-color: #F32121;
@@ -110,6 +115,7 @@ div.postHeader img {
 	grid-template-columns: auto auto auto;
 }
 
+*/
 .review {
 	padding-top: 10px;
 }
