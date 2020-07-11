@@ -1,0 +1,124 @@
+.modal {
+  width: 100%;
+  overflow-y:auto;
+}
+
+/* width */
+.modal::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+.modal::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+/* Handle */
+.modal::-webkit-scrollbar-thumb {
+  background: DarkGray;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+.modal::-webkit-scrollbar-thumb:hover {
+  background: #b30000;
+}
+
+
+
+.modal > .header {
+    width: 98%;
+    border-bottom: 1px solid #C0C0C0;
+    font-size: 18px;
+    margin-right: 2.5%;
+    margin-left: 2.5%;
+    text-align: center;
+}
+.modal > .content {
+  width: 98%;
+  padding: 10px 3px;
+  display: flex;
+  flex-flow: row wrap;
+  align-content: flex-start;
+  height: 600px;
+  position: relative;
+}
+
+.modal > .actions {
+  width: 98%;
+  padding: 10px 5px;
+  margin: auto;
+  text-align: center;
+}
+
+.modal > .close {
+  cursor: pointer;
+  position: absolute;
+  display: block;
+  padding: 2px 5px;
+  line-height: 20px;
+  right: -10px;
+  top: -10px;
+  font-size: 24px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #cfcece;
+}
+
+
+/* Main Page*/
+.post {
+	margin: auto;
+	text-align: center;
+	font-family: arial;
+	width: 100%;
+	display: grid;
+	grid-template-columns: auto;
+	padding: 10px;
+	background-color: white;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-gap: 10px;
+  background-color: #2196F3;
+  padding: 10px;
+  position: relative;
+}
+
+div.postHeader p {
+	float: left;
+	padding-left: 10px;
+}
+
+div.postHeader img {
+	float: right;
+	height: 50px;
+	weight: 50px;
+	padding-right: 5px;
+}
+
+.postImage {
+	grid-gap: 0px;
+	padding: 0px;
+	text-align: center;
+}
+
+.commentButton
+{
+    float: right;
+}
+
+.blueButton
+{
+    background-color: blue;
+}
+
+.socialButtons
+{
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+}

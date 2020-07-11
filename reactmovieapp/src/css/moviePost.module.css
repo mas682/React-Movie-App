@@ -60,6 +60,11 @@
     background-color: DarkGray;
 }
 
+.postButton:hover
+{
+    background-color: blue;
+}
+
 /* prevents outline on button when clicked */
 .postButton:focus
 {
@@ -126,7 +131,6 @@ fieldset, label {
 
 .rating {
     border: none;
-    float: left;
 }
 
 .rating > input { display: none; }

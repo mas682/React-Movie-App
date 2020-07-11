@@ -1,27 +1,29 @@
 import React from 'react';
 import style from './css/moviePost.module.css';
-import MoviePostPopUp from './moviePostPopUp.js';
+import Popup from 'reactjs-popup';
+import './css/moviePostPopUp.css';
+import style2 from './css/moviePostPopUp.module.css'
 
 
 
-class MoviePost extends React.Component {
+class MoviePostPopUp extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             open: false,
-            liked: false,
-            user: this.props.data.userId,
+            liked: this.props.data.liked,
+            user: this.props.data.user,
             title: this.props.data.title,
-            form: "form" + this.props.data.id,
+            form: this.props.data.form + "pop",
             rating: this.props.data.rating,
-            usedGoodButtons: this.getGoodButtons(),
-            usedBadButtons: this.getBadButtons(),
+            usedGoodButtons: this.props.data.usedGoodButtons,
+            usedBadButtons: this.props.data.usedBadButtons,
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             review: this.props.data.review
         };
-        //this.openModal = this.openModal.bind(this);
-        //this.closeModal = this.closeModal.bind(this);
+        this.openModal = this.openModal.bind(this);
+        this.closeModal = this.closeModal.bind(this);
         //this.generateButtons = this.generateButtons.bind(this);
         //this.usedButtonHandler = this.usedButtonHandler.bind(this);
         //this.validateForm = this.validateForm.bind(this);
@@ -31,32 +33,14 @@ class MoviePost extends React.Component {
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
     }
 
-    /*
-        this function is used to extract the good tags out of the props that are passed
-        into the component and create an array with the values to put into the state
-    */
-    getGoodButtons()
-    {
-        let tempArr = [];
-        this.props.data.goodTags.forEach((tag) => {
-            tempArr.push(tag.value);
-            // should also remove button from unused array if the post belongs to the current user
-        });
-        return tempArr;
+    openModal() {
+        this.setState({ open: true });
     }
 
-    /*
-        this function is used to extract the bad tags out of the props that are passed
-        into the component and create an array with the values to put into the state
-    */
-    getBadButtons()
-    {
-        let tempArr = [];
-        this.props.data.badTags.forEach((tag) => {
-            tempArr.push(tag.value);
-            // should also remove button from unused array if the post belongs to the current user
+    closeModal() {
+        this.setState({
+            open: false,
         });
-        return tempArr;
     }
 
     /*
@@ -206,11 +190,6 @@ class MoviePost extends React.Component {
         }
     }
 
-    commentHandler()
-    {
-        return <MoviePostPopUp data={this.state} />;
-    }
-
 	render() {
 
         /*  to do in any order:
@@ -251,52 +230,85 @@ class MoviePost extends React.Component {
             will need a unique form id for each review
             could just take id of review from database and append to form name
         */
+        //<button className={`${style.postButton}`} onClick={this.openModal}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
         return (
-			<div className="post">
-				<div className="postHeader">
-					<p className="username">_theonenonly</p>
-					<img src={require("./images/profile-pic.jpg")}/>
-				</div>
-				<div className="postImage">
-					<img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
-				</div>
-                <form id={this.props.form} />
-				<div className={style.centeredMaxWidthContainer}>
-                    <fieldset class={style.rating}>
-                        {stars}
-                    </fieldset>
-				</div>
-                <div className={style.centeredMaxWidthContainer}>
-                    <div className={style.proConContainter}>
-                        <div className={style.centeredMaxWidthContainer}>
-                            <h4 className={style.h4NoMargin}>The Good</h4>
-                        </div>
-                        <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
-                            {goodButtonArray}
+            <React.Fragment>
+            <button className={`${style.postButton}`} onClick={this.openModal}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
+            <Popup
+                open={this.state.open}
+                closeOnDocumentClick
+                onClose={this.closeModal}
+            >
+                <div className={style2.modal}>
+                    {/* &times is the multiplication symbol (x) --> */}
+                    <a className={style2.close} onClick={this.closeModal}>
+                    &times;
+                    </a>
+                    <div className={style2.content}>
+                        <div className={style2.post}>
+                            <div className="postHeader">
+                                <p className="username">_theonenonly</p>
+                                <img src={require("./images/profile-pic.jpg")}/>
+                            </div>
+                            <div className="postImage">
+                                <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
+                            </div>
+                            <form id={this.props.form} />
+                            <div className={style.centeredMaxWidthContainer}>
+                                <fieldset class={style.rating}>
+                                    {stars}
+                                </fieldset>
+                            </div>
+                            <div className={style.centeredMaxWidthContainer}>
+                                <div className={style.proConContainter}>
+                                    <div className={style.centeredMaxWidthContainer}>
+                                        <h4 className={style.h4NoMargin}>The Good</h4>
+                                    </div>
+                                    <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
+                                        {goodButtonArray}
+                                    </div>
+                                </div>
+                                <div className={style.proConContainter}>
+                                    <div className={style.centeredMaxWidthContainer}>
+                                        <h4 className={style.h4NoMargin}>The Bad</h4>
+                                    </div>
+                                    <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
+                                        {badButtonArray}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className={style.review}>
+                                {this.state.review}
+                            </div>
+                            <div className="socialButtonContainer">
+                                <div className="socialButtons">
+                                    {likedButton}
+                                    <button className={`${style.postButton}`}>Go to movie page</button>
+                                    <button className={`${style.postButton} ${style2.blueButton}`}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
+                                </div>
+                            </div>
+                            <div className="commentContainer">
+                                <textarea
+                                    type="text"
+                                    name="comment"
+                                    form = {this.state.form}
+                                    className={`inputFieldBoxLong`}
+                                    onChange={this.changeHandler}
+                                    rows="5"
+                                />
+                            </div>
+                            <div className="commentSubmitContainer">
+                                <button className={`${style.postButton} ${style2.commentButton}`}>Post Comment</button>
+                            </div>
                         </div>
                     </div>
-                    <div className={style.proConContainter}>
-                        <div className={style.centeredMaxWidthContainer}>
-                            <h4 className={style.h4NoMargin}>The Bad</h4>
-                        </div>
-                        <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
-                            {badButtonArray}
-                        </div>
+                    <div className={style2.actions}>
                     </div>
                 </div>
-                <div className={style.review}>
-                    {this.state.review}
-                </div>
-				<div className="socialButtonContainer">
-					<div className="socialButtons">
-                        {likedButton}
-						<button className={`${style.postButton}`}>Go to movie page</button>
-                        <MoviePostPopUp data={this.state} />
-					</div>
-				</div>
-			</div>
+            </Popup>
+            </React.Fragment>
         );
     }
 }
 
-export default MoviePost;
+export default MoviePostPopUp;
