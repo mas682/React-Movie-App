@@ -54,6 +54,7 @@ const user = (sequelize, DataTypes) => {
         // the CASCADE says if the user is deleted, delete all
         // messages associated with the user
         User.hasMany(models.Review, { onDelete: 'CASCADE' });
+        User.hasMany(models.Comment,{ onDelete: 'CASCADE' });
     };
 
     // method to find a user by username or email if email were in the

@@ -14,6 +14,7 @@ const models = {
     GoodTag: sequelize.import('./goodTag'),
     BadTag: sequelize.import('./badTag'),
     Review: sequelize.import('./review'),
+    Comment: sequelize.import('./comments'),
 };
 
 Object.keys(models).forEach(key => {

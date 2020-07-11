@@ -26,6 +26,7 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
         createBadTags();
         sampleReview();
         sampleReview2();
+        addComment();
     }
 
     app.listen(9000, () =>
@@ -152,6 +153,17 @@ const sampleReview2 = async () => {
         });
     });
 
+};
+
+// create a admin user on database creation
+const addComment = async () => {
+    await models.Comment.create(
+        {
+            value: "This is the test comment for the 1st post",
+            userId: 1,
+            reviewId: 1,
+        },
+    );
 };
 
 // view engine setup

@@ -1,14 +1,13 @@
-const badTag = (sequelize, DataTypes) => {
-    const BadTag = sequelize.define('badTag', {
+const comment = (sequelize, DataTypes) => {
+    const Comment = sequelize.define('comment', {
         // create a username field
         value: {
             // set the data type to string
-            type: DataTypes.STRING,
-            // make the value be unique
-            unique: true,
+            type: DataTypes.TEXT,
             // do not allow this to be empty
             allowNull: true,
             // validate that it is not empty
+            // will probably want to set limit on comment length
             validate: {
                 notEmpty: true,
             }
@@ -17,11 +16,12 @@ const badTag = (sequelize, DataTypes) => {
 
     // associate bad tags with reviews
     // each tag can belong to many reviews
-    BadTag.associate = models => {
-        BadTag.belongsToMany(models.Review, { through: models.ReviewBadTags});
+    Comment.associate = models => {
+        Comment.belongsTo(models.Review);
+        Comment.belongsTo(models.User);
     };
 
-    return BadTag;
+    return Comment;
 };
 
-export default badTag;
+export default comment;
