@@ -217,8 +217,11 @@ class MoviePost extends React.Component {
                your comment
                 - somewhat done
                 - need to add comments to database
+                    -done
                 - need to show comments associated with post
             2. will then have to set up database to store comments
+                - need to be able to get a username and their profile pic when
+                  getting the comments for a post, need to figure this out
             3. have to redirect to a movies page on go to movie page button push
             4. set up call to api to retrieve data for post(actually may want to pass this data into the post or a index of which post to use?)
             5. set up editing if this is the current users post
