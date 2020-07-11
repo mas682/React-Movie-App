@@ -16,6 +16,7 @@ class MoviePostPopUp extends React.Component {
             title: this.props.data.title,
             form: this.props.data.form + "pop",
             rating: this.props.data.rating,
+            comments: this.props.data.comments,
             usedGoodButtons: this.props.data.usedGoodButtons,
             usedBadButtons: this.props.data.usedBadButtons,
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
@@ -190,6 +191,13 @@ class MoviePostPopUp extends React.Component {
         }
     }
 
+    generateComments(value)
+    {
+        let username = <h3>{value.user.username}</h3>
+        let comment = <p>{value.value}</p>
+        return [username, comment]
+    }
+
 	render() {
 
         /*  to do in any order:
@@ -222,6 +230,14 @@ class MoviePostPopUp extends React.Component {
         while(counter < this.state.usedBadButtons.length)
         {
             badButtonArray.push(this.generateGoodBadButton(this.state.usedBadButtons[counter], "bad"));
+            counter = counter + 1;
+        }
+        // reset counter
+        counter = 0;
+        let commentArray = [];
+        while(counter < this.state.comments.length)
+        {
+            commentArray.push(this.generateComments(this.state.comments[counter]));
             counter = counter + 1;
         }
 
@@ -286,6 +302,9 @@ class MoviePostPopUp extends React.Component {
                                     <button className={`${style.postButton}`}>Go to movie page</button>
                                     <button className={`${style.postButton} blueButton`}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
                                 </div>
+                            </div>
+                            <div>
+                                {commentArray}
                             </div>
                             <div className="commentContainer">
                                 <textarea
