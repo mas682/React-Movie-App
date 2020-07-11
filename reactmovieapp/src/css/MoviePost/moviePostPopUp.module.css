@@ -3,6 +3,7 @@
   overflow-y:auto;
 }
 
+/* below is for the scroll bar on the pop up */
 /* width */
 .modal::-webkit-scrollbar {
   width: 10px;
@@ -26,7 +27,7 @@
 }
 
 
-
+/* below is for the sections of the pop up */
 .modal > .header {
     width: 98%;
     border-bottom: 1px solid #C0C0C0;
@@ -35,6 +36,7 @@
     margin-left: 2.5%;
     text-align: center;
 }
+
 .modal > .content {
   width: 98%;
   padding: 10px 3px;
@@ -67,58 +69,13 @@
 }
 
 
-/* Main Page*/
-.post {
-	margin: auto;
-	text-align: center;
-	font-family: arial;
+/* set the width of the post div to 100 % */
+.postWidth {
 	width: 100%;
-	display: grid;
-	grid-template-columns: auto;
-	padding: 10px;
-	background-color: white;
 }
 
-.grid-container {
-  display: grid;
-  grid-template-columns: auto auto;
-  grid-gap: 10px;
-  background-color: #2196F3;
-  padding: 10px;
-  position: relative;
-}
-
-div.postHeader p {
-	float: left;
-	padding-left: 10px;
-}
-
-div.postHeader img {
-	float: right;
-	height: 50px;
-	weight: 50px;
-	padding-right: 5px;
-}
-
-.postImage {
-	grid-gap: 0px;
-	padding: 0px;
-	text-align: center;
-}
-
+/* used for the post comment button */
 .commentButton
 {
     float: right;
-}
-
-.blueButton
-{
-    background-color: blue;
-}
-
-.socialButtons
-{
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-around;
 }

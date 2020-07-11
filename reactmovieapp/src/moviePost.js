@@ -1,6 +1,7 @@
 import React from 'react';
-import style from './css/moviePost.module.css';
+import style from './css/MoviePost/moviePost.module.css';
 import MoviePostPopUp from './moviePostPopUp.js';
+import './css/MoviePost/moviePost.css';
 
 
 
@@ -186,7 +187,7 @@ class MoviePost extends React.Component {
         if(this.state.liked)
         {
             // turn the liked button to blue
-            return <button className={`${style.postButton} ${style.likeButtonSelected}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
+            return <button className={`${style.postButton} blueButton`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
         }
         return <button className={`${style.postButton}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
     }
@@ -252,7 +253,7 @@ class MoviePost extends React.Component {
             could just take id of review from database and append to form name
         */
         return (
-			<div className="post">
+			<div className={`${style.post} ${style.postShadow}`}>
 				<div className="postHeader">
 					<p className="username">_theonenonly</p>
 					<img src={require("./images/profile-pic.jpg")}/>
@@ -261,25 +262,25 @@ class MoviePost extends React.Component {
 					<img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
 				</div>
                 <form id={this.props.form} />
-				<div className={style.centeredMaxWidthContainer}>
+				<div className="centeredMaxWidthContainer">
                     <fieldset class={style.rating}>
                         {stars}
                     </fieldset>
 				</div>
-                <div className={style.centeredMaxWidthContainer}>
-                    <div className={style.proConContainter}>
-                        <div className={style.centeredMaxWidthContainer}>
-                            <h4 className={style.h4NoMargin}>The Good</h4>
+                <div className="centeredMaxWidthContainer">
+                    <div className="proConContainter">
+                        <div className="centeredMaxWidthContainer">
+                            <h4 className="h4NoMargin">The Good</h4>
                         </div>
-                        <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
+                        <div className={`"centeredMaxWidthContainer" ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
                             {goodButtonArray}
                         </div>
                     </div>
-                    <div className={style.proConContainter}>
-                        <div className={style.centeredMaxWidthContainer}>
-                            <h4 className={style.h4NoMargin}>The Bad</h4>
+                    <div className="proConContainter">
+                        <div className="centeredMaxWidthContainer">
+                            <h4 className="h4NoMargin">The Bad</h4>
                         </div>
-                        <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
+                        <div className={`"centeredMaxWidthContainer" ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
                             {badButtonArray}
                         </div>
                     </div>

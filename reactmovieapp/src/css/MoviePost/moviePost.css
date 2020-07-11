@@ -1,0 +1,32 @@
+.blueButton
+{
+    background-color: blue;
+}
+
+/* used to create a container that is 100% of the screen and centered */
+.centeredMaxWidthContainer {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-flow: row wrap;
+    margin-top: 10px;
+}
+
+/* used to create a container that takes up half the screen */
+.proConContainter {
+    width: 45%;
+    margin-bottom: 10px;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    margin-right: 2.5%;
+    margin-left: 2.5%;
+}
+
+/* used to remove all margins from a h4 header */
+.h4NoMargin {
+    display: inline;
+    font-size: 1.5em;
+    margin-block-end: 0em;
+    margin-block-start: 0px;
+}

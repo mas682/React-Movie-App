@@ -1,8 +1,8 @@
 import React from 'react';
-import style from './css/moviePost.module.css';
+import style from './css/MoviePost/moviePost.module.css';
 import Popup from 'reactjs-popup';
-import './css/moviePostPopUp.css';
-import style2 from './css/moviePostPopUp.module.css'
+import './css/MoviePost/moviePostPopUp.css';
+import style2 from './css/MoviePost/moviePostPopUp.module.css'
 
 
 
@@ -170,7 +170,7 @@ class MoviePostPopUp extends React.Component {
         if(this.state.liked)
         {
             // turn the liked button to blue
-            return <button className={`${style.postButton} ${style.likeButtonSelected}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
+            return <button className={`${style.postButton} blueButton`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
         }
         return <button className={`${style.postButton}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
     }
@@ -245,7 +245,7 @@ class MoviePostPopUp extends React.Component {
                     &times;
                     </a>
                     <div className={style2.content}>
-                        <div className={style2.post}>
+                        <div className={`${style.post} ${style2.postWidth}`}>
                             <div className="postHeader">
                                 <p className="username">_theonenonly</p>
                                 <img src={require("./images/profile-pic.jpg")}/>
@@ -254,25 +254,25 @@ class MoviePostPopUp extends React.Component {
                                 <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
                             </div>
                             <form id={this.props.form} />
-                            <div className={style.centeredMaxWidthContainer}>
+                            <div className="centeredMaxWidthContainer">
                                 <fieldset class={style.rating}>
                                     {stars}
                                 </fieldset>
                             </div>
-                            <div className={style.centeredMaxWidthContainer}>
-                                <div className={style.proConContainter}>
-                                    <div className={style.centeredMaxWidthContainer}>
-                                        <h4 className={style.h4NoMargin}>The Good</h4>
+                            <div className="centeredMaxWidthContainer">
+                                <div className="proConContainter">
+                                    <div className="centeredMaxWidthContainer">
+                                        <h4 className="h4NoMargin">The Good</h4>
                                     </div>
-                                    <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
+                                    <div className={`"centeredMaxWidthContainer" ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
                                         {goodButtonArray}
                                     </div>
                                 </div>
-                                <div className={style.proConContainter}>
-                                    <div className={style.centeredMaxWidthContainer}>
-                                        <h4 className={style.h4NoMargin}>The Bad</h4>
+                                <div className="proConContainter">
+                                    <div className="centeredMaxWidthContainer">
+                                        <h4 className="h4NoMargin">The Bad</h4>
                                     </div>
-                                    <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
+                                    <div className={`"centeredMaxWidthContainer" ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
                                         {badButtonArray}
                                     </div>
                                 </div>
@@ -284,7 +284,7 @@ class MoviePostPopUp extends React.Component {
                                 <div className="socialButtons">
                                     {likedButton}
                                     <button className={`${style.postButton}`}>Go to movie page</button>
-                                    <button className={`${style.postButton} ${style2.blueButton}`}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
+                                    <button className={`${style.postButton} blueButton`}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
                                 </div>
                             </div>
                             <div className="commentContainer">
