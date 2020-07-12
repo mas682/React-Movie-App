@@ -225,6 +225,7 @@ class MoviePost extends React.Component {
                 - need to be able to get a username and their profile pic when
                   getting the comments for a post, need to figure this out
                     - done but need to get profile pics in there
+                - need to add timestamp to comments and make usernames clickable
             3. have to redirect to a movies page on go to movie page button push
             4. set up call to api to retrieve data for post(actually may want to pass this data into the post or a index of which post to use?)
             5. set up editing if this is the current users post

@@ -193,9 +193,16 @@ class MoviePostPopUp extends React.Component {
 
     generateComments(value)
     {
-        let username = <h3>{value.user.username}</h3>
-        let comment = <p>{value.value}</p>
-        return [username, comment]
+        return <React.Fragment>
+                        <div className={style2.commentContainer}>
+                            <div className={style2.userNameBox}>
+                                <div>{value.user.username}</div>
+                            </div>
+                            <div className={style2.commentBox}>
+                                <div>{value.value}</div>
+                            </div>
+                        </div>
+                    </React.Fragment>
     }
 
 	render() {
@@ -233,12 +240,12 @@ class MoviePostPopUp extends React.Component {
             counter = counter + 1;
         }
         // reset counter
-        counter = 0;
+        counter = this.state.comments.length -1;
         let commentArray = [];
-        while(counter < this.state.comments.length)
+        while(counter > -1)
         {
             commentArray.push(this.generateComments(this.state.comments[counter]));
-            counter = counter + 1;
+            counter = counter -1;
         }
 
         /*
@@ -304,21 +311,23 @@ class MoviePostPopUp extends React.Component {
                                 </div>
                             </div>
                             <div>
-                                {commentArray}
-                            </div>
-                            <div className="commentContainer">
                                 <textarea
                                     type="text"
                                     name="comment"
                                     form = {this.state.form}
                                     className={`inputFieldBoxLong`}
                                     onChange={this.changeHandler}
-                                    rows="5"
+                                    rows="3"
+                                    placeholder="Add a comment"
                                 />
                             </div>
                             <div className="commentSubmitContainer">
                                 <button className={`${style.postButton} ${style2.commentButton}`}>Post Comment</button>
                             </div>
+                            <div className={style2.commentsContainer}>
+                                {commentArray}
+                            </div>
+
                         </div>
                     </div>
                     <div className={style2.actions}>

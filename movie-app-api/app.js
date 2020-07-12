@@ -27,6 +27,8 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
         sampleReview();
         sampleReview2();
         addComment();
+        addComment2();
+        addComment3();
     }
 
     app.listen(9000, () =>
@@ -93,6 +95,24 @@ const createUsers = async () => {
             lastName: 'admin',
         },
     );
+    await models.User.create(
+        {
+            username: 'steelcity',
+            email: 'steel@email.com',
+            password: 'password',
+            firstName: 'Matt',
+            lastName: 'Stropkey',
+        },
+    );
+    await models.User.create(
+        {
+            username: '_theonenonly',
+            email: 'theonenonly@email.com',
+            password: 'password',
+            firstName: 'Shawn',
+            lastName: 'Talbert',
+        },
+    ).then(addComment);
 };
 
 // for testing
@@ -165,6 +185,31 @@ const addComment = async () => {
         },
     );
 };
+
+// create a admin user on database creation
+const addComment2 = async () => {
+    await models.Comment.create(
+        {
+            value: "This is another comment to test the look of comments associated with this post.  I completely "
+                    +"agree with you on this review but I would give it 5 stars.",
+            userId: 1,
+            reviewId: 1,
+        },
+    );
+};
+
+
+const addComment3 = async () => {
+    await models.Comment.create(
+        {
+            value: "The scene where they talk about the lion and the tuna has to be my favorite part."
+                    +" Will Ferrell's face during the whole seen is too funny.",
+            userId: 1,
+            reviewId: 1,
+        },
+    );
+};
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

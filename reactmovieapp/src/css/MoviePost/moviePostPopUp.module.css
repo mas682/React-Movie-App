@@ -79,3 +79,32 @@
 {
     float: right;
 }
+
+/* this is the container for ALL comments */
+.commentsContainer {
+    margin-top: 2%;
+}
+
+/* used for each individual comment */
+.commentContainer {
+    width: 100%;
+    border-top: 1px solid gray;
+}
+
+/* used to hold user name and picture */
+.userNameBox {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    margin-top: 2%;
+    margin-bottom: 1%;
+    font-weight: bold;
+}
+
+.commentBox
+{
+    margin-left: 2%;
+    margin-right: 2%;
+    margin-bottom: 2%;
+    text-align: left;
+}
