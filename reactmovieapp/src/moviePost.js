@@ -14,6 +14,7 @@ class MoviePost extends React.Component {
             user: this.props.data.userId,
             title: this.props.data.title,
             form: "form" + this.props.data.id,
+            id: this.props.data.id,
             rating: this.props.data.rating,
             comments: this.props.data.comments,
             usedGoodButtons: this.getGoodButtons(),

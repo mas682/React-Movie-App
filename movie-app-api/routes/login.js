@@ -46,7 +46,7 @@ const checkLogin = (req, res) =>
         if(user.password == pass)
         {
             // create the valie to put into the cookie
-            let value = JSON.stringify({name: user.username, email: user.email});
+            let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
             // create the cookie with expiration in 1 day
             res.cookie('values', value, {maxAge: 86400000, signed: true, httpOnly: true});
             res.send('created cookie');
@@ -62,4 +62,3 @@ const checkLogin = (req, res) =>
 };
 
 export {login};
-//module.exports=router;

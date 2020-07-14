@@ -101,6 +101,7 @@
     font-weight: bold;
 }
 
+/* used to hold a users actual comment */
 .commentBox
 {
     margin-left: 2%;

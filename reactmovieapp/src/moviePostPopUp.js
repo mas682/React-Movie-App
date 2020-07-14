@@ -15,8 +15,11 @@ class MoviePostPopUp extends React.Component {
             user: this.props.data.user,
             title: this.props.data.title,
             form: this.props.data.form + "pop",
+            id: this.props.data.id,
             rating: this.props.data.rating,
             comments: this.props.data.comments,
+            // used to hold a individual users comment
+            comment: "",
             usedGoodButtons: this.props.data.usedGoodButtons,
             usedBadButtons: this.props.data.usedBadButtons,
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
@@ -27,9 +30,8 @@ class MoviePostPopUp extends React.Component {
         this.closeModal = this.closeModal.bind(this);
         //this.generateButtons = this.generateButtons.bind(this);
         //this.usedButtonHandler = this.usedButtonHandler.bind(this);
-        //this.validateForm = this.validateForm.bind(this);
-        //this.callApi = this.callApi.bind(this);
-        //this.changeHandler = this.changeHandler.bind(this);
+        this.postComment = this.postComment.bind(this);
+        this.changeHandler = this.changeHandler.bind(this);
         //this.generateTagString = this.generateTagString.bind(this);
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
     }
@@ -42,6 +44,13 @@ class MoviePostPopUp extends React.Component {
         this.setState({
             open: false,
         });
+    }
+
+    // used to update the state for the title, review, and the rating
+    changeHandler(event) {
+        let name = event.target.name;
+        let value = event.target.value;
+        this.setState({[name]: value});
     }
 
     /*
@@ -151,6 +160,29 @@ class MoviePostPopUp extends React.Component {
         {
             this.setState({liked: false});
         }
+    }
+
+    /*
+        Used to post comments to the server for a review
+    */
+    postComment()
+    {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                comment: this.state.comment,
+                reviewId: this.state.id,
+            })
+        };
+
+        fetch("http://localhost:9000/comment", requestOptions)
+            .then(res => {
+                return res.text();
+            }).then(msg => {
+                // get the response text
+                console.log(msg);
+            });
     }
 
     componentDidMount() {
@@ -322,7 +354,7 @@ class MoviePostPopUp extends React.Component {
                                 />
                             </div>
                             <div className="commentSubmitContainer">
-                                <button className={`${style.postButton} ${style2.commentButton}`}>Post Comment</button>
+                                <button className={`${style.postButton} ${style2.commentButton}`} onClick={this.postComment}>Post Comment</button>
                             </div>
                             <div className={style2.commentsContainer}>
                                 {commentArray}

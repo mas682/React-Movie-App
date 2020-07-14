@@ -8,6 +8,7 @@ import {getProfile} from './profile.js';
 import {signUp} from './signup.js';
 import {homePage} from './homePage.js';
 import {getUserInfo} from './getUserInfo.js';
+import {addComment} from './comments.js';
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -36,6 +37,11 @@ router.get('/getuserinfo', function(req, res, next) {
 // used to see a users posts
 router.get('/profile', function(req, res, next) {
     getProfile(req, res, next);
+});
+
+// used to add a comment to a post
+router.post('/comment', function(req, res, next) {
+    addComment(req, res, next);
 });
 
 module.exports = router;
