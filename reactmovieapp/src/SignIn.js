@@ -13,11 +13,15 @@ class SignInPopup extends React.Component {
 		this.state = {
 			open: false,
 			username: "",
-			password: ""
+			password: "",
+			usernameError: "",
+			passwordError: ""
 		};
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
 		this.changeHandler = this.changeHandler.bind(this);
+		this.validateForm = this.validateForm.bind(this);
+		this.callApi = this.callApi.bind(this);
 	}
 	
 	openModal() {
@@ -28,7 +32,9 @@ class SignInPopup extends React.Component {
         this.setState({
             open: false,
 			username: "",
-			password: ""
+			password: "",
+			usernameError: "",
+			passwordError: ""
         });
     }
 	
@@ -37,6 +43,40 @@ class SignInPopup extends React.Component {
         let value = event.target.value;
         this.setState({[name]: value});
     }
+	
+	callApi() {
+		const requestOptions = {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				username: this.state.username,
+				password: this.state.password
+			})
+		};
+		
+		let returnValue = 0;
+		return fetch("http://localhost:9000/login", requestOptions)
+			.then(res => {return res.text()});
+	}
+	
+	validateForm(event) {
+		event.preventDefault();
+		let error = false;
+		
+		if(!this.state.username) {
+			this.setState({"usernameError": "Username is required"});
+			error = true;
+		} else {
+			this.setState({"usernameError": ""});
+		}
+		
+		if(!this.state.password) {
+			this.setState({"passwordError": "Password is required"});
+			error = true;
+		} else {
+			this.setState({"passwordError": ""});
+		}
+	}
 	
     render() {
 		let usernameInput =  (
@@ -66,6 +106,40 @@ class SignInPopup extends React.Component {
                     onChange={this.changeHandler}
                 />
             </React.Fragment>);
+			
+		if(this.state.usernameError) {
+			usernameInput = (
+				<React.Fragment>
+					<label>
+						<h4 className={`${style.inputFieldH4} errorLabel`}>Username</h4>
+					</label>
+					<input
+						type="text"
+						name="username"
+						form="form1"
+						className="inputFieldBoxLong inputBoxError"
+						onChange={this.changeHandler}
+					/>
+					<small className="errorTextSmall">{this.state.usernameError}</small>
+				</React.Fragment>);
+		}
+		
+		if(this.state.passwordError) {
+			passwordInput = (
+				<React.Fragment>
+					<label>
+						<h4 className={`${style.inputFieldH4} errorLabel`}>Password</h4>
+					</label>
+					<input
+						type="password"
+						name="password"
+						form="form1"
+						className="inputFieldBoxLong inputBoxError"
+						onChange={this.changeHandler}
+					/>
+					<small className="errorTextSmall">{this.state.passwordError}</small>
+				</React.Fragment>);
+		}
 			
 		return (
 			<div>
