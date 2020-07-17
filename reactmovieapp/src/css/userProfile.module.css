@@ -1,0 +1,35 @@
+.profileHeader {
+    height: 200px;
+    margin: auto;
+	text-align: left;
+	font-family: arial;
+	display: grid;
+	grid-template-columns: auto;
+	padding: 10px;
+	background-color: #333;
+    color: white;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    width: 60%;
+}
+
+
+.profilePic {
+    float: left;
+	height: 125px;
+	weight: 125px;
+	padding-left: 5px;
+}
+
+.mainBodyContainer
+{
+    width: 70%;
+    height: auto;
+    margin-left: 15%;
+    margin-right: 15%;
+    margin-top: 20px;
+    position: absolute;
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+    margin-bottom: 20px;
+}

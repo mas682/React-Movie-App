@@ -6,16 +6,15 @@ import MainPage from'./MainPage.js'
 import UserProfile from './userProfile.js'
 import history from './History';
 
-function Routes ()//extends React.Component
+class Routes extends React.Component
 {
-    /*
+
     constructor(props) {
         super(props);
     }
 
     render()
     {
-    */
         /* FOR TESTING
         let test = <p> authenticated2: true </p>;
         if(!this.props.authenticated)
@@ -33,7 +32,7 @@ function Routes ()//extends React.Component
                 </Switch>
             </Router>
         );
-    //}
+    }
 }
 
 export default Routes;
