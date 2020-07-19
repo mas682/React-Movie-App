@@ -91,9 +91,11 @@ class MainPage extends React.Component {
 			test2 = <p> authenticated to server: false </p>
 		}
 		let post1 = "";
+		let post2 = "";
 		if(this.state.posts[0] != undefined)
 		{
 			post1 = <MoviePost data={this.state.posts[0]} form="form1" />
+			post2= <MoviePost data={this.state.posts[1]} form="form1" />
 		}
 
 		/*
@@ -138,6 +140,7 @@ class MainPage extends React.Component {
 						Or on a users timeline
 					*/
 					{post1}
+					{post2}
 					<div className="mainBodyChild">
 						{test}
 						{test2}

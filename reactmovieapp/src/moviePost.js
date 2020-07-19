@@ -67,86 +67,95 @@ class MoviePost extends React.Component {
     generateRatingStars()
     {
         let stars = [];
+        let tempId = "star5" + this.state.id;
         if(this.state.rating == 5.0)
         {
-            stars.push(<React.Fragment><input type="radio" id="star5" name={style.rating} value="5" form={this.state.form} checked/><label class={style.full} for="star5" title="Awesome - 5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={this.state.form} checked={true}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="star5" name={style.rating} value="5" form={this.state.form}/><label class={style.full} for="star5" title="Awesome - 5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={this.state.form}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
         }
+        tempId = "star4half" + this.state.id;
         if(this.state.rating == 4.50)
         {
-            stars.push(<React.Fragment><input type="radio" id="star4half" name={style.rating} value="4.5" form={this.state.form} checked/><label class={style.half} for="star4half" title="Pretty good - 4.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="star4half" name={style.rating} value="4.5" form={this.state.form}/><label class={style.half} for="star4half" title="Pretty good - 4.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={this.state.form}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
         }
+        tempId = "star4" + this.state.id;
         if(this.state.rating == 4.00)
         {
-            stars.push(<React.Fragment><input type="radio" id="star4" name={style.rating} value="4" form={this.state.form} checked/><label class = {style.full} for="star4" title="Pretty good - 4 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={this.state.form} checked={true}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="star4" name={style.rating} value="4" form={this.state.form}/><label class = {style.full} for="star4" title="Pretty good - 4 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={this.state.form}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
         }
+        tempId = "star3half" + this.state.id;
         if(this.state.rating == 3.50)
         {
-            stars.push(<React.Fragment><input type="radio" id="star3half" name={style.rating} value="3.5" form={this.state.form} checked/><label class={style.half} for="star3half" title="Meh - 3.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="star3half" name={style.rating} value="3.5" form={this.state.form}/><label class={style.half} for="star3half" title="Meh - 3.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={this.state.form}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
         }
+        tempId = "star3" + this.state.id;
         if(this.state.rating == 3.00)
         {
-            stars.push(<React.Fragment><input type="radio" id="star3" name={style.rating} value="3" form={this.state.form} checked/><label class = {style.full} for="star3" title="Meh - 3 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={this.state.form} checked={true}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="star3" name={style.rating} value="3" form={this.state.form}/><label class = {style.full} for="star3" title="Meh - 3 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={this.state.form}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
         }
+        tempId = "star2half" + this.state.id;
         if(this.state.rating == 2.50)
         {
-            stars.push(<React.Fragment><input type="radio" id="star2half" name={style.rating} value="2.5" form={this.state.form} checked/><label class={style.half} for="star2half" title="Kinda bad - 2.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="star2half" name={style.rating} value="2.5" form={this.state.form}/><label class={style.half} for="star2half" title="Kinda bad - 2.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={this.state.form}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
         }
-
+        tempId = "star2" + this.state.id;
         if(this.state.rating == 2.00)
         {
-            stars.push(<React.Fragment><input type="radio" id="star2" name={style.rating} value="2" form={this.state.form} checked/><label class = {style.full} for="star2" title="Kinda bad - 2 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={this.state.form} checked={true}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="star2" name={style.rating} value="2" form={this.state.form}/><label class = {style.full} for="star2" title="Kinda bad - 2 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={this.state.form}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
         }
+        tempId = "star1half" + this.state.id;
         if(this.state.rating == 1.50)
         {
-            stars.push(<React.Fragment><input type="radio" id="star1half" name={style.rating} value="1.5" form={this.state.form} checked/><label class={style.half} for="star1half" title="Meh - 1.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="star1half" name={style.rating} value="1.5" form={this.state.form}/><label class={style.half} for="star1half" title="Meh - 1.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={this.state.form}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
         }
+        tempId = "star1half" + this.state.id;
         if(this.state.rating == 1.00)
         {
-            stars.push(<React.Fragment><input type="radio" id="star1" name={style.rating} value="1" form={this.state.form} checked/><label class = {style.full} for="star1" title="Sucks big time - 1 star"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={this.state.form} checked={true}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="star1" name={style.rating} value="1" form={this.state.form}/><label class = {style.full} for="star1" title="Sucks big time - 1 star"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={this.state.form}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
         }
+        tempId = "starhalf" + this.state.id;
         if(this.state.rating == 0.50)
         {
-            stars.push(<React.Fragment><input type="radio" id="starhalf" name={style.rating} value="0.5" form={this.state.form} checked/><label class={style.half} for="starhalf" title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
         }
         else
         {
-            stars.push(<React.Fragment><input type="radio" id="starhalf" name={style.rating} value="0.5" form={this.state.form}/><label class={style.half} for="starhalf" title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
+            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={this.state.form}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
         }
         return stars;
     }
@@ -270,7 +279,7 @@ class MoviePost extends React.Component {
 				<div className="postImage">
 					<img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
 				</div>
-                <form id={this.props.form} />
+                <form id={this.state.form} />
 				<div className="centeredMaxWidthContainer">
                     <fieldset class={style.rating}>
                         {stars}

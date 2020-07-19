@@ -2,7 +2,8 @@ import React from 'react';
 // should get rid of this eventually
 import { withRouter } from "react-router-dom";
 import MoviePost from './moviePost.js';
-import style from './css/userProfile.module.css';
+import style5 from './css/userProfile.module.css';
+import './css/forms.css'
 
 
 class UserProfile extends React.Component {
@@ -35,15 +36,14 @@ class UserProfile extends React.Component {
         });
 
         return (
-            <div className={style.mainBodyContainer}>
-                <div className={style.profileHeader}>
-                    <img className={style.profilePic} src={require("./images/profile-pic.jpg")}/>
+
+            <div className={style5.mainBodyContainer}>
+                <div className={style5.profileHeader}>
+                    <img className={style5.profilePic} src={require("./images/profile-pic.jpg")}/>
                     <h3>{this.state.id}</h3>
                     Space filler
                 </div>
-                <div className="mainBodyChild">
-                    {posts}
-                </div>
+                {posts}
             </div>
         );
     }
