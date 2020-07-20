@@ -23,11 +23,11 @@ class SignInPopup extends React.Component {
 		this.validateForm = this.validateForm.bind(this);
 		this.callApi = this.callApi.bind(this);
 	}
-	
+
 	openModal() {
 		this.setState({ open: true });
 	}
-	
+
 	closeModal() {
         this.setState({
             open: false,
@@ -37,47 +37,67 @@ class SignInPopup extends React.Component {
 			passwordError: ""
         });
     }
-	
+
 	changeHandler(event) {
         let name = event.target.name;
         let value = event.target.value;
         this.setState({[name]: value});
     }
-	
+
 	callApi() {
 		const requestOptions = {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
+			credentials: 'include',
 			body: JSON.stringify({
 				username: this.state.username,
 				password: this.state.password
 			})
 		};
-		
+
 		let returnValue = 0;
 		return fetch("http://localhost:9000/login", requestOptions)
-			.then(res => {return res.text()});
+			.then(res => {
+				console.log(res);
+				return res.text()
+			});
 	}
-	
+
 	validateForm(event) {
 		event.preventDefault();
 		let error = false;
-		
+
 		if(!this.state.username) {
 			this.setState({"usernameError": "Username is required"});
 			error = true;
 		} else {
 			this.setState({"usernameError": ""});
 		}
-		
+
 		if(!this.state.password) {
 			this.setState({"passwordError": "Password is required"});
 			error = true;
 		} else {
 			this.setState({"passwordError": ""});
 		}
+
+		if(!error)
+		{
+			this.callApi().then(result => {
+				if(result == "created cookie")
+				{
+					alert(result);
+					alert("You have successfully logged in");
+					this.setState({open: false});
+				}
+				else
+				{
+					console.log(result);
+					alert("Login failed");
+				}
+			});
+		}
 	}
-	
+
     render() {
 		let usernameInput =  (
             <React.Fragment>
@@ -92,7 +112,7 @@ class SignInPopup extends React.Component {
                     onChange={this.changeHandler}
                 />
             </React.Fragment>);
-			
+
 		let passwordInput = (
             <React.Fragment>
                 <label>
@@ -106,7 +126,7 @@ class SignInPopup extends React.Component {
                     onChange={this.changeHandler}
                 />
             </React.Fragment>);
-			
+
 		if(this.state.usernameError) {
 			usernameInput = (
 				<React.Fragment>
@@ -123,7 +143,7 @@ class SignInPopup extends React.Component {
 					<small className="errorTextSmall">{this.state.usernameError}</small>
 				</React.Fragment>);
 		}
-		
+
 		if(this.state.passwordError) {
 			passwordInput = (
 				<React.Fragment>
@@ -140,7 +160,7 @@ class SignInPopup extends React.Component {
 					<small className="errorTextSmall">{this.state.passwordError}</small>
 				</React.Fragment>);
 		}
-			
+
 		return (
 			<div>
 				<button className="button" onClick={this.openModal}>
@@ -174,6 +194,7 @@ class SignInPopup extends React.Component {
 								form="form1"
 								value="create_account"
 								className="submitButton"
+								onClick={this.validateForm}
 							>SIGN IN</button>
 						</div>
 						<div className="rememberForgot">
