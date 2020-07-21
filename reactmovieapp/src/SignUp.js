@@ -64,7 +64,6 @@ class SignUpPopup extends React.Component {
             })
         };
 
-        let returnValue = 0;
         return fetch("http://localhost:9000/signup", requestOptions)
             .then(res => {return res.text()});
     }

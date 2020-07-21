@@ -16,15 +16,13 @@ router.use(cookieParser('somesecrettosigncookie'));
 const verifyLogin= async (cookie)=>
 {
     let valid = false;
+    cookie = JSON.parse(cookie);
     if(cookie != undefined)
     {
         // should be in try catch
         // get the values from the cookie
-        let values = JSON.parse(cookie.values);
-        // for testing
-        console.log("JSON: " + values.name);
         // see if the user is valid
-        await models.User.findByLogin('admin')
+        await models.User.findByLogin(cookie.name)
         .then((user)=>{
             if(user != null)
             {

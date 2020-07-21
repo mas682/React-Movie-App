@@ -5,12 +5,12 @@ import {verifyLogin} from './globals.js';
 // function to see if a user can login and returns a cookie to use
 const login = (req, res, next) => {
     // get the signed cookies in the request if there are any
-    let cookie = req.signedCookies.values;
+    let cookie = req.signedCookies.MovieAppCookie;
     // if there is a signed cookie in the request
     if(cookie != undefined)
     {
         // see if the cookie has a valid user
-        verifyLogin(req.signedCookies).then((cookieValid) =>
+        verifyLogin(cookie).then((cookieValid) =>
         {
             if(cookieValid)
             {
@@ -36,10 +36,10 @@ const checkLogin = (req, res) =>
 {
     // check login and generate cookie if login allowed
     // for testing
-    let pass = "password";
+    let pass = req.body.password;
     // find a user by their login
     // admin will be replaced with req.body.user
-    models.User.findByLogin('admin')
+    models.User.findByLogin(req.body.username)
     .then((user)=>{
         // if the password is correct
         // may want to do something like salting, not really secure

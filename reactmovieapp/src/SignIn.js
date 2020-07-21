@@ -47,6 +47,7 @@ class SignInPopup extends React.Component {
 	callApi() {
 		const requestOptions = {
 			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
 			credentials: 'include',
 			body: JSON.stringify({
 				username: this.state.username,
@@ -87,6 +88,11 @@ class SignInPopup extends React.Component {
 				{
 					alert(result);
 					alert("You have successfully logged in");
+					this.setState({open: false});
+				}
+				else if(result == "You are already logged in")
+				{
+					alert(result);
 					this.setState({open: false});
 				}
 				else
