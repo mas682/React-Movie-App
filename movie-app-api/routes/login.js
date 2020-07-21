@@ -16,9 +16,7 @@ const login = (req, res, next) => {
         {
             if(cookieValid)
             {
-				res.send('You are logged in.' + req.signedCookies.values)
-                //res.send(req.signedCookies.values);
-				//checkLogin(JSON.parse(req.signedCookies.values), res);
+				res.send('You are already logged in.')
             }
             // cookie not valid
             else

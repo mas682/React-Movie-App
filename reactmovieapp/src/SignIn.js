@@ -47,26 +47,13 @@ class SignInPopup extends React.Component {
 	callApi() {
 		const requestOptions = {
 			method: 'POST',
-			headers: { 
-				'Content-Type': 'application/json',
-				'Accept': 'application/json'
-			},
-			body: {
 			headers: { 'Content-Type': 'application/json' },
 			credentials: 'include',
-			body: JSON.stringify({
+			body: ({
 				username: this.state.username,
 				password: this.state.password
-			}
+			})
 		};
-		
-		return requestOptions.body
-		
-		//let returnValue = 0;
-		//return fetch("http://localhost:9000/login", requestOptions)
-			//.then(res => {return res.text()})
-			//.then(contents => console.log(contents))
-			//.catch(() => console.log("Can't access the URL."));
 
 		let returnValue = 0;
 		return fetch("http://localhost:9000/login", requestOptions)
@@ -93,21 +80,6 @@ class SignInPopup extends React.Component {
 		} else {
 			this.setState({"passwordError": ""});
 		}
-		
-		if(!error) {
-			this.callApi();
-			/*
-			this.callApi().then(found => {
-				if(found == "created cookie") {
-					alert("Welcome username");
-					this.closeModal();
-				} else if(found == "incorrect password") {
-					this.setState({"usernameError": "Username and/or Password is incorrect"});
-				} else {
-					alert("Some other error occurred when trying to log the user in.");
-				}
-			});
-			*/
 
 		if(!error)
 		{
@@ -145,7 +117,8 @@ class SignInPopup extends React.Component {
                     className="inputFieldBoxLong validInputBox"
                     onChange={this.changeHandler}
                 />
-            </React.Fragment>);
+            </React.Fragment>
+		);
 
 		let passwordInput = (
             <React.Fragment>
