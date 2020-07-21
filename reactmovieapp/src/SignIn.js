@@ -47,16 +47,23 @@ class SignInPopup extends React.Component {
 	callApi() {
 		const requestOptions = {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({
+			headers: { 
+				'Content-Type': 'application/json',
+				'Accept': 'application/json'
+			},
+			body: {
 				username: this.state.username,
 				password: this.state.password
-			})
+			}
 		};
 		
-		let returnValue = 0;
-		return fetch("http://localhost:9000/login", requestOptions)
-			.then(res => {return res.text()});
+		return requestOptions.body
+		
+		//let returnValue = 0;
+		//return fetch("http://localhost:9000/login", requestOptions)
+			//.then(res => {return res.text()})
+			//.then(contents => console.log(contents))
+			//.catch(() => console.log("Can't access the URL."));
 	}
 	
 	validateForm(event) {
@@ -75,6 +82,22 @@ class SignInPopup extends React.Component {
 			error = true;
 		} else {
 			this.setState({"passwordError": ""});
+		}
+		
+		if(!error) {
+			this.callApi();
+			/*
+			this.callApi().then(found => {
+				if(found == "created cookie") {
+					alert("Welcome username");
+					this.closeModal();
+				} else if(found == "incorrect password") {
+					this.setState({"usernameError": "Username and/or Password is incorrect"});
+				} else {
+					alert("Some other error occurred when trying to log the user in.");
+				}
+			});
+			*/
 		}
 	}
 	
@@ -172,7 +195,7 @@ class SignInPopup extends React.Component {
 						<div className="actions">
 							<button
 								form="form1"
-								value="create_account"
+								value="login_user"
 								className="submitButton"
 							>SIGN IN</button>
 						</div>

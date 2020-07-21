@@ -13,7 +13,7 @@ const signUp = (req, res, next) => {
             password: req.body.password,
             firstName: req.body.firstName,
             lastName: req.body.lastName,
-            }}
+        }}
     ).then(([user, created]) => {
         if(created)
         {

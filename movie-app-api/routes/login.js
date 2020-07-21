@@ -1,5 +1,7 @@
 import models, { sequelize } from '../src/models';
 import {verifyLogin} from './globals.js';
+import SignInPopup from '../../reactmovieapp/src/SignIn.js'
+const Op = require('Sequelize').Op;
 
 
 // function to see if a user can login and returns a cookie to use
@@ -14,7 +16,9 @@ const login = (req, res, next) => {
         {
             if(cookieValid)
             {
-                res.send("You are already logged in");
+				res.send('You are logged in.' + req.signedCookies.values)
+                //res.send(req.signedCookies.values);
+				//checkLogin(JSON.parse(req.signedCookies.values), res);
             }
             // cookie not valid
             else
@@ -34,13 +38,15 @@ const login = (req, res, next) => {
 
 const checkLogin = (req, res) =>
 {
+	let request = req.callApi();
+	res.send(request)
     // check login and generate cookie if login allowed
     // for testing
-    let pass = "password";
+	/*
+    let pass = 'password';
     // find a user by their login
     // admin will be replaced with req.body.user
-    models.User.findByLogin('admin')
-    .then((user)=>{
+    models.User.findByLogin('admin').then((user)=>{
         // if the password is correct
         // may want to do something like salting, not really secure
         if(user.password == pass)
@@ -48,7 +54,7 @@ const checkLogin = (req, res) =>
             // create the valie to put into the cookie
             let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
             // create the cookie with expiration in 1 day
-            res.cookie('values', value, {maxAge: 86400000, signed: true, httpOnly: true});
+            res.cookie('values', value, {maxAge: 60000, signed: true, httpOnly: true});
             res.send('created cookie');
         }
         else
@@ -59,6 +65,7 @@ const checkLogin = (req, res) =>
             res.send('incorrect password');
         }
     });
+	*/
 };
 
 export {login};
