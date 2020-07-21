@@ -16,7 +16,7 @@ const getProfile = (req, res, next) => {
             if(cookieValid)
             {
                 // get the reviews and pass the cookie
-                getReviews(JSON.parse(req.signedCookies.values), res);
+                getReviews(JSON.parse(req.signedCookies.values), req, res);
             }
             // cookie not valid
             else
@@ -28,24 +28,27 @@ const getProfile = (req, res, next) => {
     // if no cookie was found
     else
     {
-        res.send("reroute as not logged in");
+        getReviews(null, req, res);
+        //res.send("reroute as not logged in");
         // reroute to login page
         // should redirect to home page at this point if login worked
         // or let client side handle the reroute?
     }
 };
 
-const getReviews = (cookie, res) =>
+const getReviews = (cookie, req, res) =>
 {
-    let username = cookie.name;
+    //let username = cookie.name;
+    let username = req.params.userId;
     // find a user by their login
     models.User.findByLogin(username)
     .then((user)=>{
         models.Review.findById(models, user.id)
         .then((reviews)=>
         {
+            console.log(reviews);
             // send the reveiws associated with the user
-            res.send(reviews);
+            res.status(200).send(reviews);
         });
     });
 };

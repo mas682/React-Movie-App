@@ -16,7 +16,7 @@ router.get('/', function(req, res, next) {
 });
 
 // used when trying to login
-router.get('/login', function(req, res, next) {
+router.post('/login', function(req, res, next) {
     login(req, res, next);
 });
 
@@ -35,7 +35,7 @@ router.get('/getuserinfo', function(req, res, next) {
 });
 
 // used to see a users posts
-router.get('/profile', function(req, res, next) {
+router.get('/profile/:userId', function(req, res, next) {
     getProfile(req, res, next);
 });
 

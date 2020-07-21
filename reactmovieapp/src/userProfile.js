@@ -15,7 +15,7 @@ class UserProfile extends React.Component {
             // in the router, set the username as :id
             id: this.props.match.params.id,
             // this will be set by the api call
-            posts: [{"id":1,"title":"Movie","rating":"2.50","review":"Sublimely funny, particularly in the first half-hour, with a gorgeous running gag about the band TLC and a fabulously moronic death scene for The Rock and Sam Jackson, who play a couple of hero-cops with a propensity for wrecking half the city in pursuit of small-time cannabis dealers.\nWahlberg is excellent - as unexpectedly good as Channing Tatum was in 21 Jump Street, though here the Max Payne and The Departed actor plays a coiled,perpetually furious bundle of resentment and frustration, ground down by the everyday humiliations that come with having accidentally shot Derek Jeter","updatedAt":"2020-07-12T05:36:29.436Z","goodTags":[{"id":1,"value":"Acting"},{"id":3,"value":"Too short"},{"id":2,"value":"Jokes"}],"badTags":[{"id":6,"value":"Theme"},{"id":4,"value":"Too long"},{"id":5,"value":"Story"}],"comments":[{"id":3,"value":"The scene where they talk about the lion and the tuna has to be my  favorite part.  Will Ferrell's face during the whole seen is too funny.","updatedAt":"2020-07-12T05:36:29.439Z","user":{"username":"admin","email":"admin@email.com"}},{"id":2,"value":"This is another comment to test the look of comments associated with this post.  I completely agree with you on this review but I would give it 5 stars.","updatedAt":"2020-07-12T05:36:29.438Z","user":{"username":"admin","email":"admin@email.com"}},{"id":1,"value":"This is the test comment for the 1st post","updatedAt":"2020-07-12T05:36:29.438Z","user":{"username":"admin","email":"admin@email.com"}}]},{"id":2,"title":"another movie","rating":"2.50","review":"","updatedAt":"2020-07-12T05:36:29.437Z","goodTags":[{"id":2,"value":"Jokes"}],"badTags":[],"comments":[]}],
+            posts: [],
         }
     }
 
@@ -26,6 +26,58 @@ class UserProfile extends React.Component {
             - will need to create a css file for this componenet
 
     */
+
+    async componentDidMount()
+    {
+        this.callApi().then(result =>{
+            // set status to result[0]
+            let status = result[0];
+            // see if request succeeded
+            if(status == 200)
+            {
+                this.setState({posts: result[1]});
+
+            }
+            else
+            {
+                alert("request for user profile failed");
+            }
+        });
+        /*
+            left off here
+            1. need to set up api to add text to return status
+                - such as user not found, results found, not authenticated, etc.
+                - also need to edit api so that it can take the username of the user
+                you are attempting to get
+                    - done
+                - also need to return info for the user, so probably want to do something
+                in the server db to fix it
+                    - already done with each post...
+            2. then handle generating html here based off response
+
+        */
+    }
+
+    callApi()
+    {
+        const requestOptions = {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json'},
+        };
+
+        let returnValue = 0;
+        let url = "http://localhost:9000/profile/" + this.state.id;
+        let status = 0;
+        return fetch(url, requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.json();
+            }).then(result =>{
+                return [status, result];
+            });
+    }
+
 
     render()
     {
