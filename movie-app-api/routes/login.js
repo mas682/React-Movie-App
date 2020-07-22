@@ -1,6 +1,5 @@
 import models, { sequelize } from '../src/models';
 import {verifyLogin} from './globals.js';
-import SignInPopup from '../../reactmovieapp/src/SignIn.js'
 const Op = require('Sequelize').Op;
 
 
@@ -45,12 +44,11 @@ const checkLogin = (req, res) =>
     .then((user)=>{
         // if the password is correct
         // may want to do something like salting, not really secure
-        if(user.password == pass)
+        if(user.password === pass)
         {
             // create the valie to put into the cookie
             let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
             // create the cookie with expiration in 1 day
-            res.cookie('values', value, {maxAge: 60000, signed: true, httpOnly: true});
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true, httpOnly: true});
             res.send('created cookie');

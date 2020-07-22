@@ -49,7 +49,7 @@ class SignInPopup extends React.Component {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			credentials: 'include',
-			body: ({
+			body: JSON.stringify({
 				username: this.state.username,
 				password: this.state.password
 			})

@@ -45,7 +45,7 @@ class UserProfile extends React.Component {
         });
         /*
             left off here
-            1. need to set up api to add text to return status
+            1. need to set up api to add text to return status or just set code?
                 - such as user not found, results found, not authenticated, etc.
                 - also need to edit api so that it can take the username of the user
                 you are attempting to get
