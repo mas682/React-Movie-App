@@ -20,7 +20,8 @@ class SignUpPopup extends React.Component {
             firstNameError: "",
             lastNameError: "",
             emailError: "",
-            passwordError: ""
+            passwordError: "",
+            redirect: false
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -156,7 +157,8 @@ class SignUpPopup extends React.Component {
                     // redirect to either homepage
                     alert("User successfully created");
                     this.closeModal();
-                    return <Redirect to="/landing/" />;
+                    // set the state to redirect so render will redirect to landing on success
+                    this.setState({redirect: true});
                 }
                 else if(status === 403 && response === "You are already logged in")
                 {
@@ -189,6 +191,11 @@ class SignUpPopup extends React.Component {
     }
 
     render() {
+
+        if(!this.state.open && this.state.redirect)
+        {
+            return <Redirect to="/landing/" />;
+        }
 
         let usernameInput =  (
             <React.Fragment>
