@@ -163,6 +163,7 @@ class SignUpPopup extends React.Component {
                 else if(status === 403 && response === "You are already logged in")
                 {
                     // redirect to home page?
+                    alert("You are already logged in!");
                 }
                 else if(status === 409 && response === "username already in use")
                 {

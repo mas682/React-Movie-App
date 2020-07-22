@@ -92,11 +92,11 @@ class SignInPopup extends React.Component {
 				}
 				else if(result == "You are already logged in")
 				{
-					alert(result);
 					this.setState({open: false});
 				}
 				else
 				{
+					alert(result);
 					console.log(result);
 					alert("Login failed");
 				}

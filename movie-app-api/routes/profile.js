@@ -4,19 +4,19 @@ import models, { sequelize } from '../src/models';
 // function to get the reviews associated with a users profile
 const getProfile = (req, res, next) => {
     // get the signed cookies in the request if there are any
-    let cookie = req.signedCookies.values;
+    let cookie = req.signedCookies.MovieAppCookie;
     // variable to indicate if user logged in
     let valid = false;
     // if there is a signed cookie in the request
     if(cookie != undefined)
     {
         // see if the cookie has a valid user
-        verifyLogin(req.signedCookies).then((cookieValid) =>
+        verifyLogin(cookie).then((cookieValid) =>
         {
             if(cookieValid)
             {
                 // get the reviews and pass the cookie
-                getReviews(JSON.parse(req.signedCookies.values), req, res);
+                getReviews(JSON.parse(cookie), req, res);
             }
             // cookie not valid
             else

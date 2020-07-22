@@ -22,6 +22,7 @@ const verifyLogin= async (cookie)=>
         // should be in try catch
         // get the values from the cookie
         // see if the user is valid
+        console.log("Authenticating: " + cookie.name);
         await models.User.findByLogin(cookie.name)
         .then((user)=>{
             if(user != null)

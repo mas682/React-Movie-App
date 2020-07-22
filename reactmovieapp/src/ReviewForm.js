@@ -53,6 +53,20 @@ class ReviewPopUp extends React.Component {
         return tagString;
     }
 
+    closeModal()
+    {
+        this.setState({
+            open: false,
+            title: "",
+            rating: "",
+            usedGoodButtons: [],
+            usedBadButtons: [],
+            unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
+            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
+            review: ""
+        });
+    }
+
     callApi()
     {
         // Simple POST request with a JSON body using fetch
@@ -61,33 +75,46 @@ class ReviewPopUp extends React.Component {
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({
                 title: this.state.title,
                 rating: this.state.rating,
-                // this will be changed eventually
-                userId: 1,
                 good: goodString,
                 bad: badString,
                 review: this.state.review
             })
         };
 
-        let returnValue = 0;
+        let status = 0;
         return fetch("http://localhost:9000/review", requestOptions)
             .then(res => {
-                if(res.status == 201)
-                {
-                    this.setState({open: false});
-                }
-                // get the json from the response and output the message
-                res.json().then(res => {console.log(res.message)});
-                // will want to add error handing otherwise
+                status = res.status;
+                return res.text();
+            }).then(result=> {
+                return [status, result];
             });
     }
 
-    validateForm(event) {
+    async validateForm(event) {
         event.preventDefault();
-        this.callApi();
+        this.callApi().then(result => {
+            let status = result[0];
+            let response = result[1];
+            if(status === 201 && response === "Review successfully created!")
+            {
+                alert("Review successfully posted");
+                this.closeModal();
+            }
+            else if(status === 401 && response === "You are not logged in")
+            {
+                // redirect to login page...
+                alert("You are not logged in");
+            }
+            else
+            {
+                alert("Some unexpected error occurred trying to post the review");
+            }
+        });
 
     }
 
@@ -238,12 +265,6 @@ class ReviewPopUp extends React.Component {
         this.setState({ open: true });
     }
 
-    closeModal() {
-        this.setState({
-            open: false,
-        });
-    }
-
     render() {
 
         let titleInput = (
@@ -347,7 +368,6 @@ class ReviewPopUp extends React.Component {
                 <Popup
                     open={this.state.open}
                     closeOnDocumentClick
-                    onClose={this.closeModal}
                 >
                     <div className="modal">
                         {/* &times is the multiplication symbol (x) --> */}

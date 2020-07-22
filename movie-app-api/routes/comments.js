@@ -5,12 +5,12 @@ import {verifyLogin} from './globals.js';
 // function to see if a user can login and returns a cookie to use
 const addComment = (req, res, next) => {
     // get the signed cookies in the request if there are any
-    let cookie = req.signedCookies.values;
+    let cookie = req.signedCookies.MovieAppCookie;
     // if there is a signed cookie in the request
     if(cookie != undefined)
     {
         // see if the cookie has a valid user
-        verifyLogin(req.signedCookies).then((cookieValid) =>
+        verifyLogin(cookie).then((cookieValid) =>
         {
             if(cookieValid)
             {
