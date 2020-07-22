@@ -44,7 +44,7 @@ const checkLogin = (req, res) =>
     .then((user)=>{
         // if the password is correct
         // may want to do something like salting, not really secure
-        if(user.password == pass)
+        if(user.password === pass)
         {
             // create the valie to put into the cookie
             let value = JSON.stringify({name: user.username, email: user.email, id: user.id});

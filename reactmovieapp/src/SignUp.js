@@ -1,6 +1,6 @@
 import React from 'react';
 import history from './History'
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import './css/signup.css';
 import style from './css/signup.module.css';
@@ -20,7 +20,8 @@ class SignUpPopup extends React.Component {
             firstNameError: "",
             lastNameError: "",
             emailError: "",
-            passwordError: ""
+            passwordError: "",
+            redirect: false
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -54,6 +55,7 @@ class SignUpPopup extends React.Component {
         // Simple POST request with a JSON body using fetch
         const requestOptions = {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 username: this.state.username,
@@ -64,8 +66,14 @@ class SignUpPopup extends React.Component {
             })
         };
 
+        let status = 0;
         return fetch("http://localhost:9000/signup", requestOptions)
-            .then(res => {return res.text()});
+            .then(res => {
+                status = res.status;
+                return res.text();
+            }).then(result => {
+                return [status, result];
+            });
     }
 
     // function called when CREATE AN ACCOUNT button is clicked
@@ -141,24 +149,36 @@ class SignUpPopup extends React.Component {
         }
         if(!error)
         {
-            this.callApi().then(created => {
-                if(created == "username has been created")
+            this.callApi().then(result => {
+                let status = result[0];
+                let response = result[1];
+                if(status === 201 && response === "User has been created")
                 {
+                    // redirect to either homepage
                     alert("User successfully created");
-                    // eventually want to do something else here
                     this.closeModal();
+                    // set the state to redirect so render will redirect to landing on success
+                    this.setState({redirect: true});
                 }
-                else if(created == "username already in use")
+                else if(status === 403 && response === "You are already logged in")
                 {
-                    this.setState({"usernameError": "Username is already in use"});
+                    // redirect to home page?
                 }
-                else if(created == "email already in use")
+                else if(status === 409 && response === "username already in use")
                 {
-                    this.setState({"emailError": "Email account is already in use"});
+                    this.setState({"usernameError": "This username is already in use"});
+                }
+                else if(status === 409 && response === "email already in use")
+                {
+                    this.setState({"emailError": "This email address is already in use"});
+                }
+                else if(status === 500 && response === "sometihgn went wrong creating the user")
+                {
+                    alert("Something went wrong creating the account.  Please contact a admin");
                 }
                 else
                 {
-                    alert("Some error occurred with creating the user");
+                    alert("Something unexpected happened when trying to create the account");
                 }
             });
         }
@@ -171,6 +191,11 @@ class SignUpPopup extends React.Component {
     }
 
     render() {
+
+        if(!this.state.open && this.state.redirect)
+        {
+            return <Redirect to="/landing/" />;
+        }
 
         let usernameInput =  (
             <React.Fragment>
@@ -373,6 +398,7 @@ class SignUpPopup extends React.Component {
                             form="form1"
                             value="create_account"
                             className="submitButton"
+                            onClick={this.validateForm}
                         >CREATE YOUR ACCOUNT</button>
                     </div>
                     <div className={style.accountExistsText}>
