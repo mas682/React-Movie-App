@@ -49,7 +49,7 @@ class SignInPopup extends React.Component {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			credentials: 'include',
-			body: ({
+			body: JSON.stringify({
 				username: this.state.username,
 				password: this.state.password
 			})
@@ -105,7 +105,7 @@ class SignInPopup extends React.Component {
 	}
 
     render() {
-		let usernameInput =  (
+		let usernameInput = (
             <React.Fragment>
                 <label>
                     <h4 className={style.inputFieldH4} id="validLabel">Username or Email</h4>
