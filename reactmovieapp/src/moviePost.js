@@ -276,6 +276,9 @@ class MoviePost extends React.Component {
 					<p className="username">_theonenonly</p>
 					<img src={require("./images/profile-pic.jpg")}/>
 				</div>
+                <div>
+                    <h3>{this.state.title}</h3>
+                </div>
 				<div className="postImage">
 					<img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
 				</div>
