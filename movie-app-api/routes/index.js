@@ -4,7 +4,7 @@
 import {router, verifyLogin} from './globals.js';
 import {login} from './login.js';
 import {review} from './reviews.js';
-import {getProfile} from './profile.js';
+import {profileHandler} from './profile.js';
 import {signUp} from './signup.js';
 import {homePage} from './homePage.js';
 import {getUserInfo} from './getUserInfo.js';
@@ -36,8 +36,13 @@ router.get('/getuserinfo', function(req, res, next) {
 
 // used to see a users posts
 router.get('/profile/:userId', function(req, res, next) {
-    getProfile(req, res, next);
+    profileHandler(req, res, next);
 });
+
+router.post('/profile/:userId/*', function(req, res, next) {
+    profileHandler(req, res, next);
+});
+
 
 // used to add a comment to a post
 router.post('/comment', function(req, res, next) {

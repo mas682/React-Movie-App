@@ -1,5 +1,5 @@
 .profileHeader {
-    height: 200px;
+    height: 250px;
     margin: auto;
 	text-align: left;
 	font-family: arial;
@@ -32,4 +32,47 @@
     flex-flow: row wrap;
     align-content: flex-start;
     margin-bottom: 20px;
+}
+
+.followButton
+{
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-top: 5px;
+}
+
+.followColor
+{
+    background-color: blue;
+}
+
+.followColor:hover
+{
+    background-color: DarkGray;
+}
+
+.notFollowingColor
+{
+    background-color: DarkGray;
+}
+
+.notFollowingColor:hover
+{
+    background-color: blue;
+}
+
+/* prevents outline on button when clicked */
+.followButton:focus
+{
+    outline: none;
 }

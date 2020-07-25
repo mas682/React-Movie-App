@@ -56,7 +56,7 @@ const user = (sequelize, DataTypes) => {
         User.hasMany(models.Review, { onDelete: 'CASCADE' });
         User.hasMany(models.Comment,{ onDelete: 'CASCADE' });
         // Below is used to associate users together
-        // this belongsToMany sets the followerId to the currecnt user
+        // this belongsToMany sets the followed users Id to the user being followed
         User.belongsToMany(User, {
             // table name
             through: "UsersFriendsTable",
@@ -66,9 +66,9 @@ const user = (sequelize, DataTypes) => {
                 singular: 'Follower',
                 plural: 'Followers'
             },
-            foreignKey: 'followerId',
+            foreignKey: 'followedId',
         });
-        // this belongsToMany sets the followed users Id to the user being followed
+        // this belongsToMany sets the followerId to the currecnt user
         User.belongsToMany(User, {
             // table name
             through: "UsersFriendsTable",
@@ -78,7 +78,7 @@ const user = (sequelize, DataTypes) => {
                 singular: 'Follow',
                 plural: 'Following'
             },
-            foreignKey: 'followedId',
+            foreignKey: 'followerId',
         });
     };
 

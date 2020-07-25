@@ -120,7 +120,7 @@ const createUsers = async () => {
                             models.User.findOne({
                                 where: {username: 'admin'},
                                 }).then((friend) => {
-                                    friend.addFollow(2);
+                                    //friend.addFollow(2);
                                     friend.getFollowers().then((r)=>{
                                         console.log("Followers 2: ");
                                         console.log(r);
@@ -133,8 +133,8 @@ const createUsers = async () => {
                         });
             });
         });
-        */
     });
+    */
 
     await models.User.create(
         {
