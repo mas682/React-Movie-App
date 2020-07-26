@@ -59,7 +59,7 @@ const user = (sequelize, DataTypes) => {
         // this belongsToMany sets the followed users Id to the user being followed
         User.belongsToMany(User, {
             // table name
-            through: "UsersFriendsTable",
+            through: models.UsersFriends,
             // how to reference the users who follow this user
             // ex. user.addFollower or user.getFollowers
             as: {
@@ -71,7 +71,7 @@ const user = (sequelize, DataTypes) => {
         // this belongsToMany sets the followerId to the currecnt user
         User.belongsToMany(User, {
             // table name
-            through: "UsersFriendsTable",
+            through: models.UsersFriends,
             // how to reference the users who the user is following
             // ex. user.addFollow or user.getFollowing
             as: {
@@ -94,7 +94,20 @@ const user = (sequelize, DataTypes) => {
             where: { email: login },
             });
         }
+        console.log(user);
+        return user;
+    };
 
+    User.findWithFollower = async (login, followerId) => {
+        let user = await User.findOne({
+            where: { username: login },
+            include: {
+                model: User,
+                as: "Following",
+                where: {id: followerId}
+            },
+        });
+        // returns null if follower not found
         return user;
     };
 

@@ -49,6 +49,11 @@ const selectPath = (cookie, req, res) =>
     {
         followUser(cookie, req, res);
     }
+    // if the path is profile/username/follow
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "unfollow")
+    {
+        unfollowUser(cookie, req, res);
+    }
     // some unknow path given
     else
     {
@@ -82,7 +87,6 @@ const followUser = (cookie, req, res) =>
     */
     let requestingUser = cookie.name;
     let userToFollow = req.params.userId;
-    console.log("adding user");
     // find requesting user by their id
     models.User.findByLogin(requestingUser)
     .then((requester)=>{
@@ -112,6 +116,7 @@ const followUser = (cookie, req, res) =>
                     requester.addFollow(requestedUser.id).then((result) => {
                         if(result === undefined)
                         {
+                            // this may nat be 100% right...
                             res.status(406).send("You already follow the user");
                         }
                         else
@@ -123,6 +128,37 @@ const followUser = (cookie, req, res) =>
             })
         }
 
+    });
+}
+
+const unfollowUser = (cookie, req, res) =>
+{
+    let requestingUser = cookie.name;
+    let userToUnFollowId = req.body.id;
+    console.log(userToUnFollowId);
+    let unfollowUname = req.params.userId;
+    // find requesting user by their id
+    models.User.findWithFollower(requestingUser, userToUnFollowId)
+    .then((returnedUser) =>{
+        // if the user is not following the user
+        if(returnedUser === null)
+        {
+            res.status(406).send("You already do not follow the user");
+        }
+        else
+        {
+            returnedUser.removeFollow(returnedUser.Following[0].id).then((result)=> {
+                // if the request succeeded
+                if(result === 1)
+                {
+                    res.status(200).send("User successfully unfollowed");
+                }
+                else
+                {
+                    res.status(500).send("Something went wrong on the server");
+                }
+            });
+        }
     });
 }
 

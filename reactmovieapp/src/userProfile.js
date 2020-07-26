@@ -13,7 +13,8 @@ class UserProfile extends React.Component {
         this.state ={
             // this gets the username from the url
             // in the router, set the username as :id
-            id: this.props.match.params.id,
+            username: this.props.match.params.id,
+            id: -1,
             // if this is the current user, set to true
             // if this is someone else, set to appropriate value
             following: false,
@@ -38,7 +39,11 @@ class UserProfile extends React.Component {
             // see if request succeeded
             if(status == 200)
             {
-                this.setState({posts: result[1]});
+                this.setState({
+                    posts: result[1],
+/************************ THIS NEEDS FIXED ********************/
+                    id: 3
+                });
 
             }
             else
@@ -70,7 +75,7 @@ class UserProfile extends React.Component {
         };
 
         let returnValue = 0;
-        let url = "http://localhost:9000/profile/" + this.state.id;
+        let url = "http://localhost:9000/profile/" + this.state.username;
         let status = 0;
         return fetch(url, requestOptions)
             .then(res => {
@@ -81,8 +86,16 @@ class UserProfile extends React.Component {
             });
     }
 
+
+// next deal with unfollowing users, make sure everything working as expected
+
     followHandler()
     {
+        // if here, no reason to try to follow a user you already follow
+        if(this.state.following)
+        {
+            return;
+        }
         // will have to update the state to indicate you are now following the user
         // call api
         const requestOptions = {
@@ -90,12 +103,13 @@ class UserProfile extends React.Component {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json'},
             body: JSON.stringify({
-                user: this.state.id,
+                user: this.state.username,
+                id: this.state.id
             })
         };
 
         let status = 0;
-        let url = "http://localhost:9000/profile/" + this.state.id + "/follow";
+        let url = "http://localhost:9000/profile/" + this.state.username + "/follow";
         fetch(url, requestOptions)
             .then(res => {
                 status = res.status;
@@ -133,7 +147,65 @@ class UserProfile extends React.Component {
                 // may want to send updated friends list to user eventually
                 // if fails, do a alert
             });
+    }
 
+    unfollowHandler()
+    {
+        // if here, no use trying to unfollow a user you do not already follow
+        if(!this.state.following)
+        {
+            return;
+        }
+        // will have to update the state to indicate you are now following the user
+        // call api
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                user: this.state.username,
+                id: this.state.id
+            })
+        };
+
+        let status = 0;
+        let url = "http://localhost:9000/profile/" + this.state.username + "/unfollow";
+        fetch(url, requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.text();
+            }).then(result =>{
+                if(status === 200 && result === "User successfully unfollowed")
+                {
+                    this.setState({following: false});
+                }
+                else if(status === 401 && result === "Unable to verify requester")
+                {
+                    alert("You must login to follow this user");
+                }
+                else if(status === 404 && result === "Unable to find user to unfollow")
+                {
+                    alert("The user to unfollow could not be found");
+                }
+                else if(status === 404 && result === "User cannot unfollow themself")
+                {
+                    alert("User cannot unfollow themself");
+                }
+                else if(status === 406 && result === "You already do not follow the user")
+                {
+                    alert("You already do not follow the user");
+                }
+                else
+                {
+                    alert(result);
+                    alert("Some unknown error occurred when trying to unfollow the user");
+                    this.setState({following: false});
+                }
+                //return [status, result];
+                // update button to indicate now following user
+                // may want to send updated friends list to user eventually
+                // if fails, do a alert
+            });
     }
 
 
@@ -148,7 +220,7 @@ class UserProfile extends React.Component {
         let followButton = "";
         if(this.state.following)
         {
-            followButton = <button className={`${style5.followButton} ${style5.followColor}`} onClick={(e)=> this.followHandler(e)}>Follow</button>;
+            followButton = <button className={`${style5.followButton} ${style5.followColor}`} onClick={(e)=> this.unfollowHandler(e)}>Follow</button>;
         }
         else
         {
@@ -160,7 +232,7 @@ class UserProfile extends React.Component {
             <div className={style5.mainBodyContainer}>
                 <div className={style5.profileHeader}>
                     <img className={style5.profilePic} src={require("./images/profile-pic.jpg")}/>
-                    <h3>{this.state.id}</h3>
+                    <h3>{this.state.username}</h3>
                     {followButton}
                 </div>
                 {posts}
