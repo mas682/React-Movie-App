@@ -40,9 +40,9 @@ class UserProfile extends React.Component {
             if(status == 200)
             {
                 this.setState({
-                    posts: result[1],
-/************************ THIS NEEDS FIXED ********************/
-                    id: 3
+                    posts: result[1][1],
+                    // get the users id from the response
+                    id: result[1][0]
                 });
 
             }
@@ -103,7 +103,6 @@ class UserProfile extends React.Component {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json'},
             body: JSON.stringify({
-                user: this.state.username,
                 id: this.state.id
             })
         };
@@ -125,16 +124,15 @@ class UserProfile extends React.Component {
                 }
                 else if(status === 404 && result === "Unable to find user to follow")
                 {
-
                     alert("The user to follow could not be found");
                 }
                 else if(status === 404 && result === "User cannot follow themself")
                 {
-                    alert("User cannot follow themself");
+                    alert(result);
                 }
                 else if(status === 406 && result === "You already follow the user")
                 {
-                    alert("You already follow the user");
+                    alert(result);
                 }
                 else
                 {
@@ -163,7 +161,6 @@ class UserProfile extends React.Component {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json'},
             body: JSON.stringify({
-                user: this.state.username,
                 id: this.state.id
             })
         };
@@ -189,11 +186,15 @@ class UserProfile extends React.Component {
                 }
                 else if(status === 404 && result === "User cannot unfollow themself")
                 {
-                    alert("User cannot unfollow themself");
+                    alert(result);
                 }
-                else if(status === 406 && result === "You already do not follow the user")
+                else if(status === 404 && result === "The id passed in the request does not match the user")
                 {
-                    alert("You already do not follow the user");
+                    alert(result);
+                }
+                else if(status === 406 && result === "You already do not follow the user or the user does not exist")
+                {
+                    alert(result);
                 }
                 else
                 {
