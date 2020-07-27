@@ -19,6 +19,19 @@ class UserFeed extends React.Component {
         }
     }
 
+    /*
+        To do:
+        1. Fix movie posts to display correct username
+            - done
+        2. Will want to limit query to only so many results
+        3. Will want to reroute to this page on login
+            - done but may move to somewhere else eventually
+        4. also want to show timing of post on movie post
+        5. then create fake reviews and make sure listed in oreder
+        6. may want to move this to a different route
+        7. notice using user profile css!
+    */
+
     async componentDidMount()
     {
         this.callApi().then(result =>{

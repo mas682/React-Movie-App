@@ -14,6 +14,7 @@ class MoviePost extends React.Component {
             user: this.props.data.userId,
             title: this.props.data.title,
             form: "form" + this.props.data.id,
+            username: this.props.data.user.username,
             id: this.props.data.id,
             rating: this.props.data.rating,
             comments: this.props.data.comments,
@@ -273,7 +274,7 @@ class MoviePost extends React.Component {
         return (
 			<div className={`${style.post} ${style.postShadow}`}>
 				<div className="postHeader">
-					<p className="username">_theonenonly</p>
+					<p className="username">{this.state.username}</p>
 					<img src={require("./images/profile-pic.jpg")}/>
 				</div>
                 <div>

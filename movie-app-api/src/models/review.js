@@ -38,9 +38,13 @@ const review = (sequelize, DataTypes) => {
                 userId: ids
             },
             // only get these attributes
-            attributes: ["id", "title", "rating", "review", "updatedAt"],
+            attributes: ["id", "title", "rating", "review", "updatedAt", "createdAt"],
             // include the following models with the specified attributes
             include:[
+                {
+                    model: models.User,
+                    attributes: ["username", "id"]
+                },
                 {
                     model: models.GoodTag,
                     // included the id to make one less query needed to find tag
@@ -80,6 +84,10 @@ const review = (sequelize, DataTypes) => {
             attributes: ["id", "title", "rating", "review", "updatedAt"]
             // include the following models with the specified attributes
             , include:[
+                {
+                    model: models.User,
+                    attributes: ["username", "id"]
+                },
                 {
                     model: models.GoodTag,
                     // included the id to make one less query needed to find tag
