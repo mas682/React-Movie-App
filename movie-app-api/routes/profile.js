@@ -54,6 +54,10 @@ const selectPath = (cookie, req, res) =>
     {
         unfollowUser(cookie, req, res);
     }
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "feed")
+    {
+        getFeed(cookie, req, res);
+    }
     // some unknow path given
     else
     {
@@ -77,12 +81,37 @@ const getReviews = (cookie, req, res) =>
     });
 };
 
+const getFeed = (cookie, req, res) =>
+{
+    let username = req.params.userId;
+    if(username !== cookie.name)
+    {
+        // unathorized
+        res.status(401).send("You cannot access the feed of another user");
+        return;
+    }
+    models.User.getAllFollowers(username)
+    .then((followers) =>{
+        let userIds = [];
+        followers.forEach((user) => {
+            userIds.push(user.id);
+        });
+        models.Review.findFriendsReviews(models, userIds)
+        .then((reviews) =>{
+            console.log("Reviews found: ");
+            console.log(reviews);
+            res.status(200).send(reviews);
+        });
+    });
+
+};
+
 
 // may want to change this to first get the user and everyone they follow
 // then check if the requested user is in their following users
 const followUser = (cookie, req, res) =>
 {
-    // requesting users usernam
+    // requesting users username
     let requestingUser = cookie.name;
     // user to follows id number
     let userToFollowId = req.body.id;

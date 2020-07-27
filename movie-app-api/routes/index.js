@@ -35,14 +35,18 @@ router.get('/getuserinfo', function(req, res, next) {
 });
 
 // used to see a users posts
-router.get('/profile/:userId', function(req, res, next) {
+router.get('/profile/:userId/', function(req, res, next) {
     profileHandler(req, res, next);
 });
 
+router.get('/profile/:userId/*', function(req, res, next) {
+    profileHandler(req, res, next);
+});
+
+// used for all posts routes to /profile/username/some other parameter
 router.post('/profile/:userId/*', function(req, res, next) {
     profileHandler(req, res, next);
 });
-
 
 // used to add a comment to a post
 router.post('/comment', function(req, res, next) {

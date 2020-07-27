@@ -66,6 +66,19 @@ class UserProfile extends React.Component {
         */
     }
 
+    feedTester()
+    {
+        const requestOptions = {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json'},
+        };
+
+        let status = 0;
+        let url = "http://localhost:9000/profile/" + this.state.username + "/feed";
+        fetch(url, requestOptions);
+    }
+
     callApi()
     {
         const requestOptions = {
@@ -234,6 +247,7 @@ class UserProfile extends React.Component {
                 <div className={style5.profileHeader}>
                     <img className={style5.profilePic} src={require("./images/profile-pic.jpg")}/>
                     <h3>{this.state.username}</h3>
+                    <button className={`${style5.followButton} ${style5.notFollowingColor}`} onClick={(e)=> this.feedTester(e)}>feed test</button>
                     {followButton}
                 </div>
                 {posts}
