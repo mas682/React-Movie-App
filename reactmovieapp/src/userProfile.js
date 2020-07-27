@@ -228,6 +228,7 @@ class UserProfile extends React.Component {
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {
+            console.log(p);
             posts.push(<MoviePost data={p}/>)
         });
 

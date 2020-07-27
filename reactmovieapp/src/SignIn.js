@@ -87,6 +87,7 @@ class SignInPopup extends React.Component {
 			this.callApi().then(result => {
 				let status = JSON.parse(result[0]);
 				let user = JSON.parse(result[1]);
+				alert(status);
 				if(status.result == "created cookie")
 				{
 					alert("You have successfully logged in");

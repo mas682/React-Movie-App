@@ -15,6 +15,7 @@ class MoviePostPopUp extends React.Component {
             user: this.props.data.user,
             title: this.props.data.title,
             form: this.props.data.form + "pop",
+            username: this.props.data.username,
             id: this.props.data.id,
             rating: this.props.data.rating,
             comments: this.props.data.comments,
@@ -311,7 +312,7 @@ class MoviePostPopUp extends React.Component {
                     <div className={style2.content}>
                         <div className={`${style.post} ${style2.postWidth}`}>
                             <div className="postHeader">
-                                <p className="username">_theonenonly</p>
+                                <p className="username">{this.state.username}</p>
                                 <img src={require("./images/profile-pic.jpg")}/>
                             </div>
                             <div className="postImage">

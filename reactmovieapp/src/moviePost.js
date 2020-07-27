@@ -22,7 +22,8 @@ class MoviePost extends React.Component {
             usedBadButtons: this.getBadButtons(),
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            review: this.props.data.review
+            review: this.props.data.review,
+            time: this.props.data.updatedAt
         };
         //this.generateButtons = this.generateButtons.bind(this);
         //this.usedButtonHandler = this.usedButtonHandler.bind(this);
@@ -309,6 +310,9 @@ class MoviePost extends React.Component {
                 </div>
                 <div className={style.review}>
                     {this.state.review}
+                </div>
+                <div>
+                    {this.state.time}
                 </div>
 				<div className="socialButtonContainer">
 					<div className="socialButtons">

@@ -1,5 +1,5 @@
 
-
+let moment = require('moment');
 const review = (sequelize, DataTypes) => {
     const Review = sequelize.define('review', {
         title: {
@@ -21,6 +21,20 @@ const review = (sequelize, DataTypes) => {
             allowNull: true,
 
         },
+        createdAt: {
+            // this is done to format the date on return
+            type: DataTypes.DATE,
+            get() {
+                return moment(this.getDataValue('updatedAt')).format('MMMM DD YYYY h:mm:ss');
+            }
+        },
+        updatedAt: {
+            // this is done to format the date on return
+            type: DataTypes.DATE,
+            get() {
+                return moment(this.getDataValue('updatedAt')).format('MMMM DD YYYY h:mm:ss');
+            }
+        },
     });
 
     Review.associate = models => {
@@ -37,6 +51,7 @@ const review = (sequelize, DataTypes) => {
             where: {
                 userId: ids
             },
+            order: [["updatedAt", 'DESC']],
             // only get these attributes
             attributes: ["id", "title", "rating", "review", "updatedAt", "createdAt"],
             // include the following models with the specified attributes
@@ -81,9 +96,8 @@ const review = (sequelize, DataTypes) => {
                 userId: id
             },
             // only get these attributes
-            attributes: ["id", "title", "rating", "review", "updatedAt"]
             // include the following models with the specified attributes
-            , include:[
+            include:[
                 {
                     model: models.User,
                     attributes: ["username", "id"]

@@ -59,6 +59,7 @@ const checkLogin = (req, res) =>
             // may want to just say login denied
             // also may want to keep track of failed login attemts and slow server
             // down or lock account if too many failed attempts
+            console.log("HERE");
             res.send(['{\"result\":\"incorrect password\"}', '{\"user\":\"undefined\"}'])
         }
     });
