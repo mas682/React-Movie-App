@@ -72,12 +72,42 @@ const getReviews = (cookie, req, res) =>
     // find a user by their login
     models.User.findByLogin(username)
     .then((user)=>{
-        models.Review.findById(models, user.id)
-        .then((reviews)=>
+        let currentUser = false;
+        // if the current user is looking at their own page
+        if(cookie.name === user.username)
         {
-            // send the reveiws associated with the user and their id
-            res.status(200).send([user.id, reviews]);
-        });
+            currentUser = true;
+            models.Review.findById(models, user.id)
+            .then((reviews)=>
+            {
+                // send the reveiws associated with the user and their id
+                res.status(200).send([user.id, currentUser, false, reviews]);
+            });
+        }
+        // current user looking at another page
+        else
+        {
+            // see if the user they are looking at has them as a follower
+            user.getFollowers({
+                where: {id: cookie.id}
+            })
+            .then((follower) => {
+                let followed = false;
+                if(follower[0] !== undefined)
+                {
+                    if(follower[0].username === cookie.name)
+                    {
+                        followed = true;
+                    }
+                }
+                models.Review.findById(models, user.id)
+                .then((reviews)=>
+                {
+                    // send the reveiws associated with the user and their id
+                    res.status(200).send([user.id, currentUser, followed, reviews]);
+                });
+            })
+        }
     });
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import style from './css/MoviePost/moviePost.module.css';
+import {Link} from 'react-router-dom';
 import MoviePostPopUp from './moviePostPopUp.js';
 import './css/MoviePost/moviePost.css';
 
@@ -23,14 +24,9 @@ class MoviePost extends React.Component {
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             review: this.props.data.review,
-            time: this.props.data.updatedAt
+            time: this.props.data.updatedAt,
+            currentUser: this.props.user
         };
-        //this.generateButtons = this.generateButtons.bind(this);
-        //this.usedButtonHandler = this.usedButtonHandler.bind(this);
-        //this.validateForm = this.validateForm.bind(this);
-        //this.callApi = this.callApi.bind(this);
-        //this.changeHandler = this.changeHandler.bind(this);
-        //this.generateTagString = this.generateTagString.bind(this);
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
     }
 
@@ -253,6 +249,8 @@ class MoviePost extends React.Component {
         let badButtonArray = [];
         // counter for loop
         let counter = 0;
+        let profilePath = "/profile/" + this.state.username;
+
         // generate the used good buttons
         while(counter < this.state.usedGoodButtons.length)
         {
@@ -266,6 +264,11 @@ class MoviePost extends React.Component {
             badButtonArray.push(this.generateGoodBadButton(this.state.usedBadButtons[counter], "bad"));
             counter = counter + 1;
         }
+        let editButton = "";
+        if(this.state.username === this.state.currentUser)
+        {
+            editButton = <button className={`${style.postButton}`}>Edit post</button>
+        }
 
         /*
             left off here fixing stars formatting
@@ -274,22 +277,22 @@ class MoviePost extends React.Component {
         */
         return (
 			<div className={`${style.post} ${style.postShadow}`}>
-				<div className="postHeader">
-					<p className="username">{this.state.username}</p>
-					<img src={require("./images/profile-pic.jpg")}/>
-				</div>
-                <div>
-                    <h3>{this.state.title}</h3>
-                </div>
-				<div className="postImage">
-					<img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
-				</div>
-                <form id={this.state.form} />
-				<div className="centeredMaxWidthContainer">
-                    <fieldset class={style.rating}>
-                        {stars}
-                    </fieldset>
-				</div>
+				  <div className="postHeader">
+					    <Link to={profilePath}><p className="username">{this.state.username}</p></Link>
+					    <img src={require("./images/profile-pic.jpg")}/>
+				  </div>
+          <div>
+              <h3>{this.state.title}</h3>
+          </div>
+				  <div className="postImage">
+					    <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
+				  </div>
+          <form id={this.state.form} />
+				  <div className="centeredMaxWidthContainer">
+              <fieldset class={style.rating}>
+                  {stars}
+              </fieldset>
+				  </div>
                 <div className="centeredMaxWidthContainer">
                     <div className="proConContainter">
                         <div className="centeredMaxWidthContainer">
@@ -311,14 +314,15 @@ class MoviePost extends React.Component {
                 <div className={style.review}>
                     {this.state.review}
                 </div>
-                <div>
+                <div className={style.timestampContainer}>
                     {this.state.time}
                 </div>
 				<div className="socialButtonContainer">
-					<div className="socialButtons">
-                        {likedButton}
-						<button className={`${style.postButton}`}>Go to movie page</button>
-                        <MoviePostPopUp data={this.state} />
+				    <div className="socialButtons">
+                {likedButton}
+						    <button className={`${style.postButton}`}>Go to movie page</button>
+                <MoviePostPopUp data={this.state} />
+                {editButton}
 					</div>
 				</div>
 			</div>

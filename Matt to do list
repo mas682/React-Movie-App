@@ -1,0 +1,44 @@
+To do list:
+
+    To do:
+    1. Will want to limit query to only so many results for review posts
+        - can be done using limit: number I think?
+        - if load more hit, want to upload more
+    2. Will want to reroute to this page on login
+        - done but may move to somewhere else eventually
+    3. also want to show timing of post on movie post
+        - done
+    4. notice using user profile css on userFeed.js
+    5. add status codes to login requests
+    6. need to fix following on users pages so that if you follow it is blue when you go
+      to it after switching pages
+        - done
+    7. also handle the case where the user is going to their own page
+        - done but may want to fix formatting of user header when follow button not there
+        - could just add a css rule that formats header differently
+    8. Make user names hyperlinks to their pages
+        - done on movie posts
+        - done on comments but need to fix issue where a user clicks on their own
+          but does not cause the movie posts pop up to close because the state doesn't
+          change
+    9. Make posts editable by user who posted
+      - made it so that there is a edit button on posts if the username for the post
+        matches the username passed into the movie post
+          - may have to handle this differently in future, such as keeping which user
+          is logged in in higher up state
+      - next need to make popup for editing similar to review popup
+    10. Make comments editable by user who posted and users post
+    11. Make a user setting page
+    12. May want to make user pages private
+    13. set up api to get movies and store in db
+    14. add logout functionality
+    15. password reset functionality
+    16. add functionality to list followers, following
+    17. add functionality to search for users, through friends lists and general
+    18. figure out how to do common friends
+    19. add profile pictures for users
+    20. Notifications for new followers, comments, etc.
+    21. make it function to user @ with name or movie
+    22. add timestamps to comments
+        - done
+    23. Not sure if adding comments to a post is fully implemented yet?

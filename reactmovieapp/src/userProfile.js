@@ -20,8 +20,46 @@ class UserProfile extends React.Component {
             following: false,
             // this will be set by the api call
             posts: [],
+            currentUser: false
         }
     }
+
+    // this gets called when the component is changing from user to another
+    // such as when clicking on a users link when the userProfile page is already
+    // up
+    // may have been that key issue??
+    componentWillReceiveProps(nextProps) {
+       if(this.props.match.params.id !== nextProps.match.params.id) {
+           this.getData(nextProps.match.params.id);
+       }
+    }
+
+    // this only gets called by the above method to update the state on
+    // user profile change
+    getData = (param) => {
+        this.callApi(param).then(result =>{
+            // set status to result[0]
+            let status = result[0];
+            // see if request succeeded
+            if(status == 200)
+            {
+                this.setState({
+                    username: param,
+                    posts: result[1][3],
+                    // get the users id from the response
+                    id: result[1][0],
+                    currentUser: result[1][1],
+                    following: result[1][2]
+                });
+
+            }
+            else
+            {
+                alert("request for user profile failed");
+            }
+        });
+    }
+
 
     /* To Do:
         1. call api to get users posts and verify user exists
@@ -33,16 +71,18 @@ class UserProfile extends React.Component {
 
     async componentDidMount()
     {
-        this.callApi().then(result =>{
+        this.callApi(undefined).then(result =>{
             // set status to result[0]
             let status = result[0];
             // see if request succeeded
             if(status == 200)
             {
                 this.setState({
-                    posts: result[1][1],
+                    posts: result[1][3],
                     // get the users id from the response
-                    id: result[1][0]
+                    id: result[1][0],
+                    currentUser: result[1][1],
+                    following: result[1][2]
                 });
 
             }
@@ -66,21 +106,12 @@ class UserProfile extends React.Component {
         */
     }
 
-    feedTester()
+    callApi(username)
     {
-        const requestOptions = {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-        };
-
-        let status = 0;
-        let url = "http://localhost:9000/profile/" + this.state.username + "/feed";
-        fetch(url, requestOptions);
-    }
-
-    callApi()
-    {
+        if(username === undefined)
+        {
+          username = this.state.username;
+        }
         const requestOptions = {
             method: 'GET',
             credentials: 'include',
@@ -88,7 +119,7 @@ class UserProfile extends React.Component {
         };
 
         let returnValue = 0;
-        let url = "http://localhost:9000/profile/" + this.state.username;
+        let url = "http://localhost:9000/profile/" + username;
         let status = 0;
         return fetch(url, requestOptions)
             .then(res => {
@@ -228,18 +259,32 @@ class UserProfile extends React.Component {
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {
-            console.log(p);
-            posts.push(<MoviePost data={p}/>)
+            // if the posts are for the currenlty logged in user
+            if(this.state.currentUser)
+            {
+                posts.push(<MoviePost data={p} user={this.state.username}/>)
+            }
+            else
+            {
+              posts.push(<MoviePost data={p} user=""/>)
+            }
         });
 
         let followButton = "";
-        if(this.state.following)
+        if(this.state.currentUser)
         {
-            followButton = <button className={`${style5.followButton} ${style5.followColor}`} onClick={(e)=> this.unfollowHandler(e)}>Follow</button>;
+            followButton = "";
         }
         else
         {
-            followButton = <button className={`${style5.followButton} ${style5.notFollowingColor}`} onClick={(e)=> this.followHandler(e)}>Follow</button>;
+            if(this.state.following)
+            {
+                followButton = <button className={`${style5.followButton} ${style5.followColor}`} onClick={(e)=> this.unfollowHandler(e)}>Follow</button>;
+            }
+            else
+            {
+                followButton = <button className={`${style5.followButton} ${style5.notFollowingColor}`} onClick={(e)=> this.followHandler(e)}>Follow</button>;
+            }
         }
 
         return (
@@ -248,7 +293,6 @@ class UserProfile extends React.Component {
                 <div className={style5.profileHeader}>
                     <img className={style5.profilePic} src={require("./images/profile-pic.jpg")}/>
                     <h3>{this.state.username}</h3>
-                    <button className={`${style5.followButton} ${style5.notFollowingColor}`} onClick={(e)=> this.feedTester(e)}>feed test</button>
                     {followButton}
                 </div>
                 {posts}

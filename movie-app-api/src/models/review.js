@@ -25,14 +25,26 @@ const review = (sequelize, DataTypes) => {
             // this is done to format the date on return
             type: DataTypes.DATE,
             get() {
-                return moment(this.getDataValue('updatedAt')).format('MMMM DD YYYY h:mm:ss');
+                let hour = this.getDataValue('createdAt').getHours();
+                let amPm = "AM";
+                if(hour >= 12)
+                {
+                    amPm = "PM";
+                }
+                return moment(this.getDataValue('createdAt')).format('MMMM DD, YYYY h:mm ') + amPm;
             }
         },
         updatedAt: {
             // this is done to format the date on return
             type: DataTypes.DATE,
             get() {
-                return moment(this.getDataValue('updatedAt')).format('MMMM DD YYYY h:mm:ss');
+                let hour = this.getDataValue('updatedAt').getHours();
+                let amPm = "AM";
+                if(hour >= 12)
+                {
+                    amPm = "PM";
+                }
+                return moment(this.getDataValue('updatedAt')).format('MMMM DD, YYYY h:mm ') + amPm;
             }
         },
     });

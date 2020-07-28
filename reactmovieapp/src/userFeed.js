@@ -28,7 +28,7 @@ class UserFeed extends React.Component {
             - done but may move to somewhere else eventually
         4. also want to show timing of post on movie post
             - done but needs formatting
-        5. then create fake reviews and make sure listed in oreder
+        5. then create fake reviews and make sure listed in order
             - done
         6. may want to move this to a different route
         7. notice using user profile css!
@@ -67,25 +67,6 @@ class UserFeed extends React.Component {
             headers: { 'Content-Type': 'application/json'},
         };
 
-        let status = 0;
-        let url = "http://localhost:9000/profile/" + this.state.username + "/feed";
-        fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result => {
-                return [status, result];
-            });
-    }
-
-    callApi()
-    {
-        const requestOptions = {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-        };
-
         let returnValue = 0;
         let url = "http://localhost:9000/profile/" + this.state.username + "/feed";
         let status = 0;
@@ -103,7 +84,7 @@ class UserFeed extends React.Component {
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {
-            posts.push(<MoviePost data={p}/>)
+            posts.push(<MoviePost data={p} user={this.state.username}/>)
         });
 
         return (
