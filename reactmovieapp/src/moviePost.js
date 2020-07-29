@@ -3,6 +3,7 @@ import style from './css/MoviePost/moviePost.module.css';
 import {Link} from 'react-router-dom';
 import MoviePostPopUp from './moviePostPopUp.js';
 import './css/MoviePost/moviePost.css';
+import ReviewForm from './ReviewForm.js';
 
 
 
@@ -267,7 +268,7 @@ class MoviePost extends React.Component {
         let editButton = "";
         if(this.state.username === this.state.currentUser)
         {
-            editButton = <button className={`${style.postButton}`}>Edit post</button>
+            editButton = <ReviewForm data={this.state} edit={true} />;
         }
 
         /*

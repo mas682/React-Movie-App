@@ -146,7 +146,7 @@ class MainPage extends React.Component {
 						{test2}
 						<Link to="/movie"><button className="testButton">Movie page</button></Link>
 						<SignUpPopup />
-						<ReviewForm />
+						<ReviewForm edit={false}/>
 						<button title = "Click to remove" id="goodButton" onClick={(e)=> this.flipAuhtenticated(e)}>flip</button>
 					</div>
 				</div>

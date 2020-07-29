@@ -28,7 +28,7 @@ class Routes extends React.Component
                 <Switch>
                     <Route exact path="/" render={(props)=> <MainPage {...props} authenticated={this.props.authenticated} setAuthenticated={this.props.setAuthenticated}/>}/>
                     <Route exact path="/movie/" render={(props)=> <Movie {...props}/>}/>
-    				<Route exact path="/landing/" render={(props)=> <Landing {...props}/>}/>
+    				        <Route exact path="/landing/" render={(props)=> <Landing {...props}/>}/>
                     <Route exact path="/profile/:id" render={()=> <UserProfile/> } />
                     <Route exact path="/profile/:id/feed" render={()=> <UserFeed/> } />
                 </Switch>
