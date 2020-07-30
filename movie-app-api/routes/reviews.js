@@ -18,12 +18,11 @@ const review = (req, res, next) =>
             if(cookieValid)
             {
                 // get the reviews and pass the cookie
-                createReview(JSON.parse(cookie), req, res);
+                selectPath(JSON.parse(cookie), req, res);
             }
             // cookie not valid
             else
             {
-                console.log("Failed 1");
                 res.status(401).send("You are not logged in");
             }
         });
@@ -31,15 +30,122 @@ const review = (req, res, next) =>
     // if no cookie was found
     else
     {
-        console.log("Failed 2");
         res.status(401).send("You are not logged in");
     }
 
 };
 
+const selectPath = (cookie, req, res) =>
+{
+    // if here, the path is profile/username
+    if(Object.keys(req.params).length == 0)
+    {
+        createReview(cookie, req, res);
+    }
+    // if the path is profile/username/follow
+    else if(Object.keys(req.params).length == 1 && req.params.type === "update")
+    {
+        updateReview(cookie, req, res);
+    }
+    // if the path is profile/username/follow
+    else if(Object.keys(req.params).length == 1 && req.params.type === "delete")
+    {
+        deleteReview(cookie, req, res);
+    }
+    // some unknow path given
+    else
+    {
+        res.status(404).send("The review path sent to the server does not exist");
+    }
+};
+
+const updateReview = (cookie, req, res) =>
+{
+    // get the review
+    models.Review.findOne({
+        where: {id: req.body.reviewId}
+    }).then((review) => {
+        if(review === undefined)
+        {
+            res.status(404).send("Review id does not match any reviews");
+        }
+        if(review.userId !== cookie.id)
+        {
+            res.status(401).send("You cannot update another users review");
+        }
+        // update the values
+        review.title = req.body.title;
+        review.rating = req.body.rating;
+        review.review = req.body.review;
+        review.save()
+        .then(async (updatedReview) => {
+            // may want to do if(updatedReview === undefined)
+            // get the id's of the good tags
+            let goodTagArr = await getTagIds(req.body.good, "good");
+            // get the id's of the bad tags
+            let badTagArr = await getTagIds(req.body.bad, "bad");
+            // update the good tags
+            updatedReview.setGoodTags(goodTagArr, {through: {userID: updatedReview.userId}})
+            .then((result) => {
+                // update the bad tags
+                updatedReview.setBadTags(badTagArr, {through: {userID: updatedReview.userId}})
+                .then((result2) => {
+                    res.status(201).send("Review successfully updated!");
+                });
+            });
+        });
+    });
+};
+
+// function to get id's of a string of tags(ex. too short, funny, acting) and return them
+// in a array
+// this will handle if duplicate tags are passed in or a tag that does not exist is passed in
+// also handles if the tag string has a extra , at the end
+const getTagIds = async (tagString, type) =>{
+    // get each of the good tags
+    let tags = tagString.split(",");
+    let tagArray = [];
+    let returnArray = [];
+    // iterate through the array of good tags
+    tags.forEach(tag => {
+        tagArray.push(tag);
+    });
+    if(type === "good")
+    {
+        let result = await models.GoodTag.findAll({
+            where: {
+                value: tagArray
+            },
+            attribute:["id"]
+        });
+        result.forEach((tag) => {
+            returnArray.push(tag.id);
+        });
+        console.log(returnArray);
+        return returnArray;
+    }
+    else
+    {
+        let result = await models.BadTag.findAll({
+            where: {
+                value: tagArray
+            },
+            attribute:["id"]
+        })
+        result.forEach((tag) => {
+            returnArray.push(tag.id);
+        });
+        return returnArray;
+    }
+};
+
+const deleteReview = (cookie, req, res) =>
+{
+
+};
+
 const createReview = (cookie, req, res) =>
 {
-    console.log("HERE");
     let userId = cookie.id;
     console.log(userId);
     models.Review.create({
@@ -62,6 +168,7 @@ const addGoodTags = (goodString, review, userId) =>{
     // iterate through the array of good tags
     goodTags.forEach(tag => {
         // find the tag in the database
+        // should probably replace this with the getTagIds function above and then use set
         models.GoodTag.findOne({ where: {value: tag }})
         // then associate the tag with the review
         // will want to do some error handling if tag not found

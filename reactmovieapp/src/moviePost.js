@@ -12,6 +12,7 @@ class MoviePost extends React.Component {
         super(props);
         this.state = {
             open: false,
+            openEdit: false,
             liked: false,
             user: this.props.data.userId,
             title: this.props.data.title,
@@ -26,9 +27,12 @@ class MoviePost extends React.Component {
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             review: this.props.data.review,
             time: this.props.data.updatedAt,
-            currentUser: this.props.user
+            currentUser: this.props.user,
+            editUpdate: true
         };
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
+        this.generateEditPopUp = this.generateEditPopUp.bind(this);
+        this.removeEditPopUp = this.removeEditPopUp.bind(this);
     }
 
     /*
@@ -186,6 +190,15 @@ class MoviePost extends React.Component {
         document.body.appendChild(script);
     }
 
+    generateEditPopUp()
+    {
+        this.setState({openEdit: true});
+    }
+
+    removeEditPopUp()
+    {
+        this.setState({openEdit: false});
+    }
     /*
         This function is used to generate the appropriate liked button based off of
         the value of the liked field in the state
@@ -266,9 +279,15 @@ class MoviePost extends React.Component {
             counter = counter + 1;
         }
         let editButton = "";
+        let popup = "";
         if(this.state.username === this.state.currentUser)
         {
-            editButton = <ReviewForm data={this.state} edit={true} />;
+            //editButton = <ReviewForm data={this.state} edit={true} />;
+            editButton = <button className={`${style.postButton}`} onClick={this.generateEditPopUp}>Edit post</button>;
+            if(this.state.openEdit)
+            {
+                popup = <ReviewForm data={this.state} edit={true} removeFunction={this.removeEditPopUp}/>;
+            }
         }
 
         /*
@@ -320,10 +339,11 @@ class MoviePost extends React.Component {
                 </div>
 				<div className="socialButtonContainer">
 				    <div className="socialButtons">
-                {likedButton}
+                            {likedButton}
 						    <button className={`${style.postButton}`}>Go to movie page</button>
-                <MoviePostPopUp data={this.state} />
-                {editButton}
+                            <MoviePostPopUp data={this.state} />
+                            {editButton}
+                            {popup}
 					</div>
 				</div>
 			</div>

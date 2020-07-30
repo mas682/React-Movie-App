@@ -25,6 +25,11 @@ router.post('/review', function(req, res, next) {
     review(req, res, next);
 });
 
+//update or delete a review
+router.post('/review/:type', function(req, res, next) {
+    review(req, res, next);
+})
+
 // used to create a account
 router.post('/signup', function(req, res, next) {
     signUp(req, res, next);
