@@ -11,7 +11,7 @@ class MoviePostPopUp extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            open: false,
+            open: this.props.data.openPopUp,
             liked: this.props.data.liked,
             user: this.props.data.user,
             title: this.props.data.title,
@@ -47,6 +47,7 @@ class MoviePostPopUp extends React.Component {
         this.setState({
             open: false,
         });
+        this.props.removeFunction();
     }
 
     // used to update the state for the title, review, and the rating
@@ -305,7 +306,6 @@ class MoviePostPopUp extends React.Component {
         //<button className={`${style.postButton}`} onClick={this.openModal}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
         return (
             <React.Fragment>
-            <button className={`${style.postButton}`} onClick={this.openModal}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
             <Popup
                 open={this.state.open}
                 closeOnDocumentClick

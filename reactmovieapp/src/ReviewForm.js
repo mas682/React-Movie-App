@@ -210,20 +210,23 @@ class ReviewPopUp extends React.Component {
 
     closeModal()
     {
-        this.setState({
-            open: false,
-            title: "",
-            rating: "",
-            usedGoodButtons: [],
-            usedBadButtons: [],
-            unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            review: "",
-        });
         // if editing, call the parent function from moviePost to not use the popup anymore
         if(this.state.edit)
         {
             this.props.removeFunction();
+        }
+        else
+        {
+            this.setState({
+                open: false,
+                title: "",
+                rating: "",
+                usedGoodButtons: [],
+                usedBadButtons: [],
+                unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
+                unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
+                review: "",
+            });
         }
     }
 
@@ -280,7 +283,7 @@ class ReviewPopUp extends React.Component {
         return fetch("http://localhost:9000/review/update", requestOptions)
             .then(res => {
                 status = res.status;
-                return res.text();
+                return res.json();
             }).then(result=> {
                 return [status, result];
             });
@@ -291,10 +294,13 @@ class ReviewPopUp extends React.Component {
         event.preventDefault();
         this.updateReviewApi().then(result => {
             let status = result[0];
-            let response = result[1];
+            let response = result[1][0];
+            let review = result[1][1][0];
             if(status === 201 && response === "Review successfully updated!")
             {
-                alert("Review update successfully posted");
+                console.log(review);
+                this.props.successFunction(review.title, review.rating, review.review, review.goodTags, review.badTags);
+                // need to be careful with this
                 this.closeModal();
             }
             else if(status === 401 && response === "You are not logged in")
@@ -310,8 +316,13 @@ class ReviewPopUp extends React.Component {
             {
                 alert(response);
             }
+            else if(status === 404 && response === "Review updated but could not be found")
+            {
+                alert(response);
+            }
             else
             {
+                alert(response);
                 alert("Some unexpected error occurred trying to update the review");
             }
         });

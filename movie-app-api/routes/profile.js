@@ -29,8 +29,8 @@ const profileHandler = (req, res, next) => {
     else
     {
         // may want to change this...
-        selectPath(null, req, res);
-        //res.send("reroute as not logged in");
+        //selectPath(null, req, res);
+        res.status(401).send("reroute as not logged in");
         // reroute to login page
         // should redirect to home page at this point if login worked
         // or let client side handle the reroute?
@@ -65,6 +65,7 @@ const selectPath = (cookie, req, res) =>
     }
 };
 
+// function to get reviews for a specific user
 const getReviews = (cookie, req, res) =>
 {
     //let username = cookie.name;
@@ -111,6 +112,7 @@ const getReviews = (cookie, req, res) =>
     });
 };
 
+// function to get the feed for a specific user
 const getFeed = (cookie, req, res) =>
 {
     let username = req.params.userId;
@@ -126,6 +128,7 @@ const getFeed = (cookie, req, res) =>
         followers.forEach((user) => {
             userIds.push(user.id);
         });
+        userIds.push(cookie.id);
         models.Review.findFriendsReviews(models, userIds)
         .then((reviews) =>{
             console.log("Reviews found: ");

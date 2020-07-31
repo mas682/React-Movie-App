@@ -13,6 +13,7 @@ class MoviePost extends React.Component {
         this.state = {
             open: false,
             openEdit: false,
+            openPopUp: false,
             liked: false,
             user: this.props.data.userId,
             title: this.props.data.title,
@@ -21,28 +22,31 @@ class MoviePost extends React.Component {
             id: this.props.data.id,
             rating: this.props.data.rating,
             comments: this.props.data.comments,
-            usedGoodButtons: this.getGoodButtons(),
-            usedBadButtons: this.getBadButtons(),
+            usedGoodButtons: this.getGoodButtons(this.props.data.goodTags),
+            usedBadButtons: this.getBadButtons(this.props.data.badTags),
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             review: this.props.data.review,
-            time: this.props.data.updatedAt,
+            time: this.props.data.createdAt,
             currentUser: this.props.user,
             editUpdate: true
         };
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
         this.generateEditPopUp = this.generateEditPopUp.bind(this);
         this.removeEditPopUp = this.removeEditPopUp.bind(this);
+        this.generatePopUp = this.generatePopUp.bind(this);
+        this.removePopUp = this.removePopUp.bind(this);
+        this.updateState = this.updateState.bind(this);
     }
 
     /*
         this function is used to extract the good tags out of the props that are passed
         into the component and create an array with the values to put into the state
     */
-    getGoodButtons()
+    getGoodButtons(buttonArray)
     {
         let tempArr = [];
-        this.props.data.goodTags.forEach((tag) => {
+        buttonArray.forEach((tag) => {
             tempArr.push(tag.value);
             // should also remove button from unused array if the post belongs to the current user
         });
@@ -53,10 +57,10 @@ class MoviePost extends React.Component {
         this function is used to extract the bad tags out of the props that are passed
         into the component and create an array with the values to put into the state
     */
-    getBadButtons()
+    getBadButtons(buttonArray)
     {
         let tempArr = [];
-        this.props.data.badTags.forEach((tag) => {
+        buttonArray.forEach((tag) => {
             tempArr.push(tag.value);
             // should also remove button from unused array if the post belongs to the current user
         });
@@ -190,9 +194,30 @@ class MoviePost extends React.Component {
         document.body.appendChild(script);
     }
 
+    updateState(titleUpdate, ratingUpdate, reviewUpdate, goodButtonUpdate, badButtonUpdate)
+    {
+        this.setState({
+            title: titleUpdate,
+            rating: ratingUpdate,
+            review: reviewUpdate,
+            usedGoodButtons: this.getGoodButtons(goodButtonUpdate),
+            usedBadButtons: this.getGoodButtons(badButtonUpdate),
+        });
+    }
+
     generateEditPopUp()
     {
         this.setState({openEdit: true});
+    }
+
+    generatePopUp()
+    {
+        this.setState({openPopUp: true});
+    }
+
+    removePopUp()
+    {
+        this.setState({openPopUp: false});
     }
 
     removeEditPopUp()
@@ -286,8 +311,18 @@ class MoviePost extends React.Component {
             editButton = <button className={`${style.postButton}`} onClick={this.generateEditPopUp}>Edit post</button>;
             if(this.state.openEdit)
             {
-                popup = <ReviewForm data={this.state} edit={true} removeFunction={this.removeEditPopUp}/>;
+                popup = <ReviewForm data={this.state} edit={true} removeFunction={this.removeEditPopUp} successFunction={this.updateState}/>;
             }
+        }
+
+
+        // left off here
+        // making it so pop up can be opened programatically instead of only on click
+        let popupButton = <button className={`${style.postButton}`} onClick={this.generatePopUp}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>;
+        let postPopUp = "";
+        if(this.state.openPopUp)
+        {
+            postPopUp = <MoviePostPopUp data={this.state} removeFunction={this.removePopUp}/>;
         }
 
         /*
@@ -341,7 +376,8 @@ class MoviePost extends React.Component {
 				    <div className="socialButtons">
                             {likedButton}
 						    <button className={`${style.postButton}`}>Go to movie page</button>
-                            <MoviePostPopUp data={this.state} />
+                            {popupButton}
+                            {postPopUp}
                             {editButton}
                             {popup}
 					</div>

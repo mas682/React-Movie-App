@@ -67,11 +67,11 @@ const updateReview = (cookie, req, res) =>
     }).then((review) => {
         if(review === undefined)
         {
-            res.status(404).send("Review id does not match any reviews");
+            res.status(404).send(["Review id does not match any reviews", null]);
         }
         if(review.userId !== cookie.id)
         {
-            res.status(401).send("You cannot update another users review");
+            res.status(401).send(["You cannot update another users review", null]);
         }
         // update the values
         review.title = req.body.title;
@@ -90,7 +90,19 @@ const updateReview = (cookie, req, res) =>
                 // update the bad tags
                 updatedReview.setBadTags(badTagArr, {through: {userID: updatedReview.userId}})
                 .then((result2) => {
-                    res.status(201).send("Review successfully updated!");
+                    models.Review.findByReviewId(models,req.body.reviewId)
+                    .then((finalReview) =>
+                    {
+                        if(finalReview === undefined)
+                        {
+                            res.status(404).send(["Reviw updated but could not be found", null]);
+                        }
+                        else
+                        {
+                            console.log(finalReview);
+                            res.status(201).send(["Review successfully updated!", finalReview]);
+                        }
+                    });
                 });
             });
         });
