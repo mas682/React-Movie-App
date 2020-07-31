@@ -112,9 +112,6 @@ class SignInPopup extends React.Component {
 	}
 
     render() {
-<<<<<<< HEAD
-		let usernameInput = (
-=======
 		// if the user successfully logged in
 		if(!this.state.open && this.state.redirect)
 		{
@@ -122,7 +119,6 @@ class SignInPopup extends React.Component {
 			return <Redirect to={path} />
 		}
 		let usernameInput =  (
->>>>>>> 59b9cd634040d86144b9d1c12afd8dd157e50e04
             <React.Fragment>
                 <label>
                     <h4 className={style.inputFieldH4} id="validLabel">Username or Email</h4>

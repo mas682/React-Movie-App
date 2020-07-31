@@ -15,11 +15,8 @@ const login = (req, res, next) => {
         {
             if(cookieValid)
             {
-<<<<<<< HEAD
 				res.send('You are already logged in.' + cookie)
-=======
                 res.send(['{\"result\":\"You are already logged in\"}', '{\"user\":\"undefined\"}'])
->>>>>>> 59b9cd634040d86144b9d1c12afd8dd157e50e04
             }
             // cookie not valid
             else

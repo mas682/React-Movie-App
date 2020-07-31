@@ -5,6 +5,7 @@ import SignUpPopup from './SignUp.js';
 import './css/forms.css';
 import ReviewForm from './ReviewForm.js';
 import MoviePost from './moviePost.js';
+import MovieInfo from './MovieInfo.js'
 
 
 // left off here, need to make main page a class so it can have props
@@ -148,6 +149,7 @@ class MainPage extends React.Component {
 						<SignUpPopup />
 						<ReviewForm edit={false}/>
 						<button title = "Click to remove" id="goodButton" onClick={(e)=> this.flipAuhtenticated(e)}>flip</button>
+						<MovieInfo/>
 					</div>
 				</div>
 			);
