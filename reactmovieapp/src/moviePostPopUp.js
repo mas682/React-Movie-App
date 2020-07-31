@@ -1,6 +1,7 @@
 import React from 'react';
 import style from './css/MoviePost/moviePost.module.css';
 import Popup from 'reactjs-popup';
+import {Link} from 'react-router-dom';
 import './css/MoviePost/moviePostPopUp.css';
 import style2 from './css/MoviePost/moviePostPopUp.module.css'
 
@@ -15,6 +16,7 @@ class MoviePostPopUp extends React.Component {
             user: this.props.data.user,
             title: this.props.data.title,
             form: this.props.data.form + "pop",
+            username: this.props.data.username,
             id: this.props.data.id,
             rating: this.props.data.rating,
             comments: this.props.data.comments,
@@ -24,7 +26,8 @@ class MoviePostPopUp extends React.Component {
             usedBadButtons: this.props.data.usedBadButtons,
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            review: this.props.data.review
+            review: this.props.data.review,
+            time: this.props.data.time
         };
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -234,10 +237,13 @@ class MoviePostPopUp extends React.Component {
 
     generateComments(value)
     {
+        let userPath = "/profile/" + value.user.username;
+        console.log(value);
         return <React.Fragment>
                         <div className={style2.commentContainer}>
                             <div className={style2.userNameBox}>
-                                <div>{value.user.username}</div>
+                                <div className={style2.commentUser}><Link to={userPath}>{value.user.username}</Link></div>
+                                <div className={style2.commentTime}>{value.updatedAt}</div>
                             </div>
                             <div className={style2.commentBox}>
                                 <div>{value.value}</div>
@@ -267,6 +273,8 @@ class MoviePostPopUp extends React.Component {
         let badButtonArray = [];
         // counter for loop
         let counter = 0;
+        let profilePath = "/profile/" + this.state.username;
+
         // generate the used good buttons
         while(counter < this.state.usedGoodButtons.length)
         {
@@ -311,7 +319,7 @@ class MoviePostPopUp extends React.Component {
                     <div className={style2.content}>
                         <div className={`${style.post} ${style2.postWidth}`}>
                             <div className="postHeader">
-                                <p className="username">_theonenonly</p>
+                                <Link to={profilePath}><p className="username">{this.state.username}</p></Link>
                                 <img src={require("./images/profile-pic.jpg")}/>
                             </div>
                             <div className="postImage">
@@ -343,6 +351,9 @@ class MoviePostPopUp extends React.Component {
                             </div>
                             <div className={style.review}>
                                 {this.state.review}
+                            </div>
+                            <div className={style.timestampContainer}>
+                                {this.state.time}
                             </div>
                             <div className="socialButtonContainer">
                                 <div className="socialButtons">

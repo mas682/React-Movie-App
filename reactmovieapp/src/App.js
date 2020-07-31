@@ -1,9 +1,17 @@
 import React from 'react';
+import ReviewForm from './ReviewForm.js';
+import Routes from './Router.js';
+import MoviePost from './moviePost.js';
+import Popup from 'reactjs-popup';
+import { Link, Redirect } from 'react-router-dom';
+import history from './History'
 import logo from './logo.svg';
 import background from './images/background3.jpg';
-import Routes from './Router.js'
+import style from './css/reviewform.module.css';
+import './css/forms.css';
 import './App.css';
-import'./css/header.css';
+import './css/header.css';
+import './css/reviewform.css';
 
 
 class MainBody extends React.Component {
@@ -32,7 +40,7 @@ class Header extends React.Component {
 							<a href="/movie">In Theaters</a>
 						</div>
 					</div>
-					<div class="add"><a class="addButton" href="/">+</a></div>
+					<div class="mainBodyChild"><ReviewForm/></div>
 					<div class="showDropdown">
 						<button class="showButton">Shows</button>
 						<div class="showDropdownContent">

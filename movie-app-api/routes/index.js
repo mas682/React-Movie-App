@@ -4,7 +4,7 @@
 import {router, verifyLogin} from './globals.js';
 import {login} from './login.js';
 import {review} from './reviews.js';
-import {getProfile} from './profile.js';
+import {profileHandler} from './profile.js';
 import {signUp} from './signup.js';
 import {homePage} from './homePage.js';
 import {getUserInfo} from './getUserInfo.js';
@@ -25,6 +25,11 @@ router.post('/review', function(req, res, next) {
     review(req, res, next);
 });
 
+//update or delete a review
+router.post('/review/:type', function(req, res, next) {
+    review(req, res, next);
+})
+
 // used to create a account
 router.post('/signup', function(req, res, next) {
     signUp(req, res, next);
@@ -35,8 +40,17 @@ router.get('/getuserinfo', function(req, res, next) {
 });
 
 // used to see a users posts
-router.get('/profile/:userId', function(req, res, next) {
-    getProfile(req, res, next);
+router.get('/profile/:userId/', function(req, res, next) {
+    profileHandler(req, res, next);
+});
+
+router.get('/profile/:userId/*', function(req, res, next) {
+    profileHandler(req, res, next);
+});
+
+// used for all posts routes to /profile/username/some other parameter
+router.post('/profile/:userId/*', function(req, res, next) {
+    profileHandler(req, res, next);
 });
 
 // used to add a comment to a post

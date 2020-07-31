@@ -1,3 +1,4 @@
+let moment = require('moment');
 const comment = (sequelize, DataTypes) => {
     const Comment = sequelize.define('comment', {
         // create a username field
@@ -10,6 +11,32 @@ const comment = (sequelize, DataTypes) => {
             // will probably want to set limit on comment length
             validate: {
                 notEmpty: true,
+            }
+        },
+        createdAt: {
+            // this is done to format the date on return
+            type: DataTypes.DATE,
+            get() {
+                let hour = this.getDataValue('createdAt').getHours();
+                let amPm = "AM";
+                if(hour >= 12)
+                {
+                    amPm = "PM";
+                }
+                return moment(this.getDataValue('createdAt')).format('MMMM DD, YYYY h:mm ') + amPm;
+            }
+        },
+        updatedAt: {
+            // this is done to format the date on return
+            type: DataTypes.DATE,
+            get() {
+                let hour = this.getDataValue('updatedAt').getHours();
+                let amPm = "AM";
+                if(hour >= 12)
+                {
+                    amPm = "PM";
+                }
+                return moment(this.getDataValue('updatedAt')).format('MMMM DD, YYYY h:mm ') + amPm;
             }
         },
     });

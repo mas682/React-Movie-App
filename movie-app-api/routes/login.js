@@ -15,7 +15,11 @@ const login = (req, res, next) => {
         {
             if(cookieValid)
             {
+<<<<<<< HEAD
 				res.send('You are already logged in.' + cookie)
+=======
+                res.send(['{\"result\":\"You are already logged in\"}', '{\"user\":\"undefined\"}'])
+>>>>>>> 59b9cd634040d86144b9d1c12afd8dd157e50e04
             }
             // cookie not valid
             else
@@ -51,14 +55,16 @@ const checkLogin = (req, res) =>
             // create the cookie with expiration in 1 day
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true, httpOnly: true});
-            res.send('created cookie');
+            let userJson = "{\"user\":\"" + user.username + "\"}";
+            res.send(['{\"result\":\"created cookie\"}', userJson]);
         }
         else
         {
             // may want to just say login denied
             // also may want to keep track of failed login attemts and slow server
             // down or lock account if too many failed attempts
-            res.send('incorrect password');
+            console.log("HERE");
+            res.send(['{\"result\":\"incorrect password\"}', '{\"user\":\"undefined\"}'])
         }
     });
 };

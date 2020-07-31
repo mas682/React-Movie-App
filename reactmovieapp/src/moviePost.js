@@ -1,7 +1,9 @@
 import React from 'react';
 import style from './css/MoviePost/moviePost.module.css';
+import {Link} from 'react-router-dom';
 import MoviePostPopUp from './moviePostPopUp.js';
 import './css/MoviePost/moviePost.css';
+import ReviewForm from './ReviewForm.js';
 
 
 
@@ -10,10 +12,12 @@ class MoviePost extends React.Component {
         super(props);
         this.state = {
             open: false,
+            openEdit: false,
             liked: false,
             user: this.props.data.userId,
             title: this.props.data.title,
             form: "form" + this.props.data.id,
+            username: this.props.data.user.username,
             id: this.props.data.id,
             rating: this.props.data.rating,
             comments: this.props.data.comments,
@@ -21,15 +25,14 @@ class MoviePost extends React.Component {
             usedBadButtons: this.getBadButtons(),
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            review: this.props.data.review
+            review: this.props.data.review,
+            time: this.props.data.updatedAt,
+            currentUser: this.props.user,
+            editUpdate: true
         };
-        //this.generateButtons = this.generateButtons.bind(this);
-        //this.usedButtonHandler = this.usedButtonHandler.bind(this);
-        //this.validateForm = this.validateForm.bind(this);
-        //this.callApi = this.callApi.bind(this);
-        //this.changeHandler = this.changeHandler.bind(this);
-        //this.generateTagString = this.generateTagString.bind(this);
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
+        this.generateEditPopUp = this.generateEditPopUp.bind(this);
+        this.removeEditPopUp = this.removeEditPopUp.bind(this);
     }
 
     /*
@@ -187,6 +190,15 @@ class MoviePost extends React.Component {
         document.body.appendChild(script);
     }
 
+    generateEditPopUp()
+    {
+        this.setState({openEdit: true});
+    }
+
+    removeEditPopUp()
+    {
+        this.setState({openEdit: false});
+    }
     /*
         This function is used to generate the appropriate liked button based off of
         the value of the liked field in the state
@@ -251,6 +263,8 @@ class MoviePost extends React.Component {
         let badButtonArray = [];
         // counter for loop
         let counter = 0;
+        let profilePath = "/profile/" + this.state.username;
+
         // generate the used good buttons
         while(counter < this.state.usedGoodButtons.length)
         {
@@ -264,6 +278,17 @@ class MoviePost extends React.Component {
             badButtonArray.push(this.generateGoodBadButton(this.state.usedBadButtons[counter], "bad"));
             counter = counter + 1;
         }
+        let editButton = "";
+        let popup = "";
+        if(this.state.username === this.state.currentUser)
+        {
+            //editButton = <ReviewForm data={this.state} edit={true} />;
+            editButton = <button className={`${style.postButton}`} onClick={this.generateEditPopUp}>Edit post</button>;
+            if(this.state.openEdit)
+            {
+                popup = <ReviewForm data={this.state} edit={true} removeFunction={this.removeEditPopUp}/>;
+            }
+        }
 
         /*
             left off here fixing stars formatting
@@ -272,19 +297,22 @@ class MoviePost extends React.Component {
         */
         return (
 			<div className={`${style.post} ${style.postShadow}`}>
-				<div className="postHeader">
-					<p className="username">_theonenonly</p>
-					<img src={require("./images/profile-pic.jpg")}/>
-				</div>
-				<div className="postImage">
-					<img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
-				</div>
-                <form id={this.state.form} />
-				<div className="centeredMaxWidthContainer">
-                    <fieldset class={style.rating}>
-                        {stars}
-                    </fieldset>
-				</div>
+				  <div className="postHeader">
+					    <Link to={profilePath}><p className="username">{this.state.username}</p></Link>
+					    <img src={require("./images/profile-pic.jpg")}/>
+				  </div>
+          <div>
+              <h3>{this.state.title}</h3>
+          </div>
+				  <div className="postImage">
+					    <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
+				  </div>
+          <form id={this.state.form} />
+				  <div className="centeredMaxWidthContainer">
+              <fieldset class={style.rating}>
+                  {stars}
+              </fieldset>
+				  </div>
                 <div className="centeredMaxWidthContainer">
                     <div className="proConContainter">
                         <div className="centeredMaxWidthContainer">
@@ -306,11 +334,16 @@ class MoviePost extends React.Component {
                 <div className={style.review}>
                     {this.state.review}
                 </div>
+                <div className={style.timestampContainer}>
+                    {this.state.time}
+                </div>
 				<div className="socialButtonContainer">
-					<div className="socialButtons">
-                        {likedButton}
-						<button className={`${style.postButton}`}>Go to movie page</button>
-                        <MoviePostPopUp data={this.state} />
+				    <div className="socialButtons">
+                            {likedButton}
+						    <button className={`${style.postButton}`}>Go to movie page</button>
+                            <MoviePostPopUp data={this.state} />
+                            {editButton}
+                            {popup}
 					</div>
 				</div>
 			</div>

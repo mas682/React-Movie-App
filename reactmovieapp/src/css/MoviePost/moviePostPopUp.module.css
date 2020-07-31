@@ -98,7 +98,20 @@
     align-items: flex-start;
     margin-top: 2%;
     margin-bottom: 1%;
+    width: 100%;
+}
+
+.commentUser {
     font-weight: bold;
+    width: 50%;
+    text-align: left;
+}
+
+.commentTime
+{
+    width: 50%;
+    text-align: right;
+    color: gray;
 }
 
 /* used to hold a users actual comment */

@@ -105,6 +105,17 @@
     margin-bottom: 20px;
 }
 
+.timestampContainer
+{
+	width: 99%;
+    justify-content: flex-end;
+    display: flex;
+    flex-flow: row wrap;
+	margin-bottom: 5px;
+	color: gray;
+	margin-right: 1%;
+}
+
 /* Below is for the star ratings */
 fieldset, label {
     margin: 0;

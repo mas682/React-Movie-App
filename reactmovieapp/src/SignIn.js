@@ -1,6 +1,6 @@
 import React from 'react';
 import Popup from 'reactjs-popup';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import history from './History'
 import style from './css/signin.module.css';
 import './css/signin.css';
@@ -15,7 +15,8 @@ class SignInPopup extends React.Component {
 			username: "",
 			password: "",
 			usernameError: "",
-			passwordError: ""
+			passwordError: "",
+			redirect: false
 		};
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
@@ -59,7 +60,7 @@ class SignInPopup extends React.Component {
 		return fetch("http://localhost:9000/login", requestOptions)
 			.then(res => {
 				console.log(res);
-				return res.text()
+				return res.json()
 			});
 	}
 
@@ -84,19 +85,25 @@ class SignInPopup extends React.Component {
 		if(!error)
 		{
 			this.callApi().then(result => {
-				if(result == "created cookie")
+				let status = JSON.parse(result[0]);
+				let user = JSON.parse(result[1]);
+				alert(status);
+				if(status.result == "created cookie")
 				{
-					alert(result);
 					alert("You have successfully logged in");
-					this.setState({open: false});
+					this.setState({
+						open: false,
+						redirect: true,
+						username: user.user
+					});
 				}
-				else if(result == "You are already logged in")
+				else if(status.result == "You are already logged in")
 				{
-					alert(result);
 					this.setState({open: false});
 				}
 				else
 				{
+					alert(result);
 					console.log(result);
 					alert("Login failed");
 				}
@@ -105,7 +112,17 @@ class SignInPopup extends React.Component {
 	}
 
     render() {
+<<<<<<< HEAD
 		let usernameInput = (
+=======
+		// if the user successfully logged in
+		if(!this.state.open && this.state.redirect)
+		{
+			let path = "/profile/" + this.state.username + "/feed";
+			return <Redirect to={path} />
+		}
+		let usernameInput =  (
+>>>>>>> 59b9cd634040d86144b9d1c12afd8dd157e50e04
             <React.Fragment>
                 <label>
                     <h4 className={style.inputFieldH4} id="validLabel">Username or Email</h4>
