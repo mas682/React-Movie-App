@@ -19,14 +19,14 @@ const getUserInfo = (req, res, next) => {
             // cookie not valid
             else
             {
-                res.status(401).send("Invalid cookie");
+                res.status(401).send(["Invalid cookie"]);
             }
         });
     }
     // if no cookie was found
     else
     {
-        res.status(401).send("No cookie found in request");
+        res.status(401).send(["No cookie found in request"]);
     }
 };
 
@@ -39,12 +39,12 @@ const getUser = (cookie, res) =>
         // if the user was not found
         if(user === null)
         {
-            res.status(404).send("Unable to find user associated with cookie");
+            res.status(404).send(["Unable to find user associated with cookie"]);
         }
         // if the user was found
         else
         {
-            res.status(200).send(user);
+            res.status(200).send([user.firstName, user.lastName, user.username, user.email]);
         }
     });
 };

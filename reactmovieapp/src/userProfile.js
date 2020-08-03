@@ -118,7 +118,6 @@ class UserProfile extends React.Component {
             headers: { 'Content-Type': 'application/json'},
         };
 
-        let returnValue = 0;
         let url = "http://localhost:9000/profile/" + username;
         let status = 0;
         return fetch(url, requestOptions)

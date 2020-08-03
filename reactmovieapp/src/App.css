@@ -72,21 +72,6 @@ div.postHeader img {
 	padding-top: 10px;
 }
 
-/*
-.postGoodBad {
-	display: grid;
-	grid-template-columns: auto auto;
-	position: relative;
-}
-
-.postGoodButtons {
-	display: grid;
-	grid-template-columns: auto auto;
-	grid-gap: 10px;
-	position: relative;
-}
-*/
-
 .socialButtons {
 	display: grid;
 	grid-template-columns: auto auto auto;
@@ -94,29 +79,6 @@ div.postHeader img {
 	position: relative;
 }
 
-/*
-.goodButtons {
-	display: grid;
-	text-align: center;
-	grid-template-columns: auto auto auto;
-}
-
-.goodButtons button {
-	background-color: #4CAF50;
-}
-
-
-.badButtons button {
-	background-color: #F32121;
-}
-
-.badButtons {
-	display: grid;
-	text-align: center;
-	grid-template-columns: auto auto auto;
-}
-
-*/
 .review {
 	padding-top: 10px;
 }
@@ -135,14 +97,6 @@ div.postHeader img {
 
 hr.divider {
   border-top: 3px solid #bbb;
-}
-
-.theGood {
-	position: left;
-}
-
-.theBad {
-	position: right;
 }
 
 .testButton {

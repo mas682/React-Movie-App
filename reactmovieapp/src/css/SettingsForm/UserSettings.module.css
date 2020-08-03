@@ -1,0 +1,68 @@
+.mainBodyContainer {
+    width: 70%;
+    min-height: 1200px;
+    height: auto;
+    margin-left: 15%;
+    margin-right: 15%;
+    margin-top: 20px;
+    position: absolute;
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+    background-color: white;
+    margin-bottom: 20px;
+}
+
+.header
+{
+    width: 100%;
+    color: black;
+    text-align: center;
+    font-size: 1.5em;
+}
+
+.sectionHeader
+{
+    width: 100%;
+}
+
+.h3Header
+{
+    display: inline;
+    font-size: 1.5em;
+    margin-block-start: .25em;
+    margin-inline-start: 5%;
+    margin-inline-end: 0px;
+    font-weight: bold;
+}
+
+.editText {
+    color: gray;
+    margin-left: 5px;
+    background:none;
+    border:none;
+}
+
+.sectionText {
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
+    margin-top: 5px;
+    font-size: 1.25em;
+    margin-bottom: 10px;
+}
+
+.inputBox
+{
+    width: 100%;
+    margin-top: 5px;
+    font-size: 1.25em;
+    border-radius: 6px;
+}
+
+.inputFieldContainer
+{
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
+}

@@ -6,7 +6,7 @@
     position: fixed;
 }
 
-.landingPage h1, h2 {
+.landingPage #h1Landing, #h2Landing {
 	color: white;
 	text-align: center;
 }
