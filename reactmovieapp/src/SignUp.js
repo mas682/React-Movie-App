@@ -10,7 +10,7 @@ class SignUpPopup extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            open: false,
+            open: true,
             username: "",
             firstName: "",
             lastName: "",
@@ -37,17 +37,8 @@ class SignUpPopup extends React.Component {
     closeModal() {
         this.setState({
             open: false,
-            username: "",
-            firstName: "",
-            lastName: "",
-            email: "",
-            password: "",
-            usernameError: "",
-            firstNameError: "",
-            lastNameError: "",
-            emailError: "",
-            passwordError: ""
         });
+        this.props.removeFunction();
     }
 
     callApi()
@@ -192,10 +183,9 @@ class SignUpPopup extends React.Component {
     }
 
     render() {
-
         if(!this.state.open && this.state.redirect)
         {
-            return <Redirect to="/landing/" />;
+            return <Redirect to="/" />;
         }
 
         let usernameInput =  (
@@ -359,9 +349,6 @@ class SignUpPopup extends React.Component {
 
     return (
         <div>
-            <button className="button" onClick={this.openModal}>
-                Sign Up
-            </button>
             <Popup
                 open={this.state.open}
                 closeOnDocumentClick
