@@ -23,7 +23,6 @@
 .navButtons {
 	text-align: center;
 	display: block;
-	color: white;
 	text-decoration: none;
 	z-index: 2;
 	position: relative;
@@ -43,7 +42,7 @@
 }
 
 .movieDropdown, .movieButton, .showDropdown, .showButton {
-  font-size: 16px;  
+  font-size: 16px;
   border: none;
   outline: none;
   color: white;
@@ -72,15 +71,24 @@
   text-align: left;
 }
 
-.add, .addButton, .addButton:link, .addButton:visited {
+.add, .addButton:link, .addButton:visited {
 	background-color: red;
 	color: white;
 	display: block;
 	text-align: center;
-	padding-top: 15px;
 	text-decoration: none;
 	z-index: 1;
 	position: relative;
+}
+
+.addButton
+{
+    background-color: red;
+    border: none;
+    font-size: 3em;
+    color: white;
+    width: 100%;
+    height: 100%;
 }
 
 .searchBar {

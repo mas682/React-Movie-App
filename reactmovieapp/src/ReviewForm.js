@@ -1,3 +1,4 @@
+/* eslint-disable */ // need to ignore a warning when opening review form
 import React from 'react';
 import history from './History'
 import { Link } from 'react-router-dom';
@@ -36,7 +37,7 @@ class ReviewPopUp extends React.Component {
         {
             this.state = {
                 edit: this.props.edit,
-                open: false,
+                open: true,
                 title: "",
                 rating: "",
                 usedGoodButtons: [],
@@ -211,11 +212,8 @@ class ReviewPopUp extends React.Component {
     closeModal()
     {
         // if editing, call the parent function from moviePost to not use the popup anymore
-        if(this.state.edit)
-        {
-            this.props.removeFunction();
-        }
-        else
+        this.props.removeFunction();
+        if(!this.state.edit)
         {
             this.setState({
                 open: false,
@@ -741,7 +739,6 @@ class ReviewPopUp extends React.Component {
         {
             return (
                 <div>
-                    <button className="button" onClick={this.openModal}>Write Review</button>
                     {html}
                 </div>
             );
