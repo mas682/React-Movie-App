@@ -17,7 +17,7 @@ class MainBody extends React.Component {
 
     render() {
         return (
-            <Routes authenticated = {this.props.authenticated} setAuthenticated = {this.props.setAuthenticated}/>
+            <Routes />
         );
     }
 }
@@ -88,34 +88,6 @@ class App extends React.Component {
     constructor(props)
     {
         super(props);
-        this.state={
-            authenticated: true,
-            checked: false
-        };
-
-    }
-
-    callApi()
-    {
-        /*fetch("http://localhost:9000/testAPI")
-            .then(res => res.text())
-            .then(res => this.setState({apiResponse:res}));
-        */
-        if(!this.state.checked)
-        {
-            this.setState({checked: true});
-            //alert("setting checked");
-        }
-    }
-
-    componentWillMount()
-    {
-        //this.callApi();
-    }
-
-    setAuthenticated = (auth) =>
-    {
-        this.setState({authenticated: auth});
     }
 
     render()
@@ -124,7 +96,7 @@ class App extends React.Component {
             <div className="App">
                 <Header/>
                 <main>
-                    <MainBody authenticated = {this.state.authenticated} setAuthenticated = {this.setAuthenticated}/>
+                    <MainBody/>
                 </main>
             </div>
         );

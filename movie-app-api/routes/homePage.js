@@ -15,7 +15,7 @@ const homePage = (req, res, next) => {
         {
             if(cookieValid)
             {
-                res.send("You are already logged in");
+                res.status(200).send(JSON.parse(cookie).name);
                 // may want to rediirect here to another page??
             }
             // cookie not valid
