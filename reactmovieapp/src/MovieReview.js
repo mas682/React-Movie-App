@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import SignUpPopup from './SignUp.js';
 import './css/moviereview.css';
+import MovieInfo from './MovieInfo.js'
 
 
 const Movie = () => {
@@ -14,6 +15,7 @@ const Movie = () => {
 				<p> This will show reviews for a specific movie</p>
 				<Link to="/"><button className ="testButton">Home Page</button></Link>
 				<SignUpPopup />
+				<MovieInfo/>
 			</div>
 		</div>
     );
