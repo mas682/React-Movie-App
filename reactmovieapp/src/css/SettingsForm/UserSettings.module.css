@@ -43,21 +43,33 @@
     border:none;
 }
 
+.editText:focus
+{
+    outline: 0;
+}
+
 .sectionText {
     width: 90%;
     margin-left: 5%;
     margin-right: 5%;
     margin-top: 5px;
-    font-size: 1.25em;
+    font-size: 1.7em;
     margin-bottom: 10px;
 }
 
-.inputBox
+.inputFieldBoxShort
 {
-    width: 100%;
+    width: 50%;
     margin-top: 5px;
-    font-size: 1.25em;
+    font-size: 1.7em;
     border-radius: 6px;
+    margin-bottom: 5px;
+}
+
+.errorTextContainer
+{
+    margin-left: 5%;
+    margin-bottom: 10px;
 }
 
 .inputFieldContainer
@@ -65,4 +77,12 @@
     width: 90%;
     margin-left: 5%;
     margin-right: 5%;
+}
+
+.submitButtonContainer
+{
+    margin-left: 5%;
+    margin-right: 5%;
+    width: 90%;
+    margin-top: 20px;
 }

@@ -58,6 +58,11 @@ const selectPath = (cookie, req, res) =>
     {
         getFeed(cookie, req, res);
     }
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "update")
+    {
+        console.log("here");
+        updateInfo(cookie, req, res);
+    }
     // some unknow path given
     else
     {
@@ -238,6 +243,63 @@ const unfollowUser = (cookie, req, res) =>
                     res.status(500).send("Something went wrong on the server");
                 }
             });
+        }
+    });
+}
+
+const updateInfo = (cookie, req, res) =>
+{
+    //let username = cookie.name;
+    let username = req.params.userId;
+    // find a user by their login
+    models.User.findByLogin(username)
+    .then(async (user)=>{
+        console.log(username);
+        if(user === null)
+        {
+            res.status(404).send(["Could not find the user to update"]);
+            return;
+        }
+        let currentUser = false;
+        // if this is the current user
+        if(cookie.name === user.username)
+        {
+            if(user.username !== req.body.username)
+            {
+                let tempUser = await models.User.findByLogin(req.body.username);
+                if(tempUser !== null)
+                {
+                    res.status(409).send(["username already in use"]);
+                    return;
+                }
+            }
+            if(user.email !== req.body.email)
+            {
+                let tempUser = await models.User.findByLogin(req.body.email);
+                if(tempUser !== null)
+                {
+                    res.status(409).send(["email already in use"]);
+                    return;
+                }
+            }
+
+            user.username = req.body.username;
+            user.email = req.body.email;
+            user.firstName = req.body.firstName;
+            user.lastName = req.body.lastName;
+            user.save().then((result) =>{
+                // create the valie to put into the cookie
+                let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
+                // create the cookie with expiration in 1 day
+                // will need to update cookie here
+                res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+                res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true, httpOnly: true});
+                res.status(200).send([user.username, user.email, user.firstName, user.lastName]);
+            });
+        }
+        else
+        {
+            res.send(401).send(["Cannot update the profile of another user"]);
         }
     });
 }

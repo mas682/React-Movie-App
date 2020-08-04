@@ -3,6 +3,7 @@ import history from './History'
 import {Link, Redirect } from 'react-router-dom';
 import './App.css';
 import style from './css/SettingsForm/UserSettings.module.css';
+import './css/forms.css';
 
 
 // left off here, need to make main page a class so it can have props
@@ -13,9 +14,17 @@ class UserSettings extends React.Component {
 		super(props);
         this.state = {
             firstName: "",
+            oldFirst:"",
+            firstNameError: "",
             lastName: "",
+            oldLast: "",
+            lastNameError: "",
             userName: "",
+            oldUser: "",
+            userNameError: "",
             email: "",
+            emailError: "",
+            oldEmail: "",
             loaded: false,
             redirect: false,
             editFirst: false,
@@ -27,6 +36,8 @@ class UserSettings extends React.Component {
         this.generateInput = this.generateInput.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.callApi = this.callApi.bind(this);
+        this.validateForm = this.validateForm.bind(this);
+        this.sendData = this.sendData.bind(this);
 	}
 
 	async componentDidMount()
@@ -56,21 +67,159 @@ class UserSettings extends React.Component {
         });
 	}
 
+    async validateForm(event)
+    {
+        event.preventDefault();
+        let error = false;
+        // checks to see if email in format string@string.string
+        let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.state.email);
+        // if firstName is empty
+        if(!this.state.firstName)
+        {
+            this.setState({"firstNameError": "First name is required"});
+            error = true;
+        }
+        else
+        {
+            this.setState({"firstNameError": ""});
+        }
+
+        if(!this.state.userName)
+        {
+            this.setState({"userNameError": "Username is required"});
+            error = true;
+        }
+        else if(this.state.userName < 8)
+        {
+            this.setState({"userNameError": "Username must be at least 8 characters"});
+            error = true;
+        }
+        else
+        {
+            this.setState({"userNameError": ""});
+        }
+
+        // if lastName is empty
+        if(!this.state.lastName)
+        {
+            this.setState({"lastNameError": "Last name is required"});
+            error = true;
+        }
+        else
+        {
+            this.setState({"lastNameError": ""});
+        }
+
+        // if lastName is empty
+        if(!this.state.email)
+        {
+            this.setState({"emailError": "Email is required"});
+            error = true;
+        }
+        else if(!this.state.email.includes("@") | !validEmail)
+        {
+            this.setState({"emailError": "You must enter a valid email address"});
+            error = true;
+        }
+        else
+        {
+            this.setState({"emailError": ""});
+        }
+        if(!error)
+        {
+            let updatedResult = await this.sendData();
+            if(updatedResult[0] === 200)
+            {
+                this.setState({
+                    firstName: updatedResult[1][2],
+                    oldFirst:"",
+                    firstNameError: "",
+                    lastName: updatedResult[1][3],
+                    oldLast: "",
+                    lastNameError: "",
+                    userName: updatedResult[1][0],
+                    oldUser: "",
+                    userNameError: "",
+                    email: updatedResult[1][1],
+                    emailError: "",
+                    oldEmail: "",
+                    editFirst: false,
+                    editLast: false,
+                    editUser: false,
+                    editEmail: false
+                });
+            }
+            else
+            {
+                // request failed for some reason
+                alert(updatedResult[1][0]);
+            }
+        }
+    }
+
     changeHandler(event) {
         let name = event.target.name;
         let value = event.target.value;
         this.setState({[name]: value});
     }
 
-    setEdit(type)
+    setEdit(type, newKey, oldKey)
     {
         let currentValue = this.state[type];
         let value = false;
         if(!currentValue)
         {
             value = true;
+            // save the old value in case the user cancels the edit
+            this.setState({
+                [type]:value,
+                [oldKey]:this.state[newKey]
+            });
         }
-        this.setState({[type]:value});
+        else
+        {
+            // restore the old value
+            this.setState({
+                [type]:value,
+                [newKey]: this.state[oldKey]
+            });
+        }
+    }
+
+    sendData()
+    {
+        console.log(this.state);
+        // Simple POST request with a JSON body using fetch
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                username: this.state.userName,
+                firstName: this.state.firstName,
+                lastName: this.state.lastName,
+                email: this.state.email,
+            })
+        };
+
+        let url = "";
+        if(this.state.oldUser)
+        {
+            url = "http://localhost:9000/profile/" + this.state.oldUser + "/update";
+        }
+        else
+        {
+            url = "http://localhost:9000/profile/" + this.state.userName + "/update";
+        }
+
+        let status = 0;
+        return fetch(url, requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.json();
+            }).then(result => {
+                return [status, result];
+            });
     }
 
 	async callApi()
@@ -91,28 +240,58 @@ class UserSettings extends React.Component {
             });
 	}
 
-    generateInput(type, value, title)
+    // function to generate HTML for each section such as first name, last name, username, email
+    generateInput(type, value, title, oldKey)
     {
         let result = "";
+        // if this.state[type+"Error"]...
         if(this.state[type])
         {
-            result = (
-                <React.Fragment>
-                    <div className={style.sectionHeader}>
-                        <h3 className={style.h3Header}>{title}</h3>
-                        <button className={style.editText} onClick={() => {this.setEdit(type)} }>Cancel</button>
-                    </div>
-                    <div className={style.inputFieldContainer}>
-                        <input
-                            type="text"
-                            name={type}
-                            form="form1"
-                            value={this.state[value]}
-                            className={style.inputBox}
-                            onChange={this.changeHandler}
-                        />
-                    </div>
-                </React.Fragment>);
+            let errorType = value + "Error";
+            if(this.state[errorType])
+            {
+                // fix the css using the forms.css file
+                result = (
+                    <React.Fragment>
+                        <div className={style.sectionHeader}>
+                            <h3 className={`${style.h3Header} errorLabel`}>{title}</h3>
+                            <button className={style.editText} onClick={() => {this.setEdit(type, value, oldKey)} }>Cancel</button>
+                        </div>
+                        <div className={style.inputFieldContainer}>
+                            <input
+                                type="text"
+                                name={value}
+                                form="form1"
+                                value={this.state[value]}
+                                className={`${style.inputFieldBoxShort} inputBoxError`}
+                                onChange={this.changeHandler}
+                            />
+                        </div>
+                        <div className={style.errorTextContainer}>
+                            <small className="errorTextSmall">{this.state[errorType]}</small>
+                        </div>
+                    </React.Fragment>);
+            }
+            else
+            {
+                result = (
+                    <React.Fragment>
+                        <div className={style.sectionHeader}>
+                            <h3 className={style.h3Header}>{title}</h3>
+                            <button className={style.editText} onClick={() => {this.setEdit(type, value, oldKey)} }>Cancel</button>
+                        </div>
+                        <div className={style.inputFieldContainer}>
+                            <input
+                                type="text"
+                                name={value}
+                                form="form1"
+                                value={this.state[value]}
+                                className={`${style.inputFieldBoxShort} validInputBox`}
+                                onChange={this.changeHandler}
+                            />
+                        </div>
+                    </React.Fragment>);
+            }
         }
         else
         {
@@ -120,7 +299,7 @@ class UserSettings extends React.Component {
                 <React.Fragment>
                     <div className={style.sectionHeader}>
                         <h3 className={style.h3Header}>{title}</h3>
-                        <button className={style.editText} onClick={() => {this.setEdit(type)} }>Edit</button>
+                        <button className={style.editText} onClick={() => {this.setEdit(type, value, oldKey)} }>Edit</button>
                     </div>
                     <div className={style.sectionText}>
                         {this.state[value]}
@@ -132,28 +311,49 @@ class UserSettings extends React.Component {
 
 	render()
 	{
+        // if the server response was not received yet, display nothing
         if(!this.state.loaded)
         {
             return null;
         }
+        // if the user could not be authenticated, redirect to home page
         if(this.state.redirect)
         {
             return <Redirect to="/" />;
         }
-        let firstInput = this.generateInput("editFirst", "firstName", "First Name");
-        let lastInput = this.generateInput("editLast", "lastName", "Last Name");
-        let userInput = this.generateInput("editUser", "userName", "Username");
-        let emailInput = this.generateInput("editEmail", "email", "Email");
+        let firstInput = this.generateInput("editFirst", "firstName", "First Name", "oldFirst");
+        let lastInput = this.generateInput("editLast", "lastName", "Last Name", "oldLast");
+        let userInput = this.generateInput("editUser", "userName", "Username", "oldUser");
+        let emailInput = this.generateInput("editEmail", "email", "Email", "oldEmail");
+        let submitButton = "";
+        if(this.state.editFirst || this.state.editLast || this.state.editUser || this.state.editEmail)
+        {
+            submitButton = (
+                <React.Fragment>
+                    <div className={style.submitButtonContainer}>
+                        <button
+                            form="form1"
+                            value="submit_changes"
+                            className="submitButton"
+                            onClick={this.validateForm}
+                            >Submit Changes
+                        </button>
+                    </div>
+                </React.Fragment>
+            );
+        }
 
 		return (
 			<div className={style.mainBodyContainer}>
 			        <div className={style.header}>
                         <h2>Settings</h2>
 		            </div>
+                    <form id="form1" onSubmit={this.validateForm} noValidate/>
                     {firstInput}
                     {lastInput}
                     {userInput}
                     {emailInput}
+                    {submitButton}
 		    </div>
 			);
 	}
