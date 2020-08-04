@@ -38,7 +38,7 @@ class SignUpPopup extends React.Component {
         this.setState({
             open: false,
         });
-        this.props.removeFunction();
+        //this.props.removeFunction();
     }
 
     callApi()
