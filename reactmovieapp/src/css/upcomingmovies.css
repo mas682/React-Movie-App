@@ -1,0 +1,14 @@
+.movieTitle:link {
+    color: black;
+	text-decoration: none;
+}
+
+.movieTitle:visited {
+    color: black;
+	text-decoration: none;
+}
+
+.movieTitle:hover {
+    color: red;
+	text-decoration: none;
+}
