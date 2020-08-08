@@ -4,6 +4,7 @@ import {Link, Redirect } from 'react-router-dom';
 import './App.css';
 import style from './css/SettingsForm/UserSettings.module.css';
 import './css/forms.css';
+import PasswordResetPopUp from './PasswordResetPopUp.js';
 
 
 // left off here, need to make main page a class so it can have props
@@ -30,7 +31,8 @@ class UserSettings extends React.Component {
             editFirst: false,
             editLast: false,
             editUser: false,
-            editEmail: false
+            editEmail: false,
+			displayPasswordResetPop: false
         };
         this.setEdit = this.setEdit.bind(this);
         this.generateInput = this.generateInput.bind(this);
@@ -38,6 +40,9 @@ class UserSettings extends React.Component {
         this.callApi = this.callApi.bind(this);
         this.validateForm = this.validateForm.bind(this);
         this.sendData = this.sendData.bind(this);
+		this.showPasswordResetPopUp = this.showPasswordResetPopUp.bind(this);
+		this.removePasswordResetPopUp = this.removePasswordResetPopUp.bind(this);
+		this.generatePasswordPopUp = this.generatePasswordPopUp.bind(this);
 	}
 
 	async componentDidMount()
@@ -157,6 +162,16 @@ class UserSettings extends React.Component {
         }
     }
 
+	removePasswordResetPopUp = () =>
+	{
+		this.setState({displayPasswordResetPop: false});
+	}
+
+	showPasswordResetPopUp()
+	{
+		this.setState({displayPasswordResetPop: true});
+	}
+
     changeHandler(event) {
         let name = event.target.name;
         let value = event.target.value;
@@ -241,6 +256,10 @@ class UserSettings extends React.Component {
 	}
 
     // function to generate HTML for each section such as first name, last name, username, email
+	// type is holds editFirst, editLast, etc.
+	// value is the value for the input type
+	// title is First Name, Last Name, etc.
+	// oldKey is key to the state for the old value if the user decides not to update it
     generateInput(type, value, title, oldKey)
     {
         let result = "";
@@ -309,6 +328,15 @@ class UserSettings extends React.Component {
         return result;
     }
 
+	generatePasswordPopUp()
+	{
+		if(this.state.displayPasswordResetPop)
+		{
+			return <PasswordResetPopUp username={this.state.username} removeFunction={this.removePasswordResetPopUp}/>;
+		}
+		return "";
+	}
+
 	render()
 	{
         // if the server response was not received yet, display nothing
@@ -342,6 +370,7 @@ class UserSettings extends React.Component {
                 </React.Fragment>
             );
         }
+		let passwordPopUp = this.generatePasswordPopUp();
 
 		return (
 			<div className={style.mainBodyContainer}>
@@ -354,6 +383,16 @@ class UserSettings extends React.Component {
                     {userInput}
                     {emailInput}
                     {submitButton}
+					<div className={style.submitButtonContainer}>
+						<button
+							form="form1"
+							value="submit_changes"
+							className={style.submitButton}
+							onClick={this.showPasswordResetPopUp}
+							>Change password
+						</button>
+					</div>
+					{passwordPopUp}
 		    </div>
 			);
 	}

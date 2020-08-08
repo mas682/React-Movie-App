@@ -1,5 +1,4 @@
 import React from 'react';
-import history from './History'
 import { Link, Redirect } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import './css/signup.css';
@@ -23,22 +22,21 @@ class SignUpPopup extends React.Component {
             passwordError: "",
             redirect: false
         };
-        this.openModal = this.openModal.bind(this);
+
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.validateForm = this.validateForm.bind(this);
         this.callApi = this.callApi.bind(this);
     }
 
-    openModal() {
-        this.setState({ open: true });
-    }
-
     closeModal() {
         this.setState({
             open: false,
         });
-        //this.props.removeFunction();
+        // function that is passed in by the calling component that
+        // sets some state in the other component when this is closed,
+        // such as whether or not the pop up should be open
+        this.props.removeFunction();
     }
 
     callApi()

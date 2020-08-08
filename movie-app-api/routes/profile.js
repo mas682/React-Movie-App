@@ -21,7 +21,7 @@ const profileHandler = (req, res, next) => {
             // cookie not valid
             else
             {
-                res.send("No cookie");
+                res.status(401).send("No cookie");
             }
         });
     }
@@ -60,12 +60,16 @@ const selectPath = (cookie, req, res) =>
     }
     else if(Object.keys(req.params).length == 2 && req.params[0] === "update")
     {
-        console.log("here");
         updateInfo(cookie, req, res);
+    }
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "update_password")
+    {
+        updatePassword(cookie, req, res);
     }
     // some unknow path given
     else
     {
+        console.log(req.params[0]);
         res.status(404).send();
     }
 };
@@ -136,8 +140,6 @@ const getFeed = (cookie, req, res) =>
         userIds.push(cookie.id);
         models.Review.findFriendsReviews(models, userIds)
         .then((reviews) =>{
-            console.log("Reviews found: ");
-            console.log(reviews);
             res.status(200).send(reviews);
         });
     });
@@ -247,6 +249,59 @@ const unfollowUser = (cookie, req, res) =>
     });
 }
 
+// function to handle updating a users password
+const updatePassword = async (cookie, req, res) =>
+{
+    let username = cookie.name;
+    // if the password is not provided, automatically deny
+    if(!req.body.oldPassword)
+    {
+        res.status(401).send("Your password is incorrect");
+    }
+    else if(req.params.userId !== cookie.name)
+    {
+        res.status(401).send("The user passed in the url does not match the cookie");
+    }
+    else if(!req.body.newPass)
+    {
+        res.status(400).send("New password not provided");
+    }
+    else if(req.body.newPass.length < 8)
+    {
+        res.status(400).send("Password must be at least 8 characters")
+    }
+    else if(req.body.oldPassword === req.body.newPass)
+    {
+        res.status(400).send("New password is identical to the previous one");
+    }
+    else
+    {
+        let user = await models.User.findByLogin(cookie.name);
+        if(user === null)
+        {
+            res.status(404).send("Could not find the user to update");
+            return;
+        }
+        if(user.password === req.body.oldPassword)
+        {
+            user.password = req.body.newPass;
+            let result = await user.save();
+            // send a updated cookie
+            let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
+            res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+            res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true, httpOnly: true});
+            res.status(200).send("Password updated");
+        }
+        else
+        {
+            res.status(401).send("Password incorrect");
+        }
+
+    }
+}
+
+// function to handle updating a users information such as their
+// first name, last name, email, or username
 const updateInfo = (cookie, req, res) =>
 {
     //let username = cookie.name;
@@ -254,7 +309,6 @@ const updateInfo = (cookie, req, res) =>
     // find a user by their login
     models.User.findByLogin(username)
     .then(async (user)=>{
-        console.log(username);
         if(user === null)
         {
             res.status(404).send(["Could not find the user to update"]);
@@ -264,6 +318,7 @@ const updateInfo = (cookie, req, res) =>
         // if this is the current user
         if(cookie.name === user.username)
         {
+            // if the username is being updated, make sure not in use
             if(user.username !== req.body.username)
             {
                 let tempUser = await models.User.findByLogin(req.body.username);
@@ -273,6 +328,7 @@ const updateInfo = (cookie, req, res) =>
                     return;
                 }
             }
+            // if the email is being updated, make sure not in use
             if(user.email !== req.body.email)
             {
                 let tempUser = await models.User.findByLogin(req.body.email);
@@ -288,10 +344,8 @@ const updateInfo = (cookie, req, res) =>
             user.firstName = req.body.firstName;
             user.lastName = req.body.lastName;
             user.save().then((result) =>{
-                // create the valie to put into the cookie
+                // below is used to update the cookie as the values have changed
                 let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
-                // create the cookie with expiration in 1 day
-                // will need to update cookie here
                 res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
                 res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true, httpOnly: true});
                 res.status(200).send([user.username, user.email, user.firstName, user.lastName]);

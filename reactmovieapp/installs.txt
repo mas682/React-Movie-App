@@ -24,3 +24,6 @@ Needed to use database
 npm install babel-preset-env
 npm install babel-cli -g
 npm install moment
+
+
+npm install axios --save

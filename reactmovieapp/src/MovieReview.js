@@ -11,7 +11,6 @@ const Movie = () => {
 			<div className="mainBodyHeader">
 			</div>
 			<div>
-				<SignUpPopup />
 				<MovieInfo/>
 			</div>
 		</div>
