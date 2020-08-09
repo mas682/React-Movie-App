@@ -71,12 +71,7 @@
   border: 1px solid #cfcece;
 }
 
-.tester
-{
-    color: black;
-}
-
-
+/* container for profile pic, user name, follow button */
 .userNameContainer
 {
     width: 100%;
@@ -90,16 +85,19 @@
     border-bottom: 1px solid #C0C0C0;
 }
 
+/* styling for user picture */
 .profilePic {
 	height: auto;
 	width: 100%;
 }
 
+/* container for user image */
 .userImageBox
 {
     width: 8.5%;
 }
 
+/* container for username */
 .usernameBox
 {
     width: 66.5%;
@@ -109,6 +107,7 @@
     font-size: 1.5em;
 }
 
+/* container for follow buton */
 .followBox
 {
     width: 20%;
@@ -116,9 +115,14 @@
 }
 
 
-.divider
+/* removes underline from username */
+.userLink
 {
-    height: 2px;
-    background-color: gray;
-    width: 100%;
+    text-decoration: none;
+}
+
+/* sets username color to always be black even when clicked */
+.userLink:visited
+{
+    color: black;
 }

@@ -83,9 +83,60 @@ const getReviews = (cookie, req, res) =>
     models.User.findByLogin(username)
     .then(async (user)=>{
         let currentUser = false;
-        let followers = await user.getFollowers();
-        let following = await user.getFollowing();
+        // will need changed
+        // see which of the users that follow the user also follow the requester
+
+        /*
+            left off Here
+            going to send 4 array back
+            1 containing the users followers that I follow
+            1 contating the users followers that I do not follow
+            1 containing users following that I follow
+            1 containg users following that I do not follow
+            may want to do this on click of followers/following?
+            also should probably move these functions into the users file
+
+        */
+
+
+        let followers = await user.getFollowers({
+            include:[
+            {
+                model: models.User,
+                as: "Followers",
+                where: {id: cookie.id}
+            }]
+        });
+        // see which of the users that the user is following have the requester as a follower
+        let following = await user.getFollowing({
+            include:[
+            {
+                model: models.User,
+                as: "Followers",
+                where: {id: cookie.id}
+            }]
+        });
+        if(followers[0] !== undefined)
+        {
+            console.log("Followers following user");
+            console.log(followers[0].Followers);
+        }
+        else
+        {
+            console.log("None of the users followrs have you as a follower");
+        }
+        console.log("Users followers that have me as a follower: ");
         console.log(followers);
+        if(following[0] !== undefined)
+        {
+            console.log("Following's followers:")
+            console.log(following[0].Followers);
+        }
+        else
+        {
+            console.log("None of the uers following have you as a follower");
+        }
+        console.log("Users following that have me as a follower:");
         console.log(following);
         // if the current user is looking at their own page
         if(cookie.name === user.username)

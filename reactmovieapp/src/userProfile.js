@@ -57,7 +57,9 @@ class UserProfile extends React.Component {
                     currentUser: result[1][1],
                     following: result[1][2],
                     followers: result[1][4],
-                    followed: result[1][5]
+                    followed: result[1][5],
+                    displayFollowers: false,
+                    displayFollowed: false
                 });
             }
             else
@@ -66,15 +68,6 @@ class UserProfile extends React.Component {
             }
         });
     }
-
-
-    /* To Do:
-        1. call api to get users posts and verify user exists
-        2. show users posts
-        3. create a header to show username, pictuer, etc.
-            - will need to create a css file for this componenet
-
-    */
 
     async componentDidMount()
     {
@@ -91,7 +84,9 @@ class UserProfile extends React.Component {
                     currentUser: result[1][1],
                     following: result[1][2],
                     followers: result[1][4],
-                    followed: result[1][5]
+                    followed: result[1][5],
+                    displayFollowers: false,
+                    displayFollowed: false
                 });
 
             }
