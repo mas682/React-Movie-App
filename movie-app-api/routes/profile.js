@@ -81,8 +81,12 @@ const getReviews = (cookie, req, res) =>
     let username = req.params.userId;
     // find a user by their login
     models.User.findByLogin(username)
-    .then((user)=>{
+    .then(async (user)=>{
         let currentUser = false;
+        let followers = await user.getFollowers();
+        let following = await user.getFollowing();
+        console.log(followers);
+        console.log(following);
         // if the current user is looking at their own page
         if(cookie.name === user.username)
         {
@@ -91,7 +95,7 @@ const getReviews = (cookie, req, res) =>
             .then((reviews)=>
             {
                 // send the reveiws associated with the user and their id
-                res.status(200).send([user.id, currentUser, false, reviews]);
+                res.status(200).send([user.id, currentUser, false, reviews, followers, following]);
             });
         }
         // current user looking at another page
@@ -114,7 +118,7 @@ const getReviews = (cookie, req, res) =>
                 .then((reviews)=>
                 {
                     // send the reveiws associated with the user and their id
-                    res.status(200).send([user.id, currentUser, followed, reviews]);
+                    res.status(200).send([user.id, currentUser, followed, reviews, followers, following]);
                 });
             })
         }

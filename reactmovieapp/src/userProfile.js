@@ -20,7 +20,9 @@ class UserProfile extends React.Component {
             following: false,
             // this will be set by the api call
             posts: [],
-            currentUser: false
+            currentUser: false,
+            followers:[],
+            followed:[],
         }
     }
 
@@ -49,9 +51,10 @@ class UserProfile extends React.Component {
                     // get the users id from the response
                     id: result[1][0],
                     currentUser: result[1][1],
-                    following: result[1][2]
+                    following: result[1][2],
+                    followers: result[1][4],
+                    followed: result[1][5]
                 });
-
             }
             else
             {
@@ -82,7 +85,9 @@ class UserProfile extends React.Component {
                     // get the users id from the response
                     id: result[1][0],
                     currentUser: result[1][1],
-                    following: result[1][2]
+                    following: result[1][2],
+                    followers: result[1][4],
+                    followed: result[1][5]
                 });
 
             }
@@ -252,6 +257,38 @@ class UserProfile extends React.Component {
             });
     }
 
+    // used to update the state for the title, review, and the rating
+    generatePopUp(event, type) {
+        event.preventDefault();
+        alert(type);
+        //let value = event.target.value;
+        //this.setState({[name]: value});
+    }
+
+    generateFollowerDisplay()
+    {
+        let display = (
+            <div className={style5.followersContainer}>
+                <div className={style5.numberDisplay}>
+                    <button className={style5.followersButton} onClick={(e)=> this.generatePopUp(e, "followers")}><h3 className={style5.socialHeader}>Followers</h3>
+                    {this.state.followers.length}
+                    </button>
+                </div>
+                <div className={style5.numberDisplay}>
+                    <button className={style5.followersButton} onClick={(e)=> this.generatePopUp(e, "following")}><h3 className={style5.socialHeader}>Following</h3>
+                    {this.state.followed.length}
+                    </button>
+                </div>
+                <div className={style5.numberDisplay}>
+                    <button className={style5.followersButton}><h3 className={style5.socialHeader}>Posts</h3>
+                    {this.state.posts.length}
+                    </button>
+                </div>
+            </div>
+        );
+        console.log(this.state.followers);
+        return display;
+    }
 
     render()
     {
@@ -269,6 +306,7 @@ class UserProfile extends React.Component {
             }
         });
 
+        let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";
         if(this.state.currentUser)
         {
@@ -293,6 +331,7 @@ class UserProfile extends React.Component {
                     <img className={style5.profilePic} src={require("./images/profile-pic.jpg")}/>
                     <h3>{this.state.username}</h3>
                     {followButton}
+                    {followerDisplay}
                 </div>
                 {posts}
             </div>
