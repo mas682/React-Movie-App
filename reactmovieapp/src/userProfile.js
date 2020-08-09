@@ -2,6 +2,7 @@ import React from 'react';
 // should get rid of this eventually
 import { withRouter } from "react-router-dom";
 import MoviePost from './moviePost.js';
+import UserListPopUp from './UserListPopUp.js';
 import style5 from './css/userProfile.module.css';
 import './css/forms.css'
 
@@ -23,7 +24,10 @@ class UserProfile extends React.Component {
             currentUser: false,
             followers:[],
             followed:[],
+            displayFollowers: false,
+            displayFollowed: false
         }
+        this.removePopUp = this.removePopUp.bind(this);
     }
 
     // this gets called when the component is changing from user to another
@@ -257,12 +261,29 @@ class UserProfile extends React.Component {
             });
     }
 
-    // used to update the state for the title, review, and the rating
+    // update state to set boolean to display followers or following
     generatePopUp(event, type) {
         event.preventDefault();
-        alert(type);
-        //let value = event.target.value;
-        //this.setState({[name]: value});
+        if(type === "followers")
+        {
+            this.setState({displayFollowers: true});
+        }
+        else if(type === "following")
+        {
+            this.setState({displayFollowed: true});
+        }
+    }
+
+    removePopUp(type)
+    {
+        if(type === "Followers")
+        {
+            this.setState({displayFollowers: false});
+        }
+        else
+        {
+            this.setState({displayFollowed: false});
+        }
     }
 
     generateFollowerDisplay()
@@ -306,6 +327,16 @@ class UserProfile extends React.Component {
             }
         });
 
+        // used to generate users followers/following lists
+        let popup = "";
+        if(this.state.displayFollowers)
+        {
+            popup = <UserListPopUp users={this.state.followers} type="Followers" removeFunction={this.removePopUp}/>;
+        }
+        if(this.state.displayFollowed)
+        {
+            popup = <UserListPopUp users={this.state.followed} type="Following" removeFunction={this.removePopUp}/>;
+        }
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";
         if(this.state.currentUser)
@@ -332,6 +363,7 @@ class UserProfile extends React.Component {
                     <h3>{this.state.username}</h3>
                     {followButton}
                     {followerDisplay}
+                    {popup}
                 </div>
                 {posts}
             </div>
