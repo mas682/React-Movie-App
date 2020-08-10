@@ -22,10 +22,13 @@ class UserProfile extends React.Component {
             // this will be set by the api call
             posts: [],
             currentUser: false,
-            followers:[],
-            followed:[],
+            followedFollowers:[],
+            getNotFollowedFollowers: [],
+            followedFollowing:[],
+            notFollowedFollowing: [],
             displayFollowers: false,
-            displayFollowed: false
+            displayFollowed: false,
+            loading: true
         }
         this.removePopUp = this.removePopUp.bind(this);
     }
@@ -56,8 +59,10 @@ class UserProfile extends React.Component {
                     id: result[1][0],
                     currentUser: result[1][1],
                     following: result[1][2],
-                    followers: result[1][4],
-                    followed: result[1][5],
+                    followedFollowers: result[1][4],
+                    followedFollowing: result[1][5],
+                    notFollowedFollowers: result[1][6],
+                    notFollowedFollowing: result[1][7],
                     displayFollowers: false,
                     displayFollowed: false
                 });
@@ -83,10 +88,13 @@ class UserProfile extends React.Component {
                     id: result[1][0],
                     currentUser: result[1][1],
                     following: result[1][2],
-                    followers: result[1][4],
-                    followed: result[1][5],
+                    followedFollowers: result[1][4],
+                    followedFollowing: result[1][5],
+                    notFollowedFollowers: result[1][6],
+                    notFollowedFollowing: result[1][7],
                     displayFollowers: false,
-                    displayFollowed: false
+                    displayFollowed: false,
+                    loading: false
                 });
 
             }
@@ -283,16 +291,18 @@ class UserProfile extends React.Component {
 
     generateFollowerDisplay()
     {
+        let followerLength = this.state.followedFollowers.length + this.state.notFollowedFollowers.length;
+        let followingLength = this.state.followedFollowing.length + this.state.notFollowedFollowing.length;
         let display = (
             <div className={style5.followersContainer}>
                 <div className={style5.numberDisplay}>
                     <button className={style5.followersButton} onClick={(e)=> this.generatePopUp(e, "followers")}><h3 className={style5.socialHeader}>Followers</h3>
-                    {this.state.followers.length}
+                    {followerLength}
                     </button>
                 </div>
                 <div className={style5.numberDisplay}>
                     <button className={style5.followersButton} onClick={(e)=> this.generatePopUp(e, "following")}><h3 className={style5.socialHeader}>Following</h3>
-                    {this.state.followed.length}
+                    {followingLength}
                     </button>
                 </div>
                 <div className={style5.numberDisplay}>
@@ -302,12 +312,15 @@ class UserProfile extends React.Component {
                 </div>
             </div>
         );
-        console.log(this.state.followers);
         return display;
     }
 
     render()
     {
+        if(this.state.loading)
+        {
+            return null;
+        }
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {
@@ -326,11 +339,11 @@ class UserProfile extends React.Component {
         let popup = "";
         if(this.state.displayFollowers)
         {
-            popup = <UserListPopUp users={this.state.followers} type="Followers" removeFunction={this.removePopUp}/>;
+            popup = <UserListPopUp followedUsers={this.state.followedFollowers} notFollowedUsers={this.state.notFollowedFollowers} type="Followers" removeFunction={this.removePopUp}/>;
         }
         if(this.state.displayFollowed)
         {
-            popup = <UserListPopUp users={this.state.followed} type="Following" removeFunction={this.removePopUp}/>;
+            popup = <UserListPopUp followedUsers={this.state.followedFollowing} notFollowedUsers={this.state.notFollowedFollowing} type="Following" removeFunction={this.removePopUp}/>;
         }
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";

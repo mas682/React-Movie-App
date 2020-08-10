@@ -111,7 +111,11 @@
 .followBox
 {
     width: 20%;
-    background-color: red;
+    display: flex;
+    flex-flow: row wrap;
+    align-content: center;
+    justify-content: center;
+
 }
 
 
@@ -125,4 +129,40 @@
 .userLink:visited
 {
     color: black;
+}
+
+
+.followButton
+{
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    outline: none;
+}
+
+.followColor
+{
+    background-color: blue;
+}
+
+.followColor:hover
+{
+    background-color: DarkGray;
+}
+
+.notFollowingColor
+{
+    background-color: DarkGray;
+}
+
+.notFollowingColor:hover
+{
+    background-color: blue;
 }

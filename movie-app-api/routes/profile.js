@@ -74,8 +74,43 @@ const selectPath = (cookie, req, res) =>
     }
 };
 
+// this function will return a users follwers and following for their page
+const getFollowers = async (cookie, req, res) =>
+{
+
+    let username = req.params.userId;
+    let mutualFollowerIds = [];
+    let mutualFollowingIds = [];
+    console.log("HERE");
+    // may want to do this somewhere else as the feed is also doing this..
+    let mutualFollowers = await models.User.getMutualFollowers(username, cookie.id);
+    // this could be very slow....
+    mutualFollowers.forEach((follower)=> {
+        mutualFollowerIds.push(follower.id);
+    });
+    let notMutualFollowers = await models.User.getNotFollowedFollowers(username, cookie.id, mutualFollowerIds);
+    let mutualFollowing = await models.User.getMutualFollowing(username, cookie.id);
+    // this could be very slow...
+    mutualFollowing.forEach((follower)=> {
+        mutualFollowingIds.push(follower.id);
+    });
+    let notMutualFollowing = await models.User.getNotFollowedFollowing(username, cookie.id, mutualFollowingIds);
+
+    // for testing
+    console.log("Mutual Followers Result:");
+    console.log(mutualFollowers);
+    console.log("Unmutual followers:");
+    console.log(notMutualFollowers);
+    console.log("Mutual following:");
+    console.log(mutualFollowing);
+    console.log("Unmutual following:");
+    console.log(notMutualFollowing);
+    res.status(200).send([mutualFollowers, mutualFollowing, notMutualFollowers, notMutualFollowing]);
+
+}
+
 // function to get reviews for a specific user
-const getReviews = (cookie, req, res) =>
+const getReviews = async (cookie, req, res) =>
 {
     //let username = cookie.name;
     let username = req.params.userId;
@@ -83,61 +118,37 @@ const getReviews = (cookie, req, res) =>
     models.User.findByLogin(username)
     .then(async (user)=>{
         let currentUser = false;
-        // will need changed
-        // see which of the users that follow the user also follow the requester
 
-        /*
-            left off Here
-            going to send 4 array back
-            1 containing the users followers that I follow
-            1 contating the users followers that I do not follow
-            1 containing users following that I follow
-            1 containg users following that I do not follow
-            may want to do this on click of followers/following?
-            also should probably move these functions into the users file
+        // need something for if this fails
+        // if(user === undefined)
+        // res.status().send...
 
-        */
-
-
-        let followers = await user.getFollowers({
-            include:[
-            {
-                model: models.User,
-                as: "Followers",
-                where: {id: cookie.id}
-            }]
+        let mutualFollowerIds = [];
+        let mutualFollowingIds = [];
+        // may want to do this somewhere else as the feed is also doing this..
+        let mutualFollowers = await models.User.getMutualFollowers(username, cookie.id);
+        // this could be very slow....
+        mutualFollowers.forEach((follower)=> {
+            mutualFollowerIds.push(follower.id);
         });
-        // see which of the users that the user is following have the requester as a follower
-        let following = await user.getFollowing({
-            include:[
-            {
-                model: models.User,
-                as: "Followers",
-                where: {id: cookie.id}
-            }]
+        let notMutualFollowers = await models.User.getNotFollowedFollowers(username, cookie.id, mutualFollowerIds);
+        let mutualFollowing = await models.User.getMutualFollowing(username, cookie.id);
+        // this could be very slow...
+        mutualFollowing.forEach((follower)=> {
+            mutualFollowingIds.push(follower.id);
         });
-        if(followers[0] !== undefined)
-        {
-            console.log("Followers following user");
-            console.log(followers[0].Followers);
-        }
-        else
-        {
-            console.log("None of the users followrs have you as a follower");
-        }
-        console.log("Users followers that have me as a follower: ");
-        console.log(followers);
-        if(following[0] !== undefined)
-        {
-            console.log("Following's followers:")
-            console.log(following[0].Followers);
-        }
-        else
-        {
-            console.log("None of the uers following have you as a follower");
-        }
-        console.log("Users following that have me as a follower:");
-        console.log(following);
+        let notMutualFollowing = await models.User.getNotFollowedFollowing(username, cookie.id, mutualFollowingIds);
+
+        // for testing
+        console.log("Mutual Followers Result:");
+        console.log(mutualFollowers);
+        console.log("Unmutual followers:");
+        console.log(notMutualFollowers);
+        console.log("Mutual following:");
+        console.log(mutualFollowing);
+        console.log("Unmutual following:");
+        console.log(notMutualFollowing);
+
         // if the current user is looking at their own page
         if(cookie.name === user.username)
         {
@@ -146,7 +157,7 @@ const getReviews = (cookie, req, res) =>
             .then((reviews)=>
             {
                 // send the reveiws associated with the user and their id
-                res.status(200).send([user.id, currentUser, false, reviews, followers, following]);
+                res.status(200).send([user.id, currentUser, false, reviews, mutualFollowers, mutualFollowing, notMutualFollowers, notMutualFollowing]);
             });
         }
         // current user looking at another page
@@ -169,7 +180,7 @@ const getReviews = (cookie, req, res) =>
                 .then((reviews)=>
                 {
                     // send the reveiws associated with the user and their id
-                    res.status(200).send([user.id, currentUser, followed, reviews, followers, following]);
+                    res.status(200).send([user.id, currentUser, followed, reviews, mutualFollowers, mutualFollowing, notMutualFollowers, notMutualFollowing]);
                 });
             })
         }

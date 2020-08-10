@@ -10,8 +10,8 @@ class UserListPopUp extends React.Component {
         this.state ={
             // indicates if the popup is visible on the screen or not
             open: true,
-            // an array of users
-            users: this.props.users,
+            followedUsers: this.props.followedUsers,
+            notFollowedUsers: this.props.notFollowedUsers,
             // not currently used by may be used in the future if users can click a button
             // to follow usres in the list
             redirect: false,
@@ -47,7 +47,7 @@ class UserListPopUp extends React.Component {
     generateUserDisplay(value, title)
     {
         let usersArray = [];
-        this.state.users.forEach((user) => {
+        this.state.followedUsers.forEach((user) => {
             // path to users profile page
             let path = "/profile/" + user.username;
             let userHtml = (
@@ -60,21 +60,31 @@ class UserListPopUp extends React.Component {
                         <Link to={path} className={style.userLink}>{user.username}</Link>
                     </div>
                     <div className ={style.followBox}>
-                        <button> follow button </button>
+                        <button className={`${style.followButton} ${style.followColor}`}>Following</button>
                     </div>
                 </div>
                 </React.Fragment>
             );
             usersArray.push(userHtml);
-            usersArray.push(userHtml);
-            usersArray.push(userHtml);
-            usersArray.push(userHtml);
-            usersArray.push(userHtml);
-            usersArray.push(userHtml);
-            usersArray.push(userHtml);
-            usersArray.push(userHtml);
-            usersArray.push(userHtml);
-            usersArray.push(userHtml);
+        });
+        this.state.notFollowedUsers.forEach((user) => {
+            // path to users profile page
+            let path = "/profile/" + user.username;
+            let userHtml = (
+                <React.Fragment>
+                <div className={style.userNameContainer}>
+                    <div className={style.userImageBox}>
+                        <Link to={path}><img className={style.profilePic} src={require("./images/profile-pic.jpg")}/></Link>
+                    </div>
+                    <div className={style.usernameBox}>
+                        <Link to={path} className={style.userLink}>{user.username}</Link>
+                    </div>
+                    <div className ={style.followBox}>
+                        <button className={`${style.followButton} ${style.notFollowingColor}`}>Follow</button>
+                    </div>
+                </div>
+                </React.Fragment>
+            );
             usersArray.push(userHtml);
         });
         return usersArray;
