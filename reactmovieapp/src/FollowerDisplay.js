@@ -11,34 +11,13 @@ class FollowerDisplay extends React.Component {
             following: this.props.following,
             loading: true,
             // holds the name of the logged in user
-            requester: this.props.requester
+            requester: this.props.requester,
+            // boolean indicating if on current users page
+            currentUser: this.props.currentUser
         };
-        this.closeModal = this.closeModal.bind(this);
-        this.changeHandler = this.changeHandler.bind(this);
         this.generateFollowButton = this.generateFollowButton.bind(this);
         this.followHandler = this.followHandler.bind(this);
         this.unfollowHandler = this.unfollowHandler.bind(this);
-    }
-
-    // load the data in here
-    async componentDidMount()
-    {
-
-    }
-
-
-    // will eventually be used when users are able to follow users from the list
-    // by clicking a button
-    changeHandler(event) {
-        let name = event.target.name;
-        let value = event.target.value;
-        this.setState({[name]: value});
-    }
-
-    // function called when closing the popup
-    // the props.removeFunction is a function passed in by the calling component that
-    // is used to remove the popup from the calling components display
-    closeModal() {
     }
 
     followHandler()
@@ -55,7 +34,7 @@ class FollowerDisplay extends React.Component {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json'},
             body: JSON.stringify({
-                id: this.state.id
+                id: this.state.user.id
             })
         };
 
@@ -69,6 +48,10 @@ class FollowerDisplay extends React.Component {
                 if(status === 200 && result === "User successfully followed")
                 {
                     this.setState({following: true});
+                    if(this.state.currentUser)
+                    {
+                        this.props.updateFunction(1);
+                    }
                 }
                 else if(status === 401 && result === "Unable to verify requester")
                 {
@@ -127,6 +110,10 @@ class FollowerDisplay extends React.Component {
                 if(status === 200 && result === "User successfully unfollowed")
                 {
                     this.setState({following: false});
+                    if(this.state.currentUser)
+                    {
+                        this.props.updateFunction(-1);
+                    }
                 }
                 else if(status === 401 && result === "Unable to verify requester")
                 {

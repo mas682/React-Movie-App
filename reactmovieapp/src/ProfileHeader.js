@@ -25,7 +25,54 @@ class ProfileHeader extends React.Component {
             loading: true
         }
         this.removePopUp = this.removePopUp.bind(this);
+        this.updateFollowedCount = this.updateFollowedCount.bind(this);
+        this.updateFollowingCount = this.updateFollowingCount.bind(this);
+        this.changeFollowedCount = this.changeFollowedCount.bind(this);
+        this.changeFollowingCount = this.changeFollowingCount.bind(this);
     }
+
+    // function to change the followed count to the passed in value if it is not equal
+    // to the current state
+    // called only when userlist popup generated as it gets a updated count of users
+    changeFollowedCount(value)
+    {
+        if(value !== this.state.followedCount)
+        {
+            alert("New value followed");
+            this.setState({followedCount: value});
+        }
+    }
+
+    // function to change the following count to the passed in value if it is not equal
+    // to the current state
+    // called only when userlist popup generated as it gets a updated count of users
+    changeFollowingCount(value)
+    {
+        if(value !== this.state.followingCount)
+        {
+            alert("New value following");
+            this.setState({followingCount: value});
+        }
+    }
+
+    // function used to increment/decrement followed count when a user is on
+    // their own page
+    updateFollowedCount(value)
+    {
+        let count = this.state.followedCount + value;
+        this.setState({followedCount: count});
+    }
+
+    // function used to increment/decrement following count when a user is on
+    // their own page
+    updateFollowingCount(value)
+    {
+        let count = this.state.followingCount + value;
+        this.setState({followingCount: count});
+    }
+
+
+
 
     // this gets called when the component is changing from user to another
     // such as when clicking on a users link when the userProfile page is already
@@ -146,7 +193,11 @@ class ProfileHeader extends React.Component {
             }).then(result =>{
                 if(status === 200 && result === "User successfully followed")
                 {
-                    this.setState({following: true});
+                    let value = this.state.followedCount + 1;
+                    this.setState({
+                        following: true,
+                        followedCount: value
+                    });
                 }
                 else if(status === 401 && result === "Unable to verify requester")
                 {
@@ -204,7 +255,11 @@ class ProfileHeader extends React.Component {
             }).then(result =>{
                 if(status === 200 && result === "User successfully unfollowed")
                 {
-                    this.setState({following: false});
+                    let value = this.state.followedCount - 1;
+                    this.setState({
+                        following: false,
+                        followedCount: value
+                    });
                 }
                 else if(status === 401 && result === "Unable to verify requester")
                 {
@@ -295,11 +350,11 @@ class ProfileHeader extends React.Component {
         let popup = "";
         if(this.state.displayFollowers)
         {
-            popup = <UserListPopUp username={this.state.username} type="Followers" removeFunction={this.removePopUp}/>;
+            popup = <UserListPopUp username={this.state.username} type="Followers" removeFunction={this.removePopUp} updateFunction={this.updateFollowedCount} currentUser={this.state.currentUser} changeFunction={this.changeFollowedCount}/>;
         }
         if(this.state.displayFollowed)
         {
-            popup = <UserListPopUp username={this.state.username} type="Following" removeFunction={this.removePopUp}/>;
+            popup = <UserListPopUp username={this.state.username} type="Following" removeFunction={this.removePopUp} updateFunction={this.updateFollowingCount} currentUser={this.state.currentUser} changeFunction={this.changeFollowingCount}/>;
         }
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";

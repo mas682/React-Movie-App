@@ -14,6 +14,8 @@ class UserListPopUp extends React.Component {
             followedUsers: [],
             notFollowedUsers: [],
             requester: "",
+            // true if this list is on the loggedin users page
+            currentUser: this.props.currentUser,
             // not currently used by may be used in the future if users can click a button
             // to follow usres in the list
             redirect: false,
@@ -39,6 +41,10 @@ class UserListPopUp extends React.Component {
                 requester: result[1][2],
                 loading: false
             });
+            let count = result[1][0].length + result[1][1].length;
+            // this will update the profile header if the count of following
+            // or followers has changed since loading originally
+            this.props.changeFunction(count);
         }
         else
         {
@@ -100,12 +106,12 @@ class UserListPopUp extends React.Component {
         let usersArray = [];
         this.state.followedUsers.forEach((user) => {
             // path to users profile page
-            let userHtml = (<FollowerDisplay user={user} following={true} requester={this.state.requester} />);
+            let userHtml = (<FollowerDisplay user={user} following={true} requester={this.state.requester} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction}/>);
             usersArray.push(userHtml);
         });
         this.state.notFollowedUsers.forEach((user) => {
             // path to users profile page
-            let userHtml = (<FollowerDisplay user={user} following={false} requester={this.state.requester} />);
+            let userHtml = (<FollowerDisplay user={user} following={false} requester={this.state.requester} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction}/>);
             usersArray.push(userHtml);
         });
         return usersArray;
