@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link, Redirect } from 'react-router-dom';
 import Popup from 'reactjs-popup';
+import FollowerDisplay from './FollowerDisplay.js';
 import './css/forms.css';
 import style from './css/UserListPopUp.module.css';
 
@@ -10,17 +10,68 @@ class UserListPopUp extends React.Component {
         this.state ={
             // indicates if the popup is visible on the screen or not
             open: true,
-            followedUsers: this.props.followedUsers,
-            notFollowedUsers: this.props.notFollowedUsers,
+            username: this.props.username,
+            followedUsers: [],
+            notFollowedUsers: [],
+            requester: "",
             // not currently used by may be used in the future if users can click a button
             // to follow usres in the list
             redirect: false,
             // the pop up can either be for Followers or Following
-            type: this.props.type
+            type: this.props.type,
+            loading: true
         };
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.generateUserDisplay = this.generateUserDisplay.bind(this);
+    }
+
+    // load the data in here
+    async componentDidMount()
+    {
+        let result = await this.getUsers();
+        let status = result[0];
+        if(status === 200)
+        {
+            this.setState({
+                followedUsers: result[1][0],
+                notFollowedUsers: result[1][1],
+                requester: result[1][2],
+                loading: false
+            });
+        }
+        else
+        {
+            alert("Failed to get users for the popup");
+        }
+    }
+
+    // function to get call the api to get the users to display
+    getUsers()
+    {
+        const requestOptions = {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json'},
+        };
+
+        let url;
+        if(this.state.type === "Followers")
+        {
+            url = "http://localhost:9000/profile/" + this.state.username + "/getfollowers";
+        }
+        else
+        {
+            url = "http://localhost:9000/profile/" + this.state.username + "/getfollowing";
+        }
+        let status = 0;
+        return fetch(url, requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.json();
+            }).then(result =>{
+                return [status, result];
+            });
     }
 
 
@@ -49,42 +100,12 @@ class UserListPopUp extends React.Component {
         let usersArray = [];
         this.state.followedUsers.forEach((user) => {
             // path to users profile page
-            let path = "/profile/" + user.username;
-            let userHtml = (
-                <React.Fragment>
-                <div className={style.userNameContainer}>
-                    <div className={style.userImageBox}>
-                        <Link to={path}><img className={style.profilePic} src={require("./images/profile-pic.jpg")}/></Link>
-                    </div>
-                    <div className={style.usernameBox}>
-                        <Link to={path} className={style.userLink}>{user.username}</Link>
-                    </div>
-                    <div className ={style.followBox}>
-                        <button className={`${style.followButton} ${style.followColor}`}>Following</button>
-                    </div>
-                </div>
-                </React.Fragment>
-            );
+            let userHtml = (<FollowerDisplay user={user} following={true} requester={this.state.requester} />);
             usersArray.push(userHtml);
         });
         this.state.notFollowedUsers.forEach((user) => {
             // path to users profile page
-            let path = "/profile/" + user.username;
-            let userHtml = (
-                <React.Fragment>
-                <div className={style.userNameContainer}>
-                    <div className={style.userImageBox}>
-                        <Link to={path}><img className={style.profilePic} src={require("./images/profile-pic.jpg")}/></Link>
-                    </div>
-                    <div className={style.usernameBox}>
-                        <Link to={path} className={style.userLink}>{user.username}</Link>
-                    </div>
-                    <div className ={style.followBox}>
-                        <button className={`${style.followButton} ${style.notFollowingColor}`}>Follow</button>
-                    </div>
-                </div>
-                </React.Fragment>
-            );
+            let userHtml = (<FollowerDisplay user={user} following={false} requester={this.state.requester} />);
             usersArray.push(userHtml);
         });
         return usersArray;

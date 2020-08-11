@@ -44,6 +44,10 @@ const selectPath = (cookie, req, res) =>
     {
         getReviews(cookie, req, res);
     }
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "user_info")
+    {
+        getUserHeaderInfo(cookie, req, res);
+    }
     // if the path is profile/username/follow
     else if(Object.keys(req.params).length == 2 && req.params[0] === "follow")
     {
@@ -66,6 +70,14 @@ const selectPath = (cookie, req, res) =>
     {
         updatePassword(cookie, req, res);
     }
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "getfollowers")
+    {
+        getFollowers(cookie, req, res);
+    }
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "getfollowing")
+    {
+        getFollowing(cookie, req, res);
+    }
     // some unknow path given
     else
     {
@@ -74,14 +86,12 @@ const selectPath = (cookie, req, res) =>
     }
 };
 
-// this function will return a users follwers and following for their page
+// this function will return a users follwers for their page
 const getFollowers = async (cookie, req, res) =>
 {
 
     let username = req.params.userId;
     let mutualFollowerIds = [];
-    let mutualFollowingIds = [];
-    console.log("HERE");
     // may want to do this somewhere else as the feed is also doing this..
     let mutualFollowers = await models.User.getMutualFollowers(username, cookie.id);
     // this could be very slow....
@@ -89,25 +99,75 @@ const getFollowers = async (cookie, req, res) =>
         mutualFollowerIds.push(follower.id);
     });
     let notMutualFollowers = await models.User.getNotFollowedFollowers(username, cookie.id, mutualFollowerIds);
+    res.status(200).send([mutualFollowers, notMutualFollowers, cookie.name]);
+}
+
+// this function will return a users following for their page
+const getFollowing = async (cookie, req, res) =>
+{
+    let username = req.params.userId;
+    let mutualFollowingIds = [];
     let mutualFollowing = await models.User.getMutualFollowing(username, cookie.id);
     // this could be very slow...
     mutualFollowing.forEach((follower)=> {
         mutualFollowingIds.push(follower.id);
     });
     let notMutualFollowing = await models.User.getNotFollowedFollowing(username, cookie.id, mutualFollowingIds);
-
-    // for testing
-    console.log("Mutual Followers Result:");
-    console.log(mutualFollowers);
-    console.log("Unmutual followers:");
-    console.log(notMutualFollowers);
-    console.log("Mutual following:");
-    console.log(mutualFollowing);
-    console.log("Unmutual following:");
-    console.log(notMutualFollowing);
-    res.status(200).send([mutualFollowers, mutualFollowing, notMutualFollowers, notMutualFollowing]);
+    res.status(200).send([mutualFollowing, notMutualFollowing, cookie.name]);
 
 }
+
+// function to get data for the users profile header
+// returns user Id, if the page is for the current user, if the user is following the
+// user, the number of following/followers users
+const getUserHeaderInfo = async (cookie, req, res) =>
+{
+    //let username = cookie.name;
+    let username = req.params.userId;
+    // find a user by their login
+    models.User.findByLogin(username)
+    .then(async (user)=>{
+        // if the user was not found
+        if(user === undefined)
+        {
+            res.status(404).send(["Unable to find the requested user"]);
+            return;
+        }
+        // boolean to indicate if the requester and username are the same
+        let currentUser = false;
+        // boolean to indicate if the requester if following the user
+        let followed = false;
+
+        // get the number of followers the user has
+        let followerCount = (await user.getFollowers()).length;
+        // get the number of following users the user has
+        let followingCount = (await user.getFollowing()).length;
+
+        // if the current user is looking at their own page
+        if(cookie.name === user.username)
+        {
+            currentUser = true;
+        }
+        // current user looking at another page
+        else
+        {
+            // see if the user they are looking at has them as a follower
+            let following = await user.getFollowers( {where: {id: cookie.id} } );
+            // if not undefined, found requester as a follower
+            if(following[0] !== undefined)
+            {
+                followed = true;
+            }
+        }
+        res.status(200).send([user.id, currentUser, followed, followerCount, followingCount]);
+
+    });
+}
+
+// could store index into array for each component
+// then set index in parent to indicate you know follow or do not follow
+// [user, following?]
+// some user??
 
 // function to get reviews for a specific user
 const getReviews = async (cookie, req, res) =>
@@ -117,73 +177,18 @@ const getReviews = async (cookie, req, res) =>
     // find a user by their login
     models.User.findByLogin(username)
     .then(async (user)=>{
-        let currentUser = false;
-
-        // need something for if this fails
-        // if(user === undefined)
-        // res.status().send...
-
-        let mutualFollowerIds = [];
-        let mutualFollowingIds = [];
-        // may want to do this somewhere else as the feed is also doing this..
-        let mutualFollowers = await models.User.getMutualFollowers(username, cookie.id);
-        // this could be very slow....
-        mutualFollowers.forEach((follower)=> {
-            mutualFollowerIds.push(follower.id);
-        });
-        let notMutualFollowers = await models.User.getNotFollowedFollowers(username, cookie.id, mutualFollowerIds);
-        let mutualFollowing = await models.User.getMutualFollowing(username, cookie.id);
-        // this could be very slow...
-        mutualFollowing.forEach((follower)=> {
-            mutualFollowingIds.push(follower.id);
-        });
-        let notMutualFollowing = await models.User.getNotFollowedFollowing(username, cookie.id, mutualFollowingIds);
-
-        // for testing
-        console.log("Mutual Followers Result:");
-        console.log(mutualFollowers);
-        console.log("Unmutual followers:");
-        console.log(notMutualFollowers);
-        console.log("Mutual following:");
-        console.log(mutualFollowing);
-        console.log("Unmutual following:");
-        console.log(notMutualFollowing);
-
-        // if the current user is looking at their own page
-        if(cookie.name === user.username)
+        if(user === undefined)
         {
-            currentUser = true;
-            models.Review.findById(models, user.id)
-            .then((reviews)=>
-            {
-                // send the reveiws associated with the user and their id
-                res.status(200).send([user.id, currentUser, false, reviews, mutualFollowers, mutualFollowing, notMutualFollowers, notMutualFollowing]);
-            });
+            res.status(404).send(["Unable to find the requested user"]);
+            return;
         }
-        // current user looking at another page
-        else
+
+        models.Review.findById(models, user.id)
+        .then((reviews)=>
         {
-            // see if the user they are looking at has them as a follower
-            user.getFollowers({
-                where: {id: cookie.id}
-            })
-            .then((follower) => {
-                let followed = false;
-                if(follower[0] !== undefined)
-                {
-                    if(follower[0].username === cookie.name)
-                    {
-                        followed = true;
-                    }
-                }
-                models.Review.findById(models, user.id)
-                .then((reviews)=>
-                {
-                    // send the reveiws associated with the user and their id
-                    res.status(200).send([user.id, currentUser, followed, reviews, mutualFollowers, mutualFollowing, notMutualFollowers, notMutualFollowing]);
-                });
-            })
-        }
+            // send the reveiws associated with the user and their id
+            res.status(200).send(reviews);
+        });
     });
 };
 
