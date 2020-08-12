@@ -6,6 +6,7 @@ import UserListPopUp from './UserListPopUp.js';
 import style5 from './css/userProfile.module.css';
 import './css/forms.css'
 import ProfileHeader from './ProfileHeader.js';
+import MoviePostDisplay from './MoviePostDisplay.js';
 
 
 class UserProfile extends React.Component {
@@ -17,134 +18,43 @@ class UserProfile extends React.Component {
             // in the router, set the username as :id
             username: this.props.match.params.id,
             // this will be set by the api call
-            posts: [],
+            postCount: 0,
         }
+        this.setPostCount = this.setPostCount.bind(this);
     }
 
     // this gets called when the component is changing from user to another
     // such as when clicking on a users link when the userProfile page is already
     // up
-    // may have been that key issue??
+    // may not need this
     componentWillReceiveProps(nextProps) {
-        /*
-       if(this.props.match.params.id !== nextProps.match.params.id) {
-           this.getData(nextProps.match.params.id);
-       }
-       */
+        if(this.props.match.params.id !== nextProps.match.params.id) {
+            this.getData(nextProps.match.params.id);
+        }
     }
+
+    // function to be utilized by MoviePostDisplay to update the count of the posts
+    setPostCount(value)
+    {
+        this.setState({postCount:value});
+    }
+
 
     // this only gets called by the above method to update the state on
     // user profile change
     getData = (param) => {
-        /*
-        this.callApi(param).then(result =>{
-            // set status to result[0]
-            let status = result[0];
-            // see if request succeeded
-            if(status == 200)
-            {
-                this.setState({
-                    username: param,
-                    posts: result[1][3],
-                    // get the users id from the response
-                    id: result[1][0],
-                    currentUser: result[1][1],
-                    following: result[1][2],
-                    followedFollowers: result[1][4],
-                    followedFollowing: result[1][5],
-                    notFollowedFollowers: result[1][6],
-                    notFollowedFollowing: result[1][7],
-                    displayFollowers: false,
-                    displayFollowed: false
-                });
-            }
-            else
-            {
-                alert("request for user profile failed");
-            }
+        this.setState({
+            username: param,
         });
-        */
-    }
-
-    async componentDidMount()
-    {
-        /*
-        this.callApi(undefined).then(result =>{
-            // set status to result[0]
-            let status = result[0];
-            // see if request succeeded
-            if(status == 200)
-            {
-                this.setState({
-                    posts: result[1][3],
-                    // get the users id from the response
-                    id: result[1][0],
-                    currentUser: result[1][1],
-                    following: result[1][2],
-                    followedFollowers: result[1][4],
-                    followedFollowing: result[1][5],
-                    notFollowedFollowers: result[1][6],
-                    notFollowedFollowing: result[1][7],
-                    displayFollowers: false,
-                    displayFollowed: false,
-                    loading: false
-                });
-
-            }
-            else
-            {
-                alert("request for user profile failed");
-            }
-        });
-        */
-    }
-
-    callApi(username)
-    {
-        if(username === undefined)
-        {
-          username = this.state.username;
-        }
-        const requestOptions = {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-        };
-
-        let url = "http://localhost:9000/profile/" + username;
-        let status = 0;
-        return fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result =>{
-                return [status, result];
-            });
     }
 
     render()
     {
-        /*
-        let posts = []
-        // generate the posts
-        this.state.posts.forEach((p) => {
-            // if the posts are for the currenlty logged in user
-            if(this.state.currentUser)
-            {
-                posts.push(<MoviePost data={p} user={this.state.username}/>)
-            }
-            else
-            {
-              posts.push(<MoviePost data={p} user=""/>)
-            }
-        });
-        */
-
-
         return (
 
             <div className={style5.mainBodyContainer}>
-                <ProfileHeader username={this.state.username} />
+                <ProfileHeader username={this.state.username} postCount={this.state.postCount}/>
+                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount}/>
             </div>
         );
     }

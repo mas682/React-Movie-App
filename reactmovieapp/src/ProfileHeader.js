@@ -22,6 +22,7 @@ class ProfileHeader extends React.Component {
             followingCount: 0,
             displayFollowers: false,
             displayFollowed: false,
+            postCount: this.props.postCount,
             loading: true
         }
         this.removePopUp = this.removePopUp.bind(this);
@@ -29,6 +30,7 @@ class ProfileHeader extends React.Component {
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
         this.changeFollowedCount = this.changeFollowedCount.bind(this);
         this.changeFollowingCount = this.changeFollowingCount.bind(this);
+        this.updatePostCount = this.updatePostCount.bind(this);
     }
 
     // function to change the followed count to the passed in value if it is not equal
@@ -77,11 +79,21 @@ class ProfileHeader extends React.Component {
     // this gets called when the component is changing from user to another
     // such as when clicking on a users link when the userProfile page is already
     // up
-    // may have been that key issue??
     componentWillReceiveProps(nextProps) {
        if(this.props.match.params.id !== nextProps.match.params.id) {
            this.getData(nextProps.match.params.id);
        }
+       // if the post count is updated, rerender the header
+       if(this.props.postCount !== nextProps.postCount)
+       {
+           this.updatePostCount(nextProps.postCount);
+       }
+    }
+
+    // function to update the post count when the props are updated
+    updatePostCount(count)
+    {
+        this.setState({postCount: count});
     }
 
     // this only gets called by the above method to update the state on
@@ -331,7 +343,7 @@ class ProfileHeader extends React.Component {
                 </div>
                 <div className={style5.numberDisplay}>
                     <button className={style5.followersButton}><h3 className={style5.socialHeader}>Posts</h3>
-                    needs fixed
+                    {this.state.postCount}
                     </button>
                 </div>
             </div>
