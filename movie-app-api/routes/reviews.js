@@ -60,7 +60,7 @@ const selectPath = (cookie, req, res) =>
     // if the path is /review/removelike
     else if(Object.keys(req.params).length == 1 && req.params.type === "removelike")
     {
-        addLike(cookie, req, res);
+        removeLike(cookie, req, res);
     }
     // some unknow path given
     else
@@ -204,13 +204,14 @@ const addLike = (cookie, req, res) =>
         */
         review.addLike(userId)
         .then((result) => {
-            console.log("AFTER:");
-            console.log(result);
             if(result === undefined)
             {
-                res.send(200).send("Post already liked");
+                res.status(200).send("Post already liked");
             }
-            res.status(200).send("Post liked");
+            else
+            {
+                res.status(200).send("Post liked");
+            }
         });
 
     });
@@ -235,13 +236,14 @@ const removeLike = (cookie, req, res) =>
         */
         review.removeLike(userId)
         .then((result) => {
-            console.log("AFTER:");
-            console.log(result);
-            if(result === undefined)
+            if(result === undefined || result === 0)
             {
-                res.send(200).send("Post was not previously liked");
+                res.status(200).send("Post was not previously liked");
             }
-            res.status(200).send("Post like removed");
+            else
+            {
+                res.status(200).send("Post like removed");
+            }
         });
 
     });

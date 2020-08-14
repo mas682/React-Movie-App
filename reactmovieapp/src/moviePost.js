@@ -15,6 +15,7 @@ class MoviePost extends React.Component {
             openEdit: false,
             openPopUp: false,
             liked: this.props.data.liked,
+            likes: this.props.data.review.likes,
             // userId for user who posted the review
             user: this.props.data.review.userId,
             // title of post
@@ -43,6 +44,7 @@ class MoviePost extends React.Component {
         this.removePopUp = this.removePopUp.bind(this);
         this.updateState = this.updateState.bind(this);
         this.postLike = this.postLike.bind(this);
+        this.removeLike = this.removeLike.bind(this);
     }
 
     /*
@@ -194,13 +196,40 @@ class MoviePost extends React.Component {
         }
         else
         {
-            this.setState({liked: false});
+            let result = await this.removeLike();
+            let status = result[0];
+            if(status === 200)
+            {
+                this.setState({liked: false});
+            }
+            alert(result[1]);
         }
+    }
+
+    removeLike()
+    {
+        // when removing, will need to update the list of users somehow...
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reviewId: this.state.id
+            })
+        };
+
+        let status = 0;
+        return fetch("http://localhost:9000/review/removelike", requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.text();
+            }).then(result =>{
+                return [status, result];
+            });
     }
 
     postLike()
     {
-
         const requestOptions = {
             method: 'POST',
             credentials: 'include',
@@ -360,6 +389,12 @@ class MoviePost extends React.Component {
             postPopUp = <MoviePostPopUp data={this.state} removeFunction={this.removePopUp}/>;
         }
 
+        let likeCount = <React.Fragment><i class={`fa fa-thumbs-up ${style.likeCountThumb}`}/> {this.state.likes.length}</React.Fragment>;
+        if(this.state.likes.length === 0)
+        {
+            likeCount = "";
+        }
+
         /*
             left off here fixing stars formatting
             will need a unique form id for each review
@@ -406,6 +441,9 @@ class MoviePost extends React.Component {
                 </div>
                 <div className={style.timestampContainer}>
                     {this.state.time}
+                </div>
+                <div className={style.likeContainer}>
+                    {likeCount}
                 </div>
 				<div className="socialButtonContainer">
 				    <div className="socialButtons">

@@ -108,6 +108,7 @@ const review = (sequelize, DataTypes) => {
             ]
         });
 
+        // this will be really slow so will need fixed at some point
         // array to hold result
         let result = [];
         // loop through the reviews of the user
@@ -190,6 +191,7 @@ const review = (sequelize, DataTypes) => {
             ]
         });
 
+        // this will be very slow so will need fixed at some point
         // array to hold result
         let result = [];
         // loop through the reviews of the user
