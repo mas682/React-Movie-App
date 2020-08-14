@@ -14,20 +14,25 @@ class MoviePost extends React.Component {
             open: false,
             openEdit: false,
             openPopUp: false,
-            liked: false,
-            user: this.props.data.userId,
-            title: this.props.data.title,
-            form: "form" + this.props.data.id,
-            username: this.props.data.user.username,
-            id: this.props.data.id,
-            rating: this.props.data.rating,
-            comments: this.props.data.comments,
-            usedGoodButtons: this.getGoodButtons(this.props.data.goodTags),
-            usedBadButtons: this.getBadButtons(this.props.data.badTags),
+            liked: this.props.data.liked,
+            // userId for user who posted the review
+            user: this.props.data.review.userId,
+            // title of post
+            title: this.props.data.review.title,
+            // form id for post
+            form: "form" + this.props.data.review.id,
+            // username for the user who posted the review
+            username: this.props.data.review.user.username,
+            // id of the review post
+            id: this.props.data.review.id,
+            rating: this.props.data.review.rating,
+            comments: this.props.data.review.comments,
+            usedGoodButtons: this.getGoodButtons(this.props.data.review.goodTags),
+            usedBadButtons: this.getBadButtons(this.props.data.review.badTags),
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            review: this.props.data.review,
-            time: this.props.data.createdAt,
+            review: this.props.data.review.review,
+            time: this.props.data.review.createdAt,
             currentUser: this.props.user,
             editUpdate: true
         };
@@ -37,6 +42,7 @@ class MoviePost extends React.Component {
         this.generatePopUp = this.generatePopUp.bind(this);
         this.removePopUp = this.removePopUp.bind(this);
         this.updateState = this.updateState.bind(this);
+        this.postLike = this.postLike.bind(this);
     }
 
     /*
@@ -173,16 +179,45 @@ class MoviePost extends React.Component {
         Will need to add handling to update database when clicked so the database
         can keep track of which posts are liked by who
     */
-    likeButtonHandler(event)
+    async likeButtonHandler(event)
     {
+        event.preventDefault();
         if(!this.state.liked)
         {
-            this.setState({liked: true});
+            let result = await this.postLike();
+            let status = result[0];
+            if(status === 200)
+            {
+                this.setState({liked: true});
+            }
+            alert(result[1]);
         }
         else
         {
             this.setState({liked: false});
         }
+    }
+
+    postLike()
+    {
+
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reviewId: this.state.id
+            })
+        };
+
+        let status = 0;
+        return fetch("http://localhost:9000/review/addlike", requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.text();
+            }).then(result =>{
+                return [status, result];
+            });
     }
 
     componentDidMount() {

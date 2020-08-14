@@ -55,6 +55,7 @@ const user = (sequelize, DataTypes) => {
         // messages associated with the user
         User.hasMany(models.Review, { onDelete: 'CASCADE' });
         User.hasMany(models.Comment,{ onDelete: 'CASCADE' });
+        User.belongsToMany(models.Review, { as: "LikedPosts", through: models.Like, onDelete: 'CASCADE' });
         // Below is used to associate users together
         // this belongsToMany sets the followed users Id to the user being followed
         User.belongsToMany(User, {

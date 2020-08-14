@@ -37,20 +37,30 @@ const review = (req, res, next) =>
 
 const selectPath = (cookie, req, res) =>
 {
-    // if here, the path is profile/username
+    // if here, the path is /review
     if(Object.keys(req.params).length == 0)
     {
         createReview(cookie, req, res);
     }
-    // if the path is profile/username/follow
+    // if the path is /review/update
     else if(Object.keys(req.params).length == 1 && req.params.type === "update")
     {
         updateReview(cookie, req, res);
     }
-    // if the path is profile/username/follow
+    // if the path is /review/delete
     else if(Object.keys(req.params).length == 1 && req.params.type === "delete")
     {
         deleteReview(cookie, req, res);
+    }
+    // if the path is /review/add_like
+    else if(Object.keys(req.params).length == 1 && req.params.type === "addlike")
+    {
+        addLike(cookie, req, res);
+    }
+    // if the path is /review/removelike
+    else if(Object.keys(req.params).length == 1 && req.params.type === "removelike")
+    {
+        addLike(cookie, req, res);
     }
     // some unknow path given
     else
@@ -58,6 +68,7 @@ const selectPath = (cookie, req, res) =>
         res.status(404).send("The review path sent to the server does not exist");
     }
 };
+
 
 const updateReview = (cookie, req, res) =>
 {
@@ -173,6 +184,68 @@ const createReview = (cookie, req, res) =>
     // review created
     res.status(201).send("Review successfully created!");
 };
+
+const addLike = (cookie, req, res) =>
+{
+    let userId = cookie.id;
+    // get the review
+    models.Review.findOne({
+        where: {id: req.body.reviewId}
+    }).then((review) => {
+        if(review === undefined)
+        {
+            res.status(404).send("Review id does not match any reviews");
+        }
+        /* may want to only let a user like their friends posts???
+        if(review.userId !== cookie.id)
+        {
+            res.status(401).send(["You cannot update another users review", null]);
+        }
+        */
+        review.addLike(userId)
+        .then((result) => {
+            console.log("AFTER:");
+            console.log(result);
+            if(result === undefined)
+            {
+                res.send(200).send("Post already liked");
+            }
+            res.status(200).send("Post liked");
+        });
+
+    });
+};
+
+const removeLike = (cookie, req, res) =>
+{
+    let userId = cookie.id;
+    // get the review
+    models.Review.findOne({
+        where: {id: req.body.reviewId}
+    }).then((review) => {
+        if(review === undefined)
+        {
+            res.status(404).send("Review id does not match any reviews");
+        }
+        /* may want to only let a user unlike their friends posts???
+        if(review.userId !== cookie.id)
+        {
+            res.status(401).send(["You cannot update another users review", null]);
+        }
+        */
+        review.removeLike(userId)
+        .then((result) => {
+            console.log("AFTER:");
+            console.log(result);
+            if(result === undefined)
+            {
+                res.send(200).send("Post was not previously liked");
+            }
+            res.status(200).send("Post like removed");
+        });
+
+    });
+}
 
 const addGoodTags = (goodString, review, userId) =>{
     // get each of the good tags
