@@ -191,21 +191,35 @@ class MoviePost extends React.Component {
         {
             let result = await this.postLike();
             let status = result[0];
+            let count = this.state.likeCount + 1;
             if(status === 200)
             {
-                this.setState({liked: true});
+                this.setState({
+                    liked: true,
+                    likeCount: count
+                });
             }
-            alert(result[1]);
+            else
+            {
+                alert(result[1]);
+            }
         }
         else
         {
             let result = await this.removeLike();
             let status = result[0];
+            let count = this.state.likeCount - 1;
             if(status === 200)
             {
-                this.setState({liked: false});
+                this.setState({
+                    liked: false,
+                    likeCount: count
+                });
             }
-            alert(result[1]);
+            else
+            {
+                alert(result[1]);
+            }
         }
     }
 
