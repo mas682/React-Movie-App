@@ -47,7 +47,7 @@ class MoviePostPopUp extends React.Component {
         this.setState({
             open: false,
         });
-        this.props.removeFunction();
+        this.props.removeFunction("openPopUp", false);
     }
 
     // used to update the state for the title, review, and the rating

@@ -48,6 +48,7 @@ class FollowerDisplay extends React.Component {
                 if(status === 200 && result === "User successfully followed")
                 {
                     this.setState({following: true});
+                    // if this is the current user, update their following count
                     if(this.state.currentUser)
                     {
                         this.props.updateFunction(1);

@@ -7,22 +7,46 @@ import style from './css/UserListPopUp.module.css';
 class UserListPopUp extends React.Component {
     constructor(props) {
         super(props);
-        this.state ={
-            // indicates if the popup is visible on the screen or not
-            open: true,
-            username: this.props.username,
-            followedUsers: [],
-            notFollowedUsers: [],
-            requester: "",
-            // true if this list is on the loggedin users page
-            currentUser: this.props.currentUser,
-            // not currently used by may be used in the future if users can click a button
-            // to follow usres in the list
-            redirect: false,
-            // the pop up can either be for Followers or Following
-            type: this.props.type,
-            loading: true
-        };
+        // if the type is Following or Followers
+        if(this.props.type !== "Likes")
+        {
+            this.state ={
+                // indicates if the popup is visible on the screen or not
+                open: true,
+                username: this.props.username,
+                followedUsers: [],
+                notFollowedUsers: [],
+                requester: "",
+                // true if this list is on the loggedin users page
+                currentUser: this.props.currentUser,
+                // not currently used by may be used in the future if users can click a button
+                // to follow usres in the list
+                redirect: false,
+                // the pop up can either be for Followers or Following
+                type: this.props.type,
+                loading: true
+            };
+        }
+        else
+        {
+            this.state ={
+                // indicates if the popup is visible on the screen or not
+                open: true,
+                username: this.props.username,
+                followedUsers: [],
+                notFollowedUsers: [],
+                requester: "",
+                // true if this list is on the loggedin users page
+                currentUser: this.props.currentUser,
+                // not currently used by may be used in the future if users can click a button
+                // to follow usres in the list
+                redirect: false,
+                // the pop up can either be for Followers or Following
+                type: this.props.type,
+                reviewId: this.props.reviewId,
+                loading: true
+            };
+        }
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.generateUserDisplay = this.generateUserDisplay.bind(this);
@@ -31,7 +55,15 @@ class UserListPopUp extends React.Component {
     // load the data in here
     async componentDidMount()
     {
-        let result = await this.getUsers();
+        let result;
+        if(this.state.type === "Likes")
+        {
+            result = await this.getLikes();
+        }
+        else
+        {
+            result = await this.getUsers();
+        }
         let status = result[0];
         if(status === 200)
         {
@@ -44,6 +76,8 @@ class UserListPopUp extends React.Component {
             let count = result[1][0].length + result[1][1].length;
             // this will update the profile header if the count of following
             // or followers has changed since loading originally
+            // if this is for Likes on a post, this will update the like count
+            // if it has changed since the page loaded
             this.props.changeFunction(count);
         }
         else
@@ -52,7 +86,29 @@ class UserListPopUp extends React.Component {
         }
     }
 
-    // function to get call the api to get the users to display
+    // function to call the api to get the users who liked the post
+    getLikes()
+    {
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                reviewId: this.state.reviewId
+            })
+        };
+
+        let status = 0;
+        return fetch("http://localhost:9000/review/getlikes", requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.json();
+            }).then(result =>{
+                return [status, result];
+            });
+    }
+
+    // function to call the api to get the users to display
     getUsers()
     {
         const requestOptions = {
@@ -96,6 +152,10 @@ class UserListPopUp extends React.Component {
         this.setState({
             open: false,
         });
+        if(this.state.type === "Likes")
+        {
+            this.props.removeFunction("displayLikes", false);
+        }
         this.props.removeFunction(this.state.type);
     }
 

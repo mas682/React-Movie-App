@@ -62,6 +62,11 @@ const selectPath = (cookie, req, res) =>
     {
         removeLike(cookie, req, res);
     }
+    // if the path is /review/getlikes
+    else if(Object.keys(req.params).length == 1 && req.params.type === "getlikes")
+    {
+        getLikes(cookie, req, res);
+    }
     // some unknow path given
     else
     {
@@ -70,6 +75,14 @@ const selectPath = (cookie, req, res) =>
 };
 
 
+// function to update a review
+// body of request must include:
+// title - title of movie
+// rating - rating for movie
+// review - review for movie
+// reviewId - id of the review being updated
+// good - a comma seperated string of good tags
+// bad - a comma seperated string of bad tags
 const updateReview = (cookie, req, res) =>
 {
     // get the review
@@ -90,7 +103,7 @@ const updateReview = (cookie, req, res) =>
         review.review = req.body.review;
         review.save()
         .then(async (updatedReview) => {
-            // may want to do if(updatedReview === undefined)
+            // should do if(updatedReview === undefined)
             // get the id's of the good tags
             let goodTagArr = await getTagIds(req.body.good, "good");
             // get the id's of the bad tags
@@ -162,11 +175,19 @@ const getTagIds = async (tagString, type) =>{
     }
 };
 
+// to be implemented
 const deleteReview = (cookie, req, res) =>
 {
 
 };
 
+// function to create a review
+// the body of the request should include:
+// title - the title of the movie
+// rating - the rating for the movie
+// review - the review for the movie
+// good - a comma seperated string of good tags
+// bad - a comma seperated string of bad tags
 const createReview = (cookie, req, res) =>
 {
     let userId = cookie.id;
@@ -185,8 +206,12 @@ const createReview = (cookie, req, res) =>
     res.status(201).send("Review successfully created!");
 };
 
+// function to add a like to a review post
+// the body of the request must include:
+// reviewId - the id of the review being liked
 const addLike = (cookie, req, res) =>
 {
+    // get the requesters id
     let userId = cookie.id;
     // get the review
     models.Review.findOne({
@@ -196,14 +221,11 @@ const addLike = (cookie, req, res) =>
         {
             res.status(404).send("Review id does not match any reviews");
         }
-        /* may want to only let a user like their friends posts???
-        if(review.userId !== cookie.id)
-        {
-            res.status(401).send(["You cannot update another users review", null]);
-        }
-        */
+        // may want to only let a user like their friends posts???
+        // add the like to the review based off the users id
         review.addLike(userId)
         .then((result) => {
+            // if undefined, a association already exists
             if(result === undefined)
             {
                 res.status(200).send("Post already liked");
@@ -217,8 +239,13 @@ const addLike = (cookie, req, res) =>
     });
 };
 
+
+// function to remove a like from a review post
+// the body of the request must include:
+// reviewId - the id of the review being unliked
 const removeLike = (cookie, req, res) =>
 {
+    // the id of the requester
     let userId = cookie.id;
     // get the review
     models.Review.findOne({
@@ -228,12 +255,8 @@ const removeLike = (cookie, req, res) =>
         {
             res.status(404).send("Review id does not match any reviews");
         }
-        /* may want to only let a user unlike their friends posts???
-        if(review.userId !== cookie.id)
-        {
-            res.status(401).send(["You cannot update another users review", null]);
-        }
-        */
+        // may want to only let a user unlike their friends posts???
+        // remove the like from the post based off the requesters id
         review.removeLike(userId)
         .then((result) => {
             if(result === undefined || result === 0)
@@ -249,6 +272,10 @@ const removeLike = (cookie, req, res) =>
     });
 }
 
+// function to add good tags to a review
+// goodString is a comma seperarted string of good tags
+// review is the review to add the tags to
+// userId is user id of the author of the review
 const addGoodTags = (goodString, review, userId) =>{
     // get each of the good tags
     let goodTags = goodString.split(",");
@@ -265,6 +292,10 @@ const addGoodTags = (goodString, review, userId) =>{
     });
 };
 
+// function to add bad tags to a review
+// badString is a comma seperated string of bad tags
+// review is the review to add the tags to
+// userId is the user id of the author of the review
 const addBadTags = (badString, review, userId) => {
     // get each of the bad tags
     let badTags = badString.split(",");
@@ -279,5 +310,25 @@ const addBadTags = (badString, review, userId) => {
         });
     });
 };
+
+// this function gets the users who liked a post
+// the request must include the reviewId in the body
+// the user must also be logged in to access the likes of a review
+const getLikes = async (cookie, req, res) =>
+{
+    let reviewId = req.body.reviewId;
+    // holds the ids of the users who are already followed
+    let followedIds = [];
+    // get the users who liked the post that the requester follows
+    let followedUsers = await models.Review.getFollowingFromLikes(reviewId, cookie.id, models);
+    // this could be very slow....
+    followedUsers.forEach((user)=> {
+        followedIds.push(user.id);
+    });
+    // get the users who liked the post taht the requester does not follow
+    let notFollowedUsers = await models.Review.getNotFollowingFromLikes(reviewId, cookie.id, followedIds, models);
+    // return the followed users, not followed users, and the username of the requesting user
+    res.status(200).send([followedUsers, notFollowedUsers, cookie.name]);
+}
 
 export {review};

@@ -129,6 +129,19 @@
 	color: blue;
 }
 
+.likesCountButton
+{
+	background-color: white;
+	border: none;
+	font-size: 1em;
+	padding: 0px;
+}
+
+.likesCountButton:focus
+{
+	outline: none;
+}
+
 /* Below is for the star ratings */
 fieldset, label {
     margin: 0;

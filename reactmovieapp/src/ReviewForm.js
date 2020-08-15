@@ -212,7 +212,14 @@ class ReviewPopUp extends React.Component {
     closeModal()
     {
         // if editing, call the parent function from moviePost to not use the popup anymore
-        this.props.removeFunction();
+        if(this.state.edit)
+        {
+            this.props.removeFunction("openEdit",false);
+        }
+        else
+        {
+            this.props.removeFunction();
+        }
         if(!this.state.edit)
         {
             this.setState({

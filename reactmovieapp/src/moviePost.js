@@ -2,6 +2,7 @@ import React from 'react';
 import style from './css/MoviePost/moviePost.module.css';
 import {Link} from 'react-router-dom';
 import MoviePostPopUp from './moviePostPopUp.js';
+import UserListPopUp from './UserListPopUp.js';
 import './css/MoviePost/moviePost.css';
 import ReviewForm from './ReviewForm.js';
 
@@ -11,11 +12,14 @@ class MoviePost extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            open: false,
+            // boolean for opening the edit pop up
             openEdit: false,
+            // boolean to open popup to comment on post
             openPopUp: false,
+            // boolean indicating if logged in user liked post
             liked: this.props.data.liked,
-            likes: this.props.data.review.likes,
+            // array of use
+            likeCount: this.props.data.review.likes.length,
             // userId for user who posted the review
             user: this.props.data.review.userId,
             // title of post
@@ -35,16 +39,15 @@ class MoviePost extends React.Component {
             review: this.props.data.review.review,
             time: this.props.data.review.createdAt,
             currentUser: this.props.user,
-            editUpdate: true
+            editUpdate: true,
+            displayLikes: false
         };
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
-        this.generateEditPopUp = this.generateEditPopUp.bind(this);
-        this.removeEditPopUp = this.removeEditPopUp.bind(this);
-        this.generatePopUp = this.generatePopUp.bind(this);
-        this.removePopUp = this.removePopUp.bind(this);
         this.updateState = this.updateState.bind(this);
         this.postLike = this.postLike.bind(this);
         this.removeLike = this.removeLike.bind(this);
+        this.changeLikes = this.changeLikes.bind(this);
+        this.changeState = this.changeState.bind(this);
     }
 
     /*
@@ -258,6 +261,8 @@ class MoviePost extends React.Component {
         document.body.appendChild(script);
     }
 
+    // function used to update the movie post after edited
+    // called by ReviewForm component when creator is editing their existing post
     updateState(titleUpdate, ratingUpdate, reviewUpdate, goodButtonUpdate, badButtonUpdate)
     {
         this.setState({
@@ -269,24 +274,19 @@ class MoviePost extends React.Component {
         });
     }
 
-    generateEditPopUp()
+    // function to change the state of the component
+    changeState(key, value)
     {
-        this.setState({openEdit: true});
+        this.setState({[key]: value});
     }
 
-    generatePopUp()
+    // function to change the likeCount of the post
+    changeLikes(count)
     {
-        this.setState({openPopUp: true});
-    }
-
-    removePopUp()
-    {
-        this.setState({openPopUp: false});
-    }
-
-    removeEditPopUp()
-    {
-        this.setState({openEdit: false});
+        if(count !== this.state.likeCount)
+        {
+            this.setState({likeCount: count});
+        }
     }
     /*
         This function is used to generate the appropriate liked button based off of
@@ -372,34 +372,35 @@ class MoviePost extends React.Component {
         if(this.state.username === this.state.currentUser)
         {
             //editButton = <ReviewForm data={this.state} edit={true} />;
-            editButton = <button className={`${style.postButton}`} onClick={this.generateEditPopUp}>Edit post</button>;
+            editButton = <button className={`${style.postButton}`} onClick={() => {this.changeState("openEdit", true)}}>Edit post</button>;
             if(this.state.openEdit)
             {
-                popup = <ReviewForm data={this.state} edit={true} removeFunction={this.removeEditPopUp} successFunction={this.updateState}/>;
+                popup = <ReviewForm data={this.state} edit={true} removeFunction={this.changeState} successFunction={this.updateState}/>;
             }
         }
 
 
-        // left off here
-        // making it so pop up can be opened programatically instead of only on click
-        let popupButton = <button className={`${style.postButton}`} onClick={this.generatePopUp}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>;
+        let popupButton = <button className={`${style.postButton}`} onClick={() => this.changeState("openPopUp", true)}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>;
         let postPopUp = "";
         if(this.state.openPopUp)
         {
-            postPopUp = <MoviePostPopUp data={this.state} removeFunction={this.removePopUp}/>;
+            postPopUp = <MoviePostPopUp data={this.state} removeFunction={this.changeState}/>;
         }
 
-        let likeCount = <React.Fragment><i class={`fa fa-thumbs-up ${style.likeCountThumb}`}/> {this.state.likes.length}</React.Fragment>;
-        if(this.state.likes.length === 0)
+        let likeCount = <React.Fragment><button className={style.likesCountButton}onClick={(e)=> this.changeState("displayLikes", true)}><i class={`fa fa-thumbs-up ${style.likeCountThumb}`}/> {this.state.likeCount}</button></React.Fragment>;
+        if(this.state.likeCount === 0)
         {
             likeCount = "";
         }
 
-        /*
-            left off here fixing stars formatting
-            will need a unique form id for each review
-            could just take id of review from database and append to form name
-        */
+        let likesPopUp = "";
+        if(this.state.displayLikes)
+        {
+            // currentUser is false as we do not want the updateFunction called here
+            // the updateFunction is used to only update the profile headers follower/following count
+            popup = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={null} currentUser={false} changeFunction={this.changeLikes}/>;
+        }
+
         return (
 			<div className={`${style.post} ${style.postShadow}`}>
 				  <div className="postHeader">

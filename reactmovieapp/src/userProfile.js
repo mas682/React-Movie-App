@@ -2,7 +2,6 @@ import React from 'react';
 // should get rid of this eventually
 import { withRouter } from "react-router-dom";
 import MoviePost from './moviePost.js';
-import UserListPopUp from './UserListPopUp.js';
 import style5 from './css/userProfile.module.css';
 import './css/forms.css'
 import ProfileHeader from './ProfileHeader.js';
