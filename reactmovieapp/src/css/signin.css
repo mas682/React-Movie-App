@@ -3,7 +3,7 @@
    the default width is 50%
    !important overrides the html style */
 .popup-content {
-    width: 40% !important; 
+    /* width: 40% !important; */
 }
 
 .logInLink:visited {

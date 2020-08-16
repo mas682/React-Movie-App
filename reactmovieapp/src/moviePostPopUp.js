@@ -1,8 +1,9 @@
 import React from 'react';
 import style from './css/MoviePost/moviePost.module.css';
 import Popup from 'reactjs-popup';
+import UserListPopUp from './UserListPopUp.js';
+import ReviewForm from './ReviewForm.js';
 import {Link} from 'react-router-dom';
-import './css/MoviePost/moviePostPopUp.css';
 import style2 from './css/MoviePost/moviePostPopUp.module.css'
 
 
@@ -11,12 +12,23 @@ class MoviePostPopUp extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
+            // boolean for whether or not this pop up is open
             open: this.props.data.openPopUp,
+            // boolean for opening the edit pop up
+            openEdit: false,
+            // boolean indicating if logged in user liked post
             liked: this.props.data.liked,
-            user: this.props.data.user,
+            // count of likes on post
+            likeCount: this.props.data.likeCount,
+            // userId for user who posted the review
+            userId: this.props.data.user,
+            // title of post
             title: this.props.data.title,
+            // form id for the post
             form: this.props.data.form + "pop",
+            // username for the user who posted the review
             username: this.props.data.username,
+            // id of the review post
             id: this.props.data.id,
             rating: this.props.data.rating,
             comments: this.props.data.comments,
@@ -27,22 +39,35 @@ class MoviePostPopUp extends React.Component {
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             review: this.props.data.review,
-            time: this.props.data.time
+            time: this.props.data.time,
+            // the logged in users username
+            currentUser: this.props.data.currentUser,
+            displayLikes: false
         };
-        this.openModal = this.openModal.bind(this);
+
         this.closeModal = this.closeModal.bind(this);
-        //this.generateButtons = this.generateButtons.bind(this);
-        //this.usedButtonHandler = this.usedButtonHandler.bind(this);
+        this.generateGoodButtons = this.generateGoodButtons.bind(this);
+        this.generateBadButtons = this.generateBadButtons.bind(this);
+        this.generateComments = this.generateComments.bind(this);
         this.postComment = this.postComment.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
-        //this.generateTagString = this.generateTagString.bind(this);
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
+        this.changeState = this.changeState.bind(this);
+        this.generateEditPopUp = this.generateEditPopUp.bind(this);
+        this.postLike = this.postLike.bind(this);
+        this.removeLike = this.removeLike.bind(this);
+        this.changeLikes = this.changeLikes.bind(this);
+        this.generateLikeCount = this.generateLikeCount.bind(this);
+        this.generateLikesPopUp = this.generateLikesPopUp.bind(this);
     }
 
-    openModal() {
-        this.setState({ open: true });
+    // function to change the state of the component
+    changeState(key, value)
+    {
+        this.setState({[key]: value});
     }
 
+    // function called when closing the popup
     closeModal() {
         this.setState({
             open: false,
@@ -163,15 +188,94 @@ class MoviePostPopUp extends React.Component {
         Will need to add handling to update database when clicked so the database
         can keep track of which posts are liked by who
     */
-    likeButtonHandler(event)
+    async likeButtonHandler(event)
     {
+        event.preventDefault();
         if(!this.state.liked)
         {
-            this.setState({liked: true});
+            let result = await this.postLike();
+            let status = result[0];
+            let count = this.state.likeCount + 1;
+            if(status === 200)
+            {
+                this.setState({
+                    liked: true,
+                    likeCount: count
+                });
+            }
+            else
+            {
+                alert(result[1]);
+            }
         }
         else
         {
-            this.setState({liked: false});
+            let result = await this.removeLike();
+            let status = result[0];
+            let count = this.state.likeCount - 1;
+            if(status === 200)
+            {
+                this.setState({
+                    liked: false,
+                    likeCount: count
+                });
+            }
+            else
+            {
+                alert(result[1]);
+            }
+        }
+    }
+
+    removeLike()
+    {
+        // when removing, will need to update the list of users somehow...
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reviewId: this.state.id
+            })
+        };
+
+        let status = 0;
+        return fetch("http://localhost:9000/review/removelike", requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.text();
+            }).then(result =>{
+                return [status, result];
+            });
+    }
+
+    postLike()
+    {
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reviewId: this.state.id
+            })
+        };
+
+        let status = 0;
+        return fetch("http://localhost:9000/review/addlike", requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.text();
+            }).then(result =>{
+                return [status, result];
+            });
+    }
+
+    // function to change the likeCount of the post
+    changeLikes(count)
+    {
+        if(count !== this.state.likeCount)
+        {
+            this.setState({likeCount: count});
         }
     }
 
@@ -221,9 +325,8 @@ class MoviePostPopUp extends React.Component {
         return <button className={`${style.postButton}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
     }
 
-    /*
-        This function is used to geneate the good/bad buttons with the appropriate values in the HTML
-    */
+
+    // This function is used to geneate the good/bad buttons with the appropriate values in the HTML
     generateGoodBadButton(value, type)
     {
         if(type == "good")
@@ -236,11 +339,16 @@ class MoviePostPopUp extends React.Component {
         }
     }
 
-    generateComments(value)
+    // function to generate the comments that were related to the post
+    generateComments()
     {
-        let userPath = "/profile/" + value.user.username;
-        console.log(value);
-        return <React.Fragment>
+        let counter = this.state.comments.length -1;
+        let commentArray = [];
+        while(counter > -1)
+        {
+            let value = this.state.comments[counter];
+            let userPath = "/profile/" + value.user.username;
+            let html = (
                         <div className={style2.commentContainer}>
                             <div className={style2.userNameBox}>
                                 <div className={style2.commentUser}><Link to={userPath}>{value.user.username}</Link></div>
@@ -250,31 +358,18 @@ class MoviePostPopUp extends React.Component {
                                 <div>{value.value}</div>
                             </div>
                         </div>
-                    </React.Fragment>
+                    );
+            commentArray.push(html);
+            counter = counter -1;
+        }
+        return commentArray;
     }
 
-	render() {
-
-        /*  to do in any order:
-            1. make comment button pull up a scrollable pop up showing all the comments with a input box at the bottom to add
-               your comment
-            2. will then have to set up database to store comments
-            3. have to redirect to a movies page on go to movie page button push
-            4. set up call to api to retrieve data for post(actually may want to pass this data into the post or a index of which post to use?)
-            5. set up editing if this is the current users post
-            6. make user name a hyperlink to the users profile
-            7. will need to handle logic on individual pages of determining which posts to get(specific user, your friends, etc.)
-            8. may want option to make posts public/private
-        */
-        // generate the stars for the review
-        let stars = this.generateRatingStars();
-        let likedButton = this.generateLikedButton();
-        // array to hold the good buttons
+    // function to generate the good buttons
+    generateGoodButtons()
+    {
         let goodButtonArray = [];
-        let badButtonArray = [];
-        // counter for loop
         let counter = 0;
-        let profilePath = "/profile/" + this.state.username;
 
         // generate the used good buttons
         while(counter < this.state.usedGoodButtons.length)
@@ -282,34 +377,81 @@ class MoviePostPopUp extends React.Component {
             goodButtonArray.push(this.generateGoodBadButton(this.state.usedGoodButtons[counter], "good"));
             counter = counter + 1;
         }
-        // reset counter
-        counter = 0;
+        return goodButtonArray;
+    }
+
+    // function to generate the bad buttons
+    generateBadButtons()
+    {
+        let badButtonArray = [];
+        let counter = 0;
+
         while(counter < this.state.usedBadButtons.length)
         {
             badButtonArray.push(this.generateGoodBadButton(this.state.usedBadButtons[counter], "bad"));
             counter = counter + 1;
         }
-        // reset counter
-        counter = this.state.comments.length -1;
-        let commentArray = [];
-        while(counter > -1)
-        {
-            commentArray.push(this.generateComments(this.state.comments[counter]));
-            counter = counter -1;
-        }
+        return badButtonArray;
+    }
 
-        /*
-            left off here fixing stars formatting
-            will need a unique form id for each review
-            could just take id of review from database and append to form name
-        */
-        //<button className={`${style.postButton}`} onClick={this.openModal}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
+    generateEditPopUp()
+    {
+        let popup = "";
+        let editButton = "";
+        if(this.state.username === this.state.currentUser)
+        {
+            editButton = <button className={`${style.postButton}`} onClick={() => {this.changeState("openEdit", true)}}>Edit post</button>;
+            if(this.state.openEdit)
+            {
+                popup = <ReviewForm data={this.state} edit={true} removeFunction={this.changeState} successFunction={this.updateState}/>;
+            }
+        }
+        return [editButton, popup];
+    }
+
+    generateLikeCount()
+    {
+        let likeCount = <React.Fragment><button className={style.likesCountButton}onClick={(e)=> this.changeState("displayLikes", true)}><i class={`fa fa-thumbs-up ${style.likeCountThumb}`}/> {this.state.likeCount}</button></React.Fragment>;
+        if(this.state.likeCount === 0)
+        {
+            likeCount = "";
+        }
+        return likeCount;
+    }
+
+    generateLikesPopUp()
+    {
+        let likesPopUp = "";
+        if(this.state.displayLikes)
+        {
+            // currentUser is false as we do not want the updateFunction called here
+            // the updateFunction is used to only update the profile headers follower/following count
+            likesPopUp = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={null} currentUser={false} changeFunction={this.changeLikes}/>;
+        }
+        return likesPopUp;
+    }
+
+
+	render() {
+        let stars = this.generateRatingStars();
+        let likedButton = this.generateLikedButton();
+        let goodButtonArray = this.generateGoodButtons();
+        let badButtonArray = this.generateBadButtons();
+        let commentArray = this.generateComments();
+        let profilePath = "/profile/" + this.state.username;
+        let editPopUpElements = this.generateEditPopUp();
+        let editButton = editPopUpElements[0];
+        let editPopUp = editPopUpElements[1];
+        let likeCount = this.generateLikeCount();
+        let likesPopUp = this.generateLikesPopUp();
+
         return (
             <React.Fragment>
             <Popup
                 open={this.state.open}
                 closeOnDocumentClick
                 onClose={this.closeModal}
+                contentStyle={{ width: "45%"}}
             >
                 <div className={style2.modal}>
                     {/* &times is the multiplication symbol (x) --> */}
@@ -355,11 +497,17 @@ class MoviePostPopUp extends React.Component {
                             <div className={style.timestampContainer}>
                                 {this.state.time}
                             </div>
+                            <div className={style.likeContainer}>
+                                {likeCount}
+                                {likesPopUp}
+                            </div>
                             <div className="socialButtonContainer">
                                 <div className="socialButtons">
                                     {likedButton}
                                     <button className={`${style.postButton}`}>Go to movie page</button>
                                     <button className={`${style.postButton} blueButton`}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>
+                                    {editButton}
+                                    {editPopUp}
                                 </div>
                             </div>
                             <div>

@@ -18,7 +18,7 @@ class MoviePost extends React.Component {
             openPopUp: false,
             // boolean indicating if logged in user liked post
             liked: this.props.data.liked,
-            // array of use
+            // count of likes on post
             likeCount: this.props.data.review.likes.length,
             // userId for user who posted the review
             user: this.props.data.review.userId,
@@ -38,8 +38,8 @@ class MoviePost extends React.Component {
             unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
             review: this.props.data.review.review,
             time: this.props.data.review.createdAt,
+            // the logged in users username
             currentUser: this.props.user,
-            editUpdate: true,
             displayLikes: false
         };
         this.likeButtonHandler = this.likeButtonHandler.bind(this);

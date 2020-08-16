@@ -1,6 +1,7 @@
 .modal {
   width: 100%;
   overflow-y:auto;
+  font-size: 16px;
 }
 
 /* below is for the scroll bar on the pop up */
