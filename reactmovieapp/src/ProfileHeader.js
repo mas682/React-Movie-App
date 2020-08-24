@@ -88,6 +88,11 @@ class ProfileHeader extends React.Component {
        {
            this.updatePostCount(nextProps.postCount);
        }
+       if(nextProps.updateFollowingCount === 1 || nextProps.updateFollowingCount === -1)
+       {
+           this.updateFollowingCount(nextProps.updateFollowingCount);
+       }
+
     }
 
     // function to update the post count when the props are updated
@@ -357,6 +362,8 @@ class ProfileHeader extends React.Component {
         {
             return null;
         }
+        // for testing
+        alert("Profile header rendering");
 
         // used to generate users followers/following lists
         let popup = "";

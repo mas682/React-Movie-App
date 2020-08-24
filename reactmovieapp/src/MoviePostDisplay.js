@@ -14,6 +14,7 @@ class MoviePostDisplay extends React.Component {
             username: this.props.username,
             // this will be set by the api call
             posts: [],
+            currentUser: ""
         }
     }
 
@@ -38,11 +39,12 @@ class MoviePostDisplay extends React.Component {
                 let oldCount = this.state.posts.length;
                 this.setState({
                     username: param,
-                    posts: result[1],
+                    posts: result[1][0],
+                    currentUser: result[1][1]
                 });
                 if(result[1].length !== oldCount)
                 {
-                    this.props.setPostCount(result[1].length);
+                    this.props.setPostCount(result[1][0].length);
                 }
             }
             else
@@ -62,11 +64,12 @@ class MoviePostDisplay extends React.Component {
             {
                 let oldCount = this.state.posts.length;
                 this.setState({
-                    posts: result[1]
+                    posts: result[1][0],
+                    currentUser: result[1][1]
                 });
                 if(result[1].length !== oldCount)
                 {
-                    this.props.setPostCount(result[1].length);
+                    this.props.setPostCount(result[1][0].length);
                 }
             }
             else
@@ -101,18 +104,12 @@ class MoviePostDisplay extends React.Component {
 
     render()
     {
+        // for testing
+        alert("MoviePostDisplay rendering");
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {
-            // if the posts are for the currenlty logged in user
-            if(this.state.currentUser)
-            {
-                posts.push(<MoviePost data={p} user={this.state.username}/>)
-            }
-            else
-            {
-              posts.push(<MoviePost data={p} user=""/>)
-            }
+                posts.push(<MoviePost data={p} currentUser={this.state.username} updateFunction={this.props.updateFunction}/>)
         });
 
 

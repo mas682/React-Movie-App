@@ -39,7 +39,7 @@ class MoviePost extends React.Component {
             review: this.props.data.review.review,
             time: this.props.data.review.createdAt,
             // the logged in users username
-            currentUser: this.props.user,
+            currentUser: this.props.currentUser,
             displayLikes: false
         };
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
@@ -337,27 +337,6 @@ class MoviePost extends React.Component {
     }
 
 	render() {
-
-        /*  to do in any order:
-            1. make comment button pull up a scrollable pop up showing all the comments with a input box at the bottom to add
-               your comment
-                - somewhat done
-                - need to add comments to database
-                    -done
-                - need to show comments associated with post
-                    - in progress
-            2. will then have to set up database to store comments
-                - need to be able to get a username and their profile pic when
-                  getting the comments for a post, need to figure this out
-                    - done but need to get profile pics in there
-                - need to add timestamp to comments and make usernames clickable
-            3. have to redirect to a movies page on go to movie page button push
-            4. set up call to api to retrieve data for post(actually may want to pass this data into the post or a index of which post to use?)
-            5. set up editing if this is the current users post
-            6. make user name a hyperlink to the users profile
-            7. will need to handle logic on individual pages of determining which posts to get(specific user, your friends, etc.)
-            8. may want option to make posts public/private
-        */
         // generate the stars for the review
         let stars = this.generateRatingStars();
         let likedButton = this.generateLikedButton();
@@ -412,7 +391,12 @@ class MoviePost extends React.Component {
         {
             // currentUser is false as we do not want the updateFunction called here
             // the updateFunction is used to only update the profile headers follower/following count
-            popup = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={null} currentUser={false} changeFunction={this.changeLikes}/>;
+            let currentUserBool = false;
+            if(this.state.currentUser === this.state.username)
+            {
+                currentUserBool = true;
+            }
+            popup = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={this.props.updateFunction} currentUser={currentUserBool} changeFunction={this.changeLikes}/>;
         }
 
         return (

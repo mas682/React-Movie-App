@@ -18,8 +18,10 @@ class UserProfile extends React.Component {
             username: this.props.match.params.id,
             // this will be set by the api call
             postCount: 0,
+            followingCountChange: 0
         }
         this.setPostCount = this.setPostCount.bind(this);
+        this.updateFollowingCount = this.updateFollowingCount.bind(this);
     }
 
     // this gets called when the component is changing from user to another
@@ -27,9 +29,33 @@ class UserProfile extends React.Component {
     // up
     // may not need this
     componentWillReceiveProps(nextProps) {
+        alert("receive props user profile");
         if(this.props.match.params.id !== nextProps.match.params.id) {
             this.getData(nextProps.match.params.id);
         }
+    }
+
+    // called after component was updated
+    componentDidUpdate()
+    {
+        // if the state is not 0, call the updateFollowingCount function to reset to 0
+        // this will cause shouldComponentUpdate to be called which will return false
+        if(this.state.followingCountChange !== 0)
+        {
+            this.updateFollowingCount(0);
+        }
+    }
+
+    // plan is to have movie posts follower list call the update function to
+    // kick off the rerendering of the userProfile page
+    //
+    shouldComponentUpdate(nextProps, nextState){
+        return (nextState.followingCountChange !== 0);
+    }
+
+    updateFollowingCount(value)
+    {
+        this.setState({followingCountChange: value});
     }
 
     // function to be utilized by MoviePostDisplay to update the count of the posts
@@ -52,8 +78,8 @@ class UserProfile extends React.Component {
         return (
 
             <div className={style5.mainBodyContainer}>
-                <ProfileHeader username={this.state.username} postCount={this.state.postCount}/>
-                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount}/>
+                <ProfileHeader username={this.state.username} postCount={this.state.postCount} updateFollowingCount={this.state.followingCountChange}/>
+                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount}/>
             </div>
         );
     }

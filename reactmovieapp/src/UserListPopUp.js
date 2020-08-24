@@ -41,7 +41,7 @@ class UserListPopUp extends React.Component {
                 // not currently used by may be used in the future if users can click a button
                 // to follow usres in the list
                 redirect: false,
-                // the pop up can either be for Followers or Following
+                // this is Likes
                 type: this.props.type,
                 reviewId: this.props.reviewId,
                 loading: true

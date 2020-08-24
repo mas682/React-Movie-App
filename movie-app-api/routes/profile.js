@@ -187,7 +187,7 @@ const getReviews = async (cookie, req, res) =>
         .then((reviews)=>
         {
             // send the reveiws associated with the user and their id
-            res.status(200).send(reviews);
+            res.status(200).send([reviews, cookie.name]);
         });
     });
 };
