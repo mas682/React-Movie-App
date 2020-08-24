@@ -40,6 +40,8 @@ class MoviePost extends React.Component {
             time: this.props.data.review.createdAt,
             // the logged in users username
             currentUser: this.props.currentUser,
+            // theusername of the user whose page this post is currently on
+            usersPage: this.props.usersPage,
             displayLikes: false
         };
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
@@ -396,7 +398,7 @@ class MoviePost extends React.Component {
             {
                 currentUserBool = true;
             }
-            popup = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={this.props.updateFunction} currentUser={currentUserBool} changeFunction={this.changeLikes}/>;
+            popup = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={this.props.updateFunction} username={this.state.usersPage} currentUser={currentUserBool} changeFunction={this.changeLikes} updateFollowersFunction={this.props.updateFollowersFunction}/>;
         }
 
         return (

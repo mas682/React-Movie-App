@@ -18,7 +18,7 @@ class ProfileHeader extends React.Component {
             following: false,
             // this will be set by the api call
             currentUser: false,
-            followedCount: 0,
+            followerCount: 0,
             followingCount: 0,
             displayFollowers: false,
             displayFollowed: false,
@@ -26,7 +26,7 @@ class ProfileHeader extends React.Component {
             loading: true
         }
         this.removePopUp = this.removePopUp.bind(this);
-        this.updateFollowedCount = this.updateFollowedCount.bind(this);
+        this.updateFollowerCount = this.updateFollowerCount.bind(this);
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
         this.changeFollowedCount = this.changeFollowedCount.bind(this);
         this.changeFollowingCount = this.changeFollowingCount.bind(this);
@@ -38,10 +38,10 @@ class ProfileHeader extends React.Component {
     // called only when userlist popup generated as it gets a updated count of users
     changeFollowedCount(value)
     {
-        if(value !== this.state.followedCount)
+        if(value !== this.state.followerCount)
         {
             alert("New value followed");
-            this.setState({followedCount: value});
+            this.setState({followerCount: value});
         }
     }
 
@@ -52,17 +52,16 @@ class ProfileHeader extends React.Component {
     {
         if(value !== this.state.followingCount)
         {
-            alert("New value following");
             this.setState({followingCount: value});
         }
     }
 
     // function used to increment/decrement followed count when a user is on
     // their own page
-    updateFollowedCount(value)
+    updateFollowerCount(value)
     {
-        let count = this.state.followedCount + value;
-        this.setState({followedCount: count});
+        let count = this.state.followerCount + value;
+        this.setState({followerCount: count});
     }
 
     // function used to increment/decrement following count when a user is on
@@ -92,6 +91,10 @@ class ProfileHeader extends React.Component {
        {
            this.updateFollowingCount(nextProps.updateFollowingCount);
        }
+       if(nextProps.updateFollowerCount === 1 || nextProps.updateFollowerCount === -1)
+       {
+           this.updateFollowerCount(nextProps.updateFollowerCount);
+       }
 
     }
 
@@ -116,7 +119,7 @@ class ProfileHeader extends React.Component {
                     id: result[1][0],
                     currentUser: result[1][1],
                     following: result[1][2],
-                    followedCount: result[1][3],
+                    followerCount: result[1][3],
                     followingCount: result[1][4],
                     displayFollowers: false,
                     displayFollowed: false
@@ -142,7 +145,7 @@ class ProfileHeader extends React.Component {
                     id: result[1][0],
                     currentUser: result[1][1],
                     following: result[1][2],
-                    followedCount: result[1][3],
+                    followerCount: result[1][3],
                     followingCount: result[1][4],
                     displayFollowers: false,
                     displayFollowed: false,
@@ -210,10 +213,10 @@ class ProfileHeader extends React.Component {
             }).then(result =>{
                 if(status === 200 && result === "User successfully followed")
                 {
-                    let value = this.state.followedCount + 1;
+                    let value = this.state.followerCount + 1;
                     this.setState({
                         following: true,
-                        followedCount: value
+                        followerCount: value
                     });
                 }
                 else if(status === 401 && result === "Unable to verify requester")
@@ -272,10 +275,10 @@ class ProfileHeader extends React.Component {
             }).then(result =>{
                 if(status === 200 && result === "User successfully unfollowed")
                 {
-                    let value = this.state.followedCount - 1;
+                    let value = this.state.followerCount - 1;
                     this.setState({
                         following: false,
-                        followedCount: value
+                        followerCount: value
                     });
                 }
                 else if(status === 401 && result === "Unable to verify requester")
@@ -338,7 +341,7 @@ class ProfileHeader extends React.Component {
             <div className={style5.followersContainer}>
                 <div className={style5.numberDisplay}>
                     <button className={style5.followersButton} onClick={(e)=> this.generatePopUp(e, "followers")}><h3 className={style5.socialHeader}>Followers</h3>
-                    {this.state.followedCount}
+                    {this.state.followerCount}
                     </button>
                 </div>
                 <div className={style5.numberDisplay}>
@@ -362,14 +365,12 @@ class ProfileHeader extends React.Component {
         {
             return null;
         }
-        // for testing
-        alert("Profile header rendering");
 
         // used to generate users followers/following lists
         let popup = "";
         if(this.state.displayFollowers)
         {
-            popup = <UserListPopUp username={this.state.username} type="Followers" removeFunction={this.removePopUp} updateFunction={this.updateFollowedCount} currentUser={this.state.currentUser} changeFunction={this.changeFollowedCount}/>;
+            popup = <UserListPopUp username={this.state.username} type="Followers" removeFunction={this.removePopUp} updateFunction={this.updateFollowerCount} currentUser={this.state.currentUser} changeFunction={this.changeFollowedCount}/>;
         }
         if(this.state.displayFollowed)
         {

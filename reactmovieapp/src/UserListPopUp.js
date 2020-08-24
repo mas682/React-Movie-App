@@ -13,6 +13,7 @@ class UserListPopUp extends React.Component {
             this.state ={
                 // indicates if the popup is visible on the screen or not
                 open: true,
+                // the user whose page the likes are being shown on
                 username: this.props.username,
                 followedUsers: [],
                 notFollowedUsers: [],
@@ -166,12 +167,12 @@ class UserListPopUp extends React.Component {
         let usersArray = [];
         this.state.followedUsers.forEach((user) => {
             // path to users profile page
-            let userHtml = (<FollowerDisplay user={user} following={true} requester={this.state.requester} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction}/>);
+            let userHtml = (<FollowerDisplay user={user} following={true} requester={this.state.requester} currentUser={this.state.currentUser} username={this.state.username} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction}/>);
             usersArray.push(userHtml);
         });
         this.state.notFollowedUsers.forEach((user) => {
             // path to users profile page
-            let userHtml = (<FollowerDisplay user={user} following={false} requester={this.state.requester} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction}/>);
+            let userHtml = (<FollowerDisplay user={user} following={false} requester={this.state.requester} currentUser={this.state.currentUser} username={this.state.username} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction}/>);
             usersArray.push(userHtml);
         });
         return usersArray;

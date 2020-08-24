@@ -13,7 +13,9 @@ class FollowerDisplay extends React.Component {
             // holds the name of the logged in user
             requester: this.props.requester,
             // boolean indicating if on current users page
-            currentUser: this.props.currentUser
+            currentUser: this.props.currentUser,
+            // users whose page the likes are on if on a likes page
+            username: this.props.username
         };
         this.generateFollowButton = this.generateFollowButton.bind(this);
         this.followHandler = this.followHandler.bind(this);
@@ -52,6 +54,12 @@ class FollowerDisplay extends React.Component {
                     if(this.state.currentUser)
                     {
                         this.props.updateFunction(1);
+                    }
+                    // if the clicked on username to follow is the user whose page we are on
+                    // update their follower count
+                    else if(this.state.user.username === this.state.username)
+                    {
+                        this.props.updateFollowersFunction(1);
                     }
                 }
                 else if(status === 401 && result === "Unable to verify requester")
@@ -114,6 +122,12 @@ class FollowerDisplay extends React.Component {
                     if(this.state.currentUser)
                     {
                         this.props.updateFunction(-1);
+                    }
+                    // if the clicked on username to follow is the user whose page we are on
+                    // update their follower count
+                    else if(this.state.user.username === this.state.username)
+                    {
+                        this.props.updateFollowersFunction(-1);
                     }
                 }
                 else if(status === 401 && result === "Unable to verify requester")
