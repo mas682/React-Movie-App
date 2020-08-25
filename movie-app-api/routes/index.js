@@ -8,7 +8,6 @@ import {profileHandler} from './profile.js';
 import {signUp} from './signup.js';
 import {homePage} from './homePage.js';
 import {getUserInfo} from './getUserInfo.js';
-import {addComment} from './comments.js';
 import {getMovies} from './movies.js';
 
 /* GET home page. */
@@ -52,11 +51,6 @@ router.get('/profile/:userId/*', function(req, res, next) {
 // used for all posts routes to /profile/username/some other parameter
 router.post('/profile/:userId/*', function(req, res, next) {
     profileHandler(req, res, next);
-});
-
-// used to add a comment to a post
-router.post('/comment', function(req, res, next) {
-    addComment(req, res, next);
 });
 
 // used to return the movies from the API call to the screen

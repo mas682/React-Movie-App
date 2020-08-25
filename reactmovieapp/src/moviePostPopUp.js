@@ -286,19 +286,20 @@ class MoviePostPopUp extends React.Component {
     {
         const requestOptions = {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 comment: this.state.comment,
                 reviewId: this.state.id,
             })
         };
-
-        fetch("http://localhost:9000/comment", requestOptions)
+        alert("sending comment");
+        fetch("http://localhost:9000/review/postcomment", requestOptions)
             .then(res => {
                 return res.text();
             }).then(msg => {
                 // get the response text
-                console.log(msg);
+                alert(msg);
             });
     }
 

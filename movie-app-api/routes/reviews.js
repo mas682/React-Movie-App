@@ -23,6 +23,7 @@ const review = (req, res, next) =>
             // cookie not valid
             else
             {
+                console.log("HERE1");
                 res.status(401).send("You are not logged in");
             }
         });
@@ -30,6 +31,7 @@ const review = (req, res, next) =>
     // if no cookie was found
     else
     {
+        console.log("HERE2");
         res.status(401).send("You are not logged in");
     }
 
@@ -66,6 +68,11 @@ const selectPath = (cookie, req, res) =>
     else if(Object.keys(req.params).length == 1 && req.params.type === "getlikes")
     {
         getLikes(cookie, req, res);
+    }
+    // if the path is /review/postcomment
+    else if(Object.keys(req.params).length == 1 && req.params.type === "postcomment")
+    {
+        postComment(req, res, cookie);
     }
     // some unknow path given
     else
@@ -330,5 +337,28 @@ const getLikes = async (cookie, req, res) =>
     // return the followed users, not followed users, and the username of the requesting user
     res.status(200).send([followedUsers, notFollowedUsers, cookie.name]);
 }
+
+
+// function to add a comment to a review post
+// the body of the request must include:
+// reviewId - the id of the review being comment on
+// comment - the comment to add to the post
+const postComment = async (req, res, cookie) =>
+{
+    // may need to also add error checking to make sure review actually exists
+    // or that the user can add a comment to this users post
+    // may want to add a function in the comment.js database file
+    models.Comment.create({
+        value: req.body.comment,
+        userId: cookie.id,
+        reviewId: req.body.reviewId,
+    }).then((result) => {
+        models.Comment.findByReview(models, req.body.reviewId)
+        .then((result) => {
+            console.log(result);
+        })
+        res.status(201).send("Comment successfully posted");
+    });
+};
 
 export {review};

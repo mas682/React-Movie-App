@@ -48,6 +48,23 @@ const comment = (sequelize, DataTypes) => {
         Comment.belongsTo(models.User);
     };
 
+    // function to get comments for a review post
+    Comment.findByReview = async (models, id) =>
+    {
+        let comments = await Comment.findAll({
+            where: {reviewId: id},
+            attributes:["id", "value", "createdAt"],
+            order: [["createdAt", 'ASC']],
+            include:[
+                {
+                    model: models.User,
+                    attributes: ["username"]
+                }
+            ]
+        });
+        return comments;
+    }
+
     return Comment;
 };
 

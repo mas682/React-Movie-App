@@ -99,6 +99,9 @@ const review = (sequelize, DataTypes) => {
                 {
                     model: models.Comment,
                     attributes: ["id", "value", "updatedAt"],
+                    // this should cause this to do it's ordering seperately but not working...
+                    seperate: true,
+                    order: [["updatedAt", 'ASC']],
                     // for the comments, also include the following information about the user
                     include: [
                         {
@@ -173,6 +176,8 @@ const review = (sequelize, DataTypes) => {
                 {
                     model: models.Comment,
                     attributes: ["id", "value", "updatedAt"],
+                    seperate: true,
+                    order: [["updatedAt", 'ASC']],
                     // for the comments, also include the following information about the user
                     include: [
                         {
