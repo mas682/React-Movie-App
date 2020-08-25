@@ -162,7 +162,7 @@ class UserListPopUp extends React.Component {
 
 
     // function to generate HTML for each section such as first name, last name, username, email
-    generateUserDisplay(value, title)
+    generateUserDisplay()
     {
         let usersArray = [];
         this.state.followedUsers.forEach((user) => {

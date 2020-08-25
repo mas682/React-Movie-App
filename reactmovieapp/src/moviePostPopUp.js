@@ -3,6 +3,7 @@ import style from './css/MoviePost/moviePost.module.css';
 import Popup from 'reactjs-popup';
 import UserListPopUp from './UserListPopUp.js';
 import ReviewForm from './ReviewForm.js';
+import CommentController from './CommentController.js';
 import {Link} from 'react-router-dom';
 import style2 from './css/MoviePost/moviePostPopUp.module.css'
 
@@ -343,6 +344,7 @@ class MoviePostPopUp extends React.Component {
     // function to generate the comments that were related to the post
     generateComments()
     {
+        /*
         let counter = this.state.comments.length -1;
         let commentArray = [];
         while(counter > -1)
@@ -363,7 +365,9 @@ class MoviePostPopUp extends React.Component {
             commentArray.push(html);
             counter = counter -1;
         }
-        return commentArray;
+        */
+
+        return <CommentController currentUser={this.state.currentUser} reviewId={this.state.id}/>;
     }
 
     // function to generate the good buttons
@@ -525,10 +529,7 @@ class MoviePostPopUp extends React.Component {
                             <div className="commentSubmitContainer">
                                 <button className={`${style.postButton} ${style2.commentButton}`} onClick={this.postComment}>Post Comment</button>
                             </div>
-                            <div className={style2.commentsContainer}>
-                                {commentArray}
-                            </div>
-
+                            {commentArray}
                         </div>
                     </div>
                     <div className={style2.actions}>

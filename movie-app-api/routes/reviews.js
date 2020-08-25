@@ -74,6 +74,11 @@ const selectPath = (cookie, req, res) =>
     {
         postComment(req, res, cookie);
     }
+    // if the path is /review/getcomments
+    else if(Object.keys(req.params).length == 1 && req.params.type === "getcomments")
+    {
+        getComments(req, res, cookie);
+    }
     // some unknow path given
     else
     {
@@ -359,6 +364,21 @@ const postComment = async (req, res, cookie) =>
         })
         res.status(201).send("Comment successfully posted");
     });
+};
+
+// function to get comments for a review post
+// the body of the request must include:
+// reviewId - the id of the review to get its comments
+const getComments = async(req, res, cookie) =>
+{
+    let comments = await models.Comment.findByReview(models, req.body.reviewId);
+    console.log(comments);
+    if(comments === undefined)
+    {
+        res.status(404).send("Review could not be found");
+    }
+    console.log("done");
+    res.status(200).send([comments, cookie.name]);
 };
 
 export {review};
