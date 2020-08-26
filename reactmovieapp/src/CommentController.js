@@ -13,16 +13,36 @@ class CommentController extends React.Component {
             currentUser: this.props.currentUser,
             // id of the review post
             reviewId: this.props.reviewId,
+            intervalId: ""
         }
         this.getComments = this.getComments.bind(this);
         this.generateComments = this.generateComments.bind(this);
+        this.sendCommentCall = this.sendCommentCall.bind(this);
+        this.updateComments = this.updateComments.bind(this);
     }
+
+    componentWillReceiveProps(nextProps) {
+        // if the props were received due to the user posting a new comment
+       if(nextProps.update) {
+          this.updateComments([nextProps.comments, nextProps.currentUser]);
+       }
+   }
 
     async componentDidMount()
     {
+        // update comments every 15 seconds
+        let apiInterval = setInterval(()=> {
+            this.sendCommentCall();
+        }, 15000);
+        this.setState({intervalId: apiInterval});
+        this.sendCommentCall();
+    }
+
+    // function used to send api call to the server to get the comments
+    async sendCommentCall()
+    {
         let result = await this.getComments();
         let status = result[0];
-        alert(status);
         if(status === 200)
         {
             this.setState({
@@ -34,6 +54,21 @@ class CommentController extends React.Component {
         {
             alert("Failed to get the comments for the post");
         }
+    }
+
+    // function called when a comment is deleted or updated
+    updateComments(results)
+    {
+        this.setState({
+            comments: results[0],
+            currentUser: results[1]
+        });
+    }
+
+    componentWillUnmount()
+    {
+        // stop the component from querying for data
+        clearInterval(this.state.intervalId);
     }
 
     // function to receive the comments from the api

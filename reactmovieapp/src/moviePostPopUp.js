@@ -4,6 +4,7 @@ import Popup from 'reactjs-popup';
 import UserListPopUp from './UserListPopUp.js';
 import ReviewForm from './ReviewForm.js';
 import CommentController from './CommentController.js';
+import CommentBox from './CommentBox.js';
 import {Link} from 'react-router-dom';
 import style2 from './css/MoviePost/moviePostPopUp.module.css'
 
@@ -33,8 +34,6 @@ class MoviePostPopUp extends React.Component {
             id: this.props.data.id,
             rating: this.props.data.rating,
             comments: this.props.data.comments,
-            // used to hold a individual users comment
-            comment: "",
             usedGoodButtons: this.props.data.usedGoodButtons,
             usedBadButtons: this.props.data.usedBadButtons,
             unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
@@ -43,14 +42,16 @@ class MoviePostPopUp extends React.Component {
             time: this.props.data.time,
             // the logged in users username
             currentUser: this.props.data.currentUser,
-            displayLikes: false
+            displayLikes: false,
+            // boolean to tell commentController to update if new comment was just posted
+            // by the current user
+            newComment: false
         };
 
         this.closeModal = this.closeModal.bind(this);
         this.generateGoodButtons = this.generateGoodButtons.bind(this);
         this.generateBadButtons = this.generateBadButtons.bind(this);
         this.generateComments = this.generateComments.bind(this);
-        this.postComment = this.postComment.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
         this.changeState = this.changeState.bind(this);
@@ -60,6 +61,42 @@ class MoviePostPopUp extends React.Component {
         this.changeLikes = this.changeLikes.bind(this);
         this.generateLikeCount = this.generateLikeCount.bind(this);
         this.generateLikesPopUp = this.generateLikesPopUp.bind(this);
+        this.updateComments = this.updateComments.bind(this);
+    }
+
+    // called after component was updated
+    componentDidUpdate()
+    {
+        // if there was a new comment on the last render, reset the boolean to false
+        // this will cause shouldComponentUpdate to be called which will return false
+        if(this.state.newComment !== false)
+        {
+            // set the newComment boolean to false
+            this.changeState("newComment", false);
+        }
+    }
+
+    // called whenever the state is changed for optimization
+    shouldComponentUpdate(nextProps, nextState){
+        // if the state change was the newComment being switched from true to false,
+        // do not rerender
+        if(this.state.newComment === true && nextState.newComment === false)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    // called by the CommentBox component when a comment is posted
+    // this will cause the component to rerender and update the props sent to
+    // the CommentController component
+    updateComments(newComments, user)
+    {
+        this.setState({
+            currentUser: user,
+            newComment: true,
+            comments: newComments
+        });
     }
 
     // function to change the state of the component
@@ -280,30 +317,6 @@ class MoviePostPopUp extends React.Component {
         }
     }
 
-    /*
-        Used to post comments to the server for a review
-    */
-    postComment()
-    {
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                comment: this.state.comment,
-                reviewId: this.state.id,
-            })
-        };
-        alert("sending comment");
-        fetch("http://localhost:9000/review/postcomment", requestOptions)
-            .then(res => {
-                return res.text();
-            }).then(msg => {
-                // get the response text
-                alert(msg);
-            });
-    }
-
     componentDidMount() {
         // get external script to add comment icon
         const script = document.createElement("script");
@@ -311,6 +324,7 @@ class MoviePostPopUp extends React.Component {
         script.src = "https://kit.fontawesome.com/a076d05399.js";
         // For body
         document.body.appendChild(script);
+
     }
 
     /*
@@ -344,30 +358,7 @@ class MoviePostPopUp extends React.Component {
     // function to generate the comments that were related to the post
     generateComments()
     {
-        /*
-        let counter = this.state.comments.length -1;
-        let commentArray = [];
-        while(counter > -1)
-        {
-            let value = this.state.comments[counter];
-            let userPath = "/profile/" + value.user.username;
-            let html = (
-                        <div className={style2.commentContainer}>
-                            <div className={style2.userNameBox}>
-                                <div className={style2.commentUser}><Link to={userPath}>{value.user.username}</Link></div>
-                                <div className={style2.commentTime}>{value.updatedAt}</div>
-                            </div>
-                            <div className={style2.commentBox}>
-                                <div>{value.value}</div>
-                            </div>
-                        </div>
-                    );
-            commentArray.push(html);
-            counter = counter -1;
-        }
-        */
-
-        return <CommentController currentUser={this.state.currentUser} reviewId={this.state.id}/>;
+        return <CommentController currentUser={this.state.currentUser} reviewId={this.state.id} update={this.state.newComment} comments={this.state.comments}/>;
     }
 
     // function to generate the good buttons
@@ -449,6 +440,7 @@ class MoviePostPopUp extends React.Component {
         let editPopUp = editPopUpElements[1];
         let likeCount = this.generateLikeCount();
         let likesPopUp = this.generateLikesPopUp();
+        let commentBox = <CommentBox reviewId={this.state.id} form={this.state.form} updateCommentsFunction={this.updateComments}/>
 
         return (
             <React.Fragment>
@@ -515,20 +507,7 @@ class MoviePostPopUp extends React.Component {
                                     {editPopUp}
                                 </div>
                             </div>
-                            <div>
-                                <textarea
-                                    type="text"
-                                    name="comment"
-                                    form = {this.state.form}
-                                    className={`inputFieldBoxLong`}
-                                    onChange={this.changeHandler}
-                                    rows="3"
-                                    placeholder="Add a comment"
-                                />
-                            </div>
-                            <div className="commentSubmitContainer">
-                                <button className={`${style.postButton} ${style2.commentButton}`} onClick={this.postComment}>Post Comment</button>
-                            </div>
+                            {commentBox}
                             {commentArray}
                         </div>
                     </div>

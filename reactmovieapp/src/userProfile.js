@@ -49,6 +49,7 @@ class UserProfile extends React.Component {
         {
             this.updateFollowerCount(0);
         }
+
     }
 
     // plan is to have movie posts follower list call the update function to

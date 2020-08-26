@@ -357,11 +357,17 @@ const postComment = async (req, res, cookie) =>
         value: req.body.comment,
         userId: cookie.id,
         reviewId: req.body.reviewId,
-    }).then((result) => {
-        models.Comment.findByReview(models, req.body.reviewId)
-        .then((result) => {
-            console.log(result);
-        })
+    }).then(async (result) => {
+        if(result !== undefined)
+        {
+            let comments = await models.Comment.findByReview(models, req.body.reviewId);
+            res.status(201).send([comments, cookie.name]);
+            // eventually want to send the comments back to the client along with cookie.name
+        }
+        else
+        {
+            res.status(404).send("Review could not be found");
+        }
         res.status(201).send("Comment successfully posted");
     });
 };

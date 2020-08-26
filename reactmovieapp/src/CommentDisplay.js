@@ -14,7 +14,6 @@ class CommentDisplay extends React.Component {
 
     render() {
         let userPath = "/profile/" + this.state.comment.user.username;
-        console.log(this.state.comment);
         return (
             <div className={style2.commentContainer}>
                 <div className={style2.userNameBox}>
