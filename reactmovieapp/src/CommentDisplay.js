@@ -20,6 +20,9 @@ class CommentDisplay extends React.Component {
                     <div className={style2.commentUser}><Link to={userPath}>{this.state.comment.user.username}</Link></div>
                     <div className={style2.commentTime}>{this.state.comment.createdAt}</div>
                 </div>
+                <div className={style2.editButtons}>
+                    &#10247;
+                </div>
                 <div className={style2.commentBox}>
                     <div>{this.state.comment.value}</div>
                 </div>
