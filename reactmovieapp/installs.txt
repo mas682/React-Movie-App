@@ -27,3 +27,6 @@ npm install moment
 
 
 npm install axios --save
+
+for the drop down menu in the comments
+npm install react-bootstrap --save
