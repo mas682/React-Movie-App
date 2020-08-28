@@ -11,13 +11,14 @@ class CommentDisplay extends React.Component {
         this.state = {
             commentData: this.props.comment,
             currentUser: this.props.currentUser,
+            commentId: this.props.comment.id,
             comment: this.props.comment.value,
             editComment: false
         }
-        this.editButtonHandler = this.editButtonHandler.bind(this);
         this.buttonHandler = this.buttonHandler.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.generateEditComment = this.generateEditComment.bind(this);
+        this.updateComment = this.updateComment.bind(this);
     }
 
     changeHandler(event)
@@ -34,10 +35,55 @@ class CommentDisplay extends React.Component {
         this.setState({[key]: value});
     }
 
+    /*
+        Used to post comments to the server for a review
+    */
+    updateComment()
+    {
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                comment: this.state.comment,
+                commentId: this.state.commentId,
+            })
+        };
+        let status = 0;
+        fetch("http://localhost:9000/review/updatecomment", requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.json();
+            }).then(result => {
+                if(status == 200)
+                {
+                    this.setState({
+                        commentData: result[0],
+                        comment: result[0].value,
+                        editComment: false
+                    });
+                    // return the all the comments for the post and the user who posted it
+                    // to the pop up
+                    //this.props.updateCommentsFunction(result[0], result[1]);
+                }
+                else
+                {
+                    alert(result[0]);
+                    if(result[0] === "You cannot update another users comment")
+                    {
+                        this.setState({
+                            editComment: false,
+                            comment: this.props.comment.value
+                        })
+                    }
+                }
+            });
+    }
+
     generateEditComment()
     {
         return (<React.Fragment>
-            <div className={style2.tester}>
+            <div className={style2.editCommentContainer}>
                 <textarea
                     type="text"
                     name="comment"
@@ -51,14 +97,9 @@ class CommentDisplay extends React.Component {
             </div>
             <div className={style2.editSubmitContainer}>
                 <button value="editComment" className={`${style.postButton} ${style2.cancelButton}`} onClick={this.buttonHandler}>Cancel</button>
-                <button className={`${style.postButton}`} onClick={this.postComment}>Update Comment</button>
+                <button className={`${style.postButton}`} onClick={this.updateComment}>Update Comment</button>
             </div>
         </React.Fragment>);
-    }
-
-    editButtonHandler()
-    {
-        alert("HERE");
     }
 
     render() {

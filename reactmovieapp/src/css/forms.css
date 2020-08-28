@@ -79,7 +79,7 @@
 
 /* set input box border to silver */
 .validInputBox {
-    border: .5px solid #C0C0C0; /* silver */
+    border: 1px solid #C0C0C0; /* silver */
 }
 
 /* on focus, set input box border to blue */

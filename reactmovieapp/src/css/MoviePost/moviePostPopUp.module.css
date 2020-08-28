@@ -80,10 +80,6 @@
     float: right;
 }
 
-.cancelButton:hover
-{
-    background-color: red;
-}
 
 /* this is the container for ALL comments */
 .commentsContainer {
@@ -110,11 +106,12 @@
     margin-right: 1%;
 }
 
-.tester
+.editCommentContainer
 {
     width: 100%;
 }
 
+/* used in comments for the update/cancel buttons when editing */
 .editSubmitContainer
 {
     width: 100%;
@@ -124,6 +121,7 @@
     margin-bottom: 10px;
 }
 
+/* used for the dropdown to edit/remove a comment */
 .editButtons {
     font-weight: bold;
     font-size: 1.4em;
@@ -137,12 +135,14 @@
     outline: none;
 }
 
+/* used for the dropdown to edit/remove a comment */
 .editButtonContainer {
     width: 2.0%;
     margin-top: 0.7%;
     margin-bottom: 1%;
 }
 
+/* used for the buttons when the dropdown is opened to edit a comment */
 .dropDownButton {
     display: block;
     width: 100%;
@@ -163,10 +163,17 @@
     color: white;
 }
 
+/* used for removing a comment */
 .removeCommentButton:hover
 {
     background: red;
     color: white;
+}
+
+/* used to cancel edit/removal of a comment */
+.cancelButton:hover
+{
+    background-color: red;
 }
 
 .commentUser {

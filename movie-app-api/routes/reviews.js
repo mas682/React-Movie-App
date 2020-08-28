@@ -79,6 +79,11 @@ const selectPath = (cookie, req, res) =>
     {
         getComments(req, res, cookie);
     }
+    // if the path is /review/updatecomment
+    else if(Object.keys(req.params).length == 1 && req.params.type === "updatecomment")
+    {
+        updateComment(req, res, cookie);
+    }
     // some unknow path given
     else
     {
@@ -368,9 +373,69 @@ const postComment = async (req, res, cookie) =>
         {
             res.status(404).send("Review could not be found");
         }
-        res.status(201).send("Comment successfully posted");
     });
 };
+
+// function to update an existing comment on a review post
+// the body of the request must include:
+// commentId - the id the comment
+// comment - the comment to add to the post
+const updateComment = async (req, res, cookie) =>
+{
+    // also need to verify this is the user that posted the comment...
+    let commentId = req.body.commentId;
+    let updatedComment = req.body.comment;
+    if(isNaN(commentId))
+    {
+        res.status(400).send(["Valid comment id not provided"]);
+    }
+    else if(updatedComment.length === 0)
+    {
+        res.status(400).send(["Cannot post a empty comment"]);
+    }
+    else
+    {
+        // try to get the comment
+        let comment = await models.Comment.findOne(
+            {
+                where: {id: commentId},
+                attributes:["id", "value", "createdAt"],
+                order: [["createdAt", 'ASC']],
+                include:[
+                    {
+                        model: models.User,
+                        attributes: ["username"]
+                    }
+                ]
+            }
+        );
+        if(comment === undefined)
+        {
+            res.status(404).send(["Comment could not be found"]);
+        }
+        else
+        {
+            if(cookie.name !== comment.user.username)
+            {
+                res.status(401).send(["You cannot update another users comment"]);
+            }
+            else
+            {
+                comment.value = updatedComment;
+                let result = await comment.save();
+                if(result === undefined)
+                {
+                    res.status(404).send(["Server failed to update comment for some unkown reason"]);
+                }
+                else
+                {
+                    res.status(200).send([result, cookie.name]);
+                }
+            }
+        }
+    }
+};
+
 
 // function to get comments for a review post
 // the body of the request must include:
