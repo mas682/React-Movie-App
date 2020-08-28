@@ -80,6 +80,11 @@
     float: right;
 }
 
+.cancelButton:hover
+{
+    background-color: red;
+}
+
 /* this is the container for ALL comments */
 .commentsContainer {
     margin-top: 2%;
@@ -103,6 +108,20 @@
     margin-bottom: 1%;
     width: 97%;
     margin-right: 1%;
+}
+
+.tester
+{
+    width: 100%;
+}
+
+.editSubmitContainer
+{
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+    margin-bottom: 10px;
 }
 
 .editButtons {
@@ -134,7 +153,20 @@
     color: #212529;
     text-align: inherit;
     white-space: nowrap;
-    border: 0;
+    border-width: 1px;
+    border-color: gray;
+}
+
+.dropDownButton:hover
+{
+    background: DarkGray;
+    color: white;
+}
+
+.removeCommentButton:hover
+{
+    background: red;
+    color: white;
 }
 
 .commentUser {
