@@ -26,7 +26,7 @@ class CommentController extends React.Component {
        if(nextProps.update) {
           this.updateComments([nextProps.comments, nextProps.currentUser]);
        }
-   }
+    }
 
     async componentDidMount()
     {

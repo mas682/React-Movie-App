@@ -13,12 +13,16 @@ class CommentDisplay extends React.Component {
             currentUser: this.props.currentUser,
             commentId: this.props.comment.id,
             comment: this.props.comment.value,
-            editComment: false
+            editComment: false,
+            removeComment: false
         }
         this.buttonHandler = this.buttonHandler.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.generateEditComment = this.generateEditComment.bind(this);
         this.updateComment = this.updateComment.bind(this);
+        this.generateRemoveButton = this.generateRemoveButton.bind(this);
+        this.removeComment = this.removeComment.bind(this);
+        this.updateNewState = this.updateNewState.bind(this);
     }
 
     changeHandler(event)
@@ -35,8 +39,29 @@ class CommentDisplay extends React.Component {
         this.setState({[key]: value});
     }
 
+    // used when receiving a update from the CommentController
+    componentWillReceiveProps(nextProps) {
+        // if the props received are different than the curren state
+       if(nextProps.comment.id !== this.state.commentId) {
+          this.updateNewState(nextProps);
+       }
+    }
+
+    /* this function should be called when a comment was removed to update an existing
+    component to hold new data whenever the api call to get the comments is done */
+    updateNewState(nextProps) {
+        this.setState({
+            commentData: nextProps.comment,
+            currentUser: nextProps.currentUser,
+            commentId: nextProps.comment.id,
+            comment: nextProps.comment.value,
+            editComment: false,
+            removeComment: false
+        })
+    }
+
     /*
-        Used to post comments to the server for a review
+        Used to send updated comments to the server for a review
     */
     updateComment()
     {
@@ -62,9 +87,6 @@ class CommentDisplay extends React.Component {
                         comment: result[0].value,
                         editComment: false
                     });
-                    // return the all the comments for the post and the user who posted it
-                    // to the pop up
-                    //this.props.updateCommentsFunction(result[0], result[1]);
                 }
                 else
                 {
@@ -80,6 +102,47 @@ class CommentDisplay extends React.Component {
             });
     }
 
+    /*
+        Used to remove comments from a review
+    */
+    removeComment()
+    {
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                commentId: this.state.commentId,
+            })
+        };
+        let status = 0;
+        fetch("http://localhost:9000/review/removecomment", requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.text();
+            }).then(result => {
+                if(status == 200)
+                {
+                    this.setState({
+                        commentData: null,
+                        comment: "",
+                        removeComment: false
+                    });
+                }
+                else
+                {
+                    alert(result);
+                    if(result === "You cannot remove another users comment")
+                    {
+                        this.setState({
+                            removeComment: false
+                        })
+                    }
+                }
+            });
+    }
+
+    // used to generate the edit comment box
     generateEditComment()
     {
         return (<React.Fragment>
@@ -102,8 +165,29 @@ class CommentDisplay extends React.Component {
         </React.Fragment>);
     }
 
+    // used to generate the remove/cancel buttons when remove comment clicked
+    generateRemoveButton()
+    {
+        return (<React.Fragment>
+            <div className={style2.removalText}>
+                Are you sure you want to remove the comment?
+            </div>
+            <div className={style2.removeContainer}>
+                <button value="removeComment" className={`${style.postButton}`} onClick={this.buttonHandler}>Cancel</button>
+                <button className={`${style.postButton} ${style2.cancelButton}`} onClick={this.removeComment}>Remove</button>
+            </div>
+        </React.Fragment>);
+    }
+
     render() {
+        // if there is no data, the comment was just removed so just return null
+        if(this.state.commentData === null)
+        {
+            return null;
+        }
+        // path to the users profile who posted the comment
         let userPath = "/profile/" + this.state.commentData.user.username;
+        // if the user selected to edit the comment
         if(this.state.editComment)
         {
             let commentBox = this.generateEditComment();
@@ -117,28 +201,41 @@ class CommentDisplay extends React.Component {
                 </div>
             )
         }
-        return (
-            <div className={style2.commentContainer}>
-                <div className={style2.userNameBox}>
-                    <div className={style2.commentUser}><Link to={userPath}>{this.state.commentData.user.username}</Link></div>
-                    <div className={style2.commentTime}>{this.state.commentData.createdAt}</div>
+        // if the user selected to remove the comment
+        else if(this.state.removeComment)
+        {
+            let removeBox = this.generateRemoveButton();
+            return (
+                <div className={style2.commentContainer}>
+                    {removeBox}
                 </div>
-                <Dropdown className={style2.editButtonContainer} drop="left">
-                  <Dropdown.Toggle variant="success" id="dropdown-basic" className={style2.editButtons}>
-                    &#10247;
-                  </Dropdown.Toggle>
+            )
+        }
+        else
+        {
+            return (
+                <div className={style2.commentContainer}>
+                    <div className={style2.userNameBox}>
+                        <div className={style2.commentUser}><Link to={userPath}>{this.state.commentData.user.username}</Link></div>
+                        <div className={style2.commentTime}>{this.state.commentData.createdAt}</div>
+                    </div>
+                    <Dropdown className={style2.editButtonContainer} drop="left">
+                      <Dropdown.Toggle variant="success" id="dropdown-basic" className={style2.editButtons}>
+                        &#10247;
+                      </Dropdown.Toggle>
 
-                  <Dropdown.Menu>
-                    <Dropdown.Item as="button" value="editComment" className={style2.dropDownButton} onClick={this.buttonHandler}>Edit Comment</Dropdown.Item>
-                    <Dropdown.Item as="button" className={`${style2.dropDownButton} ${style2.removeCommentButton}`}>Remove Comment</Dropdown.Item>
-                    <Dropdown.Item as="button" className={style2.dropDownButton}>Report</Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-                <div className={style2.commentBox}>
-                    <div>{this.state.comment}</div>
+                      <Dropdown.Menu>
+                        <Dropdown.Item as="button" value="editComment" className={style2.dropDownButton} onClick={this.buttonHandler}>Edit Comment</Dropdown.Item>
+                        <Dropdown.Item as="button" value="removeComment" className={`${style2.dropDownButton} ${style2.removeCommentButton}`} onClick={this.buttonHandler}>Remove Comment</Dropdown.Item>
+                        <Dropdown.Item as="button" className={style2.dropDownButton}>Report</Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                    <div className={style2.commentBox}>
+                        <div>{this.state.comment}</div>
+                    </div>
                 </div>
-            </div>
-        );
+            );
+        }
     }
 
 }

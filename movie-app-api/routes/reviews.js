@@ -84,6 +84,11 @@ const selectPath = (cookie, req, res) =>
     {
         updateComment(req, res, cookie);
     }
+    // if the path is /review/removecomment
+    else if(Object.keys(req.params).length == 1 && req.params.type === "removecomment")
+    {
+        removeComment(req, res, cookie);
+    }
     // some unknow path given
     else
     {
@@ -430,6 +435,61 @@ const updateComment = async (req, res, cookie) =>
                 else
                 {
                     res.status(200).send([result, cookie.name]);
+                }
+            }
+        }
+    }
+};
+
+
+// function to remove an existing comment from a review post
+// the body of the request must include:
+// commentId - the id the comment
+const removeComment = async (req, res, cookie) =>
+{
+    // also need to verify this is the user that posted the comment...
+    let commentId = req.body.commentId;
+    if(isNaN(commentId))
+    {
+        res.status(400).send("Valid comment id not provided");
+    }
+    else
+    {
+        // try to get the comment
+        let comment = await models.Comment.findOne(
+            {
+                where: {id: commentId},
+                attributes:["id", "value", "createdAt"],
+                order: [["createdAt", 'ASC']],
+                include:[
+                    {
+                        model: models.User,
+                        attributes: ["username"]
+                    }
+                ]
+            }
+        );
+        if(comment === undefined)
+        {
+            res.status(404).send("Comment could not be found");
+        }
+        else
+        {
+            if(cookie.name !== comment.user.username)
+            {
+                res.status(401).send("You cannot remove another users comment");
+            }
+            else
+            {
+                let result = await comment.destroy();
+                if(result === undefined)
+                {
+                    res.status(404).send("Server failed to delete comment for some unkown reason");
+                }
+                else
+                {
+                    console.log(result);
+                    res.status(200).send("Comment successfully removed");
                 }
             }
         }
