@@ -105,12 +105,21 @@
     margin-bottom: 20px;
 }
 
+/* formatting for prompting if user wants to remove comment */
 .removalText
 {
     width: 100%;
     font-size: 1.2em;
     font-weight: bold;
     margin-top: 20px;
+}
+
+/* for error text on a input field */
+.errorText
+{
+    text-align: left;
+    width: 95%;
+    margin-left: 2.5%;
 }
 
 /* used to hold user name and picture */

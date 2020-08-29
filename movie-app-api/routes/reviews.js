@@ -387,7 +387,6 @@ const postComment = async (req, res, cookie) =>
 // comment - the comment to add to the post
 const updateComment = async (req, res, cookie) =>
 {
-    // also need to verify this is the user that posted the comment...
     let commentId = req.body.commentId;
     let updatedComment = req.body.comment;
     if(isNaN(commentId))
@@ -420,6 +419,7 @@ const updateComment = async (req, res, cookie) =>
         }
         else
         {
+            // if you are not the user that posted the comment
             if(cookie.name !== comment.user.username)
             {
                 res.status(401).send(["You cannot update another users comment"]);
@@ -465,6 +465,10 @@ const removeComment = async (req, res, cookie) =>
                     {
                         model: models.User,
                         attributes: ["username"]
+                    },
+                    {
+                        model: models.Review,
+                        attributes: ["userId"]
                     }
                 ]
             }
@@ -475,7 +479,9 @@ const removeComment = async (req, res, cookie) =>
         }
         else
         {
-            if(cookie.name !== comment.user.username)
+            // if you are not the user who posted the comment or you are not the user who posted the
+            // review, you cannot remove a users comment
+            if(cookie.name !== comment.user.username && comment.review.userId !== cookie.id)
             {
                 res.status(401).send("You cannot remove another users comment");
             }
@@ -488,7 +494,7 @@ const removeComment = async (req, res, cookie) =>
                 }
                 else
                 {
-                    console.log(result);
+                    // returns a empty array on success
                     res.status(200).send("Comment successfully removed");
                 }
             }
@@ -503,12 +509,10 @@ const removeComment = async (req, res, cookie) =>
 const getComments = async(req, res, cookie) =>
 {
     let comments = await models.Comment.findByReview(models, req.body.reviewId);
-    console.log(comments);
     if(comments === undefined)
     {
         res.status(404).send("Review could not be found");
     }
-    console.log("done");
     res.status(200).send([comments, cookie.name]);
 };
 

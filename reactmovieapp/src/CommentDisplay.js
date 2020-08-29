@@ -13,6 +13,7 @@ class CommentDisplay extends React.Component {
             currentUser: this.props.currentUser,
             commentId: this.props.comment.id,
             comment: this.props.comment.value,
+            updateError: "",
             editComment: false,
             removeComment: false
         }
@@ -36,8 +37,20 @@ class CommentDisplay extends React.Component {
     buttonHandler(event) {
         let key = event.target.value;
         let value = !this.state[key];
-        this.setState({[key]: value});
+        // if canceling editing the comment, reset the comment to it's original value
+        if(key === "editComment" && value === false)
+        {
+            this.setState({
+                [key]: value,
+                comment: this.props.comment.value
+            });
+        }
+        else
+        {
+            this.setState({[key]: value});
+        }
     }
+
 
     // used when receiving a update from the CommentController
     componentWillReceiveProps(nextProps) {
@@ -55,6 +68,7 @@ class CommentDisplay extends React.Component {
             currentUser: nextProps.currentUser,
             commentId: nextProps.comment.id,
             comment: nextProps.comment.value,
+            updateError: "",
             editComment: false,
             removeComment: false
         })
@@ -85,7 +99,8 @@ class CommentDisplay extends React.Component {
                     this.setState({
                         commentData: result[0],
                         comment: result[0].value,
-                        editComment: false
+                        editComment: false,
+                        updateError: ""
                     });
                 }
                 else
@@ -95,7 +110,14 @@ class CommentDisplay extends React.Component {
                     {
                         this.setState({
                             editComment: false,
-                            comment: this.props.comment.value
+                            comment: this.props.comment.value,
+                            updateError: ""
+                        })
+                    }
+                    else if(result[0] === "Cannot post a empty comment")
+                    {
+                        this.setState({
+                            updateError: "You cannot post a empty comment"
                         })
                     }
                 }
@@ -126,7 +148,8 @@ class CommentDisplay extends React.Component {
                     this.setState({
                         commentData: null,
                         comment: "",
-                        removeComment: false
+                        removeComment: false,
+                        updateError: ""
                     });
                 }
                 else
@@ -145,18 +168,38 @@ class CommentDisplay extends React.Component {
     // used to generate the edit comment box
     generateEditComment()
     {
+
+        let inputBox = (<textarea
+                            type="text"
+                            name="comment"
+                            form = {this.state.form}
+                            value={this.state.comment}
+                            className={`inputFieldBoxLong validInputBox`}
+                            onChange={this.changeHandler}
+                            rows="3"
+                            placeholder="Add a comment"
+                        />);
+        if(this.state.updateError !== "")
+        {
+            inputBox = (<React.Fragment>
+                            <textarea
+                                    type="text"
+                                    name="comment"
+                                    form = {this.state.form}
+                                    value={this.state.comment}
+                                    className={`inputFieldBoxLong inputBoxError`}
+                                    onChange={this.changeHandler}
+                                    rows="3"
+                                    placeholder="Add a comment"
+                                />
+                                <div className={style2.errorText}>
+                                    <small className={`errorTextSmall`}>{this.state.updateError}</small>
+                                </div>
+                        </React.Fragment>);
+        }
         return (<React.Fragment>
             <div className={style2.editCommentContainer}>
-                <textarea
-                    type="text"
-                    name="comment"
-                    form = {this.state.form}
-                    value={this.state.comment}
-                    className={`inputFieldBoxLong`}
-                    onChange={this.changeHandler}
-                    rows="3"
-                    placeholder="Add a comment"
-                />
+                {inputBox}
             </div>
             <div className={style2.editSubmitContainer}>
                 <button value="editComment" className={`${style.postButton} ${style2.cancelButton}`} onClick={this.buttonHandler}>Cancel</button>

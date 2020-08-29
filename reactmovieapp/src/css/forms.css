@@ -74,7 +74,7 @@
 
 /* set input box border to red */
 .inputBoxError {
-    border: .5px solid red;
+    border: 1px solid red;
 }
 
 /* set input box border to silver */
