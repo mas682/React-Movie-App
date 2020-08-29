@@ -4,7 +4,6 @@ import axios from 'axios';
 import MainPage from './MainPage.js';
 import Movie from './MovieReview.js';
 import PhotoContainer from "./PhotoContainer";
-import MovieTitle from "./PhotoContainer";
 
 
 class MovieInfo extends React.Component {

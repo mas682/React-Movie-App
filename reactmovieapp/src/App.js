@@ -59,7 +59,7 @@ class Header extends React.Component {
 						<button class="movieButton">Movies</button>
 						<div class="movieDropdownContent">
 							<a href="/movie">Top Rated</a>
-							<a href="/movie">Upcoming</a>
+							<a href="/upcoming">Upcoming</a>
 							<a href="/movie">In Theaters</a>
 						</div>
 					</div>
