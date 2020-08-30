@@ -363,6 +363,14 @@ const postComment = async (req, res, cookie) =>
     // may need to also add error checking to make sure review actually exists
     // or that the user can add a comment to this users post
     // may want to add a function in the comment.js database file
+    if(req.body.comment.length === 0)
+    {
+        res.status(400).send(["You cannot post a empty comment"]);
+    }
+    else if(isNaN(req.body.reviewId))
+    {
+        res.status(400).send(["Valid review id not provided"]);
+    }
     models.Comment.create({
         value: req.body.comment,
         userId: cookie.id,
@@ -376,7 +384,7 @@ const postComment = async (req, res, cookie) =>
         }
         else
         {
-            res.status(404).send("Review could not be found");
+            res.status(404).send(["Review could not be found"]);
         }
     });
 };
@@ -508,12 +516,22 @@ const removeComment = async (req, res, cookie) =>
 // reviewId - the id of the review to get its comments
 const getComments = async(req, res, cookie) =>
 {
-    let comments = await models.Comment.findByReview(models, req.body.reviewId);
-    if(comments === undefined)
+    if(isNaN(req.body.reviewId))
     {
-        res.status(404).send("Review could not be found");
+        res.status(400).send(["Valid review id not provided"]);
     }
-    res.status(200).send([comments, cookie.name]);
+    else
+    {
+        let comments = await models.Comment.findByReview(models, req.body.reviewId);
+        if(comments === undefined)
+        {
+            res.status(404).send(["Review could not be found"]);
+        }
+        else
+        {
+            res.status(200).send([comments, cookie.name]);
+        }
+    }
 };
 
 export {review};

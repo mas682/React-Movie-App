@@ -12,7 +12,9 @@ class CommentDisplay extends React.Component {
             commentData: this.props.comment,
             currentUser: this.props.currentUser,
             commentId: this.props.comment.id,
+            commentUser: this.props.comment.user.username,
             comment: this.props.comment.value,
+            reviewUser: this.props.reviewUser,
             updateError: "",
             editComment: false,
             removeComment: false
@@ -24,6 +26,7 @@ class CommentDisplay extends React.Component {
         this.generateRemoveButton = this.generateRemoveButton.bind(this);
         this.removeComment = this.removeComment.bind(this);
         this.updateNewState = this.updateNewState.bind(this);
+        this.generateEditButtons = this.generateEditButtons.bind(this);
     }
 
     changeHandler(event)
@@ -68,6 +71,8 @@ class CommentDisplay extends React.Component {
             currentUser: nextProps.currentUser,
             commentId: nextProps.comment.id,
             comment: nextProps.comment.value,
+            commentUser: nextProps.comment.user.username,
+            reviewUser: nextProps.reviewUser,
             updateError: "",
             editComment: false,
             removeComment: false
@@ -79,6 +84,13 @@ class CommentDisplay extends React.Component {
     */
     updateComment()
     {
+        if(this.state.comment.length === 0)
+        {
+            this.setState({
+                updateError: "You cannot post a empty comment"
+            });
+            return;
+        }
         const requestOptions = {
             method: 'POST',
             credentials: 'include',
@@ -112,13 +124,13 @@ class CommentDisplay extends React.Component {
                             editComment: false,
                             comment: this.props.comment.value,
                             updateError: ""
-                        })
+                        });
                     }
                     else if(result[0] === "Cannot post a empty comment")
                     {
                         this.setState({
                             updateError: "You cannot post a empty comment"
-                        })
+                        });
                     }
                 }
             });
@@ -222,6 +234,32 @@ class CommentDisplay extends React.Component {
         </React.Fragment>);
     }
 
+    generateEditButtons()
+    {
+        let buttons = null;
+        if(this.state.commentUser === this.state.currentUser)
+        {
+            buttons = (<React.Fragment>
+                <Dropdown.Item as="button" value="editComment" className={style2.dropDownButton} onClick={this.buttonHandler}>Edit Comment</Dropdown.Item>
+                <Dropdown.Item as="button" value="removeComment" className={`${style2.dropDownButton} ${style2.removeCommentButton}`} onClick={this.buttonHandler}>Remove Comment</Dropdown.Item>
+            </React.Fragment>);
+        }
+        else if(this.state.reviewUser === this.state.currentUser)
+        {
+            buttons = (<React.Fragment>
+                <Dropdown.Item as="button" value="removeComment" className={`${style2.dropDownButton} ${style2.removeCommentButton}`} onClick={this.buttonHandler}>Remove Comment</Dropdown.Item>
+                <Dropdown.Item as="button" className={style2.dropDownButton}>Report</Dropdown.Item>
+            </React.Fragment>);
+        }
+        else
+        {
+            buttons = (<React.Fragment>
+                <Dropdown.Item as="button" className={style2.dropDownButton}>Report</Dropdown.Item>
+            </React.Fragment>);
+        }
+        return buttons;
+    }
+
     render() {
         // if there is no data, the comment was just removed so just return null
         if(this.state.commentData === null)
@@ -229,7 +267,7 @@ class CommentDisplay extends React.Component {
             return null;
         }
         // path to the users profile who posted the comment
-        let userPath = "/profile/" + this.state.commentData.user.username;
+        let userPath = "/profile/" + this.state.commentUser;
         // if the user selected to edit the comment
         if(this.state.editComment)
         {
@@ -256,6 +294,7 @@ class CommentDisplay extends React.Component {
         }
         else
         {
+            let editButtons = this.generateEditButtons();
             return (
                 <div className={style2.commentContainer}>
                     <div className={style2.userNameBox}>
@@ -263,15 +302,12 @@ class CommentDisplay extends React.Component {
                         <div className={style2.commentTime}>{this.state.commentData.createdAt}</div>
                     </div>
                     <Dropdown className={style2.editButtonContainer} drop="left">
-                      <Dropdown.Toggle variant="success" id="dropdown-basic" className={style2.editButtons}>
-                        &#10247;
-                      </Dropdown.Toggle>
-
-                      <Dropdown.Menu>
-                        <Dropdown.Item as="button" value="editComment" className={style2.dropDownButton} onClick={this.buttonHandler}>Edit Comment</Dropdown.Item>
-                        <Dropdown.Item as="button" value="removeComment" className={`${style2.dropDownButton} ${style2.removeCommentButton}`} onClick={this.buttonHandler}>Remove Comment</Dropdown.Item>
-                        <Dropdown.Item as="button" className={style2.dropDownButton}>Report</Dropdown.Item>
-                      </Dropdown.Menu>
+                        <Dropdown.Toggle variant="success" id="dropdown-basic" className={style2.editButtons}>
+                            &#10247;
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            {editButtons}
+                        </Dropdown.Menu>
                     </Dropdown>
                     <div className={style2.commentBox}>
                         <div>{this.state.comment}</div>

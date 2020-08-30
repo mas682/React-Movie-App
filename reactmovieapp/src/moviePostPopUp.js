@@ -358,7 +358,7 @@ class MoviePostPopUp extends React.Component {
     // function to generate the comments that were related to the post
     generateComments()
     {
-        return <CommentController currentUser={this.state.currentUser} reviewId={this.state.id} update={this.state.newComment} comments={this.state.comments}/>;
+        return <CommentController currentUser={this.state.currentUser} reviewUser={this.state.username} reviewId={this.state.id} update={this.state.newComment} comments={this.state.comments}/>;
     }
 
     // function to generate the good buttons

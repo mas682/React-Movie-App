@@ -11,6 +11,8 @@ class CommentController extends React.Component {
             comments: [],
             // the logged in users username
             currentUser: this.props.currentUser,
+            // username of user who posted the review
+            reviewUser: this.props.reviewUser,
             // id of the review post
             reviewId: this.props.reviewId,
             intervalId: ""
@@ -53,6 +55,7 @@ class CommentController extends React.Component {
         else
         {
             alert("Failed to get the comments for the post");
+            alert(result);
         }
     }
 
@@ -98,7 +101,7 @@ class CommentController extends React.Component {
     {
         let commentsArray = [];
         this.state.comments.forEach((comment) => {
-            let commentHtml = (<CommentDisplay comment={comment} currentUser={this.state.currentUser}/>);
+            let commentHtml = (<CommentDisplay comment={comment} reviewUser={this.state.reviewUser} currentUser={this.state.currentUser}/>);
             commentsArray.push(commentHtml);
         });
         return commentsArray;
