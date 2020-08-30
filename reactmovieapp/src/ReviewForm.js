@@ -659,6 +659,7 @@ class ReviewPopUp extends React.Component {
                         open={this.state.open}
                         onClose={this.closeModal}
                         closeOnDocumentClick
+                        contentStyle={{ width: "40%"}}
                     >
                         <div className="modal">
                             {/* &times is the multiplication symbol (x) --> */}

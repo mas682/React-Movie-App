@@ -49,6 +49,7 @@
   position: relative;
 }
 
+/* will be removed eventually */
 div.postHeader p {
 	float: left;
 	padding-left: 10px;
@@ -58,7 +59,7 @@ div.postHeader img {
 	float: right;
 	height: 50px;
 	weight: 50px;
-	padding-right: 5px;
+	padding-right: 2%;
 }
 
 .postImage {
@@ -66,6 +67,7 @@ div.postHeader img {
 	padding: 0px;
 	text-align: center;
 }
+/* remove above here */
 
 .checked {
 	color: orange;

@@ -1,5 +1,37 @@
 
 /* Main Page*/
+.postHeader {
+	width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+	justify-content: flex-start;
+	text-align: left;
+
+}
+
+.reviewerContainer
+{
+	width: 50%;
+	align-self: flex-start;
+	margin-left: 2%;
+}
+
+.userImageContainer
+{
+	width: 45%;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: flex-end;
+	margin-right: 1%;
+}
+
+.userImage
+{
+	height: 50px;
+	width: 50px;
+}
+
+
 .post {
 	margin: auto;
 	text-align: center;

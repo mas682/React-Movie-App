@@ -1,10 +1,12 @@
 import React from 'react';
 import style from './css/MoviePost/moviePost.module.css';
+import style2 from './css/MoviePost/moviePostPopUp.module.css'
 import {Link} from 'react-router-dom';
 import MoviePostPopUp from './moviePostPopUp.js';
 import UserListPopUp from './UserListPopUp.js';
 import './css/MoviePost/moviePost.css';
 import ReviewForm from './ReviewForm.js';
+import Dropdown from 'react-bootstrap/Dropdown'
 
 
 
@@ -403,9 +405,25 @@ class MoviePost extends React.Component {
 
         return (
 			<div className={`${style.post} ${style.postShadow}`}>
-				  <div className="postHeader">
-					    <Link to={profilePath}><p className="username">{this.state.username}</p></Link>
-					    <img src={require("./images/profile-pic.jpg")}/>
+				  <div className={style.postHeader}>
+                        <div className={style.reviewerContainer}>
+					        <Link to={profilePath}><p className="username">{this.state.username}</p></Link>
+                        </div>
+                        <div className={style.userImageContainer}>
+                            <div>
+					            <img className={style.userImage} src={require("./images/profile-pic.jpg")}/>
+                            </div>
+                        </div>
+                        <Dropdown className={style2.editButtonContainer} drop="left">
+                            <Dropdown.Toggle variant="success" id="dropdown-basic" className={style2.editButtons}>
+                                &#10247;
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                <Dropdown.Item as="button" className={style2.dropDownButton} onClick={() => {this.changeState("openEdit", true)}}>Edit Post</Dropdown.Item>
+                                <Dropdown.Item as="button" className={style2.dropDownButton} >Remove Post</Dropdown.Item>
+                                <Dropdown.Item as="button" className={style2.dropDownButton}>Report</Dropdown.Item>
+                            </Dropdown.Menu>
+                        </Dropdown>
 				  </div>
           <div>
               <h3>{this.state.title}</h3>
