@@ -32,8 +32,8 @@ const Poster = (props) => {
 	
 	return(
 		<section>
-			<Link to="/movie"><img src={"https://image.tmdb.org/t/p/original" + props.poster_path} height="500" width="300"/></Link>
-			<Link to="/movie" className="movieTitle"><h3>{props.title}</h3></Link>
+			<Link to="/movieInfo"><img src={"https://image.tmdb.org/t/p/original" + props.poster_path} height="500" width="300"/></Link>
+			<Link to="/movieInfo" className="movieTitle"><h3>{props.title}</h3></Link>
 			<h4>Release Date: {months[date.slice(5, 7)]} {getDay()}, {date.slice(0, 4)}</h4>
 		</section>
 	)
