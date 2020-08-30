@@ -44,7 +44,10 @@ class MoviePost extends React.Component {
             currentUser: this.props.currentUser,
             // theusername of the user whose page this post is currently on
             usersPage: this.props.usersPage,
-            displayLikes: false
+            // used to show likes pop up
+            displayLikes: false,
+            // used as boolean as to whether or not to show remove post buttons when clicked
+            removePost: false
         };
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
         this.updateState = this.updateState.bind(this);
@@ -52,6 +55,9 @@ class MoviePost extends React.Component {
         this.removeLike = this.removeLike.bind(this);
         this.changeLikes = this.changeLikes.bind(this);
         this.changeState = this.changeState.bind(this);
+        this.removePostHandler = this.removePostHandler.bind(this);
+        this.removePost = this.removePost.bind(this);
+        this.generateEditButtons = this.generateEditButtons.bind(this);
     }
 
     /*
@@ -298,6 +304,53 @@ class MoviePost extends React.Component {
         this.setState({[key]: value});
     }
 
+    // funciton to set removePost to true/false depending
+    // on the current state
+    removePostHandler(event)
+    {
+        let key = event.target.value;
+        let value = !this.state[key];
+        this.setState({[key]: value});
+    }
+
+    removePost()
+    {
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                reviewId: this.state.id,
+            })
+        };
+        let status = 0;
+        fetch("http://localhost:9000/review/removepost", requestOptions)
+            .then(res => {
+                status = res.status;
+                return res.text();
+            }).then(result => {
+                if(status == 200)
+                {
+                    this.setState({
+                        // set the id of the post to null
+                        id: null,
+                        // used as boolean as to whether or not to show remove post buttons when clicked
+                        removePost: false
+                    });
+                }
+                else
+                {
+                    alert(result);
+                    if(result === "You cannot remove another users post")
+                    {
+                        this.setState({
+                            removePost: false
+                        })
+                    }
+                }
+            });
+    }
+
     // function to change the likeCount of the post
     changeLikes(count)
     {
@@ -340,7 +393,44 @@ class MoviePost extends React.Component {
         return <MoviePostPopUp data={this.state} />;
     }
 
+    generateEditButtons()
+    {
+        let buttons = null;
+        if(this.state.currentUser === this.state.username)
+        {
+            buttons =(<React.Fragment>
+                <Dropdown.Item as="button" className={style2.dropDownButton} onClick={() => {this.changeState("openEdit", true)}}>Edit Post</Dropdown.Item>
+                <Dropdown.Item as="button" value ="removePost" className={style2.dropDownButton} onClick={this.removePostHandler}>Remove Post</Dropdown.Item>
+            </React.Fragment>);
+        }
+        else
+        {
+            buttons = (<Dropdown.Item as="button" className={style2.dropDownButton}>Report</Dropdown.Item>);
+        }
+        return buttons;
+    }
+
+
+
 	render() {
+        if(this.state.id === null)
+        {
+            return null;
+        }
+        if(this.state.removePost)
+        {
+            return (
+                <div className={`${style.post} ${style.postShadow}`}>
+                    <div className={style2.removalText}>
+                        Are you sure you want to remove the post?
+                    </div>
+                    <div className={style2.removeContainer}>
+                        <button value="removePost" className={`${style.postButton}`} onClick={this.removePostHandler}>Cancel</button>
+                        <button className={`${style.postButton} ${style2.cancelButton}`} onClick={this.removePost}>Remove</button>
+                    </div>
+                </div>
+            )
+        }
         // generate the stars for the review
         let stars = this.generateRatingStars();
         let likedButton = this.generateLikedButton();
@@ -364,18 +454,11 @@ class MoviePost extends React.Component {
             badButtonArray.push(this.generateGoodBadButton(this.state.usedBadButtons[counter], "bad"));
             counter = counter + 1;
         }
-        let editButton = "";
         let popup = "";
-        if(this.state.username === this.state.currentUser)
+        if(this.state.openEdit)
         {
-            //editButton = <ReviewForm data={this.state} edit={true} />;
-            editButton = <button className={`${style.postButton}`} onClick={() => {this.changeState("openEdit", true)}}>Edit post</button>;
-            if(this.state.openEdit)
-            {
-                popup = <ReviewForm data={this.state} edit={true} removeFunction={this.changeState} successFunction={this.updateState}/>;
-            }
+            popup = <ReviewForm data={this.state} edit={true} removeFunction={this.changeState} successFunction={this.updateState}/>;
         }
-
 
         let popupButton = <button className={`${style.postButton}`} onClick={() => this.changeState("openPopUp", true)}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>;
         let postPopUp = "";
@@ -403,6 +486,8 @@ class MoviePost extends React.Component {
             popup = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={this.props.updateFunction} username={this.state.usersPage} currentUser={currentUserBool} changeFunction={this.changeLikes} updateFollowersFunction={this.props.updateFollowersFunction}/>;
         }
 
+        let editButtons = this.generateEditButtons();
+
         return (
 			<div className={`${style.post} ${style.postShadow}`}>
 				  <div className={style.postHeader}>
@@ -419,26 +504,24 @@ class MoviePost extends React.Component {
                                 &#10247;
                             </Dropdown.Toggle>
                             <Dropdown.Menu>
-                                <Dropdown.Item as="button" className={style2.dropDownButton} onClick={() => {this.changeState("openEdit", true)}}>Edit Post</Dropdown.Item>
-                                <Dropdown.Item as="button" className={style2.dropDownButton} >Remove Post</Dropdown.Item>
-                                <Dropdown.Item as="button" className={style2.dropDownButton}>Report</Dropdown.Item>
+                                {editButtons}
                             </Dropdown.Menu>
                         </Dropdown>
-				  </div>
-          <div>
+			      </div>
+              <div>
               <h3>{this.state.title}</h3>
           </div>
-				  <div className="postImage">
-					    <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
-				  </div>
-          <form id={this.state.form} />
+		  <div className="postImage">
+		  <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
+              </div>
+                  <form id={this.state.form} />
 				  <div className="centeredMaxWidthContainer">
-              <fieldset class={style.rating}>
-                  {stars}
-              </fieldset>
+                      <fieldset class={style.rating}>
+                          {stars}
+                      </fieldset>
 				  </div>
-                <div className="centeredMaxWidthContainer">
-                    <div className="proConContainter">
+                  <div className="centeredMaxWidthContainer">
+                  <div className="proConContainter">
                         <div className="centeredMaxWidthContainer">
                             <h4 className="h4NoMargin">The Good</h4>
                         </div>
@@ -470,7 +553,6 @@ class MoviePost extends React.Component {
 						    <button className={`${style.postButton}`}>Go to movie page</button>
                             {popupButton}
                             {postPopUp}
-                            {editButton}
                             {popup}
 					</div>
 				</div>

@@ -89,6 +89,11 @@ const selectPath = (cookie, req, res) =>
     {
         removeComment(req, res, cookie);
     }
+    // if the path is /review/removepost
+    else if(Object.keys(req.params).length == 1 && req.params.type === "removepost")
+    {
+        removePost(req, res, cookie);
+    }
     // some unknow path given
     else
     {
@@ -226,6 +231,60 @@ const createReview = (cookie, req, res) =>
     });
     // review created
     res.status(201).send("Review successfully created!");
+};
+
+// function to remove an existing comment from a review post
+// the body of the request must include:
+// reviewId - the id the post
+const removePost = async (req, res, cookie) =>
+{
+    // also need to verify this is the user that posted the comment...
+    let reviewId = req.body.reviewId;
+    if(isNaN(reviewId))
+    {
+        res.status(400).send("Valid review id not provided");
+    }
+    else
+    {
+        // try to get the comment
+        let review = await models.Review.findOne(
+            {
+                where: {id: reviewId},
+                include:[
+                    {
+                        model: models.User,
+                        as: "user",
+                        attributes: ["username", "id"]
+                    }
+                ]
+            }
+        );
+        if(review === undefined)
+        {
+            res.status(404).send("Review could not be found");
+        }
+        else
+        {
+            // currently only let the user who posted the review remove it
+            if(cookie.id !== review.user.id)
+            {
+                res.status(401).send("You cannot remove another users post");
+            }
+            else
+            {
+                let result = await review.destroy();
+                if(result === undefined)
+                {
+                    res.status(404).send("Server failed to delete review for some unkown reason");
+                }
+                else
+                {
+                    // returns a empty array on success
+                    res.status(200).send("Review successfully removed");
+                }
+            }
+        }
+    }
 };
 
 // function to add a like to a review post

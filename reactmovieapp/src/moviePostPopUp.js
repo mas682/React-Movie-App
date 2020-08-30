@@ -457,9 +457,15 @@ class MoviePostPopUp extends React.Component {
                     </a>
                     <div className={style2.content}>
                         <div className={`${style.post} ${style2.postWidth}`}>
-                            <div className="postHeader">
-                                <Link to={profilePath}><p className="username">{this.state.username}</p></Link>
-                                <img src={require("./images/profile-pic.jpg")}/>
+                            <div className={style.postHeader}>
+                                  <div className={style.reviewerContainer}>
+                                      <Link to={profilePath}><p className="username">{this.state.username}</p></Link>
+                                  </div>
+                                  <div className={style.userImageContainer}>
+                                      <div>
+                                          <img className={style.userImage} src={require("./images/profile-pic.jpg")}/>
+                                      </div>
+                                  </div>
                             </div>
                             <div className="postImage">
                                 <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>

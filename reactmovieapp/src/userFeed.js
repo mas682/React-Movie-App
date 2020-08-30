@@ -14,6 +14,7 @@ class UserFeed extends React.Component {
             // this gets the username from the url
             // in the router, set the username as :id
             username: this.props.match.params.id,
+            currentUser: "",
             // this will be set by the api call
             posts: [],
         }
@@ -49,6 +50,7 @@ class UserFeed extends React.Component {
             {
                 this.setState({
                     posts: result[1],
+                    currentUser: this.state.username
                 });
 
             }
@@ -84,7 +86,7 @@ class UserFeed extends React.Component {
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {
-            posts.push(<MoviePost data={p} user={this.state.username}/>)
+            posts.push(<MoviePost data={p} currentUser={this.state.currentUser}/>)
         });
 
         return (

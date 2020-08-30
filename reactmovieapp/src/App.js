@@ -10,7 +10,6 @@ import background from './images/background3.jpg';
 import './css/forms.css';
 import './App.css';
 import './css/header.css';
-import './css/reviewform.css';
 
 
 class MainBody extends React.Component {

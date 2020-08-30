@@ -4,7 +4,6 @@ import history from './History'
 import { Link } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import style from './css/reviewform.module.css';
-import './css/reviewform.css';
 
 
 class ReviewPopUp extends React.Component {

@@ -26,20 +26,6 @@
     margin-bottom: 20px;
 }
 
-/*
-.post {
-	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-	margin: auto;
-	text-align: center;
-	font-family: arial;
-	width: 60%;
-	display: grid;
-	grid-template-columns: auto;
-	padding: 10px;
-	background-color: white;
-}
-*/
-
 .grid-container {
   display: grid;
   grid-template-columns: auto auto;
@@ -48,26 +34,6 @@
   padding: 10px;
   position: relative;
 }
-
-/* will be removed eventually */
-div.postHeader p {
-	float: left;
-	padding-left: 10px;
-}
-
-div.postHeader img {
-	float: right;
-	height: 50px;
-	weight: 50px;
-	padding-right: 2%;
-}
-
-.postImage {
-	grid-gap: 0px;
-	padding: 0px;
-	text-align: center;
-}
-/* remove above here */
 
 .checked {
 	color: orange;
@@ -79,15 +45,6 @@ div.postHeader img {
 	grid-template-columns: auto auto auto;
 	grid-gap: 10px;
 	position: relative;
-}
-
-.review {
-	padding-top: 10px;
-}
-
-.reviewTextArea {
-	pointer-events: none;
-	width: 100%;
 }
 
 .profilePic {

@@ -228,7 +228,7 @@ class CommentDisplay extends React.Component {
                 Are you sure you want to remove the comment?
             </div>
             <div className={style2.removeContainer}>
-                <button value="removeComment" className={`${style.postButton}`} onClick={this.buttonHandler}>Cancel</button>
+                <button value="removeComment" className={`${style.postButton}`} onClick={this.removeButton}>Cancel</button>
                 <button className={`${style.postButton} ${style2.cancelButton}`} onClick={this.removeComment}>Remove</button>
             </div>
         </React.Fragment>);
