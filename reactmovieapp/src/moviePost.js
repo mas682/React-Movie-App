@@ -13,42 +13,84 @@ import Dropdown from 'react-bootstrap/Dropdown'
 class MoviePost extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            // boolean for opening the edit pop up
-            openEdit: false,
-            // boolean to open popup to comment on post
-            openPopUp: false,
-            // boolean indicating if logged in user liked post
-            liked: this.props.data.liked,
-            // count of likes on post
-            likeCount: this.props.data.review.likes.length,
-            // userId for user who posted the review
-            user: this.props.data.review.userId,
-            // title of post
-            title: this.props.data.review.title,
-            // form id for post
-            form: "form" + this.props.data.review.id,
-            // username for the user who posted the review
-            username: this.props.data.review.user.username,
-            // id of the review post
-            id: this.props.data.review.id,
-            rating: this.props.data.review.rating,
-            comments: this.props.data.review.comments,
-            usedGoodButtons: this.getGoodButtons(this.props.data.review.goodTags),
-            usedBadButtons: this.getBadButtons(this.props.data.review.badTags),
-            unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-            review: this.props.data.review.review,
-            time: this.props.data.review.createdAt,
-            // the logged in users username
-            currentUser: this.props.currentUser,
-            // theusername of the user whose page this post is currently on
-            usersPage: this.props.usersPage,
-            // used to show likes pop up
-            displayLikes: false,
-            // used as boolean as to whether or not to show remove post buttons when clicked
-            removePost: false
-        };
+        if(this.props.type === "popup")
+        {
+            this.state = {
+                // boolean for opening the edit pop up
+                openEdit: false,
+                // boolean to open popup to comment on post
+                openPopUp: true,
+                // boolean indicating if logged in user liked post
+                liked: this.props.data.liked,
+                // count of likes on post
+                likeCount: this.props.data.likeCount,
+                // userId for user who posted the review
+                userId: this.props.data.userId,
+                // title of post
+                title: this.props.data.title,
+                // form id for post
+                form: this.props.data.form,
+                // username for the user who posted the review
+                username: this.props.data.username,
+                // id of the review post
+                id: this.props.data.id,
+                rating: this.props.data.rating,
+                usedGoodButtons: this.props.data.usedGoodButtons,
+                usedBadButtons: this.props.data.usedBadButtons,
+                review: this.props.data.review,
+                time: this.props.data.time,
+                // the logged in users username
+                currentUser: this.props.data.currentUser,
+                // theusername of the user whose page this post is currently on
+                usersPage: this.props.data.usersPage,
+                // used to show likes pop up
+                displayLikes: false,
+                // used as boolean as to whether or not to show remove post buttons when clicked
+                removePost: false,
+                type: "popup"
+            };
+            console.log(this.props.data);
+            console.log(this.props.data.currentUser);
+        }
+        else
+        {
+            this.state = {
+                // boolean for opening the edit pop up
+                openEdit: false,
+                // boolean to open popup to comment on post
+                openPopUp: false,
+                // boolean indicating if logged in user liked post
+                liked: this.props.data.liked,
+                // count of likes on post
+                likeCount: this.props.data.review.likes.length,
+                // userId for user who posted the review
+                userId: this.props.data.review.userId,
+                // title of post
+                title: this.props.data.review.title,
+                // form id for post
+                form: "form" + this.props.data.review.id,
+                // username for the user who posted the review
+                username: this.props.data.review.user.username,
+                // id of the review post
+                id: this.props.data.review.id,
+                rating: this.props.data.review.rating,
+                /* no longer needed */
+                //comments: this.props.data.review.comments,
+                usedGoodButtons: this.getGoodButtons(this.props.data.review.goodTags),
+                usedBadButtons: this.getBadButtons(this.props.data.review.badTags),
+                review: this.props.data.review.review,
+                time: this.props.data.review.createdAt,
+                // the logged in users username
+                currentUser: this.props.currentUser,
+                // theusername of the user whose page this post is currently on
+                usersPage: this.props.usersPage,
+                // used to show likes pop up
+                displayLikes: false,
+                // used as boolean as to whether or not to show remove post buttons when clicked
+                removePost: false,
+                type: "non-popup"
+            };
+        }
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
         this.updateState = this.updateState.bind(this);
         this.postLike = this.postLike.bind(this);
@@ -58,6 +100,14 @@ class MoviePost extends React.Component {
         this.removePostHandler = this.removePostHandler.bind(this);
         this.removePost = this.removePost.bind(this);
         this.generateEditButtons = this.generateEditButtons.bind(this);
+        this.generateLikedButton = this.generateLikedButton.bind(this);
+        this.generateEditPopUp = this.generateEditPopUp.bind(this);
+        this.generateGoodButtons = this.generateGoodButtons.bind(this);
+        this.generateBadButtons = this.generateBadButtons.bind(this);
+        this.generateLikeCount = this.generateLikeCount.bind(this);
+        this.generateLikesPopUp = this.generateLikesPopUp.bind(this);
+        this.generatePostPopUp = this.generatePostPopUp.bind(this);
+        this.generatePostPopUpButton = this.generatePostPopUpButton.bind(this);
     }
 
     /*
@@ -233,6 +283,7 @@ class MoviePost extends React.Component {
         }
     }
 
+    // function to send request to server to remove like from a post
     removeLike()
     {
         // when removing, will need to update the list of users somehow...
@@ -255,6 +306,7 @@ class MoviePost extends React.Component {
             });
     }
 
+    // function to send request to server to add a like to a post
     postLike()
     {
         const requestOptions = {
@@ -301,6 +353,11 @@ class MoviePost extends React.Component {
     // function to change the state of the component
     changeState(key, value)
     {
+        // if the comment button is clicked when already a pop up, close it
+        if(key === "openPopUp" && this.state.type === "popup")
+        {
+            this.props.closeFunction();
+        }
         this.setState({[key]: value});
     }
 
@@ -313,6 +370,7 @@ class MoviePost extends React.Component {
         this.setState({[key]: value});
     }
 
+    // function to handle deleting a post
     removePost()
     {
         const requestOptions = {
@@ -373,9 +431,7 @@ class MoviePost extends React.Component {
         return <button className={`${style.postButton}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
     }
 
-    /*
-        This function is used to geneate the good/bad buttons with the appropriate values in the HTML
-    */
+    //This function is used to geneate the good/bad buttons with the appropriate values in the HTML
     generateGoodBadButton(value, type)
     {
         if(type == "good")
@@ -388,11 +444,7 @@ class MoviePost extends React.Component {
         }
     }
 
-    commentHandler()
-    {
-        return <MoviePostPopUp data={this.state} />;
-    }
-
+    //Function to generate the buttons to allow you to delete/edit a post
     generateEditButtons()
     {
         let buttons = null;
@@ -410,6 +462,178 @@ class MoviePost extends React.Component {
         return buttons;
     }
 
+    // Function to generate the pop up to edit a post
+    generateEditPopUp()
+    {
+        let popup = "";
+        if(this.state.openEdit)
+        {
+            popup = <ReviewForm data={this.state} edit={true} removeFunction={this.changeState} successFunction={this.updateState}/>;
+        }
+        return popup;
+    }
+
+    // function to generate the good buttons
+    generateGoodButtons()
+    {
+        let goodButtonArray = [];
+        let counter = 0;
+
+        // generate the used good buttons
+        while(counter < this.state.usedGoodButtons.length)
+        {
+            goodButtonArray.push(this.generateGoodBadButton(this.state.usedGoodButtons[counter], "good"));
+            counter = counter + 1;
+        }
+        return goodButtonArray;
+    }
+
+    // function to generate the bad buttons
+    generateBadButtons()
+    {
+        let badButtonArray = [];
+        let counter = 0;
+
+        while(counter < this.state.usedBadButtons.length)
+        {
+            badButtonArray.push(this.generateGoodBadButton(this.state.usedBadButtons[counter], "bad"));
+            counter = counter + 1;
+        }
+        return badButtonArray;
+    }
+
+    // function to generate button for like count on post
+    generateLikeCount()
+    {
+        let likeCount = <React.Fragment><button className={style.likesCountButton}onClick={(e)=> this.changeState("displayLikes", true)}><i class={`fa fa-thumbs-up ${style.likeCountThumb}`}/> {this.state.likeCount}</button></React.Fragment>;
+        if(this.state.likeCount === 0)
+        {
+            likeCount = "";
+        }
+        return likeCount;
+    }
+
+    // function to generate pop up if likes button clicked
+    generateLikesPopUp()
+    {
+        let likesPopUp = "";
+        if(this.state.displayLikes)
+        {
+            // currentUser is false as we do not want the updateFunction called here
+            // the updateFunction is used to only update the profile headers follower/following count
+            likesPopUp = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={null} currentUser={false} changeFunction={this.changeLikes}/>;
+        }
+        return likesPopUp;
+    }
+
+    // function to generate the post pop up
+    generatePostPopUp()
+    {
+        let postPopUp = "";
+        if(this.state.openPopUp && this.state.type !== "popup")
+        {
+            postPopUp = <MoviePostPopUp data={this.state} removeFunction={this.changeState}/>;
+        }
+        return postPopUp;
+    }
+
+    // function to create the comment button on the post
+    generatePostPopUpButton()
+    {
+        if(!this.state.openPopUp)
+        {
+            return (<button className={`${style.postButton}`} onClick={() => this.changeState("openPopUp", true)}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>);
+        }
+        else
+        {
+            return (<button className={`${style.postButton} blueButton`} onClick={() => this.changeState("openPopUp", false)}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>);
+        }
+    }
+
+
+    generateHTML()
+    {
+        let editButtons = this.generateEditButtons();
+        let stars = this.generateRatingStars();
+        let likedButton = this.generateLikedButton();
+        let editPopup = this.generateEditPopUp();
+        let goodButtonArray = this.generateGoodButtons();
+        let badButtonArray = this.generateBadButtons();
+        let likeCount = this.generateLikeCount();
+        let likesPopUp = this.generateLikesPopUp();
+        let postPopUp = this.generatePostPopUp();
+        let popUpButton = this.generatePostPopUpButton();
+        let profilePath = "/profile/" + this.state.username;
+        return(<React.Fragment>
+            <div className={style.postHeader}>
+                <div className={style.reviewerContainer}>
+                    <Link to={profilePath}><p className="username">{this.state.username}</p></Link>
+                </div>
+                <div className={style.userImageContainer}>
+                    <div>
+                        <img className={style.userImage} src={require("./images/profile-pic.jpg")}/>
+                    </div>
+                </div>
+                <Dropdown className={style2.editButtonContainer} drop="left">
+                    <Dropdown.Toggle variant="success" id="dropdown-basic" className={style2.editButtons}>
+                        &#10247;
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        {editButtons}
+                    </Dropdown.Menu>
+                </Dropdown>
+            </div>
+            <div>
+                <h3>{this.state.title}</h3>
+            </div>
+            <div className="postImage">
+                <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
+            </div>
+            <form id={this.state.form} />
+            <div className="centeredMaxWidthContainer">
+                <fieldset class={style.rating}>
+                    {stars}
+                </fieldset>
+            </div>
+            <div className="centeredMaxWidthContainer">
+                <div className="proConContainter">
+                    <div className="centeredMaxWidthContainer">
+                        <h4 className="h4NoMargin">The Good</h4>
+                    </div>
+                    <div className={`"centeredMaxWidthContainer" ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
+                        {goodButtonArray}
+                    </div>
+                </div>
+                <div className="proConContainter">
+                    <div className="centeredMaxWidthContainer">
+                        <h4 className="h4NoMargin">The Bad</h4>
+                    </div>
+                    <div className={`"centeredMaxWidthContainer" ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
+                        {badButtonArray}
+                    </div>
+                </div>
+            </div>
+            <div className={style.review}>
+                {this.state.review}
+            </div>
+            <div className={style.timestampContainer}>
+                {this.state.time}
+            </div>
+            <div className={style.likeContainer}>
+                {likeCount}
+                {likesPopUp}
+            </div>
+            <div className="socialButtonContainer">
+                <div className="socialButtons">
+                    {likedButton}
+                    <button className={`${style.postButton}`}>Go to movie page</button>
+                    {popUpButton}
+                    {postPopUp}
+                    {editPopup}
+                </div>
+            </div>
+        </React.Fragment>);
+    }
 
 
 	render() {
@@ -417,7 +641,7 @@ class MoviePost extends React.Component {
         {
             return null;
         }
-        if(this.state.removePost)
+        else if(this.state.removePost)
         {
             return (
                 <div className={`${style.post} ${style.postShadow}`}>
@@ -431,133 +655,23 @@ class MoviePost extends React.Component {
                 </div>
             )
         }
-        // generate the stars for the review
-        let stars = this.generateRatingStars();
-        let likedButton = this.generateLikedButton();
-        // array to hold the good buttons
-        let goodButtonArray = [];
-        let badButtonArray = [];
-        // counter for loop
-        let counter = 0;
-        let profilePath = "/profile/" + this.state.username;
-
-        // generate the used good buttons
-        while(counter < this.state.usedGoodButtons.length)
+        else
         {
-            goodButtonArray.push(this.generateGoodBadButton(this.state.usedGoodButtons[counter], "good"));
-            counter = counter + 1;
-        }
-        // reset counter
-        counter = 0;
-        while(counter < this.state.usedBadButtons.length)
-        {
-            badButtonArray.push(this.generateGoodBadButton(this.state.usedBadButtons[counter], "bad"));
-            counter = counter + 1;
-        }
-        let popup = "";
-        if(this.state.openEdit)
-        {
-            popup = <ReviewForm data={this.state} edit={true} removeFunction={this.changeState} successFunction={this.updateState}/>;
-        }
-
-        let popupButton = <button className={`${style.postButton}`} onClick={() => this.changeState("openPopUp", true)}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>;
-        let postPopUp = "";
-        if(this.state.openPopUp)
-        {
-            postPopUp = <MoviePostPopUp data={this.state} removeFunction={this.changeState}/>;
-        }
-
-        let likeCount = <React.Fragment><button className={style.likesCountButton}onClick={(e)=> this.changeState("displayLikes", true)}><i class={`fa fa-thumbs-up ${style.likeCountThumb}`}/> {this.state.likeCount}</button></React.Fragment>;
-        if(this.state.likeCount === 0)
-        {
-            likeCount = "";
-        }
-
-        let likesPopUp = "";
-        if(this.state.displayLikes)
-        {
-            // currentUser is false as we do not want the updateFunction called here
-            // the updateFunction is used to only update the profile headers follower/following count
-            let currentUserBool = false;
-            if(this.state.currentUser === this.state.username)
+            let html = this.generateHTML();
+            console.log(html);
+            if(this.state.type !== "popup")
             {
-                currentUserBool = true;
+                return (
+                    <div className={`${style.post} ${style.postShadow}`}>
+                        {html}
+			        </div>
+                );
             }
-            popup = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={this.props.updateFunction} username={this.state.usersPage} currentUser={currentUserBool} changeFunction={this.changeLikes} updateFollowersFunction={this.props.updateFollowersFunction}/>;
-        }
-
-        let editButtons = this.generateEditButtons();
-
-        return (
-			<div className={`${style.post} ${style.postShadow}`}>
-				  <div className={style.postHeader}>
-                        <div className={style.reviewerContainer}>
-					        <Link to={profilePath}><p className="username">{this.state.username}</p></Link>
-                        </div>
-                        <div className={style.userImageContainer}>
-                            <div>
-					            <img className={style.userImage} src={require("./images/profile-pic.jpg")}/>
-                            </div>
-                        </div>
-                        <Dropdown className={style2.editButtonContainer} drop="left">
-                            <Dropdown.Toggle variant="success" id="dropdown-basic" className={style2.editButtons}>
-                                &#10247;
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                {editButtons}
-                            </Dropdown.Menu>
-                        </Dropdown>
-			      </div>
-              <div>
-              <h3>{this.state.title}</h3>
-          </div>
-		  <div className="postImage">
-		  <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
-              </div>
-                  <form id={this.state.form} />
-				  <div className="centeredMaxWidthContainer">
-                      <fieldset class={style.rating}>
-                          {stars}
-                      </fieldset>
-				  </div>
-                  <div className="centeredMaxWidthContainer">
-                  <div className="proConContainter">
-                        <div className="centeredMaxWidthContainer">
-                            <h4 className="h4NoMargin">The Good</h4>
-                        </div>
-                        <div className={`"centeredMaxWidthContainer" ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
-                            {goodButtonArray}
-                        </div>
-                    </div>
-                    <div className="proConContainter">
-                        <div className="centeredMaxWidthContainer">
-                            <h4 className="h4NoMargin">The Bad</h4>
-                        </div>
-                        <div className={`"centeredMaxWidthContainer" ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
-                            {badButtonArray}
-                        </div>
-                    </div>
-                </div>
-                <div className={style.review}>
-                    {this.state.review}
-                </div>
-                <div className={style.timestampContainer}>
-                    {this.state.time}
-                </div>
-                <div className={style.likeContainer}>
-                    {likeCount}
-                </div>
-				<div className="socialButtonContainer">
-				    <div className="socialButtons">
-                            {likedButton}
-						    <button className={`${style.postButton}`}>Go to movie page</button>
-                            {popupButton}
-                            {postPopUp}
-                            {popup}
-					</div>
-				</div>
-			</div>
-        );
+            else
+            {
+                return html;
+            }
+      }
     }
 }
 
