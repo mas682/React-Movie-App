@@ -49,8 +49,6 @@ class MoviePost extends React.Component {
                 removePost: false,
                 type: "popup"
             };
-            console.log(this.props.data);
-            console.log(this.props.data.currentUser);
         }
         else
         {
@@ -108,6 +106,8 @@ class MoviePost extends React.Component {
         this.generateLikesPopUp = this.generateLikesPopUp.bind(this);
         this.generatePostPopUp = this.generatePostPopUp.bind(this);
         this.generatePostPopUpButton = this.generatePostPopUpButton.bind(this);
+        this.updateLiked = this.updateLiked.bind(this);
+        this.removeFunction = this.removeFunction.bind(this);
     }
 
     /*
@@ -238,6 +238,17 @@ class MoviePost extends React.Component {
         return stars;
     }
 
+
+    // function to update the liked count and sets liked to true/false
+    // based on the value of value
+    updateLiked(count, value)
+    {
+        let newCount = this.state.likeCount + count;
+        this.setState({
+            liked: value,
+            likeCount: newCount
+        });
+    }
     /*
         This sets the state of the post to liked or not depending on if
         it is currently liked or not when clicked
@@ -251,13 +262,14 @@ class MoviePost extends React.Component {
         {
             let result = await this.postLike();
             let status = result[0];
-            let count = this.state.likeCount + 1;
             if(status === 200)
             {
-                this.setState({
-                    liked: true,
-                    likeCount: count
-                });
+                this.updateLiked(1, true);
+                if(this.state.type === "popup")
+                {
+                    // if the post was liked through the popup, update the parent moviePost state
+                    this.props.updateLiked(1, true);
+                }
             }
             else
             {
@@ -271,10 +283,13 @@ class MoviePost extends React.Component {
             let count = this.state.likeCount - 1;
             if(status === 200)
             {
-                this.setState({
-                    liked: false,
-                    likeCount: count
-                });
+                let count = this.state.likeCount - 1;
+                this.updateLiked(-1, false);
+                if(this.state.type === "popup")
+                {
+                    // if the post was liked through the popup, update the parent moviePost state
+                    this.props.updateLiked(-1, false);
+                }
             }
             else
             {
@@ -348,6 +363,10 @@ class MoviePost extends React.Component {
             usedGoodButtons: this.getGoodButtons(goodButtonUpdate),
             usedBadButtons: this.getGoodButtons(badButtonUpdate),
         });
+        if(this.state.type === "popup")
+        {
+            this.props.updatePost(titleUpdate, ratingUpdate, reviewUpdate, goodButtonUpdate, badButtonUpdate);
+        }
     }
 
     // function to change the state of the component
@@ -368,7 +387,24 @@ class MoviePost extends React.Component {
         let key = event.target.value;
         let value = !this.state[key];
         this.setState({[key]: value});
+        if(this.state.type === "popup")
+        {
+            this.props.updatePopUpState("removePost", value);
+        }
     }
+
+    // function to remove the post when remove clicked by user
+    // will also be called by popup when necessary
+    removeFunction()
+    {
+        this.setState({
+            // set the id of the post to null
+            id: null,
+            // used as boolean as to whether or not to show remove post buttons when clicked
+            removePost: false
+        });
+    }
+
 
     // function to handle deleting a post
     removePost()
@@ -389,12 +425,14 @@ class MoviePost extends React.Component {
             }).then(result => {
                 if(status == 200)
                 {
-                    this.setState({
-                        // set the id of the post to null
-                        id: null,
-                        // used as boolean as to whether or not to show remove post buttons when clicked
-                        removePost: false
-                    });
+                    this.removeFunction();
+                    if(this.state.type === "popup")
+                    {
+                        // cause the parent to remove the post
+                        this.props.removePost();
+                        // close the popup
+                        this.props.closeFunction();
+                    }
                 }
                 else
                 {
@@ -532,7 +570,7 @@ class MoviePost extends React.Component {
         let postPopUp = "";
         if(this.state.openPopUp && this.state.type !== "popup")
         {
-            postPopUp = <MoviePostPopUp data={this.state} removeFunction={this.changeState}/>;
+            postPopUp = <MoviePostPopUp data={this.state} removeFunction={this.changeState} updateLiked={this.updateLiked} updatePost={this.updateState} removePost={this.removeFunction}/>;
         }
         return postPopUp;
     }

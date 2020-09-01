@@ -29,7 +29,7 @@ class ReviewPopUp extends React.Component {
                 unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
                 unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
                 review: this.props.data.review,
-                editUpdate: false,
+                editUpdate: false
             };
         }
         else

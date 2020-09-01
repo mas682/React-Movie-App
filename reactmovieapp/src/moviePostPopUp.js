@@ -29,7 +29,8 @@ class MoviePostPopUp extends React.Component {
             currentUser: this.props.data.currentUser,
             // boolean to tell commentController to update if new comment was just posted
             // by the current user
-            newComment: false
+            newComment: false,
+            removePost: false
         };
 
         this.closeModal = this.closeModal.bind(this);
@@ -91,7 +92,12 @@ class MoviePostPopUp extends React.Component {
 	render() {
         let commentArray = <CommentController currentUser={this.state.currentUser} reviewUser={this.state.username} reviewId={this.state.id} update={this.state.newComment} comments={this.state.comments}/>;
         let commentBox = <CommentBox reviewId={this.state.id} form={this.state.form} updateCommentsFunction={this.updateComments}/>;
-        let moviePost = <MoviePost data={this.state.data} type={"popup"} closeFunction={this.closeModal}/>
+        let moviePost = <MoviePost data={this.state.data} type={"popup"} updateLiked={this.props.updateLiked} closeFunction={this.closeModal} updatePost={this.props.updatePost} updatePopUpState={this.changeState} removePost={this.props.removePost}/>;
+        if(this.state.removePost)
+        {
+            commentBox = "";
+            commentArray = "";
+        }
         return (
             <React.Fragment>
             <Popup
