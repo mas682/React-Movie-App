@@ -9,9 +9,10 @@
 	margin: 0;
 	overflow: visible;
 	display: grid;
-	grid-template-columns: auto auto auto;
-	grid-gap: 10px;
-	padding: 5px;
+	grid-template-columns: 27.5% 45% 27.5%;
+	grid-gap: 0px;
+	padding-left: 5px;
+    padding-right: 5px;
 }
 
 .logo {
@@ -27,8 +28,8 @@
 	z-index: 2;
 	position: relative;
 	display: grid;
-	grid-template-columns: auto auto auto auto auto;
-	grid-gap: 1px;
+	grid-template-columns: auto auto auto auto auto auto auto;
+	grid-gap: 0px;
 }
 
 .home, .homeButton, .profile, .profileButton {

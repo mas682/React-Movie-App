@@ -91,7 +91,7 @@ class UserProfile extends React.Component {
 
             <div className={style5.mainBodyContainer}>
                 <ProfileHeader username={this.state.username} postCount={this.state.postCount} updateFollowingCount={this.state.followingCountChange} updateFollowerCount={this.state.followerCountChange}/>
-                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount} updateFollowersFunction={this.updateFollowerCount}/>
+                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount} updateFollowersFunction={this.updateFollowerCount} updateLoggedIn={this.props.updateLoggedIn}/>
             </div>
         );
     }

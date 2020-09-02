@@ -22,22 +22,8 @@ class UserFeed extends React.Component {
 
     /*
         To do:
-        1. Fix movie posts to display correct username
-            - done
-        2. Will want to limit query to only so many results
-        3. Will want to reroute to this page on login
-            - done but may move to somewhere else eventually
-        4. also want to show timing of post on movie post
-            - done but needs formatting
-        5. then create fake reviews and make sure listed in order
-            - done
-        6. may want to move this to a different route
         7. notice using user profile css!
         8. add status codes to login requests
-        9. need to fix following on users pages so that if you follow it is blue when you go
-          to it after switching pages
-        10. also handle the case where the user is going to their own page
-            - simply return true if current user from server
     */
 
     async componentDidMount()
@@ -52,11 +38,13 @@ class UserFeed extends React.Component {
                     posts: result[1],
                     currentUser: this.state.username
                 });
-
+                console.log(this.state.username);
+                this.props.updateLoggedIn(this.state.username, true);
             }
             else
             {
                 alert("request for user feed failed");
+                this.props.updateLoggedIn("", false);
             }
         });
     }

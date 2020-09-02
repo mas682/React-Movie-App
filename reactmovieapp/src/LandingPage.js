@@ -43,10 +43,12 @@ class Landing extends React.Component {
 					username: result[1],
 					loaded: true
                 });
+				this.props.updateLoggedIn(result[1], true);
             }
             else
             {
 				this.setState({authenticated: false});
+				this.props.updateLoggedIn("", false);
             }
         });
     }

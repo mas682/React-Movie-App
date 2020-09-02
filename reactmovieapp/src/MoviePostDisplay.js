@@ -42,6 +42,14 @@ class MoviePostDisplay extends React.Component {
                     posts: result[1][0],
                     currentUser: result[1][1]
                 });
+                if(result[1][1] !== "")
+                {
+                    this.props.updateLoggedIn(result[1][1], true);
+                }
+                else
+                {
+                    this.props.updateLoggedIn(result[1][1], false);
+                }
                 if(result[1].length !== oldCount)
                 {
                     this.props.setPostCount(result[1][0].length);
@@ -67,6 +75,14 @@ class MoviePostDisplay extends React.Component {
                     posts: result[1][0],
                     currentUser: result[1][1]
                 });
+                if(result[1][1] !== "")
+                {
+                    this.props.updateLoggedIn(result[1][1], true);
+                }
+                else
+                {
+                    this.props.updateLoggedIn(result[1][1], false);
+                }
                 if(result[1].length !== oldCount)
                 {
                     this.props.setPostCount(result[1][0].length);
