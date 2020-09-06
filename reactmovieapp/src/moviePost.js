@@ -258,6 +258,11 @@ class MoviePost extends React.Component {
     async likeButtonHandler(event)
     {
         event.preventDefault();
+        if(!this.state.currentUser)
+        {
+            alert("You are not logged in");
+            return;
+        }
         if(!this.state.liked)
         {
             let result = await this.postLike();

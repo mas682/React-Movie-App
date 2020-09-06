@@ -163,6 +163,7 @@ const sampleReview = async () => {
     ).then((review)=> {
         //console.log(Object.keys(models.Review.__proto__));
         review.addGoodTag(2, { through: { userID: 1 } });
+        review.addLike(1);
         review.addGoodTag(3, { through: { userID: 1 } });
         review.addBadTag(6, { through: { userID: 1 } });
         review.addBadTag(4, { through: { userID: 1 } });
@@ -193,6 +194,7 @@ const sampleReview2 = async () => {
         }
     ).then((review)=> {
         //console.log(Object.keys(models.Review.__proto__));
+        review.addLike(1);
         review.addGoodTag(2, { through: { userID: 1 } })
         .then((review)=>{
             models.Review.findOne({

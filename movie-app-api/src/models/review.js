@@ -97,26 +97,19 @@ const review = (sequelize, DataTypes) => {
                     through: {attributes: []}
                 },
                 {
-                    model: models.Comment,
-                    attributes: ["id", "value", "updatedAt"],
-                    // this should cause this to do it's ordering seperately but not working...
-                    seperate: true,
-                    order: [["updatedAt", 'ASC']],
-                    // for the comments, also include the following information about the user
-                    include: [
-                        {
-                            model: models.User,
-                            attributes: ["username", "email"]
-                        }
-                    ]
-                },
-                {
+
                     model: models.User,
                     as: "likes",
                     required: false,
-                    attributes: ["username"],
+                    attributes: [
+                        // count the number of user id's found in each record and return it as
+                        // the attirube liked
+                        [sequelize.fn("COUNT", sequelize.col("user.id")), "liked"]
+                    ],
                     through: {attributes: []}
                 }
+            ],
+            group: ["review.id", "user.username", "user.id", "goodTags.id", "badTags.id", "likes.id"
             ]
         });
 
@@ -129,16 +122,20 @@ const review = (sequelize, DataTypes) => {
             // get the first review
             let tempReview = reviews[i];
             let liked = false;
-            // query to see if requester liked post
-            // will return a empty array if not
-            let user = await tempReview.getLikes(
-                {
-                    where: {id: requesterId}
-                }
-            );
-            if(user.length > 0)
+            // if undefined, user looking at posts not logged in
+            if(requesterId !== undefined)
             {
-                liked = true;
+                // query to see if requester liked post
+                // will return a empty array if not
+                let user = await tempReview.getLikes(
+                    {
+                        where: {id: requesterId}
+                    }
+                );
+                if(user.length > 0)
+                {
+                    liked = true;
+                }
             }
             result.push({review: tempReview, liked: liked});
         }

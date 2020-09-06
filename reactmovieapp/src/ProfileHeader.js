@@ -23,7 +23,8 @@ class ProfileHeader extends React.Component {
             displayFollowers: false,
             displayFollowed: false,
             postCount: this.props.postCount,
-            loading: true
+            loading: true,
+            loggedInUser: ""
         }
         this.removePopUp = this.removePopUp.bind(this);
         this.updateFollowerCount = this.updateFollowerCount.bind(this);
@@ -122,8 +123,17 @@ class ProfileHeader extends React.Component {
                     followerCount: result[1][3],
                     followingCount: result[1][4],
                     displayFollowers: false,
-                    displayFollowed: false
+                    displayFollowed: false,
+                    loggedInUser: result[1][5]
                 });
+                if(result[1][1] !== "")
+                {
+                    this.props.updateLoggedIn(result[1][5], true);
+                }
+                else
+                {
+                    this.props.updateLoggedIn(result[1][5], false);
+                }
             }
             else
             {
@@ -149,8 +159,17 @@ class ProfileHeader extends React.Component {
                     followingCount: result[1][4],
                     displayFollowers: false,
                     displayFollowed: false,
-                    loading: false
+                    loading: false,
+                    loggedInUser: result[1][5]
                 });
+                if(result[1][1] !== "")
+                {
+                    this.props.updateLoggedIn(result[1][5], true);
+                }
+                else
+                {
+                    this.props.updateLoggedIn(result[1][5], false);
+                }
 
             }
             else
@@ -188,6 +207,11 @@ class ProfileHeader extends React.Component {
 
     followHandler()
     {
+        if(!this.state.currentUser)
+        {
+            alert("You are not logged in");
+            return;
+        }
         // if here, no reason to try to follow a user you already follow
         if(this.state.following)
         {
@@ -250,6 +274,11 @@ class ProfileHeader extends React.Component {
 
     unfollowHandler()
     {
+        if(!this.state.currentUser)
+        {
+            alert("You are not logged in");
+            return;
+        }
         // if here, no use trying to unfollow a user you do not already follow
         if(!this.state.following)
         {
@@ -313,6 +342,11 @@ class ProfileHeader extends React.Component {
     // update state to set boolean to display followers or following
     generatePopUp(event, type) {
         event.preventDefault();
+        if(!this.state.currentUser)
+        {
+            alert("You are not logged in");
+            return;
+        }
         if(type === "followers")
         {
             this.setState({displayFollowers: true});

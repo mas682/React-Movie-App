@@ -13,60 +13,48 @@ const profileHandler = (req, res, next) => {
         // see if the cookie has a valid user
         verifyLogin(cookie).then((cookieValid) =>
         {
-            if(cookieValid)
-            {
-                // get the reviews and pass the cookie
-                selectPath(JSON.parse(cookie), req, res);
-            }
-            // cookie not valid
-            else
-            {
-                res.status(401).send("No cookie");
-            }
+            // get the reviews and pass the cookie
+            selectPath(JSON.parse(cookie), req, res, cookieValid);
         });
     }
     // if no cookie was found
     else
     {
-        // may want to change this...
-        //selectPath(null, req, res);
-        res.status(401).send("reroute as not logged in");
-        // reroute to login page
-        // should redirect to home page at this point if login worked
-        // or let client side handle the reroute?
+        // pass that cookie was not valid
+        selectPath(undefined, req, res, false);
     }
 };
 
-const selectPath = (cookie, req, res) =>
+const selectPath = (cookie, req, res, cookieValid) =>
 {
     // if here, the path is profile/username
     if(Object.keys(req.params).length == 1)
     {
-        getReviews(cookie, req, res);
+        getReviews(cookie, req, res, cookieValid);
     }
     else if(Object.keys(req.params).length == 2 && req.params[0] === "user_info")
     {
-        getUserHeaderInfo(cookie, req, res);
+        getUserHeaderInfo(cookie, req, res, cookieValid);
     }
     // if the path is profile/username/follow
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "follow")
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "follow" && cookieValid)
     {
         followUser(cookie, req, res);
     }
     // if the path is profile/username/follow
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "unfollow")
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "unfollow" && cookieValid)
     {
         unfollowUser(cookie, req, res);
     }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "feed")
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "feed" && cookieValid)
     {
         getFeed(cookie, req, res);
     }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "update")
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "update" && cookieValid)
     {
         updateInfo(cookie, req, res);
     }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "update_password")
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "update_password" && cookieValid)
     {
         updatePassword(cookie, req, res);
     }
@@ -78,6 +66,10 @@ const selectPath = (cookie, req, res) =>
     {
         getFollowing(cookie, req, res);
     }
+    else if(!cookieValid)
+    {
+        res.status(401).send("No cookie or cookie invalid");
+    }
     // some unknow path given
     else
     {
@@ -87,7 +79,7 @@ const selectPath = (cookie, req, res) =>
 };
 
 // this function will return a users follwers for their page
-const getFollowers = async (cookie, req, res) =>
+const getFollowers = async (cookie, req, res, cookieValid) =>
 {
 
     let username = req.params.userId;
@@ -120,7 +112,7 @@ const getFollowing = async (cookie, req, res) =>
 // function to get data for the users profile header
 // returns user Id, if the page is for the current user, if the user is following the
 // user, the number of following/followers users
-const getUserHeaderInfo = async (cookie, req, res) =>
+const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
 {
     //let username = cookie.name;
     let username = req.params.userId;
@@ -143,24 +135,28 @@ const getUserHeaderInfo = async (cookie, req, res) =>
         // get the number of following users the user has
         let followingCount = (await user.getFollowing()).length;
 
+        let loggedInUser = "";
         // if the current user is looking at their own page
-        if(cookie.name === user.username)
+        if(cookieValid)
         {
-            currentUser = true;
-        }
-        // current user looking at another page
-        else
-        {
-            // see if the user they are looking at has them as a follower
-            let following = await user.getFollowers( {where: {id: cookie.id} } );
-            // if not undefined, found requester as a follower
-            if(following[0] !== undefined)
+            loggedInUser = cookie.name;
+            if(cookie.name === user.username)
             {
-                followed = true;
+                currentUser = true;
+            }
+            // current user looking at another page
+            else
+            {
+                // see if the user they are looking at has them as a follower
+                let following = await user.getFollowers( {where: {id: cookie.id} } );
+                // if not undefined, found requester as a follower
+                if(following[0] !== undefined)
+                {
+                    followed = true;
+                }
             }
         }
-        res.status(200).send([user.id, currentUser, followed, followerCount, followingCount]);
-
+        res.status(200).send([user.id, currentUser, followed, followerCount, followingCount, loggedInUser]);
     });
 }
 
@@ -170,7 +166,7 @@ const getUserHeaderInfo = async (cookie, req, res) =>
 // some user??
 
 // function to get reviews for a specific user
-const getReviews = async (cookie, req, res) =>
+const getReviews = async (cookie, req, res, cookieValid) =>
 {
     //let username = cookie.name;
     let username = req.params.userId;
@@ -182,13 +178,24 @@ const getReviews = async (cookie, req, res) =>
             res.status(404).send(["Unable to find the requested user"]);
             return;
         }
-
-        models.Review.findByIds(models, [user.id], cookie.id)
-        .then((reviews)=>
+        if(cookieValid)
         {
-            // send the reveiws associated with the user and their id
-            res.status(200).send([reviews, cookie.name]);
-        });
+            models.Review.findByIds(models, [user.id], cookie.id)
+            .then((reviews)=>
+            {
+                // send the reveiws associated with the user and their id
+                res.status(200).send([reviews, cookie.name]);
+            });
+        }
+        else
+        {
+            models.Review.findByIds(models, [user.id], undefined)
+            .then((reviews)=>
+            {
+                // send the reveiws associated with the user and their id
+                res.status(200).send([reviews, ""]);
+            });
+        }
     });
 };
 
