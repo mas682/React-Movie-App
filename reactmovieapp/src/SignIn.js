@@ -11,7 +11,7 @@ class SignInPopup extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			open: false,
+			open: true,
 			username: "",
 			password: "",
 			usernameError: "",
@@ -32,11 +32,9 @@ class SignInPopup extends React.Component {
 	closeModal() {
         this.setState({
             open: false,
-			username: "",
-			password: "",
-			usernameError: "",
-			passwordError: ""
         });
+		// function passed by callling component to close the pop up
+		this.props.removeFunction();
     }
 
 	changeHandler(event) {
@@ -183,9 +181,6 @@ class SignInPopup extends React.Component {
 
 		return (
 			<div>
-				<button className="button" onClick={this.openModal}>
-					Already a Member? Sign In!
-				</button>
 				<Popup
 					open={this.state.open}
 					closeOnDocumentClick

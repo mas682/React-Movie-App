@@ -6,6 +6,7 @@ import logo from './logo.svg';
 import background from './images/background3.jpg';
 import './App.css';
 import './css/header.css';
+import SignInPopup from './SignIn.js';
 
 class Header extends React.Component {
     constructor(props){
@@ -13,11 +14,24 @@ class Header extends React.Component {
         this.state = {
             reviewFormOpen: false,
             currentUser: this.props.currentUser,
-            loggedIn: this.props.loggedIn
+            loggedIn: this.props.loggedIn,
+            displaySignIn: false
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
         this.updateNewState = this.updateNewState.bind(this);
+        this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
+        this.showSignInForm = this.showSignInForm.bind(this);
+    }
+
+    signInRemoveFunction = () =>
+    {
+        this.setState({displaySignIn: false});
+    }
+
+    showSignInForm()
+    {
+        this.setState({displaySignIn: true});
     }
 
     componentWillReceiveProps(nextProps) {
@@ -106,6 +120,11 @@ class Header extends React.Component {
         }
         else
         {
+            let signInForm = "";
+            if(this.state.displaySignIn)
+            {
+                signInForm = <SignInPopup removeFunction={this.signInRemoveFunction} />
+            }
             return (
                 <div className="App-Header">
                     <div className="logo">
@@ -121,7 +140,6 @@ class Header extends React.Component {
                                 <Link to="/movie">In Theaters</Link>
                             </div>
                         </div>
-                        <div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
                         <div class="showDropdown">
                             <button class="showButton">Shows</button>
                             <div class="showDropdownContent">
@@ -129,13 +147,21 @@ class Header extends React.Component {
                                 <Link to="/">Schedule</Link>
                             </div>
                         </div>
+                        <div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
                         <div class="profile">
-                            <Link to="#" class="profileButton">Login</Link>
+                            <Link class="profileButton" onClick={this.showSignInForm}>About</Link>
+                        </div>
+                        <div class="profile">
+                            <Link class="profileButton" onClick={this.showSignInForm}>Login</Link>
+                        </div>
+                        <div class="profile">
+                            <Link class="profileButton" onClick={this.showSignInForm}>Sign Up</Link>
                         </div>
                     </div>
                     <div className="searchBar">
                         <form><input type="text" placeholder=" Search" name="search"></input></form>
                     </div>
+                    {signInForm}
                     {reviewForm}
                 </div>
             );

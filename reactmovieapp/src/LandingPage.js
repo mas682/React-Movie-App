@@ -102,7 +102,6 @@ class Landing extends React.Component {
 						Sign Up
 					</button>
 					{signUpForm}
-					<SignInPopup />
 				</div>
 			);
 		}
