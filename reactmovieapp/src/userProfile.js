@@ -90,8 +90,8 @@ class UserProfile extends React.Component {
         return (
 
             <div className={style5.mainBodyContainer}>
-                <ProfileHeader username={this.state.username} postCount={this.state.postCount} updateFollowingCount={this.state.followingCountChange} updateFollowerCount={this.state.followerCountChange} updateLoggedIn={this.props.updateLoggedIn}/>
-                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount} updateFollowersFunction={this.updateFollowerCount} updateLoggedIn={this.props.updateLoggedIn}/>
+                <ProfileHeader username={this.state.username} postCount={this.state.postCount} updateFollowingCount={this.state.followingCountChange} updateFollowerCount={this.state.followerCountChange} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp}/>
+                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount} updateFollowersFunction={this.updateFollowerCount} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp}/>
             </div>
         );
     }

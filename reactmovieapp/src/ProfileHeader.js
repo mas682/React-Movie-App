@@ -34,6 +34,17 @@ class ProfileHeader extends React.Component {
         this.updatePostCount = this.updatePostCount.bind(this);
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        let update = false;
+        // if new props were received from the Router and not loading ignore
+        // could have a issue here?
+        if(this.state.loading || this.state.loggedInUser)
+        {
+            return true;
+        }
+        return update;
+    }
+
     // function to change the followed count to the passed in value if it is not equal
     // to the current state
     // called only when userlist popup generated as it gets a updated count of users
@@ -41,7 +52,6 @@ class ProfileHeader extends React.Component {
     {
         if(value !== this.state.followerCount)
         {
-            alert("New value followed");
             this.setState({followerCount: value});
         }
     }
@@ -82,6 +92,7 @@ class ProfileHeader extends React.Component {
     componentWillReceiveProps(nextProps) {
        if(this.props.match.params.id !== nextProps.match.params.id) {
            this.getData(nextProps.match.params.id);
+           return;
        }
        // if the post count is updated, rerender the header
        if(this.props.postCount !== nextProps.postCount)
@@ -207,9 +218,9 @@ class ProfileHeader extends React.Component {
 
     followHandler()
     {
-        if(!this.state.currentUser)
+        if(!this.state.loggedInUser)
         {
-            alert("You are not logged in");
+            this.props.showLoginPopUp(true);
             return;
         }
         // if here, no reason to try to follow a user you already follow
@@ -274,9 +285,9 @@ class ProfileHeader extends React.Component {
 
     unfollowHandler()
     {
-        if(!this.state.currentUser)
+        if(!this.state.loggedInUser)
         {
-            alert("You are not logged in");
+            this.props.showLoginPopUp(true);
             return;
         }
         // if here, no use trying to unfollow a user you do not already follow
@@ -342,9 +353,9 @@ class ProfileHeader extends React.Component {
     // update state to set boolean to display followers or following
     generatePopUp(event, type) {
         event.preventDefault();
-        if(!this.state.currentUser)
+        if(!this.state.loggedInUser)
         {
-            alert("You are not logged in");
+            this.props.showLoginPopUp(true);
             return;
         }
         if(type === "followers")
@@ -399,6 +410,7 @@ class ProfileHeader extends React.Component {
         {
             return null;
         }
+        alert("Profile header rendering");
 
         // used to generate users followers/following lists
         let popup = "";

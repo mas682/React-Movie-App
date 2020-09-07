@@ -123,7 +123,7 @@ class MoviePostDisplay extends React.Component {
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {
-            posts.push(<MoviePost data={p} usersPage={this.state.username} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction}/>)
+            posts.push(<MoviePost data={p} usersPage={this.state.username} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction} showLoginPopUp={this.props.showLoginPopUp}/>)
         });
 
 

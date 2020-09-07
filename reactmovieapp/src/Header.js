@@ -7,6 +7,7 @@ import background from './images/background3.jpg';
 import './App.css';
 import './css/header.css';
 import SignInPopup from './SignIn.js';
+import SignUpPopup from './SignUp.js';
 
 class Header extends React.Component {
     constructor(props){
@@ -15,18 +16,32 @@ class Header extends React.Component {
             reviewFormOpen: false,
             currentUser: this.props.currentUser,
             loggedIn: this.props.loggedIn,
-            displaySignIn: false
+            displaySignIn: this.props.showLoginPopUp,
+            displaySignUp: false
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
         this.updateNewState = this.updateNewState.bind(this);
         this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
         this.showSignInForm = this.showSignInForm.bind(this);
+        this.showSignUpForm = this.showSignUpForm.bind(this);
+        this.signUpRemoveFunction = this.signUpRemoveFunction.bind(this);
+    }
+
+    signUpRemoveFunction = () =>
+    {
+        this.setState({displaySignUp: false});
+    }
+
+    showSignUpForm()
+    {
+        this.setState({displaySignUp: true});
     }
 
     signInRemoveFunction = () =>
     {
         this.setState({displaySignIn: false});
+        this.props.removeLoginPopUp(false);
     }
 
     showSignInForm()
@@ -35,16 +50,18 @@ class Header extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if(this.state.currentUser !== nextProps.currentUser || this.state.loggedIn !== nextProps.loggedIn) {
+        if(this.state.currentUser !== nextProps.currentUser || this.state.loggedIn !== nextProps.loggedIn || nextProps.showLoginPopUp) {
             this.updateNewState(nextProps);
         }
+
     }
 
     updateNewState(nextProps)
     {
         this.setState({
             currentUser: nextProps.currentUser,
-            loggedIn: nextProps.loggedIn
+            loggedIn: nextProps.loggedIn,
+            displaySignIn: nextProps.showLoginPopUp
         });
     }
 
@@ -125,6 +142,12 @@ class Header extends React.Component {
             {
                 signInForm = <SignInPopup removeFunction={this.signInRemoveFunction} />
             }
+            let signUpForm = "";
+            if(this.state.displaySignUp)
+            {
+                signUpForm = <SignUpPopup removeFunction={this.signUpRemoveFunction}/>
+            }
+            alert("Rendering page header");
             return (
                 <div className="App-Header">
                     <div className="logo">
@@ -155,7 +178,7 @@ class Header extends React.Component {
                             <Link class="profileButton" onClick={this.showSignInForm}>Login</Link>
                         </div>
                         <div class="profile">
-                            <Link class="profileButton" onClick={this.showSignInForm}>Sign Up</Link>
+                            <Link class="profileButton" onClick={this.showSignUpForm}>Sign Up</Link>
                         </div>
                     </div>
                     <div className="searchBar">
@@ -163,6 +186,7 @@ class Header extends React.Component {
                     </div>
                     {signInForm}
                     {reviewForm}
+                    {signUpForm}
                 </div>
             );
         }
