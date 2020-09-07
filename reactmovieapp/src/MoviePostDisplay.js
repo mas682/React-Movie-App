@@ -14,7 +14,8 @@ class MoviePostDisplay extends React.Component {
             username: this.props.username,
             // this will be set by the api call
             posts: [],
-            currentUser: ""
+            currentUser: "",
+            loading: true
         }
     }
 
@@ -73,7 +74,8 @@ class MoviePostDisplay extends React.Component {
                 let oldCount = this.state.posts.length;
                 this.setState({
                     posts: result[1][0],
-                    currentUser: result[1][1]
+                    currentUser: result[1][1],
+                    loading: false
                 });
                 if(result[1][1] !== "")
                 {
@@ -120,6 +122,10 @@ class MoviePostDisplay extends React.Component {
 
     render()
     {
+        if(this.state.loading)
+        {
+            return null;
+        }
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {
@@ -132,4 +138,4 @@ class MoviePostDisplay extends React.Component {
 }
 
 // used withRouter to get the parameter from the query string in the url
-export default withRouter(MoviePostDisplay);
+export default MoviePostDisplay;

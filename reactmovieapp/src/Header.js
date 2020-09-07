@@ -147,7 +147,6 @@ class Header extends React.Component {
             {
                 signUpForm = <SignUpPopup removeFunction={this.signUpRemoveFunction}/>
             }
-            alert("Rendering page header");
             return (
                 <div className="App-Header">
                     <div className="logo">

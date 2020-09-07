@@ -34,17 +34,6 @@ class ProfileHeader extends React.Component {
         this.updatePostCount = this.updatePostCount.bind(this);
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        let update = false;
-        // if new props were received from the Router and not loading ignore
-        // could have a issue here?
-        if(this.state.loading || this.state.loggedInUser)
-        {
-            return true;
-        }
-        return update;
-    }
-
     // function to change the followed count to the passed in value if it is not equal
     // to the current state
     // called only when userlist popup generated as it gets a updated count of users
@@ -90,8 +79,8 @@ class ProfileHeader extends React.Component {
     // such as when clicking on a users link when the userProfile page is already
     // up
     componentWillReceiveProps(nextProps) {
-       if(this.props.match.params.id !== nextProps.match.params.id) {
-           this.getData(nextProps.match.params.id);
+       if(this.props.username !== nextProps.username) {
+           this.getData(nextProps.username);
            return;
        }
        // if the post count is updated, rerender the header
@@ -410,7 +399,6 @@ class ProfileHeader extends React.Component {
         {
             return null;
         }
-        alert("Profile header rendering");
 
         // used to generate users followers/following lists
         let popup = "";
@@ -453,4 +441,4 @@ class ProfileHeader extends React.Component {
 }
 
 // used withRouter to get the parameter from the query string in the url
-export default withRouter(ProfileHeader);
+export default ProfileHeader;

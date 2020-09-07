@@ -64,7 +64,6 @@ class Routes extends React.Component
     {
         //alert("rendering router");
         console.log("username in router " + this.state.currentUser);
-        alert("display login router: " + this.state.displayLogin);
         return (<React.Fragment>
 
             <Router history={history}>
