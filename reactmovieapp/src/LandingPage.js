@@ -10,6 +10,13 @@ class Landing extends React.Component {
 	constructor(props)
 	{
 		super(props);
+		if(this.props.location.state !== undefined)
+		{
+			if(this.props.location.state.displayLogin)
+			{
+				this.props.showLoginPopUp(true);
+			}
+		}
 		this.state = {
 			authenticated: null,
 			username: "",
@@ -60,6 +67,7 @@ class Landing extends React.Component {
 
 
 	render() {
+		alert("rendering");
 		if(this.state.authenticated === null)
 		{
 			return null;

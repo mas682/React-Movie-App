@@ -70,7 +70,7 @@ class Routes extends React.Component
                 <Header currentUser={this.state.currentUser} loggedIn={this.state.loggedIn} showLoginPopUp={this.state.displayLogin} removeLoginPopUp={this.showLoginPopUp}/>
                 <main>
                     <Switch>
-                        <Route exact path="/" render={(props)=> <Landing {...props} updateLoggedIn={this.updateLoggedIn}/>}/>
+                        <Route exact path="/" render={(props)=> <Landing {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/>}/>
                         <Route exact path="/upcoming/" render={(props)=> <Movie {...props} updateLoggedIn={this.updateLoggedIn}/>}/>
     					<Route exact path="/movieInfo/" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn}/>}/>
                         <Route exact path="/profile/:id" render={()=> <UserProfile updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/> } />

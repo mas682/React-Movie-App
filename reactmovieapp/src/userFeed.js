@@ -1,6 +1,6 @@
 import React from 'react';
 // should get rid of this eventually
-import { withRouter } from "react-router-dom";
+import { Redirect, withRouter } from "react-router-dom";
 import MoviePost from './moviePost.js';
 import style5 from './css/userProfile.module.css';
 import './css/forms.css'
@@ -17,6 +17,9 @@ class UserFeed extends React.Component {
             currentUser: "",
             // this will be set by the api call
             posts: [],
+            loading: true,
+            redirect: false,
+            redirectLogin: false
         }
     }
 
@@ -36,15 +39,29 @@ class UserFeed extends React.Component {
             {
                 this.setState({
                     posts: result[1],
-                    currentUser: this.state.username
+                    currentUser: this.state.username,
+                    loading: false
                 });
                 console.log(this.state.username);
                 this.props.updateLoggedIn(this.state.username, true);
             }
             else
             {
-                alert("request for user feed failed");
-                this.props.updateLoggedIn("", false);
+                alert(result[1]);
+                if(status === 401 && result[1] === "No cookie or cookie invalid")
+                {
+                    this.setState({
+                        loading: false,
+                        redirect: true,
+                        redirectLogin: true
+                    });
+                    this.props.updateLoggedIn("", false);
+                }
+                this.setState({
+                    loading: false,
+                    redirect: true
+                });
+
             }
         });
     }
@@ -63,7 +80,14 @@ class UserFeed extends React.Component {
         return fetch(url, requestOptions)
             .then(res => {
                 status = res.status;
-                return res.json();
+                if(status === 200)
+                {
+                    return res.json();
+                }
+                else
+                {
+                    return res.text();
+                }
             }).then(result =>{
                 return [status, result];
             });
@@ -71,6 +95,18 @@ class UserFeed extends React.Component {
 
     render()
     {
+        if(this.state.loading)
+        {
+            return null;
+        }
+        if(this.state.redirect)
+        {
+            if(this.state.redirectLogin)
+            {
+                return <Redirect to={{pathname: "/", state: {displayLogin: true}}} />;
+            }
+            return <Redirect to="" />;
+        }
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {

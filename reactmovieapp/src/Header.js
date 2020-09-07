@@ -42,6 +42,7 @@ class Header extends React.Component {
 
     signInRemoveFunction = () =>
     {
+        alert("Removing");
         this.setState({displaySignIn: false});
         this.props.removeLoginPopUp(false);
     }

@@ -63,7 +63,7 @@ class UserSettings extends React.Component {
             }
             else
             {
-                alert(result[1][0]);
+                alert(result[1]);
                 this.setState({
                     loaded: true,
                     redirect: true
@@ -249,7 +249,11 @@ class UserSettings extends React.Component {
         return fetch("http://localhost:9000/getuserinfo", requestOptions)
             .then(res => {
                 status = res.status;
-                return res.json();
+				if(status === 200)
+				{
+					return res.json();
+				}
+                return res.text();
             }).then(result =>{
                 return [status, result];
             });
@@ -347,7 +351,7 @@ class UserSettings extends React.Component {
         // if the user could not be authenticated, redirect to home page
         if(this.state.redirect)
         {
-            return <Redirect to="/" />;
+			return <Redirect to={{pathname: "/", state: {displayLogin: true}}} />;
         }
         let firstInput = this.generateInput("editFirst", "firstName", "First Name", "oldFirst");
         let lastInput = this.generateInput("editLast", "lastName", "Last Name", "oldLast");
