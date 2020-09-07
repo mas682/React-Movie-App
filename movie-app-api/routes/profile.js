@@ -367,7 +367,7 @@ const updatePassword = async (cookie, req, res) =>
             // send a updated cookie
             let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-            res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true, httpOnly: true});
+            res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
             res.status(200).send("Password updated");
         }
         else
@@ -425,7 +425,7 @@ const updateInfo = (cookie, req, res) =>
                 // below is used to update the cookie as the values have changed
                 let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
                 res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-                res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true, httpOnly: true});
+                res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
                 res.status(200).send([user.username, user.email, user.firstName, user.lastName]);
             });
         }

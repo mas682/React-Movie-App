@@ -13,21 +13,7 @@ class Landing extends React.Component {
 		this.state = {
 			authenticated: null,
 			username: "",
-			displaySignUp: false
 		}
-		this.signUpRemoveFunction = this.signUpRemoveFunction.bind(this);
-		this.showSignUpForm = this.showSignUpForm.bind(this);
-	}
-
-
-	signUpRemoveFunction = () =>
-	{
-		this.setState({displaySignUp: false});
-	}
-
-	showSignUpForm()
-	{
-		this.setState({displaySignUp: true});
 	}
 
 	async componentDidMount()
@@ -85,11 +71,6 @@ class Landing extends React.Component {
 				let path = "/profile/" + this.state.username + "/feed";
 				return <Redirect to={path} />
 			}
-			let signUpForm = "";
-			if(this.state.displaySignUp)
-			{
-				signUpForm = <SignUpPopup removeFunction={this.signUpRemoveFunction} />
-			}
 			return (
 				<div className="landingPage">
 					<h1 id="h1Landing">
@@ -98,10 +79,6 @@ class Landing extends React.Component {
 					<h2 id = "h2Landing">
 						Above are a few examples of how the random paragraph generator can be beneficial. The best way to see if this random paragraph picker will be useful for your intended purposes is to give it a try. Generate a number of paragraphs to see if they are beneficial to your current project.
 					</h2>
-					<button className="button" onClick={this.showSignUpForm}>
-						Sign Up
-					</button>
-					{signUpForm}
 				</div>
 			);
 		}

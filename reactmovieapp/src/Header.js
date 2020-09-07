@@ -1,6 +1,6 @@
 import React from 'react';
 import ReviewForm from './ReviewForm.js';
-import { Link, Redirect } from 'react-router-dom';
+import { Link, Redirect, withRouter } from 'react-router-dom';
 import history from './History'
 import logo from './logo.svg';
 import background from './images/background3.jpg';
@@ -17,7 +17,8 @@ class Header extends React.Component {
             currentUser: this.props.currentUser,
             loggedIn: this.props.loggedIn,
             displaySignIn: this.props.showLoginPopUp,
-            displaySignUp: false
+            displaySignUp: false,
+            redirect: false
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
@@ -26,6 +27,7 @@ class Header extends React.Component {
         this.showSignInForm = this.showSignInForm.bind(this);
         this.showSignUpForm = this.showSignUpForm.bind(this);
         this.signUpRemoveFunction = this.signUpRemoveFunction.bind(this);
+        this.logout = this.logout.bind(this);
     }
 
     signUpRemoveFunction = () =>
@@ -75,6 +77,30 @@ class Header extends React.Component {
         this.setState({reviewFormOpen: true});
     }
 
+    logout()
+    {
+        document.cookie = "MovieAppCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        this.setState({currentUser: "", loggedIn: false, redirect: true});
+    }
+
+    shouldComponentUpdate(nextProps, nextState)
+    {
+        if(this.state.redirect === true && nextState.redirect === false)
+        {
+            return false;
+        }
+        // could optimize this more..
+        return true ;
+    }
+
+    componentDidUpdate()
+    {
+        if(this.state.redirect)
+        {
+            this.setState({redirect: false});
+        }
+    }
+
 	render() {
         // if the state loggedIn state has not been set in the router yet,
         // do not render the header
@@ -82,7 +108,11 @@ class Header extends React.Component {
         {
             return null;
         }
-        console.log(this.state.currentUser + " in header");
+        let redirect = "";
+        if(this.state.redirect)
+        {
+            redirect = <Redirect to="/" />;
+        }
         let reviewForm = "";
         if(this.state.reviewFormOpen)
         {
@@ -125,7 +155,7 @@ class Header extends React.Component {
                             <Link to="/settings" class="profileButton">Settings</Link>
                         </div>
                         <div class="profile">
-                            <Link to="#" class="profileButton">Logout</Link>
+                            <Link to="#" class="profileButton" onClick={this.logout}>Logout</Link>
                         </div>
     				</div>
     				<div className="searchBar">
@@ -186,10 +216,11 @@ class Header extends React.Component {
                     {signInForm}
                     {reviewForm}
                     {signUpForm}
+                    {redirect}
                 </div>
             );
         }
 	}
 }
 
-export default Header;
+export default withRouter(Header);
