@@ -1,13 +1,13 @@
 import React from 'react';
 import {BrowserRouter as Router, Route, Redirect, Switch, useParams} from 'react-router-dom';
-import Movie from './MovieReview.js'
-import MovieInfo from './MovieInfo.js'
-import Landing from './LandingPage.js'
-import MainPage from'./MainPage.js'
-import UserProfile from './userProfile.js'
-import UserFeed from './userFeed.js'
-import UserSettings from'./UserSettings.js'
-import MovieInfoPage from'./MovieInfoPage.js'
+import Movie from './MovieReview.js';
+import MovieInfo from './MovieInfo.js';
+import Landing from './LandingPage.js';
+import MainPage from'./MainPage.js';
+import UserProfile from './userProfile.js';
+import UserFeed from './userFeed.js';
+import UserSettings from'./UserSettings.js';
+import MovieInfoPage from'./MovieInfoPage.js';
 import history from './History';
 import Header from './Header.js';
 
@@ -22,11 +22,6 @@ class Routes extends React.Component
         });
         this.updateLoggedIn = this.updateLoggedIn.bind(this);
         this.showLoginPopUp = this.showLoginPopUp.bind(this);
-    }
-
-    componentWillReceiveProps(nextProps)
-    {
-        alert("HERE");
     }
 
     shouldComponentUpdate(nextProps, nextState)

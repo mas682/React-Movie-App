@@ -30,3 +30,7 @@ npm install axios --save
 
 for the drop down menu in the comments
 npm install react-bootstrap --save
+
+
+for fetch in server
+npm install node-fetch

@@ -87,6 +87,7 @@ class Landing extends React.Component {
 					<h2 id = "h2Landing">
 						Above are a few examples of how the random paragraph generator can be beneficial. The best way to see if this random paragraph picker will be useful for your intended purposes is to give it a try. Generate a number of paragraphs to see if they are beneficial to your current project.
 					</h2>
+					This product uses the TMDb API but is not endorsed or certified by TMDb.
 				</div>
 			);
 		}
