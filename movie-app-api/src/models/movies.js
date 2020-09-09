@@ -59,6 +59,11 @@ const movie = (sequelize, DataTypes) => {
         },
     });
 
+    Movie.associate = models => {
+        // each movie can be associated with many reviews
+        //Movie.hasMany(models.Review);
+    }
+
     return Movie;
 };
 

@@ -142,36 +142,6 @@ const createUsers = async () => {
             lastName: 'Stropkey',
         },
         );
-        // below is a example of adding a follower to a user and
-        // how to check who follows who
-        /*
-        ).then((user) => {
-            user.addFollow(1).then(() => {
-            models.User.findOne({
-                where: {username: 'steelcity'},
-                }).then((friend) => {
-                    friend.getFollowing().then((r)=>{
-                        console.log("Following 1: ");
-                        console.log(r);
-                        }).then(()=>{
-                            models.User.findOne({
-                                where: {username: 'admin'},
-                                }).then((friend) => {
-                                    //friend.addFollow(2);
-                                    friend.getFollowers().then((r)=>{
-                                        console.log("Followers 2: ");
-                                        console.log(r);
-                                    });
-                                });
-                            friend.getFollowers().then((b)=>{
-                                console.log("Follwers 1: ");
-                                console.log(b);
-                            });
-                        });
-            });
-        });
-    });
-    */
 
     await models.User.create(
         {

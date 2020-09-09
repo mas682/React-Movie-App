@@ -60,6 +60,8 @@ const review = (sequelize, DataTypes) => {
         Review.hasMany(models.Comment);
         // each review can have many likes
         Review.belongsToMany(models.User, {as:"likes", through: models.Like});
+        // each review beelongs to a movie
+        // Review.belongsTo(models.Movie, {as: "movie"});
     };
 
     // function to get reviews for a set of users
