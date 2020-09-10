@@ -1,6 +1,6 @@
 import React from 'react';
 import style from './css/MoviePost/moviePost.module.css';
-import style2 from './css/MoviePost/moviePostPopUp.module.css'
+import style2 from './css/MoviePost/moviePostPopUp.module.css';
 import {Link} from 'react-router-dom';
 import MoviePostPopUp from './moviePostPopUp.js';
 import UserListPopUp from './UserListPopUp.js';
