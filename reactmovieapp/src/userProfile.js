@@ -56,8 +56,11 @@ class UserProfile extends React.Component {
     // kick off the rerendering of the userProfile page
     //
     shouldComponentUpdate(nextProps, nextState){
-
-        return (nextState.followingCountChange !== 0 || nextState.followerCountChange !== 0);
+        // only rerender if there was a change in followers, following, or username
+        // whose page we are currently on
+        return (nextState.followingCountChange !== 0
+             || nextState.followerCountChange !== 0
+             || nextState.username !== this.state.username);
     }
 
     updateFollowingCount(value)
@@ -90,8 +93,8 @@ class UserProfile extends React.Component {
         return (
 
             <div className={style5.mainBodyContainer}>
-                <ProfileHeader username={this.state.username} postCount={this.state.postCount} updateFollowingCount={this.state.followingCountChange} updateFollowerCount={this.state.followerCountChange}/>
-                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount} updateFollowersFunction={this.updateFollowerCount}/>
+                <ProfileHeader username={this.state.username} postCount={this.state.postCount} updateFollowingCount={this.state.followingCountChange} updateFollowerCount={this.state.followerCountChange} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp}/>
+                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount} updateFollowersFunction={this.updateFollowerCount} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp}/>
             </div>
         );
     }

@@ -4,6 +4,7 @@ import history from './History'
 import { Link } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import style from './css/reviewform.module.css';
+import SearchDropDown from './SearchDropDown.js';
 
 
 class ReviewPopUp extends React.Component {
@@ -509,21 +510,7 @@ class ReviewPopUp extends React.Component {
 
     generateTitleInput()
     {
-        let titleInput = (
-            <React.Fragment>
-                <label>
-                    <h4 className={style.h4NoMargin}>Movie Title</h4>
-                </label>
-                <input
-                    type="text"
-                    name="title"
-                    form = "form2"
-                    className="inputFieldBoxLong validInputBox"
-                    onChange={this.changeHandler}
-                    value={this.state.title}
-                />
-            </React.Fragment>);
-        return titleInput;
+        //return <SearchDropDown />;
     }
 
     generateReviewInput()

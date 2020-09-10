@@ -28,12 +28,18 @@ To do list:
           is logged in in higher up state
       - next need to make popup for editing similar to review popup
     10. Make comments editable by user who posted and users post
+        - done
     11. Make a user setting page
+        - done
     12. May want to make user pages private
     13. set up api to get movies and store in db
+        - shawn working on this..
     14. add logout functionality
+        - done
     15. password reset functionality
+        - somewhat done if logged in already
     16. add functionality to list followers, following
+        - done
     17. add functionality to search for users, through friends lists and general
     18. figure out how to do common friends
     19. add profile pictures for users
@@ -42,3 +48,30 @@ To do list:
     22. add timestamps to comments
         - done
     23. Not sure if adding comments to a post is fully implemented yet?
+        - done
+
+    ...lost a bunch of stuff
+
+    24. fix redirects for user feed page, settings page
+        - just about done..
+    25. optimize header rerendering
+    26. make a message pop up when you logout or attempt to do something when not logged in..
+    27. fix rendering on landing page as small bug where if you go to settings when not logged in
+        and then close it, open sign up, close that...login pop up will be back open due to landing
+        rendering again..
+
+    29. on user feed page, when nothing to show, notify user
+        - also change path to just feed
+    30. need to change users to indicate if regular user or admin
+    31. then let admin do things like remove posts, add/remove users, edit users settings, etc.
+
+    32. set up database to associate reviews with movies
+        - will have to alter the reveiws you are already creating...
+        - also fix how date is stored in database..
+    33. make review form query database when user is entering movie name
+        - then once the user selects the movie, show the image
+        - also store the movie id to pass to db...
+   34. will then have to update moviePost to show correct movie image..
+   35. then create individual pages for movies
+   36. create a page that can be found on a movie page that shows the reviews associated
+       with the movie..

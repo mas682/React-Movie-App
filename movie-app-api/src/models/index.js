@@ -16,7 +16,8 @@ const models = {
     Review: sequelize.import('./review'),
     Comment: sequelize.import('./comments'),
     Like: sequelize.import('./likes'),
-    UsersFriends: sequelize.import('./usersFriendsTable')
+    UsersFriends: sequelize.import('./usersFriendsTable'),
+    Movies: sequelize.import('./movies')
 };
 
 Object.keys(models).forEach(key => {

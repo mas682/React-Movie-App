@@ -19,7 +19,7 @@ const Poster = (props) => {
 		'11': "November",
 		'12': "December",
 	}
-	
+
 	function getDay() {
 		var date = props.release_date
 		var day = date.slice(8, 9)
@@ -29,7 +29,7 @@ const Poster = (props) => {
 			return date.slice(8, 10)
 		}
 	}
-	
+
 	return(
 		<section>
 			<Link to="/movieInfo"><img src={"https://image.tmdb.org/t/p/original" + props.poster_path} height="500" width="300"/></Link>

@@ -14,7 +14,8 @@ class MoviePostDisplay extends React.Component {
             username: this.props.username,
             // this will be set by the api call
             posts: [],
-            currentUser: ""
+            currentUser: "",
+            loading: true
         }
     }
 
@@ -42,6 +43,14 @@ class MoviePostDisplay extends React.Component {
                     posts: result[1][0],
                     currentUser: result[1][1]
                 });
+                if(result[1][1] !== "")
+                {
+                    this.props.updateLoggedIn(result[1][1], true);
+                }
+                else
+                {
+                    this.props.updateLoggedIn(result[1][1], false);
+                }
                 if(result[1].length !== oldCount)
                 {
                     this.props.setPostCount(result[1][0].length);
@@ -65,8 +74,17 @@ class MoviePostDisplay extends React.Component {
                 let oldCount = this.state.posts.length;
                 this.setState({
                     posts: result[1][0],
-                    currentUser: result[1][1]
+                    currentUser: result[1][1],
+                    loading: false
                 });
+                if(result[1][1] !== "")
+                {
+                    this.props.updateLoggedIn(result[1][1], true);
+                }
+                else
+                {
+                    this.props.updateLoggedIn(result[1][1], false);
+                }
                 if(result[1].length !== oldCount)
                 {
                     this.props.setPostCount(result[1][0].length);
@@ -104,10 +122,14 @@ class MoviePostDisplay extends React.Component {
 
     render()
     {
+        if(this.state.loading)
+        {
+            return null;
+        }
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {
-            posts.push(<MoviePost data={p} usersPage={this.state.username} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction}/>)
+            posts.push(<MoviePost data={p} usersPage={this.state.username} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction} showLoginPopUp={this.props.showLoginPopUp}/>)
         });
 
 
@@ -116,4 +138,4 @@ class MoviePostDisplay extends React.Component {
 }
 
 // used withRouter to get the parameter from the query string in the url
-export default withRouter(MoviePostDisplay);
+export default MoviePostDisplay;

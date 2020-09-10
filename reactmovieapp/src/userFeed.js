@@ -1,6 +1,6 @@
 import React from 'react';
 // should get rid of this eventually
-import { withRouter } from "react-router-dom";
+import { Redirect, withRouter } from "react-router-dom";
 import MoviePost from './moviePost.js';
 import style5 from './css/userProfile.module.css';
 import './css/forms.css'
@@ -17,27 +17,16 @@ class UserFeed extends React.Component {
             currentUser: "",
             // this will be set by the api call
             posts: [],
+            loading: true,
+            redirect: false,
+            redirectLogin: false
         }
     }
 
     /*
         To do:
-        1. Fix movie posts to display correct username
-            - done
-        2. Will want to limit query to only so many results
-        3. Will want to reroute to this page on login
-            - done but may move to somewhere else eventually
-        4. also want to show timing of post on movie post
-            - done but needs formatting
-        5. then create fake reviews and make sure listed in order
-            - done
-        6. may want to move this to a different route
         7. notice using user profile css!
         8. add status codes to login requests
-        9. need to fix following on users pages so that if you follow it is blue when you go
-          to it after switching pages
-        10. also handle the case where the user is going to their own page
-            - simply return true if current user from server
     */
 
     async componentDidMount()
@@ -50,13 +39,29 @@ class UserFeed extends React.Component {
             {
                 this.setState({
                     posts: result[1],
-                    currentUser: this.state.username
+                    currentUser: this.state.username,
+                    loading: false
                 });
-
+                console.log(this.state.username);
+                this.props.updateLoggedIn(this.state.username, true);
             }
             else
             {
-                alert("request for user feed failed");
+                alert(result[1]);
+                if(status === 401 && result[1] === "No cookie or cookie invalid")
+                {
+                    this.setState({
+                        loading: false,
+                        redirect: true,
+                        redirectLogin: true
+                    });
+                    this.props.updateLoggedIn("", false);
+                }
+                this.setState({
+                    loading: false,
+                    redirect: true
+                });
+
             }
         });
     }
@@ -75,7 +80,14 @@ class UserFeed extends React.Component {
         return fetch(url, requestOptions)
             .then(res => {
                 status = res.status;
-                return res.json();
+                if(status === 200)
+                {
+                    return res.json();
+                }
+                else
+                {
+                    return res.text();
+                }
             }).then(result =>{
                 return [status, result];
             });
@@ -83,6 +95,18 @@ class UserFeed extends React.Component {
 
     render()
     {
+        if(this.state.loading)
+        {
+            return null;
+        }
+        if(this.state.redirect)
+        {
+            if(this.state.redirectLogin)
+            {
+                return <Redirect to={{pathname: "/", state: {displayLogin: true}}} />;
+            }
+            return <Redirect to="" />;
+        }
         let posts = []
         // generate the posts
         this.state.posts.forEach((p) => {

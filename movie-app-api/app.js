@@ -8,6 +8,7 @@ var logger = require('morgan');
 var cors = require('cors');
 var indexRouter = require('./routes/index');
 var app = express();
+const fetch = require('node-fetch');
 /*
 // connect to the database
 sequelize.sync().then(() => {
@@ -17,7 +18,7 @@ sequelize.sync().then(() => {
 });
 */
 // restart db each time
-const eraseDatabaseOnSync = true;
+const eraseDatabaseOnSync = false;
 
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     if (eraseDatabaseOnSync) {
@@ -29,13 +30,49 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
         addComment();
         addComment2();
         addComment3();
+        getMovies();
     //    getFriends();
+    }
+    else
+    {
     }
 
     app.listen(9000, () =>
         console.log(`Example app listening on port 9000!`),
     );
 });
+
+const getMovies = async () => {
+    let response = await fetch("https://api.themoviedb.org/3/discover/movie?"
+    + "api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&region=US&sort_by=popularity.desc&"
+    + "certification_country=US&include_adult=false&include_video=false&page=1&"
+    + "release_date.gte=2020-09-03&release_date.lte=2020-09-05&with_original_language=en");
+    if(response.status === 200)
+    {
+        let data = await(response.json());
+        console.log(data);
+        /*
+        may eventually want to get move info about each movie...
+        let movies = [];
+        data.results.forEach(movie) => {
+            let response =
+        });
+        */
+        data.results.forEach(movie => {
+            models.Movies.create({
+                id: movie.id,
+                title: movie.title,
+                releaseDate: movie.release_date,
+                poster: movie.poster_path,
+                overview: movie.overview
+            });
+        });
+    }
+    else
+    {
+        console.log("Failed to get movies");
+    }
+}
 
 // create the good tags in the database
 const createGoodTags = async () => {
@@ -105,36 +142,6 @@ const createUsers = async () => {
             lastName: 'Stropkey',
         },
         );
-        // below is a example of adding a follower to a user and
-        // how to check who follows who
-        /*
-        ).then((user) => {
-            user.addFollow(1).then(() => {
-            models.User.findOne({
-                where: {username: 'steelcity'},
-                }).then((friend) => {
-                    friend.getFollowing().then((r)=>{
-                        console.log("Following 1: ");
-                        console.log(r);
-                        }).then(()=>{
-                            models.User.findOne({
-                                where: {username: 'admin'},
-                                }).then((friend) => {
-                                    //friend.addFollow(2);
-                                    friend.getFollowers().then((r)=>{
-                                        console.log("Followers 2: ");
-                                        console.log(r);
-                                    });
-                                });
-                            friend.getFollowers().then((b)=>{
-                                console.log("Follwers 1: ");
-                                console.log(b);
-                            });
-                        });
-            });
-        });
-    });
-    */
 
     await models.User.create(
         {
@@ -163,6 +170,7 @@ const sampleReview = async () => {
     ).then((review)=> {
         //console.log(Object.keys(models.Review.__proto__));
         review.addGoodTag(2, { through: { userID: 1 } });
+        review.addLike(1);
         review.addGoodTag(3, { through: { userID: 1 } });
         review.addBadTag(6, { through: { userID: 1 } });
         review.addBadTag(4, { through: { userID: 1 } });
@@ -193,6 +201,7 @@ const sampleReview2 = async () => {
         }
     ).then((review)=> {
         //console.log(Object.keys(models.Review.__proto__));
+        review.addLike(1);
         review.addGoodTag(2, { through: { userID: 1 } })
         .then((review)=>{
             models.Review.findOne({

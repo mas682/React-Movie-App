@@ -258,6 +258,11 @@ class MoviePost extends React.Component {
     async likeButtonHandler(event)
     {
         event.preventDefault();
+        if(!this.state.currentUser)
+        {
+            this.props.showLoginPopUp(true);
+            return;
+        }
         if(!this.state.liked)
         {
             let result = await this.postLike();
@@ -376,6 +381,11 @@ class MoviePost extends React.Component {
         if(key === "openPopUp" && this.state.type === "popup")
         {
             this.props.closeFunction();
+        }
+        if(key === "displayLikes" && !this.state.currentUser)
+        {
+            this.props.showLoginPopUp(true);
+            return;
         }
         this.setState({[key]: value});
     }
