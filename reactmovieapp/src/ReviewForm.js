@@ -510,7 +510,7 @@ class ReviewPopUp extends React.Component {
 
     generateTitleInput()
     {
-        //return <SearchDropDown />;
+        return <SearchDropDown />;
     }
 
     generateReviewInput()
