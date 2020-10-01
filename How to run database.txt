@@ -4,7 +4,7 @@ also download postgresql if needed https://www.postgresql.org/download/
 1. open pgAdmin
 2. click servers
 3. click local
-4. right click and create a new server called "movie-app"
+4. right click and create a new database called "movie-app"
 5. have port set at 5432
 6. set password to password
 7. (optional) in movie-app-api/src/models/index.js, can alter username, password, host, and port if needed
