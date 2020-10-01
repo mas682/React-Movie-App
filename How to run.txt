@@ -1,5 +1,6 @@
 
 0. download pgAdmin if not alredy downloaded
+also download postgresql if needed https://www.postgresql.org/download/
 1. open pgAdmin
 2. click servers
 3. click local
