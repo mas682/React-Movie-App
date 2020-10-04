@@ -8,7 +8,7 @@ import {profileHandler} from './profile.js';
 import {signUp} from './signup.js';
 import {homePage} from './homePage.js';
 import {getUserInfo} from './getUserInfo.js';
-import {getMovies} from './movies.js';
+import {movieHandler} from './movies.js';
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -54,8 +54,8 @@ router.post('/profile/:userId/*', function(req, res, next) {
 });
 
 // used to return the movies from the API call to the screen
-router.get('/movie', function(req, res, next) {
-    getMovies(req, res, next);
+router.get('/movie/:type/*', function(req, res, next) {
+    movieHandler(req, res, next);
 });
 
 module.exports = router;

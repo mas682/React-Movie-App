@@ -2,13 +2,6 @@ const Op = require('Sequelize').Op;
 let moment = require('moment');
 const review = (sequelize, DataTypes) => {
     const Review = sequelize.define('review', {
-        title: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                notEmpty: true,
-            },
-        },
         rating: {
             type: DataTypes.DECIMAL(10,2),
             allowNull: false,
@@ -50,6 +43,8 @@ const review = (sequelize, DataTypes) => {
     });
 
     Review.associate = models => {
+        // each review is associated with a movie
+        Review.belongsTo(models.Movies, {as: "movie"});
         // each review is associated with a user
         Review.belongsTo(models.User, {as: "user"});
         // each review can have many good tags
@@ -77,13 +72,18 @@ const review = (sequelize, DataTypes) => {
             },
             order: [["updatedAt", 'DESC']],
             // only get these attributes
-            attributes: ["id", "title", "rating", "review", "updatedAt", "createdAt"],
+            attributes: ["id", "rating", "review", "updatedAt", "createdAt"],
             // include the following models with the specified attributes
             include:[
                 {
                     model: models.User,
                     as: "user",
                     attributes: ["username", "id"]
+                },
+                {
+                    model: models.Movies,
+                    as: "movie",
+                    attributes: ["title", "id", "poster"]
                 },
                 {
                     model: models.GoodTag,
@@ -111,7 +111,7 @@ const review = (sequelize, DataTypes) => {
                     through: {attributes: []}
                 }
             ],
-            group: ["review.id", "user.username", "user.id", "goodTags.id", "badTags.id", "likes.id"
+            group: ["review.id", "user.username", "user.id", "goodTags.id", "badTags.id", "likes.id", "movie.title", "movie.id", "movie.poster"
             ]
         });
 
@@ -158,6 +158,11 @@ const review = (sequelize, DataTypes) => {
                     model: models.User,
                     as: "user",
                     attributes: ["username", "id"]
+                },
+                {
+                    model: models.Movies,
+                    as: "movie",
+                    //attributes: ["title", "id", "poster"]
                 },
                 {
                     model: models.GoodTag,

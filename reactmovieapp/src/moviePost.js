@@ -28,6 +28,8 @@ class MoviePost extends React.Component {
                 userId: this.props.data.userId,
                 // title of post
                 title: this.props.data.title,
+                // post for the movie
+                poster: this.props.data.poster,
                 // form id for post
                 form: this.props.data.form,
                 // username for the user who posted the review
@@ -64,7 +66,8 @@ class MoviePost extends React.Component {
                 // userId for user who posted the review
                 userId: this.props.data.review.userId,
                 // title of post
-                title: this.props.data.review.title,
+                title: this.props.data.review.movie.title,
+                poster: 'https://image.tmdb.org/t/p/w500' + this.props.data.review.movie.poster,
                 // form id for post
                 form: "form" + this.props.data.review.id,
                 // username for the user who posted the review
@@ -635,7 +638,7 @@ class MoviePost extends React.Component {
                 <h3>{this.state.title}</h3>
             </div>
             <div className="postImage">
-                <img className="moviePoster" src={require("./images/The-Other-Guys-Poster.jpg")}/>
+                <img className={style.moviePoster} src={this.state.poster}/>
             </div>
             <form id={this.state.form} />
             <div className="centeredMaxWidthContainer">

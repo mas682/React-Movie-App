@@ -38,7 +38,9 @@ class ReviewPopUp extends React.Component {
             this.state = {
                 edit: this.props.edit,
                 open: true,
+                // can remove this after search drop down implemented..
                 title: "",
+                movie: undefined,
                 rating: "",
                 usedGoodButtons: [],
                 usedBadButtons: [],
@@ -57,6 +59,9 @@ class ReviewPopUp extends React.Component {
         this.changeHandler = this.changeHandler.bind(this);
         this.updateReviewApi = this.updateReviewApi.bind(this);
         this.validateUpdate = this.validateUpdate.bind(this);
+        this.getTitleSuggestions = this.getTitleSuggestions.bind(this);
+        this.setMovie = this.setMovie.bind(this);
+        this.generateMovieImage = this.generateMovieImage.bind(this);
         //this.generateTagString = this.generateTagString.bind(this);
     }
 
@@ -246,7 +251,7 @@ class ReviewPopUp extends React.Component {
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({
-                title: this.state.title,
+                movie: this.state.movie.id,
                 rating: this.state.rating,
                 good: goodString,
                 bad: badString,
@@ -335,6 +340,7 @@ class ReviewPopUp extends React.Component {
 
     async validateForm(event) {
         event.preventDefault();
+        console.log(event);
         this.callApi().then(result => {
             let status = result[0];
             let response = result[1];
@@ -508,9 +514,76 @@ class ReviewPopUp extends React.Component {
         }
     }
 
+    // called by SearchDropDown to set the movie that was selected
+    setMovie(value)
+    {
+        this.setState({
+          movie: value
+        });
+    }
+
+    // function to get the movie title suggestions based off of a
+    // substring that the user has already entered
+
+    getTitleSuggestions(value)
+    {
+      // Simple POST request with a JSON body using fetch
+      const requestOptions = {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+      };
+
+      let status = 0;
+      let url = "http://localhost:9000/movie/get_movie_titles/?title=" + value;
+      return fetch(url, requestOptions)
+          .then(res => {
+              status = res.status;
+              if(status === 200)
+              {
+                  return res.json();
+              }
+              else
+              {
+                  return res.text();
+              }
+          }).then(result=> {
+              if(status !== 200)
+              {
+                alert("Issue getting movie title: " + result);
+                return [];
+              }
+              else
+              {
+                  return result;
+              }
+          });
+    }
+
     generateTitleInput()
     {
-        return <SearchDropDown />;
+        return (
+            <React.Fragment>
+                <label>
+                    <h4 className={style.h4NoMargin}>Movie Title</h4>
+                </label>
+                <SearchDropDown getSuggestions={this.getTitleSuggestions} objectKey="title" updateFunction={this.setMovie} />
+            </React.Fragment>
+        );
+    }
+
+    generateMovieImage()
+    {
+        if(this.state.movie !== undefined)
+        {
+            let path = 'https://image.tmdb.org/t/p/w500' + this.state.movie.poster;
+            return (
+              <div className = {`${style.centeredMaxWidthContainer} ${style.containerMarginBottom10}`}>
+                  <img className={style.moviePoster} src={path}/>
+              </div>
+            );
+        }
+        return null;
     }
 
     generateReviewInput()
@@ -614,7 +687,7 @@ class ReviewPopUp extends React.Component {
             submitButton = (
                 <React.Fragment>
                     <button
-                        form="form1"
+                        form="form2"
                         value="create_account"
                         className="submitButton"
                         onClick={this.validateUpdate}
@@ -626,7 +699,7 @@ class ReviewPopUp extends React.Component {
             submitButton = (
                 <React.Fragment>
                     <button
-                        form="form1"
+                        form="form2"
                         value="create_account"
                         className="submitButton"
                         onClick={this.validateForm}
@@ -637,7 +710,7 @@ class ReviewPopUp extends React.Component {
     }
 
     // function to generate all the html needed to render the popup
-    generateHTML(titleInput, reviewInput, instructionTextGood, instructionTextBad, unusedGoodButtonArr, usedGoodButtonArr, unusedBadButtonArr, usedBadButtonArr, ratingStars, submitButton)
+    generateHTML(titleInput, reviewInput, instructionTextGood, instructionTextBad, unusedGoodButtonArr, usedGoodButtonArr, unusedBadButtonArr, usedBadButtonArr, ratingStars, submitButton, moviePoster)
     {
         let html = (
                 <React.Fragment>
@@ -647,18 +720,19 @@ class ReviewPopUp extends React.Component {
                         closeOnDocumentClick
                         contentStyle={{ width: "40%"}}
                     >
-                        <div className="modal">
+                        <div className={style.modal}>
                             {/* &times is the multiplication symbol (x) --> */}
-                            <a className="close" onClick={this.closeModal}>&times;</a>
-                            <div className="header">
+                            <a className={style.close} onClick={this.closeModal}>&times;</a>
+                            <div className={style.header}>
                                 <h3 className ="inlineH3"> Movie Review </h3>
                             </div>
-                            <div className="content">
+                            <div className={style.content}>
                                 {/* This will eventually be a post form */}
                                 <form id="form2" onSubmit={this.validateForm} noValidate/>
                                 <div className = "inputFieldContainer">
                                     {titleInput}
                                 </div>
+                                {moviePoster}
                                 <div className = {`${style.centeredMaxWidthContainer} ${style.containerMarginBottom10}`}>
                                     <h4 className={style.h4NoMargin}>Rating</h4>
                                 </div>
@@ -696,9 +770,9 @@ class ReviewPopUp extends React.Component {
                                 <div className = "inputFieldContainer">
                                     {reviewInput}
                                 </div>
-                            </div>
-                            <div className="actions">
-                                {submitButton}
+                                <div className={style.submitButtonContainer}>
+                                    {submitButton}
+                                </div>
                             </div>
                         </div>
                     </Popup>
@@ -708,6 +782,7 @@ class ReviewPopUp extends React.Component {
 
     render() {
         let titleInput = this.generateTitleInput();
+        let moviePoster = this.generateMovieImage();
         let reviewInput = this.generateReviewInput();
         let instructionTextGood = this.generateInstructionTextGood();
         let instructionTextBad = this.generateInstructionTextBad();
@@ -719,7 +794,7 @@ class ReviewPopUp extends React.Component {
         let usedBadButtonArr = badButtonArrays[1];
         let ratingStars = this.generateRatingStars();
         let submitButton = this.generateSubmitButton();
-        let html = this.generateHTML(titleInput, reviewInput, instructionTextGood, instructionTextBad, unusedGoodButtonArr, usedGoodButtonArr, unusedBadButtonArr, usedBadButtonArr, ratingStars, submitButton);
+        let html = this.generateHTML(titleInput, reviewInput, instructionTextGood, instructionTextBad, unusedGoodButtonArr, usedGoodButtonArr, unusedBadButtonArr, usedBadButtonArr, ratingStars, submitButton, moviePoster);
 
         if(this.state.edit)
         {

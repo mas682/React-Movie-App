@@ -218,12 +218,15 @@ const deleteReview = (cookie, req, res) =>
 const createReview = (cookie, req, res) =>
 {
     let userId = cookie.id;
+    // need to verify this exists
+    let movieId = req.body.movie;
+
     console.log(userId);
     models.Review.create({
-            title: req.body.title,
             rating: req.body.rating,
             userId: userId,
             review: req.body.review,
+            movieId: movieId
             }
     ).then((review)=> {
         addGoodTags(req.body.good, review, userId);

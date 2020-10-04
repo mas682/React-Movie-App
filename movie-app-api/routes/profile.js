@@ -183,6 +183,7 @@ const getReviews = async (cookie, req, res, cookieValid) =>
             models.Review.findByIds(models, [user.id], cookie.id)
             .then((reviews)=>
             {
+                console.log(reviews);
                 // send the reveiws associated with the user and their id
                 res.status(200).send([reviews, cookie.name]);
             });
@@ -218,6 +219,7 @@ const getFeed = (cookie, req, res) =>
         userIds.push(cookie.id);
         models.Review.findByIds(models, userIds, cookie.id)
         .then((reviews) =>{
+            console.log(reviews[0].review.movie);
             res.status(200).send(reviews);
         });
     });

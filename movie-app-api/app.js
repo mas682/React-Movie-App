@@ -18,19 +18,19 @@ sequelize.sync().then(() => {
 });
 */
 // restart db each time
-const eraseDatabaseOnSync = false;
+const eraseDatabaseOnSync = true;
 
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     if (eraseDatabaseOnSync) {
         createUsers();
         createGoodTags();
         createBadTags();
-        sampleReview();
-        sampleReview2();
-        addComment();
-        addComment2();
-        addComment3();
+        //sampleReview2();
+        //addComment();
+        //addComment2();
+        //addComment3();
         getMovies();
+      //  sampleReview();
     //    getFriends();
     }
     else
@@ -58,14 +58,19 @@ const getMovies = async () => {
             let response =
         });
         */
-        data.results.forEach(movie => {
-            models.Movies.create({
+        data.results.forEach(async(movie) => {
+            await models.Movies.create({
                 id: movie.id,
                 title: movie.title,
                 releaseDate: movie.release_date,
                 poster: movie.poster_path,
                 overview: movie.overview
-            });
+            }).then((movie) =>{
+               if(movie.id === 577922)
+               {
+                 sampleReview();
+               }
+            })
         });
     }
     else
@@ -151,15 +156,23 @@ const createUsers = async () => {
             firstName: 'Shawn',
             lastName: 'Talbert',
         },
-    ).then(addComment);
+    //).then(addComment);
+  );
 };
 
 // for testing
 // create a sampleReview to add to the database
 const sampleReview = async () => {
+  let movie = await models.Movies.findAll(
+      {
+        where: {id: 577922}
+      }
+  );
+  console.log("Movie:");
+  console.log(movie);
     await models.Review.create(
         {
-            title: 'Movie',
+            movieId: 577922,
             rating: "2.5",
             userId: 1,
             review: "Sublimely funny, particularly in the first half-hour, with a gorgeous running gag about the band TLC and a fabulously moronic death scene for The Rock and Sam Jackson, "
@@ -177,13 +190,14 @@ const sampleReview = async () => {
         review.addBadTag(5, { through: { userID: 1 } });
         review.addGoodTag(1, { through: { userID: 1 } })
         .then((review)=>{
-            models.Review.findOne({
+              /*models.Review.findOne({
                     where: { title: 'Movie' }, include: models.GoodTag
             }).then((r)=>{
                 console.log(r);
                 console.log("Tag: ");
                 console.log(r.goodTags[0].value);
                 });
+                */
         });
     });
 

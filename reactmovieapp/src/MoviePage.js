@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+//import axios from 'axios';
 import MainPage from './MainPage.js';
 import Movie from './MovieReview.js';
 import PhotoContainer from "./PhotoContainer";
