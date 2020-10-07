@@ -27,10 +27,15 @@ const profileHandler = (req, res, next) => {
 
 const selectPath = (cookie, req, res, cookieValid) =>
 {
+    console.log(req.params.userId);
     // if here, the path is profile/username
-    if(Object.keys(req.params).length == 1)
+    if(Object.keys(req.params).length == 1 && req.query === undefined)
     {
         getReviews(cookie, req, res, cookieValid);
+    }
+    else if(req.params.userId === "query")
+    {
+        getProfiles(cookie, req, res, cookieValid);
     }
     else if(Object.keys(req.params).length == 2 && req.params[0] === "user_info")
     {
@@ -77,6 +82,22 @@ const selectPath = (cookie, req, res, cookieValid) =>
         res.status(404).send();
     }
 };
+
+
+// this function will return a list of users whose username start with the passed in string
+const getProfiles = async (cookie, req, res, cookieValid) =>
+{
+    let username = req.query.user;
+    let users = await models.User.findUsers(username, 5);
+    if(users === undefined)
+    {
+        res.status(404).send("Unable to find any users matching that value");
+    }
+    else
+    {
+        res.status(200).send(users);
+    }
+  };
 
 // this function will return a users follwers for their page
 const getFollowers = async (cookie, req, res, cookieValid) =>

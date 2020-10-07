@@ -22,9 +22,10 @@ class SearchDropDown extends React.Component {
         if(this.props.value !== undefined)
         {
             value = this.props.value;
+            alert(value);
         }
         this.state = {
-            value: "",
+            value: value,
             suggestions: suggestions,
             focused: false,
             suggestionIndex: 0,
@@ -165,6 +166,8 @@ class SearchDropDown extends React.Component {
 
     generateInputBox()
     {
+
+        let suggestions = this.generateSuggestionBox();
         return (
           <React.Fragment>
               <div className={style.dropdown}>
@@ -181,6 +184,7 @@ class SearchDropDown extends React.Component {
                       value={this.state.value}
                       onKeyDown={this.keyPressedHandler}
                   />
+                  {suggestions}
               </div>
             </React.Fragment>
         );
@@ -188,7 +192,7 @@ class SearchDropDown extends React.Component {
 
     generateSuggestionBox()
     {
-        if(this.state.focused && this.state.value.length > 0)
+        if(this.state.focused && this.state.value.length > 0 && this.state.suggestions.length > 0)
         {
             let suggestions = [];
             this.state.suggestions.forEach((value, index) => {
@@ -219,8 +223,9 @@ class SearchDropDown extends React.Component {
         let suggestionBox = this.generateSuggestionBox();
         return (
             <React.Fragment>
-                {inputbox}
-                {suggestionBox}
+                <div className={style.searchInputContainer}>
+                    {inputbox}
+                </div>
             </React.Fragment>);
     }
 

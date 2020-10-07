@@ -10,6 +10,7 @@
 	overflow: visible;
 	display: grid;
 	grid-template-columns: 27.5% 45% 27.5%;
+  grid-template-rows: 85px;
 	grid-gap: 0px;
 	padding-left: 5px;
     padding-right: 5px;
@@ -93,9 +94,23 @@
 }
 
 .searchBar {
-	padding-top: 25px;
-	padding-right: 25px;
-	text-align: right;
+	   text-align: left;
+     display: flex;
+     justify-content: flex-start;
+     width: 95%;
+     margin-right: 5%;
+     margin-top: 20px;
+}
+
+.searchInputBox {
+    width: 90%;
+}
+
+.searchIconBox {
+    width: 8%;
+    display: flex;
+    justify-content: flex-start;
+    margin-left: 2%;
 }
 
 .homeButton:hover, .movieButton:hover, .home:hover, .profile:hover, .movieDropdown:hover, .showDropdown:hover {
@@ -112,4 +127,10 @@
 
 .movieDropdown:hover .movieDropdownContent, .showDropdown:hover .showDropdownContent {
   display: block;
+}
+
+.searchIcon {
+    color: gray;
+    font-size: 1.5em;
+    margin-top: 10px;
 }

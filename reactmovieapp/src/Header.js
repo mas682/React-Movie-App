@@ -8,6 +8,7 @@ import './App.css';
 import './css/header.css';
 import SignInPopup from './SignIn.js';
 import SignUpPopup from './SignUp.js';
+import SearchDropDown from './SearchDropDown.js';
 
 class Header extends React.Component {
     constructor(props){
@@ -28,6 +29,8 @@ class Header extends React.Component {
         this.showSignUpForm = this.showSignUpForm.bind(this);
         this.signUpRemoveFunction = this.signUpRemoveFunction.bind(this);
         this.logout = this.logout.bind(this);
+        this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
+        this.updateSearchValue = this.updateSearchValue.bind(this);
     }
 
     signUpRemoveFunction = () =>
@@ -102,6 +105,49 @@ class Header extends React.Component {
         }
     }
 
+    // function to get suggestions for search bar
+    // for now, just getting users
+    // will eventually get users and movies..
+    getSearchSuggestions(value)
+    {
+      // Simple POST request with a JSON body using fetch
+      const requestOptions = {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+      };
+
+      let status = 0;
+      let url = "http://localhost:9000/profile/query/?user=" + value;
+      return fetch(url, requestOptions)
+          .then(res => {
+              status = res.status;
+              if(status === 200)
+              {
+                  return res.json();
+              }
+              else
+              {
+                  return res.text();
+              }
+          }).then(result=> {
+              if(status !== 200)
+              {
+                alert("Issue getting user with the name: " + result);
+                return [];
+              }
+              else
+              {
+                  return result;
+              }
+          });
+    }
+
+    updateSearchValue(value)
+    {
+        return;
+    }
+
 	render() {
         // if the state loggedIn state has not been set in the router yet,
         // do not render the header
@@ -126,45 +172,51 @@ class Header extends React.Component {
         }
         if(this.state.loggedIn)
         {
-    		return (
-    			<div className="App-Header">
-    				<div className="logo">
-    					<h1 href="#">Logo</h1>
-    				</div>
-    				<div className="navButtons">
-    					<div class="home"><Link class="homeButton" to={homePath}>Home</Link></div>
-    					<div class="movieDropdown">
-    						<button class="movieButton">Movies</button>
-    						<div class="movieDropdownContent">
-    							<Link to="/movie">Top Rated</Link>
-    							<Link to="/upcoming">Upcoming</Link>
-    							<Link to="/movie">In Theaters</Link>
-    						</div>
-    					</div>
-                        <div class="showDropdown">
-                            <button class="showButton">Shows</button>
-                            <div class="showDropdownContent">
-                                <Link to="/">Top Rated</Link>
-                                <Link to="/">Schedule</Link>
+        		return (
+        			<div className="App-Header">
+        				<div className="logo">
+        					<h1 href="#">Logo</h1>
+        				</div>
+        				<div className="navButtons">
+        					<div class="home"><Link class="homeButton" to={homePath}>Home</Link></div>
+        					<div class="movieDropdown">
+        						<button class="movieButton">Movies</button>
+        						<div class="movieDropdownContent">
+        							<Link to="/movie">Top Rated</Link>
+        							<Link to="/upcoming">Upcoming</Link>
+        							<Link to="/movie">In Theaters</Link>
+        						</div>
+        					</div>
+                            <div class="showDropdown">
+                                <button class="showButton">Shows</button>
+                                <div class="showDropdownContent">
+                                    <Link to="/">Top Rated</Link>
+                                    <Link to="/">Schedule</Link>
+                                </div>
                             </div>
-                        </div>
-    					<div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
-    					<div class="profile">
-    						<Link class="profileButton" to="#">Profile</Link>
-    					</div>
-                        <div class="profile">
-                            <Link to="/settings" class="profileButton">Settings</Link>
-                        </div>
-                        <div class="profile">
-                            <Link to="#" class="profileButton" onClick={this.logout}>Logout</Link>
-                        </div>
-    				</div>
-    				<div className="searchBar">
-    					<form><input type="text" placeholder=" Search" name="search"></input></form>
-    				</div>
-                    {reviewForm}
-    			</div>
+        					<div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
+        					<div class="profile">
+        						<Link class="profileButton" to="#">Profile</Link>
+        					</div>
+                            <div class="profile">
+                                <Link to="/settings" class="profileButton">Settings</Link>
+                            </div>
+                            <div class="profile">
+                                <Link to="#" class="profileButton" onClick={this.logout}>Logout</Link>
+                            </div>
+        				</div>
+        				<div className="searchBar">
+                      <div className="searchInputBox">
+        					         <SearchDropDown getSuggestions={this.getSearchSuggestions} updateFunction={this.updateSearchValue} objectKey={"username"}/>
+                      </div>
+                      <div className="searchIconBox">
+                           <i class="fas fa-search searchIcon" />
+                      </div>
+        				</div>
+                        {reviewForm}
+        			</div>
     		);
+        //  class={`fa fa-thumbs-up ${style.thumbsUp}`}
         }
         else
         {

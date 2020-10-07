@@ -77,6 +77,10 @@
     justify-content: center;
 }
 
+.titleInputContainer {
+  text-align: left;
+}
+
 /* used to create a container that is 100% of the screen and centered */
 .centeredMaxWidthContainer {
     width: 100%;
@@ -210,13 +214,15 @@
 
 .dropdownContent {
     position: absolute;
+    display: inline-block;
     background-color: #f6f6f6;
-    width: 91%;
+    width: 95%;
     border: 1px solid #ddd;
     border-radius: 5px;
     z-index: 1;
     display: block;
     padding: 1px 2px;
+    text-align: left;
 }
 
 /* Links inside the dropdown */
@@ -242,4 +248,9 @@
 .moviePoster {
     width: 50%;
     height: 100%;
+}
+
+.searchInputContainer
+{
+    width: 100%;
 }

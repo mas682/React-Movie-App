@@ -20,6 +20,7 @@ class ReviewPopUp extends React.Component {
                 edit: this.props.edit,
                 open: false,
                 title:this.props.data.title,
+                movie: this.props.data.movie,
                 user:this.props.data.user,
                 form:this.props.data.form,
                 username: this.props.data.username,
@@ -280,7 +281,7 @@ class ReviewPopUp extends React.Component {
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({
-                title: this.state.title,
+                movie: this.state.title,
                 rating: this.state.rating,
                 good: goodString,
                 bad: badString,
@@ -562,6 +563,24 @@ class ReviewPopUp extends React.Component {
 
     generateTitleInput()
     {
+        if(this.state.edit)
+        {
+            let value = "";
+            if(this.state.movie !== undefined)
+            {
+                value = this.state.movie.title;
+            }
+            return (
+                <React.Fragment>
+                    <div className={style.titleInputContainer}>
+                        <label>
+                            <h4 className={style.h4NoMargin}>Movie Title</h4>
+                        </label>
+                        <SearchDropDown getSuggestions={this.getTitleSuggestions} objectKey="title" updateFunction={this.setMovie} value={value}/>
+                    </div>
+                </React.Fragment>
+            );
+        }
         return (
             <React.Fragment>
                 <label>

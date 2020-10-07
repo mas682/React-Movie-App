@@ -68,6 +68,7 @@ class MoviePost extends React.Component {
                 // title of post
                 title: this.props.data.review.movie.title,
                 poster: 'https://image.tmdb.org/t/p/w500' + this.props.data.review.movie.poster,
+                movie: this.props.data.review.movie,
                 // form id for post
                 form: "form" + this.props.data.review.id,
                 // username for the user who posted the review

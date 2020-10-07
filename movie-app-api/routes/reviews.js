@@ -215,7 +215,7 @@ const deleteReview = (cookie, req, res) =>
 // review - the review for the movie
 // good - a comma seperated string of good tags
 // bad - a comma seperated string of bad tags
-const createReview = (cookie, req, res) =>
+const createReview = async (cookie, req, res) =>
 {
     let userId = cookie.id;
     // need to verify this exists
@@ -231,9 +231,21 @@ const createReview = (cookie, req, res) =>
     ).then((review)=> {
         addGoodTags(req.body.good, review, userId);
         addBadTags(req.body.bad, review, userId);
+        res.status(201).send("Review successfully created!");
+    }).catch((err)=> {
+      console.log("Error creating review post: ");
+      if(err.original !== undefined)
+      {
+          // this works if trying to add review for movie that does not exist
+          console.log(err.original.detail);
+      }
+      else
+      {
+          console.log(err);
+      }
+      res.status(404).send("Review creation failed");
     });
     // review created
-    res.status(201).send("Review successfully created!");
 };
 
 // function to remove an existing comment from a review post

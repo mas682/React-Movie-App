@@ -1,7 +1,7 @@
 1. install npm and node
   https://www.npmjs.com/get-npm
-  
-  
+
+
 
 npm install -save react-router-dom
 npm install -save reactjs-popup
@@ -39,3 +39,6 @@ npm install react-bootstrap --save
 
 for fetch in server
 npm install node-fetch
+
+for parsing query string of url
+npm install query-string --save
