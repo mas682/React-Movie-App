@@ -11,6 +11,7 @@ import queryString from "query-string";
 class MoviePage extends React.Component {
 	constructor(props) {
 		super(props);
+		props.updateLoggedIn("admin", true);
 	}
 
 	render() {

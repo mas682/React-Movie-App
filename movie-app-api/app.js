@@ -43,6 +43,11 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
 });
 
 const getMovies = async () => {
+  // need to call this to get more info about movies, such as run time,
+//  https://api.themoviedb.org/3/movie/577922?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US
+  // with pg, pg13, r, etc. ratings
+//  https://api.themoviedb.org/3/movie/577922?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&append_to_response=release_dates
+
     let response = await fetch("https://api.themoviedb.org/3/discover/movie?"
     + "api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&region=US&sort_by=popularity.desc&"
     + "certification_country=US&include_adult=false&include_video=false&page=1&"

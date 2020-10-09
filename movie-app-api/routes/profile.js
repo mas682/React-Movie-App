@@ -29,7 +29,7 @@ const selectPath = (cookie, req, res, cookieValid) =>
 {
     console.log(req.params.userId);
     // if here, the path is profile/username
-    if(Object.keys(req.params).length == 1 && req.query === undefined)
+    if(Object.keys(req.params).length == 1 && Object.keys(req.query).length === 0)
     {
         getReviews(cookie, req, res, cookieValid);
     }
@@ -191,6 +191,7 @@ const getReviews = async (cookie, req, res, cookieValid) =>
 {
     //let username = cookie.name;
     let username = req.params.userId;
+    console.log(username);
     // find a user by their login
     models.User.findByLogin(username)
     .then(async (user)=>{

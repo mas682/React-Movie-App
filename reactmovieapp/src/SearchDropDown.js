@@ -92,7 +92,7 @@ class SearchDropDown extends React.Component {
     mouseHoverHandler(index, event)
     {
         console.log(index);
-        if(this.state.suggestionIndex != index)
+        if(this.state.suggestionIndex !== index)
         {
           if(this.state.key !== undefined)
           {

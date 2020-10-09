@@ -58,6 +58,8 @@ class Routes extends React.Component
     render()
     {
         //alert("rendering router");
+        //<Route exact path="/movie" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} />} />
+
         console.log("username in router " + this.state.currentUser);
         return (<React.Fragment>
 

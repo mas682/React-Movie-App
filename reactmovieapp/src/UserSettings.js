@@ -1,5 +1,4 @@
 import React from 'react';
-import history from './History'
 import {Link, Redirect } from 'react-router-dom';
 import './App.css';
 import style from './css/SettingsForm/UserSettings.module.css';
@@ -32,7 +31,7 @@ class UserSettings extends React.Component {
             editLast: false,
             editUser: false,
             editEmail: false,
-			displayPasswordResetPop: false
+						displayPasswordResetPop: false
         };
         this.setEdit = this.setEdit.bind(this);
         this.generateInput = this.generateInput.bind(this);
@@ -40,9 +39,9 @@ class UserSettings extends React.Component {
         this.callApi = this.callApi.bind(this);
         this.validateForm = this.validateForm.bind(this);
         this.sendData = this.sendData.bind(this);
-		this.showPasswordResetPopUp = this.showPasswordResetPopUp.bind(this);
-		this.removePasswordResetPopUp = this.removePasswordResetPopUp.bind(this);
-		this.generatePasswordPopUp = this.generatePasswordPopUp.bind(this);
+				this.showPasswordResetPopUp = this.showPasswordResetPopUp.bind(this);
+				this.removePasswordResetPopUp = this.removePasswordResetPopUp.bind(this);
+				this.generatePasswordPopUp = this.generatePasswordPopUp.bind(this);
 	}
 
 	async componentDidMount()
