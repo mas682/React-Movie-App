@@ -8,13 +8,91 @@ class MovieInfoPage extends React.Component {
   constructor(props){
   		super(props);
   		props.updateLoggedIn("admin", true);
+      let movieQuery = this.props.match.params.id;
+      let queryElements = movieQuery.split("-", 1);
+      let id = null;
+      if(queryElements.length > 0)
+      {
+          id = parseInt(queryElements[0]);
+          if(isNaN(id))
+          {
+              id = null;
+              alert("Invalid movie id provided");
+          }
+      }
+      console.log(queryElements);
       this.state = {
-          id: 57557,
-          rating: 4.5
+          id: id,
+          rating: 4.5,
+          poster: null,
+          headerImage: null,
+          trailer: null,
+          movie: null,
+          url: this.props.match.params.id
       }
       this.generateRatingStars = this.generateRatingStars.bind(this);
+      this.generateMoviePoster = this.generateMoviePoster.bind(this);
+      this.generateMovieTrailer = this.generateMovieTrailer.bind(this);
 	}
 
+
+  // function to get the movie title suggestions based off of a
+  // substring that the user has already entered
+
+  getMovieInfo(value)
+  {
+    // Simple POST request with a JSON body using fetch
+    const requestOptions = {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+    };
+
+    let status = 0;
+    let url = "http://localhost:9000/movie/" + this.state.id;
+    return fetch(url, requestOptions)
+        .then(res => {
+            status = res.status;
+            if(status === 200)
+            {
+                return res.json();
+            }
+            else
+            {
+                return res.text();
+            }
+        }).then(result=> {
+            return [status, result];
+        });
+  }
+
+  async componentDidMount()
+  {
+      let movieData = await this.getMovieInfo();
+      let status = movieData[0];
+      if(status === 200)
+      {
+          console.log(movieData[1]);
+          this.setState({
+            id: movieData[1].id,
+            poster: movieData[1].poster,
+            headerImage: movieData[1].backgroundImage,
+            trailer: movieData[1].trailer,
+            movie: movieData[1]
+          });
+          let title = movieData[1].title.replaceAll(" ", "_");
+          let newUrl = movieData[1].id + "-" + title;
+          // fix the url to the appropriate value if title incorrect
+          if(newUrl !== this.state.url)
+          {
+              window.history.replaceState(null, movieData[1].title, newUrl);
+          }
+      }
+      else
+      {
+          alert("Movie request failed");
+      }
+  }
 
   /*
       This function is used to generate the stars and set the appropriate ones to being colored or not
@@ -116,68 +194,104 @@ class MovieInfoPage extends React.Component {
       return stars;
   }
 
-	render() {
-		console.log(queryString.parse(this.props.location.search));
-    //<img src="https://cdn.flickeringmyth.com/wp-content/uploads/2020/07/Tenet-IMAX-1-600x326.jpg"></img>
-    /*
-    $239,100,000<br></br>
-    writer<br></br>
-    director<br></br>
-    https://www.tenetfilm.com<br></br>
-    */
-    let stars = this.generateRatingStars();
-		return (
-      <div className={style.mainBodyContainer}>
-          <div className={style.headerContainer}>
-              <div className={style.movieImageContainer}>
-                  <img className={style.moviePoster} src="https://image.tmdb.org/t/p/w500/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
-              </div>
-              <div className={style.movieDetailsOutterContainer}>
-                  <div className={style.movieDetailsContainer}>
-                      <div className={style.movieTitle}>
-                        Tenet
-                      </div>
-                      <div className={style.infoContainer}>
-                          PG-13 &nbsp;&nbsp; |
-                          &nbsp;&nbsp; 2 hrs 30 minutes &nbsp;&nbsp; |
-                          &nbsp;&nbsp; August 22, 2020
-                      </div>
-                      <div className={style.ratingContainer}>
-                          <fieldset className={style.rating}>
-                              {stars}
-                          </fieldset>
-                      </div>
-                      <div className={style.ratingContainer}>
-                      </div>
-                      <div className={style.overviewContainer}>
-                          <div className={style.overviewHeader}>
-                              Overview
-                          </div>
-                          Armed with only one word - Tenet - and fighting for the survival of the entire world,
-                           the Protagonist journeys through a twilight world of international espionage on a mission
-                           that will unfold in something beyond real time.
-                      </div>
-                      <div className={style.overviewContainer}>
-                          <div className={style.overviewHeader}>
-                              Genre
-                          </div>
-                          Action, Thriller, Science Fiction
-                      </div>
-                      <div className={style.overviewContainer}>
-                          <div className={style.overviewHeader}>
-                              Director
-                          </div>
-                          Christopher Nolan
-                      </div>
-                  </div>
-              </div>
-          </div>
+  generateMoviePoster()
+  {
+      let posterPath = "";
+      if(this.state.poster !== null)
+      {
+          posterPath = "https://image.tmdb.org/t/p/w500" + this.state.poster;
+      }
+      return (
+        <div className={style.movieImageContainer}>
+            <img className={style.moviePoster} src={posterPath}/>
+        </div>
+      );
+  }
+
+  generateMovieTrailer()
+  {
+      let trailerPath = "";
+      let trailerElem = "";
+      if(this.state.trailer !== null)
+      {
+          trailerPath = "https://www.youtube.com/embed/" + this.state.trailer;
+          trailerElem = <iframe className={style.movieTrailer} src={trailerPath}></iframe>;
+      }
+      return (
           <div className={style.movieTrailerContainer}>
-				      <iframe width="100%" height="315" src="https://www.youtube.com/embed/LdOM0x0XDMo"></iframe>
+              {trailerElem}
           </div>
-				  <iframe width="560" height="315" src="https://www.youtube.com/embed/AZGcmvrTX9M" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      </div>
-		);
+      );
+  }
+
+	render() {
+      if(this.state.movie === null)
+      {
+          return null;
+      }
+  		console.log(queryString.parse(this.props.location.search));
+      /*
+      $239,100,000<br></br>
+      writer<br></br>
+      https://www.tenetfilm.com<br></br>
+      // images
+      https://api.themoviedb.org/3/movie/616251/images?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&include_image_language=include_image_language%3Den%2Cnull
+      */
+      // set the movie page headers background
+      // if there is a image, use it, otherwise just make it gray..
+      let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
+      if(this.state.headerImage !== null)
+      {
+          headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/w500" + this.state.headerImage};
+      }
+      let poster = this.generateMoviePoster();
+      let trailer = this.generateMovieTrailer();
+      let stars = this.generateRatingStars();
+  		return (
+        <div className={style.mainBodyContainer}>
+            <div className={style.headerContainer} style={headerBackgroundCss}>
+                {poster}
+                <div className={style.movieDetailsOutterContainer}>
+                    <div className={style.movieDetailsContainer}>
+                        <div className={style.movieTitle}>
+                            {this.state.movie.title}
+                        </div>
+                        <div className={style.infoContainer}>
+                            {this.state.movie.rating} &nbsp;&nbsp; |
+                            &nbsp;&nbsp; {this.state.movie.runTime} minutes &nbsp;&nbsp; |
+                            &nbsp;&nbsp; {this.state.movie.releaseDate}
+                        </div>
+                        <div className={style.ratingContainer}>
+                            <fieldset className={style.rating}>
+                                {stars}
+                            </fieldset>
+                        </div>
+                        <div className={style.ratingContainer}>
+                        </div>
+                        <div className={style.overviewContainer}>
+                            <div className={style.overviewHeader}>
+                                Overview
+                            </div>
+                            {this.state.movie.overview}
+                        </div>
+                        <div className={style.overviewContainer}>
+                            <div className={style.overviewHeader}>
+                                Genre
+                            </div>
+                            {this.state.movie.genres}
+                        </div>
+                        <div className={style.overviewContainer}>
+                            <div className={style.overviewHeader}>
+                                Director
+                            </div>
+                            {this.state.movie.director}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {trailer}
+        </div>
+  		);
 	}
 }
 

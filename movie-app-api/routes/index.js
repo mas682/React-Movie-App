@@ -58,4 +58,8 @@ router.get('/movie/:type/*', function(req, res, next) {
     movieHandler(req, res, next);
 });
 
+router.get('/movie/:id', function(req, res, next) {
+    movieHandler(req, res, next);
+})
+
 module.exports = router;

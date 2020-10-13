@@ -32,10 +32,16 @@ const selectPath = (cookie, req, res, cookieValid) =>
     // if here, the path is /movie/get_movie_titles
 		// only allowed to use this if logged in
 		//console.log(Object.keys(req.params).length);
+		console.log("Request params:");
+		console.log(req.params);
     if(req.params.type === "get_movie_titles" && cookieValid)
     {
         getMovieTitles(cookie, req, res, cookieValid);
     }
+		else if(req.params.id !== undefined)
+		{
+				getMovieInfo(cookie, req, res, cookieValid);
+		}
 		/*
     else if(!cookieValid)
     {
@@ -68,7 +74,50 @@ const getMovieTitles = async (cookie, req, res, cookieValid) =>
 				console.log(movies);
 			  res.status(200).send(movies);
 		}
-}
+};
+
+const getMovieInfo = async(cookie, req, res, cookieValid) =>
+{
+		// prevent the id being sent in from being too long
+		if(req.params.id.length > 10)
+		{
+				res.status(404).send("Movie ID formatted incorrectly");
+		}
+		let id = req.params.id;
+		// strings length
+		let idLength = id.length;
+		// convert the string to a integer
+		let idInt = parseInt(id);
+		// if the value is a string or begins with a string
+		// such as a123
+		if(isNaN(idInt))
+		{
+				console.log("Did not find a movie ID");
+				res.status(404).send("Did nto find a movie ID in the request");
+				return;
+		}
+		let convertedLength = idInt.toString().length;
+		// if the value can be converted to a number but ends with a string
+		// such as 123a
+		if(idLength !== convertedLength)
+		{
+				console.log("Movie ID formatted incorrectly");
+				res.status(404).send("Movie ID formatted incorrectly");
+				return;
+		}
+		let movie = await models.Movies.getMovieInfo(id);
+		console.log("MOVIE");
+		console.log(movie);
+		if(movie === undefined)
+		{
+				res.status(404).send("Unable to find the information for the requested movie");
+		}
+		else
+		{
+				res.status(200).send(movie);
+		}
+
+};
 
 
 export {movieHandler};

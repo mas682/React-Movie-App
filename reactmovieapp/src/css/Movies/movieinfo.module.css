@@ -20,14 +20,18 @@
   flex-flow: row wrap;
   margin-bottom: 10px;
   position: relative;
-  background-image: linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url("https://cdn.flickeringmyth.com/wp-content/uploads/2020/07/Tenet-IMAX-1-600x326.jpg");
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+#moviePageHeader {
+
 }
 
 .movieImageContainer {
     width: 35%;
     margin: 0px;
+    min-height: 500px;
     display:flex;
 }
 
@@ -35,6 +39,12 @@
     width: 80%;
     margin: 10%;
     height: inherit;
+    background: white;
+}
+
+.movieTrailer {
+    width: 100%;
+    height: 450px;
 }
 
 .movieDetailsOutterContainer {
@@ -70,6 +80,8 @@
     margin-left: 10%;
     margin-right: 10%;
     width: 100%;
+    margin-top: 20px;
+    margin-bottom: 400px;
 }
 
 

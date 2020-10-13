@@ -18,7 +18,7 @@ sequelize.sync().then(() => {
 });
 */
 // restart db each time
-const eraseDatabaseOnSync = true;
+const eraseDatabaseOnSync = false;
 
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     if (eraseDatabaseOnSync) {
@@ -55,7 +55,7 @@ const getMovies = async () => {
     if(response.status === 200)
     {
         let data = await(response.json());
-        console.log(data);
+        //console.log(data);
         /*
         may eventually want to get move info about each movie...
         let movies = [];
@@ -64,18 +64,87 @@ const getMovies = async () => {
         });
         */
         data.results.forEach(async(movie) => {
-            await models.Movies.create({
-                id: movie.id,
-                title: movie.title,
-                releaseDate: movie.release_date,
-                poster: movie.poster_path,
-                overview: movie.overview
-            }).then((movie) =>{
-               if(movie.id === 577922)
-               {
-                 sampleReview();
-               }
-            })
+            //https://api.themoviedb.org/3/movie/577922?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc
+            //&language=en-US&append_to_response=videos%2Cimages%2Crelease_dates
+            // to get all pictures, do language=en-US%2Cnull and add images to the append_to_response
+            let url = "https://api.themoviedb.org/3/movie/" + movie.id + "?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US%2Cnull&append_to_response=videos%2Crelease_dates%2Ccredits";
+            let response = await fetch(url);
+            if(response.status === 200)
+            {
+                let movieData = await(response.json());
+                let genres = "";
+                movieData.genres.forEach((genre) => {
+                    if(genres === "")
+                    {
+                        genres = genres + genre.name;
+                    }
+                    else
+                    {
+                        genres = genres + ", " + genre.name;
+                    }
+                });
+                let rating = null;
+                if(movieData.release_dates.results !== undefined)
+                {
+                    let found = false;
+                    let counter = 0;
+                    while(!found && counter < movieData.release_dates.results.length)
+                    {
+                        let country = movieData.release_dates.results[counter].iso_3166_1;
+                        if(country === "US")
+                        {
+                            rating = movieData.release_dates.results[counter].release_dates[0].certification;
+                            if(rating === "")
+                            {
+                                rating = null;
+                            }
+                            found = true;
+                        }
+                        counter = counter + 1;
+                    }
+                }
+              //  console.log(movieData);
+                let trailer = null;
+                if(movieData.videos.results !== undefined)
+                {
+                    if(movieData.videos.results.length > 0)
+                    {
+                        console.log(movieData.videos.results);
+                        trailer = movieData.videos.results[0].key;
+                    }
+                }
+                let director = null;
+                if(movieData.credits.crew !== undefined)
+                {
+                    if(movieData.credits.crew.length > 0)
+                    {
+                        director = movieData.credits.crew[0].name;
+                    }
+                }
+                // need to error check that everything is there...
+                // backdrop will show up as null
+                // runtime shows up as 0
+                // fix genres to be null
+                await models.Movies.create({
+                    id: movieData.id,
+                    title: movieData.title,
+                    releaseDate: movieData.release_date,
+                    poster: movieData.poster_path,
+                    overview: movieData.overview,
+                    runTime: movieData.runtime,
+                    backgroundImage: movieData.backdrop_path,
+                    trailer: trailer,
+                    director: director,
+                    revenue: movieData.revenue,
+                    genres: genres,
+                    rating: rating
+                }).then((movie) =>{
+                   if(movie.id === 577922)
+                   {
+                     sampleReview();
+                   }
+                });
+            }
         });
     }
     else

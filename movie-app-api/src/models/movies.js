@@ -25,6 +25,40 @@ const movie = (sequelize, DataTypes) => {
                 notEmpty: true,
             }
         },
+        revenue: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        director: {
+          // set the data type to string
+          type: DataTypes.STRING,
+          // do not allow this to be empty
+          allowNull: true,
+          // validate that it is not empty
+          validate: {
+              notEmpty: true,
+          }
+        },
+        runTime: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        rating: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        trailer: {
+            // set the data type to string
+            type: DataTypes.STRING,
+            // do not allow this to be empty
+            allowNull: true,
+        },
+        backgroundImage: {
+            // set the data type to string
+            type: DataTypes.STRING,
+            // do not allow this to be empty
+            allowNull: true,
+        },
         // probably eventually want to change this to the date type..
         releaseDate: {
             // set the data type to string
@@ -58,12 +92,27 @@ const movie = (sequelize, DataTypes) => {
                 notEmpty: true,
             }
         },
+        genres: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
     });
 
     Movie.associate = models => {
         // each movie can be associated with many reviews
         Movie.hasMany(models.Review, { onDelete: 'CASCADE' });
     };
+
+    // function to get the information for a individual movie
+    Movie.getMovieInfo = async (id) =>
+    {
+        let movie = await Movie.findOne({
+            where: {
+              id: id
+            }
+        });
+        return movie;
+    }
 
     // function to get movies for the review form
     // only want title, id, and picture
