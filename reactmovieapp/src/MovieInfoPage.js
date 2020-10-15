@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Link, Redirect, withRouter} from 'react-router-dom';
+import MoviePosterPopUp from './MoviePosterPopUp.js';
 import queryString from "query-string";
 import style from './css/Movies/movieinfo.module.css'
 
@@ -28,13 +29,28 @@ class MovieInfoPage extends React.Component {
           headerImage: null,
           trailer: null,
           movie: null,
-          url: this.props.match.params.id
+          url: this.props.match.params.id,
+          posterPopup: false
       }
       this.generateRatingStars = this.generateRatingStars.bind(this);
       this.generateMoviePoster = this.generateMoviePoster.bind(this);
       this.generateMovieTrailer = this.generateMovieTrailer.bind(this);
+      this.posterClickHandler = this.posterClickHandler.bind(this);
 	}
 
+
+  posterClickHandler()
+  {
+      // do not expand the poster if one does not exist
+      if(this.state.poster === null)
+      {
+          return;
+      }
+      let opened = this.state.posterPopup;
+      this.setState({
+          posterPopup: !opened
+      });
+  }
 
   // function to get the movie title suggestions based off of a
   // substring that the user has already entered
@@ -199,11 +215,11 @@ class MovieInfoPage extends React.Component {
       let posterPath = "";
       if(this.state.poster !== null)
       {
-          posterPath = "https://image.tmdb.org/t/p/w500" + this.state.poster;
+          posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
       }
       return (
         <div className={style.movieImageContainer}>
-            <img className={style.moviePoster} src={posterPath}/>
+            <img className={style.moviePoster} src={posterPath} onClick={this.posterClickHandler}/>
         </div>
       );
   }
@@ -242,11 +258,22 @@ class MovieInfoPage extends React.Component {
       let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
       if(this.state.headerImage !== null)
       {
-          headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/w500" + this.state.headerImage};
+          headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.headerImage};
       }
       let poster = this.generateMoviePoster();
       let trailer = this.generateMovieTrailer();
       let stars = this.generateRatingStars();
+
+      // if the poster was clicked, show it larger
+      let posterPopup = "";
+      if(this.state.posterPopup)
+      {
+          if(this.state.poster !== null)
+          {
+              let posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
+              posterPopup = <MoviePosterPopUp posterPath={posterPath} removeFunction={this.posterClickHandler} />;
+          }
+      }
   		return (
         <div className={style.mainBodyContainer}>
             <div className={style.headerContainer} style={headerBackgroundCss}>
@@ -290,6 +317,7 @@ class MovieInfoPage extends React.Component {
                 </div>
             </div>
             {trailer}
+            {posterPopup}
         </div>
   		);
 	}

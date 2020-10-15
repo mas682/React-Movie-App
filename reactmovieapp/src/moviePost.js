@@ -49,11 +49,15 @@ class MoviePost extends React.Component {
                 displayLikes: false,
                 // used as boolean as to whether or not to show remove post buttons when clicked
                 removePost: false,
-                type: "popup"
+                type: "popup",
+                // path to movies page
+                moviePath: this.props.data.moviePath
             };
         }
         else
         {
+            let moviePath = this.props.data.review.movie.title.replace(" ", "-");
+            moviePath = "/movie/" + this.props.data.review.movie.id + "-" + moviePath;
             this.state = {
                 // boolean for opening the edit pop up
                 openEdit: false,
@@ -90,7 +94,8 @@ class MoviePost extends React.Component {
                 displayLikes: false,
                 // used as boolean as to whether or not to show remove post buttons when clicked
                 removePost: false,
-                type: "non-popup"
+                type: "non-popup",
+                moviePath: moviePath
             };
         }
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
@@ -112,6 +117,7 @@ class MoviePost extends React.Component {
         this.generatePostPopUpButton = this.generatePostPopUpButton.bind(this);
         this.updateLiked = this.updateLiked.bind(this);
         this.removeFunction = this.removeFunction.bind(this);
+        this.generateMoviePage = this.generateMoviePage.bind(this);
     }
 
     /*
@@ -602,6 +608,11 @@ class MoviePost extends React.Component {
         }
     }
 
+    generateMoviePage()
+    {
+
+    }
+
 
     generateHTML()
     {
@@ -639,7 +650,7 @@ class MoviePost extends React.Component {
                 <h3>{this.state.title}</h3>
             </div>
             <div className="postImage">
-                <img className={style.moviePoster} src={this.state.poster}/>
+                <Link to={this.state.moviePath}><img className={style.moviePoster} src={this.state.poster}/></Link>
             </div>
             <form id={this.state.form} />
             <div className="centeredMaxWidthContainer">
@@ -710,7 +721,6 @@ class MoviePost extends React.Component {
         else
         {
             let html = this.generateHTML();
-            console.log(html);
             if(this.state.type !== "popup")
             {
                 return (
