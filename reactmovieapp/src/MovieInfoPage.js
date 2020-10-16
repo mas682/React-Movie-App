@@ -30,12 +30,17 @@ class MovieInfoPage extends React.Component {
           trailer: null,
           movie: null,
           url: this.props.match.params.id,
-          posterPopup: false
+          posterPopup: false,
+          movieInfoString: ""
       }
       this.generateRatingStars = this.generateRatingStars.bind(this);
       this.generateMoviePoster = this.generateMoviePoster.bind(this);
       this.generateMovieTrailer = this.generateMovieTrailer.bind(this);
       this.posterClickHandler = this.posterClickHandler.bind(this);
+      this.generateMovieInfo = this.generateMovieInfo.bind(this);
+      this.generateMovieRuntime = this.generateMovieRuntime.bind(this);
+      this.generateOverview = this.generateOverview.bind(this);
+      this.generateDirector = this.generateDirector.bind(this);
 	}
 
 
@@ -88,13 +93,16 @@ class MovieInfoPage extends React.Component {
       let status = movieData[0];
       if(status === 200)
       {
+          let movieInfo = this.generateMovieInfo(movieData[1]);
+          console.log("Movie Info");
           console.log(movieData[1]);
           this.setState({
             id: movieData[1].id,
             poster: movieData[1].poster,
             headerImage: movieData[1].backgroundImage,
             trailer: movieData[1].trailer,
-            movie: movieData[1]
+            movie: movieData[1],
+            movieInfoString: movieInfo
           });
           let title = movieData[1].title.replaceAll(" ", "_");
           let newUrl = movieData[1].id + "-" + title;
@@ -210,117 +218,207 @@ class MovieInfoPage extends React.Component {
       return stars;
   }
 
-  generateMoviePoster()
-  {
-      let posterPath = "";
-      if(this.state.poster !== null)
-      {
-          posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
-      }
-      return (
-        <div className={style.movieImageContainer}>
-            <img className={style.moviePoster} src={posterPath} onClick={this.posterClickHandler}/>
-        </div>
-      );
-  }
+    // function to generate the movies runtime as a string
+    generateMovieRuntime(value)
+    {
+        let runTime = "";
+        if(value > 0)
+        {
+            let hours = Math.floor(value / 60);
+            let minutes = value % 60;
+            let hourType = "Hours";
+            if(hours < 2)
+            {
+                hourType = "Hour";
+            }
+            if(minutes > 0)
+            {
+                if(minutes > 1)
+                {
+                    runTime = hours + " " + hourType + " " + minutes + " Minutes";
+                }
+                else
+                {
+                    runTime = hours + " " + hourType + " " + minutes + " Minute";
+                }
+            }
+            else
+            {
+                runTime = hours + " Hours";
+            }
+        }
+        return runTime;
+    }
 
-  generateMovieTrailer()
-  {
-      let trailerPath = "";
-      let trailerElem = "";
-      if(this.state.trailer !== null)
-      {
-          trailerPath = "https://www.youtube.com/embed/" + this.state.trailer;
-          trailerElem = <iframe className={style.movieTrailer} src={trailerPath}></iframe>;
-      }
-      return (
-          <div className={style.movieTrailerContainer}>
-              {trailerElem}
+    // called whenever the data is recieved from the server
+    generateMovieInfo(movie)
+    {
+        let valuesArray = [];
+        let runTime = this.generateMovieRuntime(movie.runTime);
+        if(movie.rating !== null)
+        {
+            valuesArray.push(movie.rating);
+        }
+        if(runTime.length > 0)
+        {
+            valuesArray.push(runTime);
+        }
+        if(movie.releaseDate !== null)
+        {
+            valuesArray.push(movie.releaseDate);
+        }
+
+        let counter = 0;
+        let movieInfo = "";
+        while(counter < valuesArray.length)
+        {
+            if((counter + 1) < valuesArray.length)
+            {
+                movieInfo = movieInfo + valuesArray[counter] + "    |    ";
+
+            }
+            else
+            {
+                movieInfo = movieInfo + valuesArray[counter];
+            }
+            counter = counter + 1;
+        }
+        return movieInfo;
+    }
+
+    generateMoviePoster()
+    {
+        let posterPath = "";
+        if(this.state.poster !== null)
+        {
+            posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
+        }
+        return (
+          <div className={style.movieImageContainer}>
+              <img className={style.moviePoster} src={posterPath} onClick={this.posterClickHandler}/>
           </div>
-      );
-  }
+        );
+    }
 
-	render() {
-      if(this.state.movie === null)
-      {
-          return null;
-      }
-  		console.log(queryString.parse(this.props.location.search));
-      /*
-      $239,100,000<br></br>
-      writer<br></br>
-      https://www.tenetfilm.com<br></br>
-      // images
-      https://api.themoviedb.org/3/movie/616251/images?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&include_image_language=include_image_language%3Den%2Cnull
-      */
-      // set the movie page headers background
-      // if there is a image, use it, otherwise just make it gray..
-      let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
-      if(this.state.headerImage !== null)
-      {
-          headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.headerImage};
-      }
-      let poster = this.generateMoviePoster();
-      let trailer = this.generateMovieTrailer();
-      let stars = this.generateRatingStars();
-
-      // if the poster was clicked, show it larger
-      let posterPopup = "";
-      if(this.state.posterPopup)
-      {
-          if(this.state.poster !== null)
-          {
-              let posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
-              posterPopup = <MoviePosterPopUp posterPath={posterPath} removeFunction={this.posterClickHandler} />;
-          }
-      }
-  		return (
-        <div className={style.mainBodyContainer}>
-            <div className={style.headerContainer} style={headerBackgroundCss}>
-                {poster}
-                <div className={style.movieDetailsOutterContainer}>
-                    <div className={style.movieDetailsContainer}>
-                        <div className={style.movieTitle}>
-                            {this.state.movie.title}
-                        </div>
-                        <div className={style.infoContainer}>
-                            {this.state.movie.rating} &nbsp;&nbsp; |
-                            &nbsp;&nbsp; {this.state.movie.runTime} minutes &nbsp;&nbsp; |
-                            &nbsp;&nbsp; {this.state.movie.releaseDate}
-                        </div>
-                        <div className={style.ratingContainer}>
-                            <fieldset className={style.rating}>
-                                {stars}
-                            </fieldset>
-                        </div>
-                        <div className={style.ratingContainer}>
-                        </div>
-                        <div className={style.overviewContainer}>
-                            <div className={style.overviewHeader}>
-                                Overview
-                            </div>
-                            {this.state.movie.overview}
-                        </div>
-                        <div className={style.overviewContainer}>
-                            <div className={style.overviewHeader}>
-                                Genre
-                            </div>
-                            {this.state.movie.genres}
-                        </div>
-                        <div className={style.overviewContainer}>
-                            <div className={style.overviewHeader}>
-                                Director
-                            </div>
-                            {this.state.movie.director}
-                        </div>
-                    </div>
-                </div>
+    generateMovieTrailer()
+    {
+        let trailerPath = "";
+        let trailerElem = "";
+        if(this.state.trailer !== null)
+        {
+            trailerPath = "https://www.youtube.com/embed/" + this.state.trailer;
+            trailerElem = <iframe className={style.movieTrailer} src={trailerPath}></iframe>;
+        }
+        return (
+            <div className={style.movieTrailerContainer}>
+                {trailerElem}
             </div>
-            {trailer}
-            {posterPopup}
-        </div>
-  		);
-	}
+        );
+    }
+
+    generateOverview()
+    {
+        if(this.state.movie.overview !== null)
+        {
+            return (
+                <div className={style.overviewContainer}>
+                    <div className={style.overviewHeader}>
+                        Overview
+                    </div>
+                    {this.state.movie.overview}
+                </div>
+            );
+        }
+        return "";
+    }
+
+    generateDirector()
+    {
+        if(this.state.movie.director !== null)
+        {
+            return (
+              <div className={style.overviewContainer}>
+                  <div className={style.overviewHeader}>
+                      Director
+                  </div>
+                  {this.state.movie.director}
+              </div>
+            );
+        }
+        return "";
+    }
+
+  	render() {
+        if(this.state.movie === null)
+        {
+            return null;
+        }
+    		console.log(queryString.parse(this.props.location.search));
+        /*
+        $239,100,000<br></br>
+        writer<br></br>
+        https://www.tenetfilm.com<br></br>
+        // images
+        https://api.themoviedb.org/3/movie/616251/images?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&include_image_language=include_image_language%3Den%2Cnull
+        */
+        // set the movie page headers background
+        // if there is a image, use it, otherwise just make it gray..
+        let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
+        if(this.state.headerImage !== null)
+        {
+            headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.headerImage};
+        }
+        let poster = this.generateMoviePoster();
+        let trailer = this.generateMovieTrailer();
+        let stars = this.generateRatingStars();
+        let director = this.generateDirector();
+        let overview = this.generateOverview();
+
+        // if the poster was clicked, show it larger
+        let posterPopup = "";
+        if(this.state.posterPopup)
+        {
+            if(this.state.poster !== null)
+            {
+                let posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
+                posterPopup = <MoviePosterPopUp posterPath={posterPath} removeFunction={this.posterClickHandler} />;
+            }
+        }
+    		return (
+          <div className={style.mainBodyContainer}>
+              <div className={style.headerContainer} style={headerBackgroundCss}>
+                  {poster}
+                  <div className={style.movieDetailsOutterContainer}>
+                      <div className={style.movieDetailsContainer}>
+                          <div className={style.movieTitle}>
+                              {this.state.movie.title}
+                          </div>
+                          <div className={style.infoContainer}>
+                              {this.state.movieInfoString}
+                          </div>
+                          <div className={style.ratingContainer}>
+                              <fieldset className={style.rating}>
+                                  {stars}
+                              </fieldset>
+                          </div>
+                          <div className={style.ratingContainer}>
+                          </div>
+                          {overview}
+                          <div className={style.overviewContainer}>
+                              <div className={style.overviewHeader}>
+                                  Genre
+                              </div>
+                              {this.state.movie.genres}
+                          </div>
+                          {director}
+                      </div>
+                  </div>
+              </div>
+              {trailer}
+              {posterPopup}
+          </div>
+    		);
+  	}
 }
 
 export default withRouter(MovieInfoPage);
