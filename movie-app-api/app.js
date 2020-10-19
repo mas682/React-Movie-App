@@ -72,17 +72,6 @@ const getMovies = async () => {
             if(response.status === 200)
             {
                 let movieData = await(response.json());
-                let genres = "";
-                movieData.genres.forEach((genre) => {
-                    if(genres === "")
-                    {
-                        genres = genres + genre.name;
-                    }
-                    else
-                    {
-                        genres = genres + ", " + genre.name;
-                    }
-                });
                 let rating = null;
                 if(movieData.release_dates.results !== undefined)
                 {
@@ -136,13 +125,22 @@ const getMovies = async () => {
                     trailer: trailer,
                     director: director,
                     revenue: movieData.revenue,
-                    genres: genres,
+                    //genres: genres,
                     rating: rating
                 }).then((movie) =>{
+                    movieData.genres.forEach(async (genre) => {
+                        let tempGenre = await models.Genre.findOrCreate({
+                            where: {
+                              value: genre.name
+                            }
+                        });
+                        await movie.addGenre(tempGenre[0].dataValues.id);
+                    });
                    if(movie.id === 577922)
                    {
                      sampleReview();
                    }
+
                 });
             }
         });

@@ -17,6 +17,8 @@ const models = {
     Comment: sequelize.import('./comments'),
     Like: sequelize.import('./likes'),
     UsersFriends: sequelize.import('./usersFriendsTable'),
+    MovieGenreTable: sequelize.import('./MovieGenreTable'),
+    Genre: sequelize.import('./genres'),
     Movies: sequelize.import('./movies')
 };
 

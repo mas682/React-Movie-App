@@ -41,6 +41,7 @@ class MovieInfoPage extends React.Component {
       this.generateMovieRuntime = this.generateMovieRuntime.bind(this);
       this.generateOverview = this.generateOverview.bind(this);
       this.generateDirector = this.generateDirector.bind(this);
+      this.generateGenres = this.generateGenres.bind(this);
 	}
 
 
@@ -62,29 +63,29 @@ class MovieInfoPage extends React.Component {
 
   getMovieInfo(value)
   {
-    // Simple POST request with a JSON body using fetch
-    const requestOptions = {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-    };
+      // Simple POST request with a JSON body using fetch
+      const requestOptions = {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+      };
 
-    let status = 0;
-    let url = "http://localhost:9000/movie/" + this.state.id;
-    return fetch(url, requestOptions)
-        .then(res => {
-            status = res.status;
-            if(status === 200)
-            {
-                return res.json();
-            }
-            else
-            {
-                return res.text();
-            }
-        }).then(result=> {
-            return [status, result];
-        });
+      let status = 0;
+      let url = "http://localhost:9000/movie/" + this.state.id;
+      return fetch(url, requestOptions)
+          .then(res => {
+              status = res.status;
+              if(status === 200)
+              {
+                  return res.json();
+              }
+              else
+              {
+                  return res.text();
+              }
+          }).then(result=> {
+              return [status, result];
+          });
   }
 
   async componentDidMount()
@@ -348,6 +349,36 @@ class MovieInfoPage extends React.Component {
         return "";
     }
 
+    generateGenres()
+    {
+        if(this.state.movie.Genres.length > 0)
+        {
+            let genres = "";
+            let counter = 0;
+            while(counter < this.state.movie.Genres.length)
+            {
+                if((counter + 1) < this.state.movie.Genres.length)
+                {
+                    genres = genres + this.state.movie.Genres[counter].value + ", ";
+                }
+                else
+                {
+                    genres = genres + this.state.movie.Genres[counter].value;
+                }
+                counter = counter + 1;
+            }
+            return (
+              <div className={style.overviewContainer}>
+                  <div className={style.overviewHeader}>
+                      Genre
+                  </div>
+                  {genres}
+              </div>
+            );
+        }
+        return "";
+    }
+
   	render() {
         if(this.state.movie === null)
         {
@@ -373,6 +404,7 @@ class MovieInfoPage extends React.Component {
         let stars = this.generateRatingStars();
         let director = this.generateDirector();
         let overview = this.generateOverview();
+        let genres = this.generateGenres();
 
         // if the poster was clicked, show it larger
         let posterPopup = "";
@@ -404,12 +436,7 @@ class MovieInfoPage extends React.Component {
                           <div className={style.ratingContainer}>
                           </div>
                           {overview}
-                          <div className={style.overviewContainer}>
-                              <div className={style.overviewHeader}>
-                                  Genre
-                              </div>
-                              {this.state.movie.genres}
-                          </div>
+                          {genres}
                           {director}
                       </div>
                   </div>

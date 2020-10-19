@@ -1,3 +1,4 @@
+let moment = require('moment');
 const Op = require('Sequelize').Op;
 const movie = (sequelize, DataTypes) => {
     const Movie = sequelize.define('movie', {
@@ -59,16 +60,12 @@ const movie = (sequelize, DataTypes) => {
             // do not allow this to be empty
             allowNull: true,
         },
-        // probably eventually want to change this to the date type..
         releaseDate: {
-            // set the data type to string
-            type: DataTypes.STRING,
-            // do not allow this to be empty
+            type: DataTypes.DATEONLY,
             allowNull: true,
-            // validate that it is not empty
-            validate: {
-                notEmpty: true,
-            },
+            get() {
+                return moment(this.getDataValue('releaseDate')).format('MMMM DD, YYYY');
+            }
         },
         overview: {
             // set the data type to string
@@ -92,24 +89,36 @@ const movie = (sequelize, DataTypes) => {
                 notEmpty: true,
             }
         },
+        /*
         genres: {
             type: DataTypes.STRING,
             allowNull: true
         },
+        */
     });
 
     Movie.associate = models => {
         // each movie can be associated with many reviews
         Movie.hasMany(models.Review, { onDelete: 'CASCADE' });
+        // each movie can have many genres
+        Movie.belongsToMany(models.Genre, {through: models.MovieGenreTable});
     };
 
     // function to get the information for a individual movie
-    Movie.getMovieInfo = async (id) =>
+    Movie.getMovieInfo = async (id, models) =>
     {
         let movie = await Movie.findOne({
             where: {
               id: id
-            }
+            },
+            include: [
+              {
+                  model: models.Genre,
+                  as: "Genres",
+                  attributes: ["id", "value"],
+                  through: {attributes: []}
+              }
+            ]
         });
         return movie;
     }

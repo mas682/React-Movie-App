@@ -105,7 +105,7 @@ const getMovieInfo = async(cookie, req, res, cookieValid) =>
 				res.status(404).send("Movie ID formatted incorrectly");
 				return;
 		}
-		let movie = await models.Movies.getMovieInfo(id);
+		let movie = await models.Movies.getMovieInfo(id, models);
 		console.log("MOVIE");
 		console.log(movie);
 		if(movie === undefined)
