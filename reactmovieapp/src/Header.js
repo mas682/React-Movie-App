@@ -19,7 +19,8 @@ class Header extends React.Component {
             loggedIn: this.props.loggedIn,
             displaySignIn: this.props.showLoginPopUp,
             displaySignUp: false,
-            redirect: false
+            redirect: false,
+            causeRender: false
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
@@ -118,7 +119,7 @@ class Header extends React.Component {
       };
 
       let status = 0;
-      let url = "http://localhost:9000/profile/query/?user=" + value;
+      let url = "http://localhost:9000/search/query_all/?value=" + value;
       return fetch(url, requestOptions)
           .then(res => {
               status = res.status;
@@ -207,7 +208,7 @@ class Header extends React.Component {
         				</div>
         				<div className="searchBar">
                       <div className="searchInputBox">
-        					         <SearchDropDown getSuggestions={this.getSearchSuggestions} updateFunction={this.updateSearchValue} objectKey={"username"}/>
+        					         <SearchDropDown getSuggestions={this.getSearchSuggestions} updateFunction={this.updateSearchValue} multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}} redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}/>
                       </div>
                       <div className="searchIconBox">
                            <i class="fas fa-search searchIcon" />

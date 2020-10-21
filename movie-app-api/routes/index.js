@@ -9,6 +9,7 @@ import {signUp} from './signup.js';
 import {homePage} from './homePage.js';
 import {getUserInfo} from './getUserInfo.js';
 import {movieHandler} from './movies.js';
+import {searchHandler} from './search.js';
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -60,6 +61,10 @@ router.get('/movie/:type/*', function(req, res, next) {
 
 router.get('/movie/:id', function(req, res, next) {
     movieHandler(req, res, next);
-})
+});
+
+router.get('/search/:type/*', function(req, res, next) {
+    searchHandler(req, res, next);
+});
 
 module.exports = router;

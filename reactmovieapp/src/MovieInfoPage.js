@@ -399,6 +399,11 @@ class MovieInfoPage extends React.Component {
         {
             headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.headerImage};
         }
+        // if there is no background image, try to use the poster itself
+        else if(this.state.poster !== null)
+        {
+            headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.poster};
+        }
         let poster = this.generateMoviePoster();
         let trailer = this.generateMovieTrailer();
         let stars = this.generateRatingStars();

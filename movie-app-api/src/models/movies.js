@@ -64,7 +64,7 @@ const movie = (sequelize, DataTypes) => {
             type: DataTypes.DATEONLY,
             allowNull: true,
             get() {
-                return moment(this.getDataValue('releaseDate')).format('MMMM DD, YYYY');
+                return moment(this.getDataValue('releaseDate')).format('MMMM D, YYYY');
             }
         },
         overview: {

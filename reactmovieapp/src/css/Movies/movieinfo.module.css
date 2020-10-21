@@ -97,9 +97,9 @@
 .infoContainer {
     display: flex;
     flex-flow: row wrap;
-    color: black;
     font-weight: 500;
     white-space: pre;
+    color: white;
 }
 
 .movieTitle {

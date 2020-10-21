@@ -552,11 +552,11 @@ class ReviewPopUp extends React.Component {
               if(status !== 200)
               {
                 alert("Issue getting movie title: " + result);
-                return [];
+                return {Movies:[]};
               }
               else
               {
-                  return result;
+                  return {Movies:result};
               }
           });
     }
@@ -576,7 +576,7 @@ class ReviewPopUp extends React.Component {
                         <label>
                             <h4 className={style.h4NoMargin}>Movie Title</h4>
                         </label>
-                        <SearchDropDown getSuggestions={this.getTitleSuggestions} objectKey="title" updateFunction={this.setMovie} value={value}/>
+                        <SearchDropDown getSuggestions={this.getTitleSuggestions} valueKeys={{Movies:"title"}} updateFunction={this.setMovie} value={value}/>
                     </div>
                 </React.Fragment>
             );
@@ -586,7 +586,7 @@ class ReviewPopUp extends React.Component {
                 <label>
                     <h4 className={style.h4NoMargin}>Movie Title</h4>
                 </label>
-                <SearchDropDown getSuggestions={this.getTitleSuggestions} objectKey="title" updateFunction={this.setMovie} />
+                <SearchDropDown getSuggestions={this.getTitleSuggestions} valueKeys={{Movies:"title"}} updateFunction={this.setMovie} />
             </React.Fragment>
         );
     }
