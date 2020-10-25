@@ -71,8 +71,15 @@ const getMovieTitles = async (cookie, req, res, cookieValid) =>
 		}
 		else
 		{
-				console.log(movies);
-			  res.status(200).send(movies);
+				if(movies.length < 1)
+				{
+						res.status(404).send("Unable to find any movies matching that value");
+				}
+				else
+				{
+					console.log(movies);
+					res.status(200).send({Movies: movies});
+				}
 		}
 };
 

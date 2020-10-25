@@ -31,7 +31,6 @@ class Header extends React.Component {
         this.signUpRemoveFunction = this.signUpRemoveFunction.bind(this);
         this.logout = this.logout.bind(this);
         this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
-        this.updateSearchValue = this.updateSearchValue.bind(this);
     }
 
     signUpRemoveFunction = () =>
@@ -134,19 +133,13 @@ class Header extends React.Component {
           }).then(result=> {
               if(status !== 200)
               {
-                alert("Issue getting user with the name: " + result);
-                return [];
+                return {};
               }
               else
               {
                   return result;
               }
           });
-    }
-
-    updateSearchValue(value)
-    {
-        return;
     }
 
 	render() {
@@ -208,7 +201,7 @@ class Header extends React.Component {
         				</div>
         				<div className="searchBar">
                       <div className="searchInputBox">
-        					         <SearchDropDown getSuggestions={this.getSearchSuggestions} updateFunction={this.updateSearchValue} multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}} redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}/>
+        					         <SearchDropDown getSuggestions={this.getSearchSuggestions} multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}} redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}/>
                       </div>
                       <div className="searchIconBox">
                            <i class="fas fa-search searchIcon" />

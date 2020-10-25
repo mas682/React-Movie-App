@@ -78,8 +78,8 @@ class SearchDropDown extends React.Component {
         this.keyPressedHandler = this.keyPressedHandler.bind(this);
         this.generateInputBox = this.generateInputBox.bind(this);
         this.generateSuggestionBox = this.generateSuggestionBox.bind(this);
-        this.mouseHoverHandler = this.mouseHoverHandler.bind(this);
         this.redirectHandler = this.redirectHandler.bind(this);
+        this.suggestionFocusHandler = this.suggestionFocusHandler.bind(this);
     }
 
     componentDidUpdate()
@@ -229,26 +229,25 @@ class SearchDropDown extends React.Component {
         {
             // remove focus from the input field
             event.target.blur();
-            this.redirectHandler();
-        }
-    }
-
-    // moves focus to suggestion being hovered over
-    // this is used if only 1 type of suggestions
-    mouseHoverHandler(index, event)
-    {
-        if(this.state.suggestionIndex !== index)
-        {
-            if(this.state.valueKeys !== undefined)
+            // if enter pressed on a redirect
+            let keys = Object.keys(this.state.suggestions);
+            if(keys.length > 0)
             {
-                // update the value to whatever the current highlighted value is
-                this.props.updateFunction((this.state.suggestions[index]));
+                if(this.state.redirectPaths !== undefined)
+                {
+                    this.redirectHandler();
+                }
+                else
+                {
+                    alert(keys.length);
+                    console.log(this.state.suggestions);
+                    this.suggestionFocusHandler();
+                }
             }
             else
             {
-                this.props.updateFunction(this.state.suggestions[index]);
+                // redirect search to search page?
             }
-            this.setState({suggestionIndex: index});
         }
     }
 
@@ -265,7 +264,10 @@ class SearchDropDown extends React.Component {
                 currentHashKey: key,
                 currentHashKeyIndex: keyIndex
             });
-            this.props.updateFunction(this.state.suggestions[key][index]);
+            if(this.props.updateFunction !== undefined)
+            {
+                this.props.updateFunction(this.state.suggestions[key][index]);
+            }
         }
     }
 
@@ -297,7 +299,23 @@ class SearchDropDown extends React.Component {
         {
             this.props.updateFunction(undefined);
         }
+        /*
         // set the value stored in the search box to the suggestions that has focus
+        if(Object.keys(this.state.suggestions).length > 0 && this.state.valueKeys !== undefined)
+        {
+            // update the value to whatever the current highlighted value is
+            this.setState({value: (this.state.suggestions[this.state.currentHashKey][this.state.suggestionIndex][this.state.valueKeys[this.state.currentHashKey]])});
+        }
+        else
+        {
+            this.setState({value: ""});
+        }
+        */
+    }
+
+    // called when the suggestions to click on do not cause redirects
+    suggestionFocusHandler()
+    {
         if(Object.keys(this.state.suggestions).length > 0 && this.state.valueKeys !== undefined)
         {
             // update the value to whatever the current highlighted value is
@@ -314,7 +332,10 @@ class SearchDropDown extends React.Component {
     {
         if(this.state.redirectPaths !== undefined)
         {
-            this.setState({redirect: true});
+            this.setState({
+              redirect: true,
+              value: ""
+            });
         }
     }
 
@@ -326,10 +347,20 @@ class SearchDropDown extends React.Component {
         if(value.length > 0)
         {
             tempSuggestions = await this.props.getSuggestions(value);
+            if(this.props.updateFunction !== undefined)
+            {
+                if(Object.keys(tempSuggestions).length < 1)
+                {
+                    this.props.updateFunction(undefined);
+                }
+            }
         }
         else
         {
-            this.props.updateFunction(undefined);
+            if(this.props.updateFunction !== undefined)
+            {
+                this.props.updateFunction(undefined);
+            }
         }
         let currentKey = "";
         // index into keys array
@@ -352,7 +383,10 @@ class SearchDropDown extends React.Component {
                     tempArray = tempSuggestions[currentKey];;
                 }
                 // update the movie selected at every change...
-                this.props.updateFunction((tempSuggestions[currentKey][0]));
+                if(this.props.updateFunction !== undefined)
+                {
+                    this.props.updateFunction((tempSuggestions[currentKey][0]));
+                }
             }
         }
         this.setState({
@@ -409,9 +443,13 @@ class SearchDropDown extends React.Component {
                     // get the value of the suggestion
                     let searchValue = value[this.state.valueKeys[key]];
                     let html = <a onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
-                    if(index === this.state.suggestionIndex && key === this.state.currentHashKey)
+                    if(index === this.state.suggestionIndex && key === this.state.currentHashKey && this.state.redirectPaths !== undefined)
                     {
                         html = <a className={style.selectedSuggestion} onMouseDown={(e) => this.redirectHandler()} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
+                    }
+                    else if(index === this.state.suggestionIndex && key === this.state.currentHashKey)
+                    {
+                        html = <a className={style.selectedSuggestion} onMouseDown={(e) => this.suggestionFocusHandler()} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
                     }
                     suggestionHTML.push(html);
                 });
