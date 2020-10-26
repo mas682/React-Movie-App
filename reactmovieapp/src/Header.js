@@ -166,6 +166,7 @@ class Header extends React.Component {
         }
         if(this.state.loggedIn)
         {
+            let profilePath = "/profile/" + this.state.currentUser;
         		return (
         			<div className="App-Header">
         				<div className="logo">
@@ -190,7 +191,7 @@ class Header extends React.Component {
                             </div>
         					<div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
         					<div class="profile">
-        						<Link class="profileButton" to="#">Profile</Link>
+        						<Link class="profileButton" to={profilePath}>Profile</Link>
         					</div>
                             <div class="profile">
                                 <Link to="/settings" class="profileButton">Settings</Link>

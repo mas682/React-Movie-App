@@ -24,7 +24,7 @@ class MoviePosterPopUp extends React.Component {
         this.setState({
             open: false,
         });
-		   this.props.removeFunction();
+		this.props.removeFunction();
     }
 
 	changeHandler(event) {

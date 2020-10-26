@@ -7,8 +7,8 @@ import style from './css/Movies/movieinfo.module.css'
 
 class MovieInfoPage extends React.Component {
   constructor(props){
-  		super(props);
-  		props.updateLoggedIn("admin", true);
+      super(props);
+      props.updateLoggedIn("admin", true);
       let movieQuery = this.props.match.params.id;
       let queryElements = movieQuery.split("-", 1);
       let id = null;
@@ -42,8 +42,31 @@ class MovieInfoPage extends React.Component {
       this.generateOverview = this.generateOverview.bind(this);
       this.generateDirector = this.generateDirector.bind(this);
       this.generateGenres = this.generateGenres.bind(this);
+      this.getMovieInfo = this.getMovieInfo.bind(this);
+      this.updateMovieInfo = this.updateMovieInfo.bind(this);
 	}
 
+  // called when the component is receiving new props
+  // handles issue where receiving props from another movies page and does not update
+  componentWillReceiveProps(nextProps) {
+      let id = null;
+      let movieQuery = nextProps.match.params.id;
+      let queryElements = movieQuery.split("-", 1);
+      if(queryElements.length > 0)
+      {
+          // get the movie id
+          id = parseInt(queryElements[0]);
+          if(isNaN(id))
+          {
+              id = null;
+              alert("Invalid movie id provided");
+          }
+      }
+      if(this.props.id !== id)
+      {
+          this.updateMovieInfo(id);
+      }
+  }
 
   posterClickHandler()
   {
@@ -61,7 +84,7 @@ class MovieInfoPage extends React.Component {
   // function to get the movie title suggestions based off of a
   // substring that the user has already entered
 
-  getMovieInfo(value)
+  getMovieInfo(id)
   {
       // Simple POST request with a JSON body using fetch
       const requestOptions = {
@@ -71,7 +94,7 @@ class MovieInfoPage extends React.Component {
       };
 
       let status = 0;
-      let url = "http://localhost:9000/movie/" + this.state.id;
+      let url = "http://localhost:9000/movie/" + id;
       return fetch(url, requestOptions)
           .then(res => {
               status = res.status;
@@ -88,9 +111,10 @@ class MovieInfoPage extends React.Component {
           });
   }
 
-  async componentDidMount()
+  // function to handle call to api and result
+  async updateMovieInfo(value)
   {
-      let movieData = await this.getMovieInfo();
+      let movieData = await this.getMovieInfo(value);
       let status = movieData[0];
       if(status === 200)
       {
@@ -117,6 +141,11 @@ class MovieInfoPage extends React.Component {
       {
           alert("Movie request failed");
       }
+  }
+
+  async componentDidMount()
+  {
+      this.updateMovieInfo(this.state.id);
   }
 
   /*

@@ -549,9 +549,9 @@ class ReviewPopUp extends React.Component {
                   return res.text();
               }
           }).then(result=> {
+              // if suggestions could not be found
               if(status !== 200)
               {
-                alert("Issue getting movie title: " + result);
                 return {};
               }
               else

@@ -90,6 +90,19 @@ class SearchDropDown extends React.Component {
         }
     }
 
+    // optimization to keep component from rerendering
+    shouldComponentUpdate(nextProps, nextState){
+        // only rerender if there was a change in followers, following, or username
+        // whose page we are currently on
+        let render = true;
+        if(this.state.redirect === true && nextState.redirect === false)
+        {
+
+            render = false;
+        }
+        return render;
+    }
+
     keyPressedHandler(event)
     {
         // if no suggestions, ignore the key push
@@ -299,18 +312,6 @@ class SearchDropDown extends React.Component {
         {
             this.props.updateFunction(undefined);
         }
-        /*
-        // set the value stored in the search box to the suggestions that has focus
-        if(Object.keys(this.state.suggestions).length > 0 && this.state.valueKeys !== undefined)
-        {
-            // update the value to whatever the current highlighted value is
-            this.setState({value: (this.state.suggestions[this.state.currentHashKey][this.state.suggestionIndex][this.state.valueKeys[this.state.currentHashKey]])});
-        }
-        else
-        {
-            this.setState({value: ""});
-        }
-        */
     }
 
     // called when the suggestions to click on do not cause redirects
@@ -400,7 +401,6 @@ class SearchDropDown extends React.Component {
 
     generateInputBox()
     {
-
         let suggestions = this.generateSuggestionBox();
         return (
           <React.Fragment>
