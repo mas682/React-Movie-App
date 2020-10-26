@@ -23,9 +23,64 @@ class MovieDisplay extends React.Component {
 
     };
 
+    /* for testing, this will not actually be used here */
+    async componentDidMount()
+    {
+        this.updateMovieInfo(this.state.id);
+    }
+
+    // function to handle call to api and result
+    async updateMovieInfo(value)
+    {
+        let movieData = await this.getMovieInfo(value);
+        let status = movieData[0];
+        if(status === 200)
+        {
+            console.log("Movie Info");
+            console.log(movieData[1]);
+            this.setState({
+              movie: movieData[1]
+            });
+        }
+        else
+        {
+            alert("Movie request failed");
+        }
+    }
+
+    getMovieInfo(id)
+    {
+        // Simple POST request with a JSON body using fetch
+        const requestOptions = {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+        };
+
+        let status = 0;
+        let url = "http://localhost:9000/movie/" + id;
+        return fetch(url, requestOptions)
+            .then(res => {
+                status = res.status;
+                if(status === 200)
+                {
+                    return res.json();
+                }
+                else
+                {
+                    return res.text();
+                }
+            }).then(result=> {
+                return [status, result];
+            });
+    }
+
+
+
+    /* for testing */
+
     posterClickHandler()
     {
-        alert("HERE");
         let opened = this.state.moviePopup;
         this.setState({
             moviePopup: !opened
@@ -47,8 +102,7 @@ class MovieDisplay extends React.Component {
         let moviePopup = "";
         if(this.state.moviePopup)
         {
-            alert("Pop up");
-            moviePopup = <MovieDisplayPopUp poster={this.state.poster} headerImage="/wzJRB4MKi3yK138bJyuL9nx47y6.jpg"/>;
+            moviePopup = <MovieDisplayPopUp movie={this.state.movie} removeFunction={this.posterClickHandler}/>;
         }
 
         return (

@@ -37,40 +37,40 @@ class MovieFilterPage extends React.Component {
                 </div>
                 <div className={style.movieDisplayContainer}>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={1} poster="/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
+                        <MovieDisplay id={577922} poster="/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={2} poster="/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg"/>
+                        <MovieDisplay id={337401} poster="/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={3} poster="/wGkr4r1e8nubmSNKJpv3HL6sFrA.jpg"/>
+                        <MovieDisplay id={616251} poster="/wGkr4r1e8nubmSNKJpv3HL6sFrA.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={4} poster="/jq67d2UvbozXszkrLnGDzwnWSnu.jpg"/>
+                        <MovieDisplay id={577922} poster="/jq67d2UvbozXszkrLnGDzwnWSnu.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={1} poster="/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
+                        <MovieDisplay id={577922} poster="/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={2} poster="/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg"/>
+                        <MovieDisplay id={577922} poster="/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={3} poster="/wGkr4r1e8nubmSNKJpv3HL6sFrA.jpg"/>
+                        <MovieDisplay id={577922} poster="/wGkr4r1e8nubmSNKJpv3HL6sFrA.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={4} poster="/jq67d2UvbozXszkrLnGDzwnWSnu.jpg"/>
+                        <MovieDisplay id={577922} poster="/jq67d2UvbozXszkrLnGDzwnWSnu.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={1} poster="/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
+                        <MovieDisplay id={577922} poster="/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={2} poster="/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg"/>
+                        <MovieDisplay id={577922} poster="/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={3} poster="/wGkr4r1e8nubmSNKJpv3HL6sFrA.jpg"/>
+                        <MovieDisplay id={577922} poster="/wGkr4r1e8nubmSNKJpv3HL6sFrA.jpg"/>
                     </div>
                     <div className={style.movieContainer}>
-                        <MovieDisplay id={4} poster="/jq67d2UvbozXszkrLnGDzwnWSnu.jpg"/>
+                        <MovieDisplay id={577922} poster="/jq67d2UvbozXszkrLnGDzwnWSnu.jpg"/>
                     </div>
                 </div>
             </div>

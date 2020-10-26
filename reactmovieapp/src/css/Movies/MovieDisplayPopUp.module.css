@@ -2,6 +2,7 @@
 .modal {
   width: 100%;
   overflow-y:auto;
+  max-height: 725px;
 }
 
 /* width */
@@ -29,7 +30,6 @@
 
 .modal > .content {
   width: 100%;
-  background-Image: linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url("https://image.tmdb.org/t/p/original/hy0kLOxCJjeQDWDeeDgi9vEodHm.jpg");
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -46,6 +46,7 @@
     width: 90%;
     margin: 5%;
     height: inherit;
+    max-height: 375px;
     background: white;
 }
 
@@ -59,16 +60,15 @@
 }
 
 .movieDetailsOutterContainer {
-    width: 55%;
-    height: 90%;
+    width: 65%;
+    height: 97%;
     color: white;
-    height: inherit;
-    margin-left: 5%;
-    margin-right: 5%;
+    margin-left: 2.5%;
+    margin-right: 2.5%;
     justify-content: center;
     align-content: center;
-    margin-top: 5%;
-    margin-bottom: 5%;
+    margin-top:  0.5%;
+    margin-bottom: 2.5%;
     position: relative;
 }
 
@@ -85,6 +85,7 @@
     font-size: 1.8em;
     font-weight: 500;
     color: #093145;
+    margin-top: 0%;
 }
 
 .movieTrailerContainer {
@@ -99,8 +100,9 @@
 }
 
 .movieTrailer {
-    width: 60%;
+    width: 85%;
     height: 350px;
+    margin-bottom: 2.5%;
 }
 
 .detailsContainer {
@@ -114,4 +116,12 @@
     font-weight: 500;
     margin-bottom: 5px;
     color: #0C374D;
+}
+
+.infoContainer {
+    display: flex;
+    flex-flow: row wrap;
+    font-weight: 500;
+    white-space: pre;
+    color: white;
 }
