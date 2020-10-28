@@ -212,7 +212,16 @@ class MovieDisplayPopUp extends React.Component {
             let overview = this.generateOverview();
             let genres = this.generateGenres();
             let director = this.generateDirector();
-            let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.headerImage};
+			let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9))"};
+			if(this.state.headerImage !== null)
+			{
+            	headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.headerImage};
+			}
+			else if(this.state.poster !== null)
+			{
+				headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.poster};
+
+			}
     		return (
         			<div>
                         <Popup

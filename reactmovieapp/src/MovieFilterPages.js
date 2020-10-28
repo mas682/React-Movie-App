@@ -15,6 +15,9 @@ class MovieFilterPage extends React.Component {
             movies: [],
             loading: false
         };
+        this.getMovies = this.getMovies.bind(this);
+        this.apiCall = this.apiCall.bind(this);
+        this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
     }
 
     // called when component receiving new props
@@ -23,12 +26,86 @@ class MovieFilterPage extends React.Component {
 
     };
 
+    /* for testing, this will not actually be used here */
+    async componentDidMount()
+    {
+        this.getMovies("upcoming");
+    }
+
+    // function to handle call to api and result
+    async getMovies(type)
+    {
+        let movieData = await this.apiCall(type);
+        let status = movieData[0];
+        if(status === 200)
+        {
+            console.log("Movie Info");
+            console.log(movieData[1]);
+            this.setState({
+              movies: movieData[1]
+            });
+        }
+        else
+        {
+            alert("Movie request failed");
+        }
+    }
+
+    apiCall(type)
+    {
+        // Simple POST request with a JSON body using fetch
+        const requestOptions = {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+        };
+
+        let status = 0;
+        let url = "";
+        // params: title, revenue, director, runtime, rating, trailer, releasedate
+        if(type === "upcoming")
+        {
+            url = "http://localhost:9000/search/movies/?date=9-20-20"
+        }
+        //url = "http://localhost:9000/search/movies/?date_gt=9-20-20";
+        return fetch(url, requestOptions)
+            .then(res => {
+                status = res.status;
+                if(status === 200)
+                {
+                    return res.json();
+                }
+                else
+                {
+                    return res.text();
+                }
+            }).then(result=> {
+                return [status, result];
+            });
+    }
+
+    generateMovieDisplays()
+    {
+        let movies = [];
+        this.state.movies.forEach((movie) => {
+            let html = (
+                <div className={style.movieContainer}>
+                    <MovieDisplay movie={movie}/>
+                </div>
+            );
+            movies.push(html);
+        });
+        return movies;
+
+    }
+
     render()
     {
         if(this.state.loading)
         {
             return null;
         }
+        let movies = this.generateMovieDisplays();
 
         return (
             <div className={style.mainBodyContainer}>
@@ -36,42 +113,7 @@ class MovieFilterPage extends React.Component {
                     <h1>{this.state.header}</h1>
                 </div>
                 <div className={style.movieDisplayContainer}>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={337401} poster="/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={616251} poster="/wGkr4r1e8nubmSNKJpv3HL6sFrA.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/jq67d2UvbozXszkrLnGDzwnWSnu.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/wGkr4r1e8nubmSNKJpv3HL6sFrA.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/jq67d2UvbozXszkrLnGDzwnWSnu.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/k68nPLbIST6NP96JmTxmZijEvCA.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/aKx1ARwG55zZ0GpRvU2WrGrCG9o.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/wGkr4r1e8nubmSNKJpv3HL6sFrA.jpg"/>
-                    </div>
-                    <div className={style.movieContainer}>
-                        <MovieDisplay id={577922} poster="/jq67d2UvbozXszkrLnGDzwnWSnu.jpg"/>
-                    </div>
+                    {movies}
                 </div>
             </div>
         )

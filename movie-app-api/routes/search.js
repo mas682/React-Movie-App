@@ -38,6 +38,10 @@ const selectPath = (cookie, req, res, cookieValid) =>
     {
         getAllRelatedItems(cookie, req, res, cookieValid);
     }
+	else if(req.params.type === "movies")
+	{
+		getMovies(cookie, req, res, cookieValid);
+	}
 		/*
     else if(!cookieValid)
     {
@@ -82,6 +86,13 @@ const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 						}
 				}
 		}
+};
+
+const getMovies = async (cookie, req, res, cookieValid) =>
+{
+	console.log(req.query);
+	let movies = await models.Movies.queryMovies(models, "");
+	res.status(200).send(movies);
 };
 
 

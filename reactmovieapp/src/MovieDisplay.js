@@ -9,8 +9,8 @@ class MovieDisplay extends React.Component {
 
         this.state = {
             id: this.props.id,
-            poster: this.props.poster,
-            movie: [],
+            poster: this.props.movie.poster,
+            movie: this.props.movie,
             loading: false,
             moviePopup: false
         };
@@ -22,62 +22,6 @@ class MovieDisplay extends React.Component {
     componentWillReceiveProps(nextProps) {
 
     };
-
-    /* for testing, this will not actually be used here */
-    async componentDidMount()
-    {
-        this.updateMovieInfo(this.state.id);
-    }
-
-    // function to handle call to api and result
-    async updateMovieInfo(value)
-    {
-        let movieData = await this.getMovieInfo(value);
-        let status = movieData[0];
-        if(status === 200)
-        {
-            console.log("Movie Info");
-            console.log(movieData[1]);
-            this.setState({
-              movie: movieData[1]
-            });
-        }
-        else
-        {
-            alert("Movie request failed");
-        }
-    }
-
-    getMovieInfo(id)
-    {
-        // Simple POST request with a JSON body using fetch
-        const requestOptions = {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-        };
-
-        let status = 0;
-        let url = "http://localhost:9000/movie/" + id;
-        return fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                if(status === 200)
-                {
-                    return res.json();
-                }
-                else
-                {
-                    return res.text();
-                }
-            }).then(result=> {
-                return [status, result];
-            });
-    }
-
-
-
-    /* for testing */
 
     posterClickHandler()
     {
@@ -110,7 +54,11 @@ class MovieDisplay extends React.Component {
                 <div className={style.movieImageContainer}>
                     <img className={style.moviePoster} src={posterPath}/>
                 </div>
-                <h3>Mulan</h3>
+                <h3>{this.state.movie.title}</h3>
+                <h4>{this.state.movie.releaseDate}</h4>
+                <h4>{this.state.movie.director}</h4>
+                <h4>{this.state.movie.rating}</h4>
+                <h4>{this.state.movie.runTime}</h4>
                 {moviePopup}
             </div>
         )

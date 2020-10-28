@@ -53,5 +53,4 @@ class MoviePosterPopUp extends React.Component {
     }
 }
 
-
 export default MoviePosterPopUp;
