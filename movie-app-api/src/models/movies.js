@@ -119,7 +119,7 @@ const movie = (sequelize, DataTypes) => {
 
     }
 
-    const whereGenerator = (query) =>
+    const whereGenerator = (query, ids) =>
     {
         let filters = [];
         let keys = Object.keys(query);
@@ -150,15 +150,23 @@ const movie = (sequelize, DataTypes) => {
         let runTimeArray = [];
         let lessThanTime = undefined;
         let greaterThanTime = undefined;
+        // this is ugly, but would be slower if I broke it up..
         while(counter < numKeys)
         {
             key = keys[counter];
-            let value = query[key];
+            value = query[key];
             if(key === "release_date_gte")
             {
-                releaseDateArrayGtLt.push({[Op.gte]: value});
-                greaterThanDate = new Date(value);
-                greaterThanDate.setUTCHours(12);
+                if(typeof(value) === "string")
+                {
+                    releaseDateArrayGtLt.push({[Op.gte]: value});
+                    greaterThanDate = new Date(value);
+                    greaterThanDate.setUTCHours(12);
+                }
+                else
+                {
+                    console.log("value error");
+                }
             }
             else if(key === "release_date_lte")
             {
@@ -250,9 +258,16 @@ const movie = (sequelize, DataTypes) => {
             {
                 releaseDateArray.push({[Op.or]: releaseDateArrayGtLt});
             }
+            // may want to only do this if releaseDateArray has length? but may not hurt??
+            filters.push({releaseDate: {[Op.and]: releaseDateArray }});
         }
-        // may want to only do this if releaseDateArray has length? but may not hurt??
-        filters.push({releaseDate: {[Op.and]: releaseDateArray }});
+        else
+        {
+            if(releaseDateArrayGtLt.length > 0)
+            {
+                filters.push({releaseDate: releaseDateArrayGtLt[0] });
+            }
+        }
 
         // if looking for a exact title
         if(titleEqualsValue !== undefined)
@@ -305,27 +320,129 @@ const movie = (sequelize, DataTypes) => {
         {
             filters.push({runTime: {[Op.or]: runTimeArray}});
         }
+        if(ids.length > 0)
+        {
+            filters.push({id: {[Op.in]: ids}});
+        }
 
         return filters;
+    }
 
-        /* sample of release date
+    // function to generate the where values to get the movies
+    // with the specified genres
+    const genreWhereGenerator = (query) =>
+    {
+        let containsFilters = [];
+        let keys = Object.keys(query);
+        let numKeys = keys.length;
+        let counter = 0;
+        let key = "";
+        let valueString = "";
+        let genreContainsArray = [];
+
+        while(counter < numKeys)
         {
-            releaseDate: {
-                [Op.and]:[
-                    [Op.and]: [
-                        [Op.lte]: date,
-                        [Op.gte]: date,
-                    ],
-                    [Op.ne]: "date"
-                ]
+            key = keys[counter];
+            valueString = query[key];
+            if(!key.startsWith("genre"))
+            {
+                counter = counter + 1;
+                continue;
             }
+            else
+            {
+                let values = valueString.split(",");
+                values.forEach((value) => {
+                    if(key === "genre_contains")
+                    {
+                        genreContainsArray.push({[Op.iLike]: value});
+                    }
+                });
+            }
+            counter = counter + 1;
         }
-        */
 
-        // need to do genres in another table
-            // contains genre
-            // does not contain genres
+        if(genreContainsArray.length > 0)
+        {
+            containsFilters = [{value: {[Op.or]: genreContainsArray} }];
+        }
 
+        return containsFilters;
+    }
+
+    const sortGenerator = (query) =>
+    {
+        let sortingArray = [];
+        let keys = Object.keys(query);
+        let numKeys = keys.length;
+        let counter = 0;
+        let key = "";
+        let valueString = "";
+
+        while(counter < numKeys)
+        {
+            key = keys[counter];
+            valueString = query[key];
+            if(!key.startsWith("sort"))
+            {
+                counter = counter + 1;
+                continue;
+            }
+            else
+            {
+                let values = valueString.split(",");
+                values.forEach((value) => {
+                    if(value === "release_date_asc")
+                    {
+                        sortingArray.push(['releaseDate', 'ASC'])
+                    }
+                    else if(value === "release_date_desc")
+                    {
+                        sortingArray.push(['releaseDate', 'DESC']);
+                    }
+                    else if(value === "title_asc")
+                    {
+                        sortingArray.push(['title', 'ASC']);
+                    }
+                    else if(value === "title_desc")
+                    {
+                        sortingArray.push(['title', 'DESC']);
+                    }
+                    else if(value === "runtime_asc")
+                    {
+                        sortingArray.push(['runTime', 'ASC']);
+                    }
+                    else if(value === "runtime_desc")
+                    {
+                        sortingArray.push(['runTime', 'DESC']);
+                    }
+                    else if(value === "rating_asc")
+                    {
+                        sortingArray.push(['rating', 'ASC']);
+                    }
+                    else if(value === "rating_desc")
+                    {
+                        sortingArray.push(['rating', 'DESC']);
+                    }
+                    else if(value === "director_asc")
+                    {
+                        sortingArray.push(['director', 'ASC']);
+                    }
+                    else if(value === "director_desc")
+                    {
+                        sortingArray.push(['director', 'DESC']);
+                    }
+                    else
+                    {
+                        console.log("Sorting value invalid");
+                    }
+                });
+                // may want to check if multiple sort values found???
+                break;
+            }
+            counter = counter + 1;
+        }
+        return sortingArray;
     }
 
     Movie.queryMovies = async (models, query) =>
@@ -348,57 +465,61 @@ const movie = (sequelize, DataTypes) => {
             //ratings_include_null: "false"
             //runtime_gte: "90",
             //runtime_lte: "100",
+            //genre_contains: "Drama,Family"
 
         };
-        let whereQueries = whereGenerator(queries);
-        //let abc = { title:{ [Op.iLike]: title + "%", }};
-        console.log("queyries");
-        console.log(whereQueries);
-        let title = {title:{ [Op.iLike]: "The" + "%", }};
-        let director = {director:{[Op.iLike]: "James" + "%",}};
-        // get by exact date
-        //let releaseDate = {releaseDate: "2020-09-04"};
-        let releaseDate = {releaseDate: {[Op.gte]: "2020-09-04"}};
-        //let whereQueries = [];
-        let order = [];
-        let orders = ['releaseDate', 'ASC'];
-        order.push(orders);
-        //whereQueries.push(title);
-        //whereQueries.push(director);
-        //whereQueries.push(releaseDate);
+        // first check to see if looking for specific genres
+        let genreWhere = genreWhereGenerator(query);
+        // movie ids that contain the genres
+        let movieIds = [];
+        // if genre filters
+        if(genreWhere.length > 0)
+        {
+            // get the movies with the specified genres
+            let movies = await Movie.findAll({
+                attributes: ["id"],
+                include: [
+                    {
+                        model: models.Genre,
+                        as: "Genres",
+                        attributes: ["value"],
+                        through: {attributes: []},
+                        where: genreWhere
+                    }
+                ],
+            });
+            // get the movie ids that contain that genre
+            movies.forEach((movie) => {
+                movieIds.push(movie.id);
+            });
+        }
+        console.log("movie ids");
+        console.log(movieIds);
+        // generate the filters for all other options
+        let whereQueries = whereGenerator(query, movieIds);
+        //let order = [];
+        //let orders = ['releaseDate', 'ASC'];
+        //order.push(orders);
+        let order = sortGenerator(query);
         let newquery = {[Op.and]: whereQueries};
-
-        //title = "title: \"The\""
-        let t = {
+        let params = {
             include: [
                 {
                     model: models.Genre,
                     as: "Genres",
                     attributes: ["id", "value"],
-                    through: {attributes: []}
+                    through: {
+                        attributes: [],
+                        where: {}
+                    }
                 }
             ],
             order: order,
             where: newquery
-            /*{
-               title
-                /*
-                [Op.and]: [
-                  {
-                    title: {
-                        [Op.iLike]: title + "%",
-                    }
-                  },
-                  {
-                    id: {
-                      [Op.notIn]: idArray
-                    }
-                  }
-                  */
-            //}
         }
-        let movies = await Movie.findAll(t);
-        return movies;
+
+        let movies2 = await Movie.findAll(params);
+        return movies2;
     }
 
     // function to get the information for a individual movie

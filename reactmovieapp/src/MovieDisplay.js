@@ -54,11 +54,14 @@ class MovieDisplay extends React.Component {
                 <div className={style.movieImageContainer}>
                     <img className={style.moviePoster} src={posterPath}/>
                 </div>
-                <h3>{this.state.movie.title}</h3>
-                <h4>{this.state.movie.releaseDate}</h4>
-                <h4>{this.state.movie.director}</h4>
-                <h4>{this.state.movie.rating}</h4>
-                <h4>{this.state.movie.runTime}</h4>
+                <div className={style.movieDetailsContainer}>
+                    <div className={style.movieTitle}>
+                        {this.state.movie.title}
+                    </div>
+                    <div className={style.releaseDate}>
+                        {this.state.movie.releaseDate}
+                    </div>
+                </div>
                 {moviePopup}
             </div>
         )

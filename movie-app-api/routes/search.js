@@ -91,7 +91,7 @@ const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 const getMovies = async (cookie, req, res, cookieValid) =>
 {
 	console.log(req.query);
-	let movies = await models.Movies.queryMovies(models, "");
+	let movies = await models.Movies.queryMovies(models, req.query);
 	res.status(200).send(movies);
 };
 

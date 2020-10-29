@@ -180,6 +180,7 @@ class Header extends React.Component {
         							<Link to="/movie">Top Rated</Link>
         							<Link to="/upcoming">Upcoming</Link>
         							<Link to="/movie">In Theaters</Link>
+                                    <Link to="/new_releases">New Releases</Link>
         						</div>
         					</div>
                             <div class="showDropdown">
@@ -238,6 +239,7 @@ class Header extends React.Component {
                                 <Link to="/movie">Top Rated</Link>
                                 <Link to="/upcoming">Upcoming</Link>
                                 <Link to="/movie">In Theaters</Link>
+                                <Link to="/new_releases">New Releases</Link>
                             </div>
                         </div>
                         <div class="showDropdown">

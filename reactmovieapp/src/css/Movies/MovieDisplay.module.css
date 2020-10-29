@@ -1,6 +1,9 @@
 .moviePoster {
     width: 100%;
     background: white;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    min-height: 350px;
 }
 
 .movieImageContainer {
@@ -9,7 +12,31 @@
     display:flex;
 }
 
+
 .main {
-    box-shadow: 0px 10px 8px 0 rgba(0, 0, 0, 0.2), 0px 10px 8px 0 rgba(0, 0, 0, 0.19);
-    background: gray;
+    box-shadow: 0px 0px 8px 5px rgba(0, 0, 0, 0.2), 0px 0px 8px 5px rgba(0, 0, 0, 0.19);
+    background-image: linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9));
+    border-bottom-left-radius: 5px;
+    border-radius: 5px;
+}
+
+.main:hover {
+    box-shadow: 0px 0px 5px 5px #093145;
+}
+
+.movieDetailsContainer {
+    color: #093145;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 10px;
+    height: 75px;
+
+}
+
+.movieTitle {
+    font-weight: 600;
+    font-size: 1.2em;
+}
+
+.releaseDate {
+    color: white;
 }

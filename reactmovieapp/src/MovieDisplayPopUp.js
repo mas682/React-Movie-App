@@ -1,7 +1,7 @@
 import React from 'react';
 import Popup from 'reactjs-popup';
 import style from './css/Movies/MovieDisplayPopUp.module.css'
-import {Link} from 'react-router-dom';
+import {Link, Redirect, withRouter} from 'react-router-dom';
 
 // component to display the movie poster large on screen when clicked on
 // the movies page
