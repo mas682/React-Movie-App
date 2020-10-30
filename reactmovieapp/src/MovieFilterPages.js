@@ -95,7 +95,7 @@ class MovieFilterPage extends React.Component {
     // called when component receiving new props
     // may or may not be needed
     componentWillReceiveProps(nextProps) {
-
+        // need to generate new query string
     };
 
     /* for testing, this will not actually be used here */

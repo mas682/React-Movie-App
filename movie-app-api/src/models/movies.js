@@ -104,19 +104,127 @@ const movie = (sequelize, DataTypes) => {
         Movie.belongsToMany(models.Genre, {through: models.MovieGenreTable});
     };
 
-    const orderGenerator = (order) =>
+    // function to handle the releaseDateFilters based off the query string passed in
+    // key is the type of filter
+    // value is the value to filter for
+    // releaseDateArrayGtLt is the array holding the greater than and less than times
+    // releaseDateArray is the array to hold exact date matches
+    // returns true if the key passed in is one that can be used
+    // returns false if the key is invalid
+    const releaseDateHandler = (key, value, releaseDateArrayGtLt, releaseDateArrayEq, releaseDateArrayNe, greaterThanDate, lessThanDate ) =>
     {
-        // the more checks you add, the slower this will be..
-        // order by date
-            // asc
-            // DESC
+        let keyFound = false;
+        if(key === "release_date_gte")
+        {
+            // filtering out multiple values being passed in
+            if(typeof(value) === "string")
+            {
+                // validate the date
+                let valid = moment(value, "YYYY-MM-DD", true).isValid();
+                if(!valid)
+                {
+                    return false;
+                }
+                keyFound = true;
+                releaseDateArrayGtLt.push({[Op.gte]: value});
+                let date = new Date(value);
+                date.setUTCHours(12);
+                greaterThanDate.push(date);
+            }
+        }
+        else if(key === "release_date_lte")
+        {
+            // filtering out multiple values
+            if(typeof(value) === "string")
+            {
+                // validate the date
+                let valid = moment(value, "YYYY-MM-DD", true).isValid();
+                if(!valid)
+                {
+                    return false;
+                }
+                let date = new Date(value);
+                date.setUTCHours(12);
+                lessThanDate.push(date);
+                keyFound = true;
+                releaseDateArrayGtLt.push({[Op.lte]: value});
+            }
+        }
+        else if(key === "release_date_eq")
+        {
+            let valid;
+            let values = value.split(",");
+            for(let date of values){
+                // validate the date
+                let valid = moment(date, "YYYY-MM-DD", true).isValid();
+                if(!valid)
+                {
+                    return false;
+                }
+                releaseDateArrayEq.push({[Op.eq]: date});
+            };
+            keyFound = true;
+        }
+        else if(key === "release_date_ne")
+        {
+            let valid;
+            let values = value.split(",");
+            for(let date of values){
+                // validate the date
+                valid = moment(date, "YYYY-MM-DD", true).isValid();
+                if(!valid)
+                {
+                    return false;
+                }
+                releaseDateArrayNe.push({[Op.ne]: date});
+            };
+            keyFound = true;
+        }
+        return keyFound;
+    }
 
-        // title
-
-        // run time
-        console.log("HERE");
-
-
+    // function to handle the title search filters based off the query string passed in
+    // key is the type of filter
+    // value is the value to filter for
+    // titleEqualsValue is used for exact matches
+    // titleContainsArray is used for to hold filters for titles start with, contain, or end with
+    const titleHandler = (key, value, titleEqualsValue, titleContainsArray) =>
+    {
+        let keyFound = false;
+        if(key === "title_equals")
+        {
+            keyFound = true;
+            let values = value.split(",");
+            values.forEach((title) => {
+                titleEqualsValue.push({[Op.iLike]: title});
+            });
+        }
+        else if(key === "title_starts_with")
+        {
+            // need to do a split for this
+            keyFound = true;
+            let values = value.split(",");
+            values.forEach((title) => {
+                titleContainsArray.push({[Op.iLike]: title + "%"});
+            });
+        }
+        else if(key === "title_contains")
+        {
+            keyFound = true;
+            let values = value.split(",");
+            values.forEach((title) => {
+                titleContainsArray.push({[Op.iLike]: "%" + title + "%"});
+            });
+        }
+        else if(key === "title_ends_with")
+        {
+            keyFound = true;
+            let values = value.split(",");
+            values.forEach((title) => {
+                titleContainsArray.push({[Op.iLike]: "%" + title});
+            });
+        }
+        return keyFound;
     }
 
     const whereGenerator = (query, ids) =>
@@ -127,76 +235,63 @@ const movie = (sequelize, DataTypes) => {
         let counter = 0;
         let key = "";
         let value = "";
-        // array to hold release date filter
+        // release date variables
         let releaseDateArray = [];
-        // array to hold just the release date gt/lt filters
+        let releaseDateArrayEq = [];
+        let releaseDateArrayNe = [];
         let releaseDateArrayGtLt = [];
-        let lessThanDate = undefined;
-        let greaterThanDate = undefined;
-        // array to hold title filters
+        let lessThanDate = [];
+        let greaterThanDate = [];
+        // title variables
         let titleArray = [];
-        // array to hold contains filters
         let titleContainsArray = [];
-        // variable to hold filter for equals value
-        let titleEqualsValue = undefined;
+        // changed this to an array
+        let titleEqualsValue = [];
+        // director variables
         let directorArray = [];
-        // array to hold director contains filters
         let directorContainsArray = [];
-        // variable to hold filter for director equals value
         let directorEqualsValue = undefined;
+        // rating variables
         let ratingArray = [];
         let ratingMatchArray = [];
         let ratingNull = undefined;
+        // runtime variables
         let runTimeArray = [];
         let lessThanTime = undefined;
         let greaterThanTime = undefined;
-        // this is ugly, but would be slower if I broke it up..
+        let result = false;
         while(counter < numKeys)
         {
             key = keys[counter];
-            value = query[key];
-            if(key === "release_date_gte")
+            value = decodeURIComponent(query[key]);
+
+            // new
+            if(key.startsWith("release"))
             {
-                if(typeof(value) === "string")
+                result = releaseDateHandler(key, value, releaseDateArrayGtLt, releaseDateArrayEq, releaseDateArrayNe, greaterThanDate, lessThanDate);
+                if(!result)
                 {
-                    releaseDateArrayGtLt.push({[Op.gte]: value});
-                    greaterThanDate = new Date(value);
-                    greaterThanDate.setUTCHours(12);
-                }
-                else
-                {
-                    console.log("value error");
+                    console.log("Invalid value found in release date queries");
                 }
             }
-            else if(key === "release_date_lte")
+            /*
+                - need to handle removing spaces from the title
+                    - will have to use %
+                    - encode using encodeURIComponent
+                - also have to fix title_equals
+                    - have to change titleEqualsValue to an array
+                    - also fix the end to [Op.or]
+
+            */
+            else if(key.startsWith("title"))
             {
-                releaseDateArrayGtLt.push({[Op.lte]: value});
-                lessThanDate = new Date(value);
-                lessThanDate.setUTCHours(12);
-            }
-            else if(key === "release_date_eq")
-            {
-                releaseDateArray.push({[Op.eq]: value});
-            }
-            else if(key === "release_date_ne")
-            {
-                releaseDateArray.push({[Op.ne]: value});
-            }
-            else if(key === "title_equals")
-            {
-                titleEqualsValue = {[Op.iLike]: value};
-            }
-            else if(key === "title_starts_with")
-            {
-                titleContainsArray.push({[Op.iLike]: value + "%"});
-            }
-            else if(key === "title_contains")
-            {
-                titleContainsArray.push({[Op.iLike]: "%" + value + "%"});
-            }
-            else if(key === "title_ends_with")
-            {
-                titleContainsArray.push({[Op.iLike]: "%" + value});
+                // need to be careful with title equals variable
+                // may have to return this..
+                result = titleHandler(key, value, titleEqualsValue, titleContainsArray);
+                if(!result)
+                {
+                    console.log("Invalid value found in title queries");
+                }
             }
             else if(key === "director_equals")
             {
@@ -248,32 +343,40 @@ const movie = (sequelize, DataTypes) => {
         }
 
         // if both less than and greater than dates given
-        if(lessThanDate !== undefined && greaterThanDate !== undefined)
+        if(releaseDateArrayEq.length > 0)
         {
-            if(greaterThanDate.getTime() < lessThanDate.getTime())
+            releaseDateArray.push({[Op.or]: releaseDateArrayEq});
+        }
+        if(releaseDateArrayNe.length > 0)
+        {
+            releaseDateArray.push({[Op.and]: releaseDateArrayNe});
+        }
+        if(lessThanDate.length > 0 || greaterThanDate.length > 0)
+        {
+            if(lessThanDate.length > 0 && greaterThanDate.length > 0)
             {
-                releaseDateArray.push({[Op.and]: releaseDateArrayGtLt});
+                if(greaterThanDate[0].getTime() <= lessThanDate[0].getTime())
+                {
+                    releaseDateArray.push({[Op.and]: releaseDateArrayGtLt});
+                }
+                else
+                {
+                    releaseDateArray.push({[Op.or]: releaseDateArrayGtLt});
+                }
             }
             else
             {
                 releaseDateArray.push({[Op.or]: releaseDateArrayGtLt});
             }
-            // may want to only do this if releaseDateArray has length? but may not hurt??
-            filters.push({releaseDate: {[Op.and]: releaseDateArray }});
         }
-        else
-        {
-            if(releaseDateArrayGtLt.length > 0)
-            {
-                filters.push({releaseDate: releaseDateArrayGtLt[0] });
-            }
-        }
+        // may want to only do this if releaseDateArray has length? but may not hurt??
+        filters.push({releaseDate: {[Op.and]: releaseDateArray }});
 
         // if looking for a exact title
         if(titleEqualsValue !== undefined)
         {
             titleArray.push({[Op.or]: titleContainsArray});
-            titleArray.push(titleEqualsValue);
+            titleArray.push({[Op.or]: titleEqualsValue});
             filters.push({title: {[Op.and]: titleArray}});
 
         }
@@ -466,6 +569,7 @@ const movie = (sequelize, DataTypes) => {
             //runtime_gte: "90",
             //runtime_lte: "100",
             //genre_contains: "Drama,Family"
+            //sort=title_asc,release_date_desc
 
         };
         // first check to see if looking for specific genres
@@ -497,9 +601,6 @@ const movie = (sequelize, DataTypes) => {
         console.log(movieIds);
         // generate the filters for all other options
         let whereQueries = whereGenerator(query, movieIds);
-        //let order = [];
-        //let orders = ['releaseDate', 'ASC'];
-        //order.push(orders);
         let order = sortGenerator(query);
         let newquery = {[Op.and]: whereQueries};
         let params = {
