@@ -227,6 +227,48 @@ const movie = (sequelize, DataTypes) => {
         return keyFound;
     }
 
+    // function to handle the director search filters based off the query string passed in
+    // key is the type of filter
+    // value is the value to filter for
+    // directorEqualsArray is used for exact matches
+    // directoryContainsArray is used for to hold filters for director start with, contain, or end with
+    const directorHandler = (key, value, directorContainsArray, directorEqualsArray) => {
+        let keyFound = false;
+        if(key === "director_equals")
+        {
+            keyFound = true;
+            let values = value.split(",");
+            for(let director of values) {
+                directorEqualsArray.push({[Op.iLike]: director});
+            };
+        }
+        else if(key === "director_starts_with")
+        {
+            keyFound = true;
+            let values = value.split(",");
+            for(let director of values) {
+                directorContainsArray.push({[Op.iLike]: director + "%"});
+            };
+        }
+        else if(key === "director_contains")
+        {
+            keyFound = true;
+            let values = value.split(",");
+            for(let director of values) {
+                directorContainsArray.push({[Op.iLike]: "%" + director + "%"});
+            };
+        }
+        else if(key === "director_ends_with")
+        {
+            keyFound = true;
+            let values = value.split(",");
+            for(let director of values) {
+                directorContainsArray.push({[Op.iLike]: "%" + director});
+            };
+        }
+        return keyFound;
+    }
+
     const whereGenerator = (query, ids) =>
     {
         let filters = [];
@@ -245,12 +287,11 @@ const movie = (sequelize, DataTypes) => {
         // title variables
         let titleArray = [];
         let titleContainsArray = [];
-        // changed this to an array
         let titleEqualsValue = [];
         // director variables
         let directorArray = [];
         let directorContainsArray = [];
-        let directorEqualsValue = undefined;
+        let directorEqualsArray = [];
         // rating variables
         let ratingArray = [];
         let ratingMatchArray = [];
@@ -274,40 +315,21 @@ const movie = (sequelize, DataTypes) => {
                     console.log("Invalid value found in release date queries");
                 }
             }
-            /*
-                - need to handle removing spaces from the title
-                    - will have to use %
-                    - encode using encodeURIComponent
-                - also have to fix title_equals
-                    - have to change titleEqualsValue to an array
-                    - also fix the end to [Op.or]
-
-            */
             else if(key.startsWith("title"))
             {
-                // need to be careful with title equals variable
-                // may have to return this..
                 result = titleHandler(key, value, titleEqualsValue, titleContainsArray);
                 if(!result)
                 {
                     console.log("Invalid value found in title queries");
                 }
             }
-            else if(key === "director_equals")
+            else if(key.startsWith("director"))
             {
-                directorEqualsValue = {[Op.iLike]: value};
-            }
-            else if(key === "director_stars_with")
-            {
-                directorContainsArray.push({[Op.iLike]: value + "%"});
-            }
-            else if(key === "director_contains")
-            {
-                directorContainsArray.push({[Op.iLike]: "%" + value + "%"});
-            }
-            else if(key === "director_ends_with")
-            {
-                directorContainsArray.push({[Op.iLike]: "%" + value});
+                result = directorHandler(key, value, directorContainsArray, directorEqualsArray);
+                if(!result)
+                {
+                    console.log("Invalid value found in title queries");
+                }
             }
             else if(key === "rating_equals")
             {
@@ -373,7 +395,7 @@ const movie = (sequelize, DataTypes) => {
         filters.push({releaseDate: {[Op.and]: releaseDateArray }});
 
         // if looking for a exact title
-        if(titleEqualsValue !== undefined)
+        if(titleEqualsValue.length > 0)
         {
             titleArray.push({[Op.or]: titleContainsArray});
             titleArray.push({[Op.or]: titleEqualsValue});
@@ -386,14 +408,16 @@ const movie = (sequelize, DataTypes) => {
         }
 
         // if looking for a exact director
-        if(directorEqualsValue !== undefined)
+        if(directorEqualsArray.length > 0)
         {
             directorArray.push({[Op.or]: directorContainsArray});
-            directorArray.push(directorEqualsValue);
+            directorArray.push({[Op.or]: directorEqualsArray});
             filters.push({director: {[Op.and]: directorArray}});
         }
         else
         {
+            console.log("Director contains");
+            console.log(directorContainsArray);
             filters.push({director: {[Op.or]: directorContainsArray}});
         }
 
