@@ -92,7 +92,15 @@ const getMovies = async (cookie, req, res, cookieValid) =>
 {
 	console.log(req.query);
 	let movies = await models.Movies.queryMovies(models, req.query);
-	res.status(200).send(movies);
+	if(!movies[0])
+	{
+		// send the error message
+		res.status(404).send(movies[1]);
+	}
+	else
+	{
+		res.status(200).send(movies[1]);
+	}
 };
 
 

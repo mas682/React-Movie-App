@@ -364,15 +364,16 @@ const movie = (sequelize, DataTypes) => {
 
     const generateReleaseDateFilter = (releaseDateArrayEq, releaseDateArrayNe, releaseDateArrayGtLt, lessThanDate, greaterThanDate, releaseDateArray) =>
     {
+        let tempArray = [];
         // if there are exact dates to match
         if(releaseDateArrayEq.length > 0)
         {
-            releaseDateArray.push({[Op.or]: releaseDateArrayEq});
+            tempArray.push({[Op.or]: releaseDateArrayEq});
         }
         // if there are exact dates to ignore
         if(releaseDateArrayNe.length > 0)
         {
-            releaseDateArray.push({[Op.and]: releaseDateArrayNe});
+            tempArray.push({[Op.and]: releaseDateArrayNe});
         }
         if(lessThanDate.length > 0 || greaterThanDate.length > 0)
         {
@@ -380,22 +381,27 @@ const movie = (sequelize, DataTypes) => {
             {
                 if(greaterThanDate[0].getTime() <= lessThanDate[0].getTime())
                 {
-                    releaseDateArray.push({[Op.and]: releaseDateArrayGtLt});
+                    tempArray.push({[Op.and]: releaseDateArrayGtLt});
                 }
                 else
                 {
-                    releaseDateArray.push({[Op.or]: releaseDateArrayGtLt});
+                    tempArray.push({[Op.or]: releaseDateArrayGtLt});
                 }
             }
             else
             {
                 // if here, only 1 of the two dates specified
-                releaseDateArray.push({[Op.or]: releaseDateArrayGtLt});
+                tempArray.push({[Op.or]: releaseDateArrayGtLt});
             }
         }
+        if(tempArray.length > 0)
+        {
+            return {releaseDate: {[Op.and]: tempArray}};
+        }
+        return undefined;
     }
 
-    const generateTitleFilter = (titleEqualsValue, titleArray, titleContainsArray) =>
+    const generateTitleFilter = (titleEqualsValue, titleContainsArray) =>
     {
         let tempArray = [];
         // if looking for a exact title
@@ -406,15 +412,16 @@ const movie = (sequelize, DataTypes) => {
                 tempArray.push({[Op.or]: titleContainsArray});
             }
             tempArray.push({[Op.or]: titleEqualsValue});
-            titleArray.push({title: {[Op.and]: tempArray}});
+            return {title: {[Op.and]: tempArray}};
         }
         else if(titleContainsArray.length > 0)
         {
-            titleArray.push({title: {[Op.or]: titleContainsArray}});
+            return {title: {[Op.or]: titleContainsArray}};
         }
+        return undefined;
     }
 
-    const generateDirectorFilter = (directorEqualsArray, directorArray, directorContainsArray) =>
+    const generateDirectorFilter = (directorEqualsArray, directorContainsArray) =>
     {
         let tempArray = [];
         // if looking for a exact director
@@ -425,15 +432,67 @@ const movie = (sequelize, DataTypes) => {
                 tempArray.push({[Op.or]: directorContainsArray});
             }
             tempArray.push({[Op.or]: directorEqualsArray});
-            directorArray.push({director: {[Op.and]: tempArray}});
+            return {director: {[Op.and]: tempArray}};
         }
         else if(directorContainsArray.length > 0)
         {
-            directorArray.push({director: {[Op.or]: directorContainsArray}});
+            return {director: {[Op.or]: directorContainsArray}};
         }
+        return undefined;
     }
 
-    const whereGenerator = (query, ids) =>
+    const generateRatingFilter = (ratingMatchArray, ratingNotEqualsArray, ratingNull, showNull) =>
+    {
+        let tempArray = [];
+        // if specifiying null or not null movies
+        if(ratingMatchArray.length > 0)
+        {
+            tempArray.push({[Op.or]: ratingMatchArray});
+        }
+        if(ratingNotEqualsArray.length > 0)
+        {
+            tempArray.push({[Op.and]: ratingNotEqualsArray});
+        }
+        if(ratingNull.length > 0)
+        {
+            tempArray.push({[Op.and]: ratingNull});
+            if(showNull[0])
+            {
+                return {rating: {[Op.or]: tempArray}};
+            }
+            else
+            {
+                return {rating: {[Op.and]: tempArray}};
+            }
+        }
+        else if(ratingNotEqualsArray.length > 0 || ratingMatchArray.length > 0)
+        {
+            return {rating: {[Op.or]: tempArray}};
+        }
+        return undefined;
+    }
+
+    const generateRunTimeFilters = (runTimeArray, greaterThanTime, lessThanTime) =>
+    {
+        if(greaterThanTime.length > 0 && lessThanTime.length > 0)
+        {
+            if(greaterThanTime[0] < lessThanTime[0])
+            {
+                return {runTime: {[Op.and]: runTimeArray}};
+            }
+            else
+            {
+                return {runTime: {[Op.or]: runTimeArray}};
+            }
+        }
+        else if(greaterThanTime.length > 0 || lessThanTime.length > 0)
+        {
+            return {runTime: {[Op.or]: runTimeArray}};
+        }
+        return undefined;
+    }
+
+    const movieWhereGenerator = (query, ids) =>
     {
         let filters = [];
         let keys = Object.keys(query);
@@ -442,22 +501,18 @@ const movie = (sequelize, DataTypes) => {
         let key = "";
         let value = "";
         // release date variables
-        let releaseDateArray = [];
         let releaseDateArrayEq = [];
         let releaseDateArrayNe = [];
         let releaseDateArrayGtLt = [];
         let lessThanDate = [];
         let greaterThanDate = [];
         // title variables
-        let titleArray = [];
         let titleContainsArray = [];
         let titleEqualsValue = [];
         // director variables
-        let directorArray = [];
         let directorContainsArray = [];
         let directorEqualsArray = [];
         // rating variables
-        let ratingArray = [];
         let ratingMatchArray = [];
         let ratingNotEqualsArray = [];
         let ratingNull = [];
@@ -476,7 +531,7 @@ const movie = (sequelize, DataTypes) => {
                 result = releaseDateHandler(key, value, releaseDateArrayGtLt, releaseDateArrayEq, releaseDateArrayNe, greaterThanDate, lessThanDate);
                 if(!result[0])
                 {
-                    console.log(result[1]);
+                    return result;
                 }
             }
             else if(key.startsWith("title"))
@@ -484,7 +539,7 @@ const movie = (sequelize, DataTypes) => {
                 result = titleHandler(key, value, titleEqualsValue, titleContainsArray);
                 if(!result[0])
                 {
-                    console.log(result[1]);
+                    return result;
                 }
             }
             else if(key.startsWith("director"))
@@ -492,7 +547,7 @@ const movie = (sequelize, DataTypes) => {
                 result = directorHandler(key, value, directorContainsArray, directorEqualsArray);
                 if(!result[0])
                 {
-                    console.log(result[1]);
+                    return result;
                 }
             }
             else if(key.startsWith("rating"))
@@ -500,7 +555,7 @@ const movie = (sequelize, DataTypes) => {
                 result = ratingHandler(key, value, ratingMatchArray, ratingNotEqualsArray, ratingNull, showNull);
                 if(!result[0])
                 {
-                    console.log(result[1]);
+                    return result;
                 }
             }
             else if(key.startsWith("runtime"))
@@ -508,76 +563,50 @@ const movie = (sequelize, DataTypes) => {
                 result = runTimeHandler(key, value, runTimeArray, lessThanTime, greaterThanTime);
                 if(!result[0])
                 {
-                    console.log(result[1]);
+                    return result;
                 }
+            }
+            else if(key.startsWith("genre") || key.startsWith("sort"))
+            {
+                // may want to pass these to the appropriate functions??
             }
             else
             {
-                // not always a issue...
-                console.log(key + " is not a valid query parameter");
+                return [false, key + " is not a valid query parameter"];
             }
             counter = counter + 1;
         }
 
-        // returns value in releaseDateArray
-        generateReleaseDateFilter(releaseDateArrayEq, releaseDateArrayNe, releaseDateArrayGtLt, lessThanDate, greaterThanDate, releaseDateArray);
-        if(releaseDateArray.length > 0)
+        let releaseDateFilters = generateReleaseDateFilter(releaseDateArrayEq, releaseDateArrayNe, releaseDateArrayGtLt, lessThanDate, greaterThanDate);
+        if(releaseDateFilters !== undefined)
         {
-            filters.push({releaseDate: {[Op.and]: releaseDateArray }});
+            filters.push(releaseDateFilters);
         }
-        generateTitleFilter(titleEqualsValue, titleArray, titleContainsArray);
-        if(titleArray.length > 0)
+        let titleFilters = generateTitleFilter(titleEqualsValue, titleContainsArray);
+        if(titleFilters !== undefined)
         {
-            filters.push(titleArray[0]);
+            filters.push(titleFilters);
         }
-        generateDirectorFilter(directorEqualsArray, directorArray, directorContainsArray);
-        if(directorArray.length > 0)
+        let directorFilters = generateDirectorFilter(directorEqualsArray, directorContainsArray);
+        if(directorFilters !== undefined)
         {
-            filters.push(directorArray[0]);
+            filters.push(directorFilters);
         }
-
-        // if specifiying null or not null movies
-        if(ratingNull.length > 0)
+        let ratingFilters = generateRatingFilter(ratingMatchArray, ratingNotEqualsArray, ratingNull, showNull);
+        if(ratingFilters !== undefined)
         {
-            ratingArray.push({[Op.or]: ratingMatchArray});
-            ratingArray.push({[Op.and]: ratingNotEqualsArray});
-            ratingArray.push({[Op.and]: ratingNull});
-            if(showNull[0])
-            {
-                filters.push({rating: {[Op.or]: ratingArray}});
-            }
-            else
-            {
-                filters.push({rating: {[Op.and]: ratingArray}});
-            }
+            filters.push(ratingFilters);
         }
-        else
+        let runTimeFilters = generateRunTimeFilters(runTimeArray, greaterThanTime, lessThanTime);
+        if(runTimeFilters !== undefined)
         {
-            ratingArray.push({[Op.or]: ratingMatchArray});
-            ratingArray.push({[Op.and]: ratingNotEqualsArray});
-            filters.push({rating: {[Op.or]: ratingArray}});
-        }
-        if(greaterThanTime.length > 0 && lessThanTime.length > 0)
-        {
-            if(greaterThanTime[0] < lessThanTime[0])
-            {
-                filters.push({runTime: {[Op.and]: runTimeArray}});
-            }
-            else
-            {
-                filters.push({runTime: {[Op.or]: runTimeArray}});
-            }
-        }
-        else if(greaterThanTime.length > 0 || lessThanTime.length > 0)
-        {
-            filters.push({runTime: {[Op.or]: runTimeArray}});
+            filters.push(runTimeFilters);
         }
         if(ids.length > 0)
         {
             filters.push({id: {[Op.in]: ids}});
         }
-
-        return filters;
+        return [true,filters];
     }
 
     // function to generate the where values to get the movies
@@ -749,9 +778,13 @@ const movie = (sequelize, DataTypes) => {
         console.log("movie ids");
         console.log(movieIds);
         // generate the filters for all other options
-        let whereQueries = whereGenerator(query, movieIds);
+        let whereQueries = movieWhereGenerator(query, movieIds);
+        if(whereQueries[0] === false)
+        {
+            return whereQueries;
+        }
         let order = sortGenerator(query);
-        let newquery = {[Op.and]: whereQueries};
+        let newquery = {[Op.and]: whereQueries[1]};
         let params = {
             include: [
                 {
@@ -769,7 +802,7 @@ const movie = (sequelize, DataTypes) => {
         }
 
         let movies2 = await Movie.findAll(params);
-        return movies2;
+        return [true, movies2];
     }
 
     // function to get the information for a individual movie

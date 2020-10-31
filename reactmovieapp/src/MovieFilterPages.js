@@ -119,7 +119,7 @@ class MovieFilterPage extends React.Component {
         }
         else
         {
-            alert("Movie request failed");
+            alert(movieData[1]);
         }
     }
 

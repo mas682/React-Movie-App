@@ -75,3 +75,136 @@ To do list:
    35. then create individual pages for movies
    36. create a page that can be found on a movie page that shows the reviews associated
        with the movie..
+  37. fix error handling on review form submission
+  38. make it so that suggestions in seach drop down make letters that match in bold..
+    - will need algorithm?
+  39. Put SearchDropDown styling in it's own css file..
+  40. need to add a ton of error handling to database side, using .catch()
+      - tons of issues in reviews.js with creating reviews
+      - issue associating users with tags as can use any integer...
+  41. need to fix updating movie as it is still set to update the title,
+      but could be complications with having to switch movies completely in
+      the database..
+  42. fix reviewform to let you post review with just id
+          - done but needs fixed for update form(see 41)
+  43. make sure only returning 10 entries..
+  44. fix bug where others are suggested when you first click after selected
+          - should be fixed, if there are multiple movies with the same name,
+          - could have a issue...
+  45. need to verify movie exists when creating review
+          - somewhat handled by catch but not sure if this is the best way?
+  46. make review form scrollable..
+        -done
+        - should probably put this in it's own css file to be used by movie post pop up and
+        - review form
+  47. note: underscores in postres need to be replaced with \\_ or it will return everything
+      when doing pattern matching only
+  48. need to make a movie watchlist page
+      - on movie posts, add button to add movie to watch list?
+  49. need to make a favorite movies page
+
+
+  next steps:
+    - working on implement search bar in header
+        - style options...
+            - on search button click:
+                - make it 50% of header, remove profile, settings, logout?
+                - wipe out everything in header
+                - just leave in right corner
+                - put it below everything in header...
+    - fix findByTitle in Movies.js model to break queries into individual pieces like you did in users.js
+        - be careful with underscores
+    - then fix movies.js to work how users.js model has seperate functions...
+
+    movie page:
+        - at some point, need to fix ratings on the page
+            - keep track of 2 numbers: current total ratings, number of ratings
+            - divide one by the other
+            - when updating rating, will have to subtract and then update with new value
+        - need to handle case where no image exists, just show something? such as no image found?
+        - do something similar for trailer too
+        - make title on page hyperlink to movies site if applicable
+            - https://www.themoviedb.org/movie/577922-tenet
+            - can either use the homepage field from the get movie details api
+            - or use the movie db's website and just do /movie/id
+        - fix css as container named overviewContainer but used for several things
+        - fix movie reviews so that clicking on picture leads to movies page
+            - done on movie posts
+        - acccount for null poster, trailer, or background image
+              - background image done
+              - trailer done
+        - may want a table for directors, and then associate directors with movies
+              - then on director click, find movies associated
+              - consider doing this with actors as well but down the line..
+        - on genre click, find movies with that genre
+            - for background, if poster available could use that?
+            - do in future
+        - with reviewform, it is very hard to redirect as you have it set up
+            - have to remove review form pop up but can't do that until you redirect....
+            - may just not do this
+        - want a button on a movies page to write review
+            - if not logged in, prompt to sign in
+
+      GOAL IS TO BUILD SMALLEST FUNCTIONAL SITE POSSIBLE NOW, THEN EXPAND LATER
+      - current plan(accomplish one small thing at a time):
+          - finish the search bar
+              - need to set up queries for movies
+              - redirect to user/movie page on suggestion click
+              - full on search page
+              - ability to search just off text, ignore suggestions
+          - then add functionality to have a watch list
+              - let users add movies to watch list from movie page
+              - let users add movies to watch list from movie posts
+              - view all movies on watch list
+              - try to make it reusable for favorites
+          - then add functionality for favorites
+              - similar to steps above for watch list
+          - create search page to search by genre, movie, user, etc.
+              - leave functionality general enough to add directors, actors, etc. to it
+          - fix upcoming, top rated, in theaters pages
+          - fix anything in the above sections that is still not done after this
+
+
+          left off:
+            testing search bar for movie review form to use update function
+            - was doing te and then deleting it to see if it worked
+            - test other scenarios
+            - fixed the following:
+                - updateFunction not called unless defined in search drop down
+                - when searchign for a value that is not a match, set update function to undefined
+                - need to movie movie query into search file
+                - redirect not called for review form
+
+
+      Search bar
+        - steal idea form imdb in which they let you choose a drop down of what to search from
+        - issue where you hit enter on a value, go to that page, and the value is still there
+            - when you press enter with the value still there, issue at line 304..
+        - need to fix issue where state for redirect changed from true to false and causes render
+        - break key pressed handler function into smaller functions
+    Movie Filter Pages
+        - need to try to prevent bad requests on client side
+        - also need to fix component will receive props when going from one filter page to another
+        - add filter, sort options to the page somewhere
+
+        left off working on movieDisplayPopup for upcoming movies pages
+            - make sure scrollable
+                - done
+            - link poster to movies page
+                - done
+            - fix everything on the dipslay
+                - done
+            - next:
+                - create api call to get all movies
+                    - want a universal one with various parameters, ex. release date, starts with, genres, etc.
+                    - in progress
+                    - need to clean up a lot of the code
+                    - prevent bad requests
+                    - prevent values that have arrays such as 2 dates lte
+                    - also want to add option to include or not include movies I've watched
+            - do not worry about doing genre does not equal...
+                - only worried about movies that CONTAIN that genre
+
+            - after you clean up movie page api
+                - start making user watch list page
+                - also make a page for movies I've watched
