@@ -111,44 +111,46 @@ const movie = (sequelize, DataTypes) => {
     // releaseDateArray is the array to hold exact date matches
     // returns true if the key passed in is one that can be used
     // returns false if the key is invalid
-    const releaseDateHandler = (key, value, releaseDateArrayGtLt, releaseDateArrayEq, releaseDateArrayNe, greaterThanDate, lessThanDate ) =>
+    const releaseDateHandler = (key, value, releaseDateArrayGtLt, releaseDateArrayEq, releaseDateArrayNe, greaterThanDate, lessThanDate) =>
     {
-        let keyFound = false;
         if(key === "release_date_gte")
         {
-            // filtering out multiple values being passed in
-            if(typeof(value) === "string")
+            let values = value.split(",");
+            if(values.length > 1)
             {
-                // validate the date
-                let valid = moment(value, "YYYY-MM-DD", true).isValid();
-                if(!valid)
-                {
-                    return false;
-                }
-                keyFound = true;
-                releaseDateArrayGtLt.push({[Op.gte]: value});
-                let date = new Date(value);
-                date.setUTCHours(12);
-                greaterThanDate.push(date);
+                return [false, "Multiple values for " + key + " found: " + value];
             }
+            value = values[0];
+
+            // validate the date
+            let valid = moment(value, "YYYY-MM-DD", true).isValid();
+            if(!valid)
+            {
+                return [false, "Invalid release date format for: " + key + "=" + value];
+            }
+            releaseDateArrayGtLt.push({[Op.gte]: value});
+            let date = new Date(value);
+            date.setUTCHours(12);
+            greaterThanDate.push(date);
         }
         else if(key === "release_date_lte")
         {
-            // filtering out multiple values
-            if(typeof(value) === "string")
+            let values = value.split(",");
+            if(values.length > 1)
             {
-                // validate the date
-                let valid = moment(value, "YYYY-MM-DD", true).isValid();
-                if(!valid)
-                {
-                    return false;
-                }
-                let date = new Date(value);
-                date.setUTCHours(12);
-                lessThanDate.push(date);
-                keyFound = true;
-                releaseDateArrayGtLt.push({[Op.lte]: value});
+                return [false, "Multiple values for " + key + " found: " + value];
             }
+            value = values[0];
+            // validate the date
+            let valid = moment(value, "YYYY-MM-DD", true).isValid();
+            if(!valid)
+            {
+                return [false, "Invalid release date format for: " + key + "=" + value];
+            }
+            let date = new Date(value);
+            date.setUTCHours(12);
+            lessThanDate.push(date);
+            releaseDateArrayGtLt.push({[Op.lte]: value});
         }
         else if(key === "release_date_eq")
         {
@@ -159,11 +161,10 @@ const movie = (sequelize, DataTypes) => {
                 let valid = moment(date, "YYYY-MM-DD", true).isValid();
                 if(!valid)
                 {
-                    return false;
+                    return [false, "Invalid release date format for: " + key + "=" + value];
                 }
                 releaseDateArrayEq.push({[Op.eq]: date});
             };
-            keyFound = true;
         }
         else if(key === "release_date_ne")
         {
@@ -174,13 +175,16 @@ const movie = (sequelize, DataTypes) => {
                 valid = moment(date, "YYYY-MM-DD", true).isValid();
                 if(!valid)
                 {
-                    return false;
+                    return [false, "Invalid release date format for: " + key + "=" + value];
                 }
                 releaseDateArrayNe.push({[Op.ne]: date});
             };
-            keyFound = true;
         }
-        return keyFound;
+        else
+        {
+            return [false, key + " is not a valid query parameter"];
+        }
+        return [true];
     }
 
     // function to handle the title search filters based off the query string passed in
@@ -190,10 +194,8 @@ const movie = (sequelize, DataTypes) => {
     // titleContainsArray is used for to hold filters for titles start with, contain, or end with
     const titleHandler = (key, value, titleEqualsValue, titleContainsArray) =>
     {
-        let keyFound = false;
         if(key === "title_equals")
         {
-            keyFound = true;
             let values = value.split(",");
             values.forEach((title) => {
                 titleEqualsValue.push({[Op.iLike]: title});
@@ -201,8 +203,6 @@ const movie = (sequelize, DataTypes) => {
         }
         else if(key === "title_starts_with")
         {
-            // need to do a split for this
-            keyFound = true;
             let values = value.split(",");
             values.forEach((title) => {
                 titleContainsArray.push({[Op.iLike]: title + "%"});
@@ -210,7 +210,6 @@ const movie = (sequelize, DataTypes) => {
         }
         else if(key === "title_contains")
         {
-            keyFound = true;
             let values = value.split(",");
             values.forEach((title) => {
                 titleContainsArray.push({[Op.iLike]: "%" + title + "%"});
@@ -218,13 +217,16 @@ const movie = (sequelize, DataTypes) => {
         }
         else if(key === "title_ends_with")
         {
-            keyFound = true;
             let values = value.split(",");
             values.forEach((title) => {
                 titleContainsArray.push({[Op.iLike]: "%" + title});
             });
         }
-        return keyFound;
+        else
+        {
+            return [false, key + " is not a valid query parameter"];
+        }
+        return [true];
     }
 
     // function to handle the director search filters based off the query string passed in
@@ -233,10 +235,8 @@ const movie = (sequelize, DataTypes) => {
     // directorEqualsArray is used for exact matches
     // directoryContainsArray is used for to hold filters for director start with, contain, or end with
     const directorHandler = (key, value, directorContainsArray, directorEqualsArray) => {
-        let keyFound = false;
         if(key === "director_equals")
         {
-            keyFound = true;
             let values = value.split(",");
             for(let director of values) {
                 directorEqualsArray.push({[Op.iLike]: director});
@@ -244,7 +244,6 @@ const movie = (sequelize, DataTypes) => {
         }
         else if(key === "director_starts_with")
         {
-            keyFound = true;
             let values = value.split(",");
             for(let director of values) {
                 directorContainsArray.push({[Op.iLike]: director + "%"});
@@ -252,7 +251,6 @@ const movie = (sequelize, DataTypes) => {
         }
         else if(key === "director_contains")
         {
-            keyFound = true;
             let values = value.split(",");
             for(let director of values) {
                 directorContainsArray.push({[Op.iLike]: "%" + director + "%"});
@@ -260,13 +258,179 @@ const movie = (sequelize, DataTypes) => {
         }
         else if(key === "director_ends_with")
         {
-            keyFound = true;
             let values = value.split(",");
             for(let director of values) {
                 directorContainsArray.push({[Op.iLike]: "%" + director});
             };
         }
-        return keyFound;
+        else
+        {
+            return [false, key + " is not a valid query parameter"];
+        }
+        return [true];
+    }
+
+    // function to handle the rating search filters based off the query string passed in
+    // key is the type of filter
+    // value is the value to filter for
+    // ratingMatchArray is used for exact matches
+    // ratingNotEqualsArray is used for exact matches that are not wanted
+    // ratingNull is used to filter showing null/not null ratings
+    // showNull holds a boolean as to whether or not to show null or not null
+    const ratingHandler = (key, value, ratingMatchArray, ratingNotEqualsArray, ratingNull, showNull) => {
+        if(key === "rating_equals")
+        {
+            let values = value.split(",");
+            for(let rating of values) {
+                ratingMatchArray.push({[Op.iLike]: rating});
+            }
+        }
+        else if(key === "rating_ne")
+        {
+            let values = value.split(",");
+            for(let rating of values) {
+                ratingNotEqualsArray.push({[Op.notILike]: rating});
+            }
+        }
+        else if(key === "ratings_include_null")
+        {
+            let values = value.split(",");
+            if(values.length > 1)
+            {
+                return [false, "Multiple values for " + key + " found: " + value];
+            }
+            value = values[0];
+            if(value === "true")
+            {
+                ratingNull.push({[Op.is]: null});
+                showNull.push(true);
+            }
+            else if(value === "false")
+            {
+                ratingNull.push({[Op.not]: null});
+                showNull.push(false);
+            }
+            else
+            {
+                return [false, "Invalid value for " + key + "=" + value];
+            }
+        }
+        else
+        {
+            return [false, key + " is not a valid query parameter"];
+        }
+        return [true];
+    }
+
+    // function to handle the runtime search filters based off the query string passed in
+    // key is the type of filter
+    // value is the value to filter for
+    const runTimeHandler = (key, value, runTimeArray, lessThanTime, greaterThanTime) => {
+        if(key === "runtime_lte")
+        {
+            let values = value.split(",");
+            if(values.length > 1)
+            {
+                return [false, "Multiple values for " + key + " found: " + value];
+            }
+            // need the first one for cases like '123a', need the second one for empty strings
+            if(isNaN(value) || value.length < 1)
+            {
+                return [false, "The value found for " + key + " is not a valid number: " + value];
+            }
+            runTimeArray.push({[Op.lte]: value});
+            lessThanTime.push(parseInt(value));
+        }
+        else if(key === "runtime_gte")
+        {
+            let values = value.split(",");
+            if(values.length > 1  || value.length < 1)
+            {
+                return [false, "Multiple values for " + key + " found: " + value];
+            }
+            if(isNaN(value))
+            {
+                return [false, "The value found for " + key + " is not a valid number: " + value];
+            }
+            runTimeArray.push({[Op.gte]: value});
+            greaterThanTime.push(parseInt(value));
+        }
+        else
+        {
+            return [false, key + " is not a valid query parameter"];
+        }
+        return [true];
+    }
+
+    const generateReleaseDateFilter = (releaseDateArrayEq, releaseDateArrayNe, releaseDateArrayGtLt, lessThanDate, greaterThanDate, releaseDateArray) =>
+    {
+        // if there are exact dates to match
+        if(releaseDateArrayEq.length > 0)
+        {
+            releaseDateArray.push({[Op.or]: releaseDateArrayEq});
+        }
+        // if there are exact dates to ignore
+        if(releaseDateArrayNe.length > 0)
+        {
+            releaseDateArray.push({[Op.and]: releaseDateArrayNe});
+        }
+        if(lessThanDate.length > 0 || greaterThanDate.length > 0)
+        {
+            if(lessThanDate.length > 0 && greaterThanDate.length > 0)
+            {
+                if(greaterThanDate[0].getTime() <= lessThanDate[0].getTime())
+                {
+                    releaseDateArray.push({[Op.and]: releaseDateArrayGtLt});
+                }
+                else
+                {
+                    releaseDateArray.push({[Op.or]: releaseDateArrayGtLt});
+                }
+            }
+            else
+            {
+                // if here, only 1 of the two dates specified
+                releaseDateArray.push({[Op.or]: releaseDateArrayGtLt});
+            }
+        }
+    }
+
+    const generateTitleFilter = (titleEqualsValue, titleArray, titleContainsArray) =>
+    {
+        let tempArray = [];
+        // if looking for a exact title
+        if(titleEqualsValue.length > 0)
+        {
+            if(titleContainsArray.length > 0)
+            {
+                tempArray.push({[Op.or]: titleContainsArray});
+            }
+            tempArray.push({[Op.or]: titleEqualsValue});
+            titleArray.push({title: {[Op.and]: tempArray}});
+        }
+        else if(titleContainsArray.length > 0)
+        {
+            titleArray.push({title: {[Op.or]: titleContainsArray}});
+        }
+    }
+
+    const generateDirectorFilter = (directorEqualsArray, directorArray, directorContainsArray) =>
+    {
+        let tempArray = [];
+        // if looking for a exact director
+        if(directorEqualsArray.length > 0)
+        {
+            if(directorContainsArray.length > 0)
+            {
+                tempArray.push({[Op.or]: directorContainsArray});
+            }
+            tempArray.push({[Op.or]: directorEqualsArray});
+            directorArray.push({director: {[Op.and]: tempArray}});
+        }
+        else if(directorContainsArray.length > 0)
+        {
+            directorArray.push({director: {[Op.or]: directorContainsArray}});
+        }
     }
 
     const whereGenerator = (query, ids) =>
@@ -295,146 +459,107 @@ const movie = (sequelize, DataTypes) => {
         // rating variables
         let ratingArray = [];
         let ratingMatchArray = [];
-        let ratingNull = undefined;
+        let ratingNotEqualsArray = [];
+        let ratingNull = [];
+        let showNull = [];
         // runtime variables
         let runTimeArray = [];
-        let lessThanTime = undefined;
-        let greaterThanTime = undefined;
+        let lessThanTime = [];
+        let greaterThanTime = [];
         let result = false;
         while(counter < numKeys)
         {
             key = keys[counter];
             value = decodeURIComponent(query[key]);
-
-            // new
             if(key.startsWith("release"))
             {
                 result = releaseDateHandler(key, value, releaseDateArrayGtLt, releaseDateArrayEq, releaseDateArrayNe, greaterThanDate, lessThanDate);
-                if(!result)
+                if(!result[0])
                 {
-                    console.log("Invalid value found in release date queries");
+                    console.log(result[1]);
                 }
             }
             else if(key.startsWith("title"))
             {
                 result = titleHandler(key, value, titleEqualsValue, titleContainsArray);
-                if(!result)
+                if(!result[0])
                 {
-                    console.log("Invalid value found in title queries");
+                    console.log(result[1]);
                 }
             }
             else if(key.startsWith("director"))
             {
                 result = directorHandler(key, value, directorContainsArray, directorEqualsArray);
-                if(!result)
+                if(!result[0])
                 {
-                    console.log("Invalid value found in title queries");
+                    console.log(result[1]);
                 }
             }
-            else if(key === "rating_equals")
+            else if(key.startsWith("rating"))
             {
-                ratingMatchArray.push({[Op.iLike]: value});
-            }
-            else if(key === "rating_ne")
-            {
-                ratingMatchArray.push({[Op.notILike]: value});
-            }
-            else if(key === "ratings_include_null")
-            {
-                if(value === "true")
+                result = ratingHandler(key, value, ratingMatchArray, ratingNotEqualsArray, ratingNull, showNull);
+                if(!result[0])
                 {
-                    ratingNull=({[Op.is]: null});
-                }
-                else if(value === "false")
-                {
-                    ratingNull=({[Op.not]: null});
+                    console.log(result[1]);
                 }
             }
-            else if(key === "runtime_lte")
+            else if(key.startsWith("runtime"))
             {
-                runTimeArray.push({[Op.lte]: value});
-                lessThanTime = parseInt(value);
-            }
-            else if(key === "runtime_gte")
-            {
-                runTimeArray.push({[Op.gte]: value});
-                greaterThanTime = parseInt(value);
-            }
-
-            counter = counter + 1;
-        }
-
-        // if both less than and greater than dates given
-        if(releaseDateArrayEq.length > 0)
-        {
-            releaseDateArray.push({[Op.or]: releaseDateArrayEq});
-        }
-        if(releaseDateArrayNe.length > 0)
-        {
-            releaseDateArray.push({[Op.and]: releaseDateArrayNe});
-        }
-        if(lessThanDate.length > 0 || greaterThanDate.length > 0)
-        {
-            if(lessThanDate.length > 0 && greaterThanDate.length > 0)
-            {
-                if(greaterThanDate[0].getTime() <= lessThanDate[0].getTime())
+                result = runTimeHandler(key, value, runTimeArray, lessThanTime, greaterThanTime);
+                if(!result[0])
                 {
-                    releaseDateArray.push({[Op.and]: releaseDateArrayGtLt});
-                }
-                else
-                {
-                    releaseDateArray.push({[Op.or]: releaseDateArrayGtLt});
+                    console.log(result[1]);
                 }
             }
             else
             {
-                releaseDateArray.push({[Op.or]: releaseDateArrayGtLt});
+                // not always a issue...
+                console.log(key + " is not a valid query parameter");
             }
-        }
-        // may want to only do this if releaseDateArray has length? but may not hurt??
-        filters.push({releaseDate: {[Op.and]: releaseDateArray }});
-
-        // if looking for a exact title
-        if(titleEqualsValue.length > 0)
-        {
-            titleArray.push({[Op.or]: titleContainsArray});
-            titleArray.push({[Op.or]: titleEqualsValue});
-            filters.push({title: {[Op.and]: titleArray}});
-
-        }
-        else
-        {
-            filters.push({title: {[Op.or]: titleContainsArray}});
+            counter = counter + 1;
         }
 
-        // if looking for a exact director
-        if(directorEqualsArray.length > 0)
+        // returns value in releaseDateArray
+        generateReleaseDateFilter(releaseDateArrayEq, releaseDateArrayNe, releaseDateArrayGtLt, lessThanDate, greaterThanDate, releaseDateArray);
+        if(releaseDateArray.length > 0)
         {
-            directorArray.push({[Op.or]: directorContainsArray});
-            directorArray.push({[Op.or]: directorEqualsArray});
-            filters.push({director: {[Op.and]: directorArray}});
+            filters.push({releaseDate: {[Op.and]: releaseDateArray }});
         }
-        else
+        generateTitleFilter(titleEqualsValue, titleArray, titleContainsArray);
+        if(titleArray.length > 0)
         {
-            console.log("Director contains");
-            console.log(directorContainsArray);
-            filters.push({director: {[Op.or]: directorContainsArray}});
+            filters.push(titleArray[0]);
+        }
+        generateDirectorFilter(directorEqualsArray, directorArray, directorContainsArray);
+        if(directorArray.length > 0)
+        {
+            filters.push(directorArray[0]);
         }
 
         // if specifiying null or not null movies
-        if(ratingNull !== undefined)
+        if(ratingNull.length > 0)
         {
-            ratingArray.push({[Op.and]: ratingMatchArray});
-            ratingArray.push(ratingNull);
-            filters.push({rating: {[Op.or]: ratingArray}});
+            ratingArray.push({[Op.or]: ratingMatchArray});
+            ratingArray.push({[Op.and]: ratingNotEqualsArray});
+            ratingArray.push({[Op.and]: ratingNull});
+            if(showNull[0])
+            {
+                filters.push({rating: {[Op.or]: ratingArray}});
+            }
+            else
+            {
+                filters.push({rating: {[Op.and]: ratingArray}});
+            }
         }
         else
         {
-            filters.push({rating: {[Op.and]: ratingMatchArray}});
+            ratingArray.push({[Op.or]: ratingMatchArray});
+            ratingArray.push({[Op.and]: ratingNotEqualsArray});
+            filters.push({rating: {[Op.or]: ratingArray}});
         }
-        if(greaterThanTime !== undefined && lessThanTime !== undefined)
+        if(greaterThanTime.length > 0 && lessThanTime.length > 0)
         {
-            if(greaterThanTime < lessThanTime)
+            if(greaterThanTime[0] < lessThanTime[0])
             {
                 filters.push({runTime: {[Op.and]: runTimeArray}});
             }
@@ -443,7 +568,7 @@ const movie = (sequelize, DataTypes) => {
                 filters.push({runTime: {[Op.or]: runTimeArray}});
             }
         }
-        else if(greaterThanTime !== undefined || lessThanTime !== undefined)
+        else if(greaterThanTime.length > 0 || lessThanTime.length > 0)
         {
             filters.push({runTime: {[Op.or]: runTimeArray}});
         }
