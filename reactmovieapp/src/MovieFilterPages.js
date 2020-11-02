@@ -10,15 +10,38 @@ class MovieFilterPage extends React.Component {
     constructor(props){
         super(props);
 
+        let values = this.updateMovieFilter(false, this.props);
+        let query = values[0];
+        let startDate = values[1];
         // will need fixed
         props.updateLoggedIn("admin", true);
-        let queryParams = queryString.parse(this.props.location.search);
-        console.log(queryParams);
+        this.state = {
+            header: this.props.type,
+            movies: [],
+            loading: false,
+            startDate: startDate,
+            queryString: query
+        };
+        this.getMovies = this.getMovies.bind(this);
+        this.apiCall = this.apiCall.bind(this);
+        this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
+        this.updateMovieFilter = this.updateMovieFilter.bind(this);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        // currently any time props are received, this will update them
+        // but may need to test the query string??
+        let query = this.updateMovieFilter(true, nextProps);
+        this.getMovies(query);
+    };
+
+    updateMovieFilter(newProps, props) {
+        let queryParams = queryString.parse(props.location.search);
         let startDate = queryParams["release_date_gte"];
         let endDate = queryParams["release_date_lte"];
         let sorting = queryParams["sort"];
-        let query = this.props.location.search;
-        if(this.props.type === "Upcoming Movies")
+        let query = props.location.search;
+        if(props.type === "Upcoming Movies")
         {
             if(startDate === undefined || sorting === undefined)
                 if(startDate === undefined)
@@ -29,9 +52,9 @@ class MovieFilterPage extends React.Component {
                     date.setDate(1);
                     startDate = moment(date).format('YYYY-MM-DD');
                     query = "?release_date_gte=" + startDate;
-                    if(this.props.location.search.length > 0)
+                    if(props.location.search.length > 0)
                     {
-                        query = this.props.location.search + "&release_date_gte=" + startDate;
+                        query = props.location.search + "&release_date_gte=" + startDate;
                     }
                 }
                 if(sorting === undefined)
@@ -41,7 +64,7 @@ class MovieFilterPage extends React.Component {
                 window.history.replaceState(null, "Upcoming Movies", query);
 
         }
-        else if(this.props.type === "New Releases")
+        else if(props.type === "New Releases")
         {
             if(startDate === undefined || endDate === undefined || sorting === undefined)
             {
@@ -50,7 +73,8 @@ class MovieFilterPage extends React.Component {
                     let date = new Date();
                     let month = date.getMonth();
                     // go back 1 month
-                    let newMonth = month - 1;
+                    // set to 2 for testing
+                    let newMonth = month - 2;
                     if(month === 0)
                     {
                         newMonth = 11;
@@ -58,9 +82,9 @@ class MovieFilterPage extends React.Component {
                     date.setMonth(newMonth);
                     startDate = moment(date).format('YYYY-MM-DD');
                     query = "?release_date_gte=" + startDate;
-                    if(this.props.location.search.length > 0)
+                    if(props.location.search.length > 0)
                     {
-                        query = this.props.location.search + "&release_date_gte=" + startDate;
+                        query = props.location.search + "&release_date_gte=" + startDate;
                     }
                 }
                 if(endDate === undefined)
@@ -80,34 +104,33 @@ class MovieFilterPage extends React.Component {
                 startDate = queryParams["release_date_gte"]
             }
         }
-        this.state = {
-            header: this.props.type,
-            movies: [],
-            loading: false,
-            startDate: startDate,
-            queryString: query
-        };
-        this.getMovies = this.getMovies.bind(this);
-        this.apiCall = this.apiCall.bind(this);
-        this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
+        if(newProps)
+        {
+            this.setState({
+                header: props.type,
+                movies: [],
+                loading: false,
+                startDate: startDate,
+                queryString: query
+            });
+            return query;
+        }
+        else
+        {
+            return [query, startDate];
+        }
     }
-
-    // called when component receiving new props
-    // may or may not be needed
-    componentWillReceiveProps(nextProps) {
-        // need to generate new query string
-    };
 
     /* for testing, this will not actually be used here */
     async componentDidMount()
     {
-        this.getMovies("upcoming");
+        this.getMovies();
     }
 
     // function to handle call to api and result
-    async getMovies(type)
+    async getMovies(query)
     {
-        let movieData = await this.apiCall(type);
+        let movieData = await this.apiCall(query);
         let status = movieData[0];
         if(status === 200)
         {
@@ -123,7 +146,7 @@ class MovieFilterPage extends React.Component {
         }
     }
 
-    apiCall(type)
+    apiCall(query)
     {
         // Simple POST request with a JSON body using fetch
         const requestOptions = {
@@ -135,10 +158,16 @@ class MovieFilterPage extends React.Component {
         let status = 0;
         let url = "";
         // params: title, revenue, director, runtime, rating, trailer, releasedate
-        if(type === "upcoming")
+        if(query === undefined)
         {
             url = "http://localhost:9000/search/movies/" + this.state.queryString;
         }
+        else
+        {
+            url = "http://localhost:9000/search/movies/" + query;
+        }
+        console.log("query string");
+        console.log(this.state.queryString);
         //url = "http://localhost:9000/search/movies/?date_gt=9-20-20";
         return fetch(url, requestOptions)
             .then(res => {
