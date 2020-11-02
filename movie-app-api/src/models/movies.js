@@ -492,7 +492,7 @@ const movie = (sequelize, DataTypes) => {
         return undefined;
     }
 
-    const movieWhereGenerator = (query, ids) =>
+    const movieWhereGenerator = (query, sortKeys) =>
     {
         let filters = [];
         let keys = Object.keys(query);
@@ -566,13 +566,16 @@ const movie = (sequelize, DataTypes) => {
                     return result;
                 }
             }
-            else if(key.startsWith("genre") || key.startsWith("sort"))
+            else if(key.startsWith("sort"))
             {
-                // may want to pass these to the appropriate functions??
+                sortKeys.push(key);
             }
             else
             {
-                return [false, key + " is not a valid query parameter"];
+                if(!key.startsWith("genre_contains"))
+                {
+                    return [false, key + " is not a valid query parameter"];
+                }
             }
             counter = counter + 1;
         }
@@ -602,10 +605,6 @@ const movie = (sequelize, DataTypes) => {
         {
             filters.push(runTimeFilters);
         }
-        if(ids.length > 0)
-        {
-            filters.push({id: {[Op.in]: ids}});
-        }
         return [true,filters];
     }
 
@@ -614,35 +613,19 @@ const movie = (sequelize, DataTypes) => {
     const genreWhereGenerator = (query) =>
     {
         let containsFilters = [];
-        let keys = Object.keys(query);
-        let numKeys = keys.length;
-        let counter = 0;
-        let key = "";
-        let valueString = "";
         let genreContainsArray = [];
-
-        while(counter < numKeys)
+        let valueString = decodeURIComponent(query["genre_contains"]);
+        if(valueString === undefined)
         {
-            key = keys[counter];
-            valueString = query[key];
-            if(!key.startsWith("genre"))
-            {
-                counter = counter + 1;
-                continue;
-            }
-            else
-            {
-                let values = valueString.split(",");
-                values.forEach((value) => {
-                    if(key === "genre_contains")
-                    {
-                        genreContainsArray.push({[Op.iLike]: value});
-                    }
-                });
-            }
-            counter = counter + 1;
+            return [];
         }
-
+        else
+        {
+            let values = valueString.split(",");
+            values.forEach((value) => {
+                genreContainsArray.push({[Op.iLike]: value});
+            });
+        }
         if(genreContainsArray.length > 0)
         {
             containsFilters = [{value: {[Op.or]: genreContainsArray} }];
@@ -654,104 +637,73 @@ const movie = (sequelize, DataTypes) => {
     const sortGenerator = (query) =>
     {
         let sortingArray = [];
-        let keys = Object.keys(query);
-        let numKeys = keys.length;
-        let counter = 0;
-        let key = "";
-        let valueString = "";
-
-        while(counter < numKeys)
-        {
-            key = keys[counter];
-            valueString = query[key];
-            if(!key.startsWith("sort"))
+        let valueString = decodeURIComponent(query["sort"]);
+        let values = valueString.split(",");
+        values.forEach((value) => {
+            if(value === "release_date_asc")
             {
-                counter = counter + 1;
-                continue;
+                sortingArray.push(['releaseDate', 'ASC'])
+            }
+            else if(value === "release_date_desc")
+            {
+                sortingArray.push(['releaseDate', 'DESC']);
+            }
+            else if(value === "title_asc")
+            {
+                sortingArray.push(['title', 'ASC']);
+            }
+            else if(value === "title_desc")
+            {
+                sortingArray.push(['title', 'DESC']);
+            }
+            else if(value === "runtime_asc")
+            {
+                sortingArray.push(['runTime', 'ASC']);
+            }
+            else if(value === "runtime_desc")
+            {
+                sortingArray.push(['runTime', 'DESC']);
+            }
+            else if(value === "rating_asc")
+            {
+                sortingArray.push(['rating', 'ASC']);
+            }
+            else if(value === "rating_desc")
+            {
+                sortingArray.push(['rating', 'DESC']);
+            }
+            else if(value === "director_asc")
+            {
+                sortingArray.push(['director', 'ASC']);
+            }
+            else if(value === "director_desc")
+            {
+                sortingArray.push(['director', 'DESC']);
             }
             else
             {
-                let values = valueString.split(",");
-                values.forEach((value) => {
-                    if(value === "release_date_asc")
-                    {
-                        sortingArray.push(['releaseDate', 'ASC'])
-                    }
-                    else if(value === "release_date_desc")
-                    {
-                        sortingArray.push(['releaseDate', 'DESC']);
-                    }
-                    else if(value === "title_asc")
-                    {
-                        sortingArray.push(['title', 'ASC']);
-                    }
-                    else if(value === "title_desc")
-                    {
-                        sortingArray.push(['title', 'DESC']);
-                    }
-                    else if(value === "runtime_asc")
-                    {
-                        sortingArray.push(['runTime', 'ASC']);
-                    }
-                    else if(value === "runtime_desc")
-                    {
-                        sortingArray.push(['runTime', 'DESC']);
-                    }
-                    else if(value === "rating_asc")
-                    {
-                        sortingArray.push(['rating', 'ASC']);
-                    }
-                    else if(value === "rating_desc")
-                    {
-                        sortingArray.push(['rating', 'DESC']);
-                    }
-                    else if(value === "director_asc")
-                    {
-                        sortingArray.push(['director', 'ASC']);
-                    }
-                    else if(value === "director_desc")
-                    {
-                        sortingArray.push(['director', 'DESC']);
-                    }
-                    else
-                    {
-                        console.log("Sorting value invalid");
-                    }
-                });
-                // may want to check if multiple sort values found???
-                break;
+                return [false,"Sorting value invalid: " + value];
             }
-            counter = counter + 1;
-        }
-        return sortingArray;
+        });
+        return [true,sortingArray];
     }
 
     Movie.queryMovies = async (models, query) =>
     {
-        let queries = {
-            //release_date_gte: "2020-09-03",
-            //release_date_lte: "2020-09-05",
-            //release_date_ne: "2020-09-03",
-            //release_date_eq: "2020-09-05",
-            //title_equals: "Guest",
-            //title_starts_with: "The",
-            //title_contains: "The",
-            //title_ends_with: "InG",
-            //director_equals: "Christopher Nolan",
-            //director_stars_with: "Chris",
-            //director_contains: "Chris",
-            //director_ends_with: "N",
-            //rating_equals: "PG-13",
-            //rating_ne: "PG-13",
-            //ratings_include_null: "false"
-            //runtime_gte: "90",
-            //runtime_lte: "100",
-            //genre_contains: "Drama,Family"
-            //sort=title_asc,release_date_desc
-
-        };
-        // first check to see if looking for specific genres
-        let genreWhere = genreWhereGenerator(query);
+        let sortKeys = [];
+        // get the filters for the movies where variable
+        // this will also find any invalid parameter keys
+        let whereQueries = movieWhereGenerator(query, sortKeys);
+        // if an error was found
+        if(!whereQueries[0])
+        {
+            return whereQueries;
+        }
+        let genreWhere = [];
+        if(query["genre_contains"] !== undefined)
+        {
+            genreWhere = genreWhereGenerator(query);
+        }
         // movie ids that contain the genres
         let movieIds = [];
         // if genre filters
@@ -775,16 +727,22 @@ const movie = (sequelize, DataTypes) => {
                 movieIds.push(movie.id);
             });
         }
-        console.log("movie ids");
-        console.log(movieIds);
-        // generate the filters for all other options
-        let whereQueries = movieWhereGenerator(query, movieIds);
-        if(whereQueries[0] === false)
+        // if there are specific movie ids that contain the genre, add the filter
+        if(movieIds.length > 0)
         {
-            return whereQueries;
+            whereQueries[1].push({id: {[Op.in]: movieIds}});
         }
-        let order = sortGenerator(query);
         let newquery = {[Op.and]: whereQueries[1]};
+        let sortOrder = [];
+        if(query["sort"] !== undefined)
+        {
+            let sort = sortGenerator(query);
+            if(!sort[0])
+            {
+                return sort;
+            }
+            sortOrder = sort[1];
+        }
         let params = {
             include: [
                 {
@@ -797,7 +755,7 @@ const movie = (sequelize, DataTypes) => {
                     }
                 }
             ],
-            order: order,
+            order: sortOrder,
             where: newquery
         }
 
