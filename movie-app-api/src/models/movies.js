@@ -639,7 +639,7 @@ const movie = (sequelize, DataTypes) => {
         let sortingArray = [];
         let valueString = decodeURIComponent(query["sort"]);
         let values = valueString.split(",");
-        values.forEach((value) => {
+        for(let value of values) {
             if(value === "release_date_asc")
             {
                 sortingArray.push(['releaseDate', 'ASC'])
@@ -684,7 +684,7 @@ const movie = (sequelize, DataTypes) => {
             {
                 return [false,"Sorting value invalid: " + value];
             }
-        });
+        };
         return [true,sortingArray];
     }
 
