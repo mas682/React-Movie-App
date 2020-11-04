@@ -19,7 +19,9 @@ const models = {
     UsersFriends: sequelize.import('./usersFriendsTable'),
     MovieGenreTable: sequelize.import('./MovieGenreTable'),
     Genre: sequelize.import('./genres'),
-    Movies: sequelize.import('./movies')
+    Movies: sequelize.import('./movies'),
+    UserWatchList: sequelize.import('./UserWatchList'),
+    UsersWhoWatched: sequelize.import('./UsersWhoWatched')
 };
 
 Object.keys(models).forEach(key => {

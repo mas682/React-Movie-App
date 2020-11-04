@@ -69,8 +69,9 @@ class Routes extends React.Component
                 <main>
                     <Switch>
                         <Route exact path="/" render={(props)=> <Landing {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/>}/>
-                        <Route exact path="/upcoming" render={(props)=> <MovieFilterPage {...props} type="Upcoming Movies" updateLoggedIn={this.updateLoggedIn}/>}/>
-                        <Route exact path="/new_releases" render={(props)=> <MovieFilterPage {...props} type="New Releases" updateLoggedIn={this.updateLoggedIn}/>}/>
+                        <Route exact path="/watch_list" render={(props)=> <MovieFilterPage {...props} type="My Watch List" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/>}/>
+                        <Route exact path="/upcoming" render={(props)=> <MovieFilterPage {...props} type="Upcoming Movies" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/>}/>
+                        <Route exact path="/new_releases" render={(props)=> <MovieFilterPage {...props} type="New Releases" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/>}/>
     					<Route exact path="/movieInfo/" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn}/>}/>
                         <Route exact path="/profile/:id" render={()=> <UserProfile updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/> } />
                         <Route exact path="/profile/:id/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn}/> } />

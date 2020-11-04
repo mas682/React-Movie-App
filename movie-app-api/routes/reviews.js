@@ -202,12 +202,6 @@ const getTagIds = async (tagString, type) =>{
     }
 };
 
-// to be implemented
-const deleteReview = (cookie, req, res) =>
-{
-
-};
-
 // function to create a review
 // the body of the request should include:
 // title - the title of the movie

@@ -102,6 +102,8 @@ const movie = (sequelize, DataTypes) => {
         Movie.hasMany(models.Review, { onDelete: 'CASCADE' });
         // each movie can have many genres
         Movie.belongsToMany(models.Genre, {through: models.MovieGenreTable});
+        Movie.belongsToMany(models.User, {as: "UserWatchLists", through: models.UserWatchList, onDelete: 'CASCADE'});
+        Movie.belongsToMany(models.User, {as: "UsersWhoWatched", through: models.UsersWhoWatched, onDelete: 'CASCADE'});
     };
 
     // function to handle the releaseDateFilters based off the query string passed in
@@ -688,7 +690,7 @@ const movie = (sequelize, DataTypes) => {
         return [true,sortingArray];
     }
 
-    Movie.queryMovies = async (models, query) =>
+    Movie.queryMovies = async (models, query, user) =>
     {
         let sortKeys = [];
         // get the filters for the movies where variable
@@ -743,21 +745,32 @@ const movie = (sequelize, DataTypes) => {
             }
             sortOrder = sort[1];
         }
-        let params = {
-            include: [
-                {
-                    model: models.Genre,
-                    as: "Genres",
-                    attributes: ["id", "value"],
-                    through: {
-                        attributes: [],
-                        where: {}
-                    }
+        let genreQuery = {
+                model: models.Genre,
+                as: "Genres",
+                attributes: ["id", "value"],
+                through: {
+                    attributes: [],
+                    where: {}
                 }
-            ],
+            };
+        let includeArray = [genreQuery];
+        if(user !== undefined)
+        {
+            includeArray.push({
+                model: models.User,
+                as: "UserWatchLists",
+                required: false,
+                where: {
+                    username: user
+                }
+            });
+        }
+        let params = {
+            include: includeArray,
             order: sortOrder,
             where: newquery
-        }
+        };
 
         let movies2 = await Movie.findAll(params);
         return [true, movies2];

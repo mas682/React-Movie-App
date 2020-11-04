@@ -20,7 +20,9 @@ class MovieFilterPage extends React.Component {
             movies: [],
             loading: false,
             startDate: startDate,
-            queryString: query
+            queryString: query,
+            loggedIn: false,
+            username: ""
         };
         this.getMovies = this.getMovies.bind(this);
         this.apiCall = this.apiCall.bind(this);
@@ -121,7 +123,6 @@ class MovieFilterPage extends React.Component {
         }
     }
 
-    /* for testing, this will not actually be used here */
     async componentDidMount()
     {
         this.getMovies();
@@ -132,17 +133,26 @@ class MovieFilterPage extends React.Component {
     {
         let movieData = await this.apiCall(query);
         let status = movieData[0];
+        let loggedIn = false;
+        let username = movieData[1][1];
+        if(username !== "")
+        {
+            loggedIn = true;
+        }
+        this.props.updateLoggedIn(username, loggedIn);
         if(status === 200)
         {
             console.log("Movie Info");
-            console.log(movieData[1]);
+            console.log(movieData[1][0]);
             this.setState({
-              movies: movieData[1]
+              movies: movieData[1][0],
+              username: username,
+              loggedIn: loggedIn
             });
         }
         else
         {
-            alert(movieData[1]);
+            alert(movieData[1][0]);
         }
     }
 
@@ -158,7 +168,11 @@ class MovieFilterPage extends React.Component {
         let status = 0;
         let url = "";
         // params: title, revenue, director, runtime, rating, trailer, releasedate
-        if(query === undefined)
+        if(this.state.header === "My Watch List")
+        {
+            url = "http://localhost:9000/movies/my_watch_list"
+        }
+        else if(query === undefined)
         {
             url = "http://localhost:9000/search/movies/" + this.state.queryString;
         }
@@ -172,14 +186,7 @@ class MovieFilterPage extends React.Component {
         return fetch(url, requestOptions)
             .then(res => {
                 status = res.status;
-                if(status === 200)
-                {
-                    return res.json();
-                }
-                else
-                {
-                    return res.text();
-                }
+                return res.json();
             }).then(result=> {
                 return [status, result];
             });
@@ -191,7 +198,7 @@ class MovieFilterPage extends React.Component {
         this.state.movies.forEach((movie) => {
             let html = (
                 <div className={style.movieContainer}>
-                    <MovieDisplay movie={movie}/>
+                    <MovieDisplay movie={movie} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp} username={this.state.username} loggedIn={this.state.loggedIn}/>
                 </div>
             );
             movies.push(html);

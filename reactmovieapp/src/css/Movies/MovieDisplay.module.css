@@ -28,8 +28,17 @@
     color: #093145;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 10px;
-    height: 75px;
+    min-height: 75px;
+    width: 85%;
+}
 
+.bottomContainer {
+    color: #093145;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 10px;
+    min-height: 75px;
+    display: flex;
+    flex-flow: row wrap;
 }
 
 .movieTitle {
@@ -40,3 +49,73 @@
 .releaseDate {
     color: white;
 }
+
+.icons {
+    width: 27.7%;
+    position: absolute;
+    margin-right: 0.3%;
+}
+
+.watchListIcon {
+    width: 100%;
+    margin-bottom: 2px;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 1.5em;
+    opacity: 50%;
+    position: static;
+}
+
+.watchListIconSelected {
+    width: 100%;
+    margin-bottom: 2px;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 1.5em;
+    opacity: 100%;
+    color: red;
+}
+
+.watchListIcon:hover {
+    opacity: 100%;
+    color: red;
+}
+
+.watchedIcon {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 1.5em;
+    opacity: 50%;
+}
+
+.watchListIconSelected:hover {
+    color: #093145;
+}
+
+.watchedIcon:hover {
+    color: orange;
+    opacity: 100%;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  font-size: .75em;
+  background-color: black;
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  right: 9%;
+  opacity: 100% !important;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.tooltiptext {}

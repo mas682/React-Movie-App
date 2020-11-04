@@ -30,18 +30,22 @@ const movieHandler = (req, res, next) => {
 const selectPath = (cookie, req, res, cookieValid) =>
 {
     // if here, the path is /movie/get_movie_titles
-		// only allowed to use this if logged in
-		//console.log(Object.keys(req.params).length);
-		console.log("Request params:");
-		console.log(req.params);
+	// only allowed to use this if logged in
+	//console.log(Object.keys(req.params).length);
+	console.log("Request params:");
+	console.log(req.params);
     if(req.params.type === "get_movie_titles" && cookieValid)
     {
         getMovieTitles(cookie, req, res, cookieValid);
     }
-		else if(req.params.id !== undefined)
-		{
-				getMovieInfo(cookie, req, res, cookieValid);
-		}
+	else if(req.params.id !== undefined)
+	{
+		getMovieInfo(cookie, req, res, cookieValid);
+	}
+	else if(req.params.type === "my_watch_list" && cookieValid)
+	{
+		getWatchList(cookie, req, res);
+	}
 		/*
     else if(!cookieValid)
     {
@@ -124,6 +128,26 @@ const getMovieInfo = async(cookie, req, res, cookieValid) =>
 				res.status(200).send(movie);
 		}
 
+};
+
+const getWatchList = async(cookie, req, res) =>
+{
+	console.log("Inside get watch list");
+	let username = cookie.name;
+	let user = await models.User.findOne({
+		where: {username: username},
+		include: {
+			model: models.Movies,
+			as: "WatchList",
+			include: {
+				model: models.User,
+				as: "UserWatchLists",
+				required: false
+			}
+		}
+	});
+	console.log(user.WatchList);
+	res.status(200).send([user.WatchList, username]);
 };
 
 

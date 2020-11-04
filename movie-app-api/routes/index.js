@@ -53,6 +53,10 @@ router.get('/profile/:userId/*', function(req, res, next) {
 router.post('/profile/:userId/*', function(req, res, next) {
     profileHandler(req, res, next);
 });
+// used to return the movies from the API call to the screen
+router.get('/movies/:type', function(req, res, next) {
+    movieHandler(req, res, next);
+});
 
 // used to return the movies from the API call to the screen
 router.get('/movie/:type/*', function(req, res, next) {

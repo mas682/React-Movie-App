@@ -91,15 +91,27 @@ const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 const getMovies = async (cookie, req, res, cookieValid) =>
 {
 	console.log(req.query);
-	let movies = await models.Movies.queryMovies(models, req.query);
+	let username = undefined;
+	if(cookieValid)
+	{
+		username = cookie.name;
+	}
+	let movies = await models.Movies.queryMovies(models, req.query, username);
+	let loggedInUser = "";
+	// if the current user is looking at their own page
+	if(cookieValid)
+	{
+		loggedInUser = cookie.name;
+	}
+
 	if(!movies[0])
 	{
 		// send the error message
-		res.status(404).send(movies[1]);
+		res.status(404).send([movies[1], loggedInUser]);
 	}
 	else
 	{
-		res.status(200).send(movies[1]);
+		res.status(200).send([movies[1], loggedInUser]);
 	}
 };
 
