@@ -46,6 +46,11 @@ const selectPath = (cookie, req, res, cookieValid) =>
 	{
 		getWatchList(cookie, req, res);
 	}
+	else if(req.params.type === "my_watched_list" && cookieValid)
+	{
+		getWatchedList(cookie, req, res);
+	}
+
 		/*
     else if(!cookieValid)
     {
@@ -132,7 +137,6 @@ const getMovieInfo = async(cookie, req, res, cookieValid) =>
 
 const getWatchList = async(cookie, req, res) =>
 {
-	console.log("Inside get watch list");
 	let username = cookie.name;
 	let user = await models.User.findOne({
 		where: {username: username},
@@ -148,6 +152,24 @@ const getWatchList = async(cookie, req, res) =>
 	});
 	console.log(user.WatchList);
 	res.status(200).send([user.WatchList, username]);
+};
+
+const getWatchedList = async(cookie, req, res) =>
+{
+	let username = cookie.name;
+	let user = await models.User.findOne({
+		where: {username: username},
+		include: {
+			model: models.Movies,
+			as: "WatchedMovie",
+			include: {
+				model: models.User,
+				as: "UsersWhoWatched",
+				required: false
+			}
+		}
+	});
+	res.status(200).send([user.WatchedMovie, username]);
 };
 
 

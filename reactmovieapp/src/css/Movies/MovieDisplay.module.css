@@ -89,7 +89,20 @@
     opacity: 50%;
 }
 
+.watchedIconSelected {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 1.5em;
+    opacity: 100%;
+    color: orange;
+}
+
 .watchListIconSelected:hover {
+    color: #093145;
+}
+
+.watchedIconSelected:hover {
     color: #093145;
 }
 

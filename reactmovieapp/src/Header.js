@@ -178,6 +178,7 @@ class Header extends React.Component {
         						<button class="movieButton">Movies</button>
         						<div class="movieDropdownContent">
                                     <Link to="/watch_list">My Watch List</Link>
+                                    <Link to="/watched_list">My Watched Movies</Link>
         							<Link to="/movie">Top Rated</Link>
         							<Link to="/upcoming">Upcoming</Link>
         							<Link to="/movie">In Theaters</Link>

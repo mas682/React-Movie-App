@@ -79,6 +79,14 @@ const selectPath = (cookie, req, res, cookieValid) =>
     {
         removeFromWatchList(cookie, req, res);
     }
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "add_to_watched" && cookieValid)
+    {
+        addToWatched(cookie, req, res);
+    }
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "remove_from_watched" && cookieValid)
+    {
+        removeFromWatched(cookie, req, res);
+    }
     else if(!cookieValid)
     {
         res.status(401).send("No cookie or cookie invalid");
@@ -552,5 +560,91 @@ const removeFromWatchList = async (cookie, req, res) =>
         }
     }
 };
+
+const addToWatched = async (cookie, req, res) =>
+{
+    let username = cookie.name;
+    // find a user by their login
+    let user = await models.User.findByLogin(username);
+    // if in this function, already validated cookie
+    let loggedInUser = cookie.name;
+    if(user === null || user === undefined)
+    {
+        res.status(404).send(["Could not find the user to add the movie to their watched movies list", loggedInUser]);
+        return;
+    }
+    else
+    {
+        console.log(req.body);
+        if(isNaN(req.body.movieId))
+        {
+            res.status(400).send(["The movie ID " + req.body.movieId + " is not a valid integer", loggedInUser]);
+            return;
+        }
+        // at this point, see if the user already has the movie on the watchlist?
+        let movie = await models.Movies.findOne({
+            where: {id: req.body.movieId}
+        });
+        if(movie === null || movie === undefined)
+        {
+            res.status(404).send(["Could not find the movie to add to the user watch list", loggedInUser]);
+        }
+        else
+        {
+            let result = await user.addWatchedMovie(movie.id);
+            if(result === undefined)
+            {
+                res.status(200).send(["Movie already on movies watched list", loggedInUser]);
+            }
+            else
+            {
+                res.status(200).send(["Movie added to movies watched list", loggedInUser]);
+            }
+        }
+    }
+};
+
+const removeFromWatched = async (cookie, req, res) =>
+{
+    let username = cookie.name;
+    // find a user by their login
+    let user = await models.User.findByLogin(username);
+    // if in this function, already validated cookie
+    let loggedInUser = cookie.name;
+    if(user === null || user === undefined)
+    {
+        res.status(404).send(["Could not find the user to remove the movie from their watched movies list", loggedInUser]);
+        return;
+    }
+    else
+    {
+        if(isNaN(req.body.movieId))
+        {
+            res.status(400).send(["The movie ID " + req.body.movieId + " is not a valid integer", loggedInUser]);
+            return;
+        }
+        // at this point, see if the user already has the movie on the watchlist?
+        let movie = await models.Movies.findOne({
+            where: {id: req.body.movieId}
+        });
+        if(movie === null || movie === undefined)
+        {
+            res.status(404).send(["Could not find the movie to remove from the users watch list", loggedInUser]);
+        }
+        else
+        {
+            let result = await user.removeWatchedMovie(movie.id);
+            if(result === undefined)
+            {
+                res.status(200).send(["Movie already not on watched movies list", loggedInUser]);
+            }
+            else
+            {
+                res.status(200).send(["Movie removed from watched movies list", loggedInUser]);
+            }
+        }
+    }
+};
+
 
 export {profileHandler};

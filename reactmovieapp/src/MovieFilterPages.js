@@ -170,7 +170,11 @@ class MovieFilterPage extends React.Component {
         // params: title, revenue, director, runtime, rating, trailer, releasedate
         if(this.state.header === "My Watch List")
         {
-            url = "http://localhost:9000/movies/my_watch_list"
+            url = "http://localhost:9000/movies/my_watch_list";
+        }
+        else if(this.state.header === "My Watched Movies")
+        {
+            url = "http://localhost:9000/movies/my_watched_list";
         }
         else if(query === undefined)
         {

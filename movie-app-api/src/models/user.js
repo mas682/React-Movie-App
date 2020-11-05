@@ -57,7 +57,7 @@ const user = (sequelize, DataTypes) => {
         User.hasMany(models.Comment,{ onDelete: 'CASCADE' });
         User.belongsToMany(models.Review, { as: "LikedPosts", through: models.Like, onDelete: 'CASCADE' });
         User.belongsToMany(models.Movies, {as: "WatchList", through: models.UserWatchList, onDelete: 'CASCADE'});
-        User.belongsToMany(models.Movies, {as: "WatchedMovied", through: models.UsersWhoWatched, onDelete: 'CASCADE'});
+        User.belongsToMany(models.Movies, {as: "WatchedMovie", through: models.UsersWhoWatched, onDelete: 'CASCADE'});
         // Below is used to associate users together
         // this belongsToMany sets the followed users Id to the user being followed
         User.belongsToMany(User, {

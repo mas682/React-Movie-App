@@ -765,6 +765,14 @@ const movie = (sequelize, DataTypes) => {
                     username: user
                 }
             });
+            includeArray.push({
+                model: models.User,
+                as: "UsersWhoWatched",
+                required: false,
+                where: {
+                    username: user
+                }
+            });
         }
         let params = {
             include: includeArray,
