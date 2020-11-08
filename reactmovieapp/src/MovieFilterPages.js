@@ -28,13 +28,14 @@ class MovieFilterPage extends React.Component {
         this.apiCall = this.apiCall.bind(this);
         this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
         this.updateMovieFilter = this.updateMovieFilter.bind(this);
+        this.removeMovieDisplay = this.removeMovieDisplay.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
         // currently any time props are received, this will update them
         // but may need to test the query string??
         let query = this.updateMovieFilter(true, nextProps);
-        this.getMovies(query);
+        this.getMovies(query, nextProps.type);
     };
 
     updateMovieFilter(newProps, props) {
@@ -129,9 +130,9 @@ class MovieFilterPage extends React.Component {
     }
 
     // function to handle call to api and result
-    async getMovies(query)
+    async getMovies(query, type)
     {
-        let movieData = await this.apiCall(query);
+        let movieData = await this.apiCall(query, type);
         let status = movieData[0];
         let loggedIn = false;
         let username = movieData[1][1];
@@ -156,7 +157,7 @@ class MovieFilterPage extends React.Component {
         }
     }
 
-    apiCall(query)
+    apiCall(query, type)
     {
         // Simple POST request with a JSON body using fetch
         const requestOptions = {
@@ -168,11 +169,11 @@ class MovieFilterPage extends React.Component {
         let status = 0;
         let url = "";
         // params: title, revenue, director, runtime, rating, trailer, releasedate
-        if(this.state.header === "My Watch List")
+        if(type === "My Watch List")
         {
             url = "http://localhost:9000/movies/my_watch_list";
         }
-        else if(this.state.header === "My Watched Movies")
+        else if(type === "My Watched Movies")
         {
             url = "http://localhost:9000/movies/my_watched_list";
         }
@@ -196,13 +197,24 @@ class MovieFilterPage extends React.Component {
             });
     }
 
+    // remove a movie being displayed from the array of movies
+    // used for watch list and movies watched
+    removeMovieDisplay(index)
+    {
+        let updatedMovies = this.state.movies;
+        updatedMovies.splice(index, 1);
+        this.setState({
+            movies: updatedMovies
+        });
+    }
+
     generateMovieDisplays()
     {
         let movies = [];
-        this.state.movies.forEach((movie) => {
+        this.state.movies.forEach((movie, index) => {
             let html = (
                 <div className={style.movieContainer}>
-                    <MovieDisplay movie={movie} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp} username={this.state.username} loggedIn={this.state.loggedIn}/>
+                    <MovieDisplay movie={movie} type={this.state.header} index={index} removeMovieDisplay={this.removeMovieDisplay} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp} username={this.state.username} loggedIn={this.state.loggedIn}/>
                 </div>
             );
             movies.push(html);

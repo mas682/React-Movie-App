@@ -56,22 +56,18 @@
     margin-right: 0.3%;
 }
 
-.watchListIcon {
+.watchListIconContainer {
     width: 100%;
     margin-bottom: 2px;
     display: flex;
     justify-content: flex-end;
     font-size: 1.5em;
+}
+.watchListIcon {
     opacity: 50%;
-    position: static;
 }
 
 .watchListIconSelected {
-    width: 100%;
-    margin-bottom: 2px;
-    display: flex;
-    justify-content: flex-end;
-    font-size: 1.5em;
     opacity: 100%;
     color: red;
 }
@@ -81,19 +77,18 @@
     color: red;
 }
 
-.watchedIcon {
+.watchedIconContainer {
     width: 100%;
     display: flex;
     justify-content: flex-end;
     font-size: 1.5em;
+}
+
+.watchedIcon {
     opacity: 50%;
 }
 
 .watchedIconSelected {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    font-size: 1.5em;
     opacity: 100%;
     color: orange;
 }
@@ -129,6 +124,7 @@
 
 .tooltip:hover .tooltiptext {
   visibility: visible;
+  font-weight: normal;
 }
 
 .tooltiptext {}

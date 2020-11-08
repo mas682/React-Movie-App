@@ -38,18 +38,63 @@ class MovieDisplay extends React.Component {
             loggedIn: this.props.loggedIn,
             username: this.props.username,
             watchList: watchList,
-            watched: watched
+            watched: watched,
+            index: this.props.index,
+            type: this.props.type
         };
         this.posterClickHandler = this.posterClickHandler.bind(this);
         this.movieWatchListHandler = this.movieWatchListHandler.bind(this);
         this.movieWatchedHandler = this.movieWatchedHandler.bind(this);
+        this.setDisplayState = this.setDisplayState.bind(this);
     }
 
     // called when component receiving new props
     // may or may not be needed
     componentWillReceiveProps(nextProps) {
-
+        if(nextProps.movie.id !== this.state.id)
+        {
+            this.setDisplayState(nextProps);
+        }
     };
+
+    setDisplayState(props)
+    {
+        let watchList = false;
+        if(props.movie.UserWatchLists !== undefined)
+        {
+            if(props.movie.UserWatchLists.length > 0)
+            {
+                if(props.movie.UserWatchLists[0].username === this.props.username)
+                {
+                    watchList = true;
+                }
+            }
+        }
+        let watched = false;
+        if(props.movie.UsersWhoWatched !== undefined)
+        {
+            if(props.movie.UsersWhoWatched.length > 0)
+            {
+                if(props.movie.UsersWhoWatched[0].username === this.props.username)
+                {
+                    watched = true;
+                }
+            }
+        }
+        this.state = {
+            id: props.movie.id,
+            poster: props.movie.poster,
+            movie: props.movie,
+            loading: false,
+            moviePopup: false,
+            loggedIn: props.loggedIn,
+            username: props.username,
+            watchList: watchList,
+            watched: watched,
+            index: props.index,
+            type: props.type
+        };
+    }
 
     posterClickHandler()
     {
@@ -85,10 +130,6 @@ class MovieDisplay extends React.Component {
         if(this.state.watchList)
         {
             url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
-        }
-        if(!this.state.watchList)
-        {
-            // change the url? Or do in another function?
         }
         fetch(url, requestOptions)
             .then(res => {
@@ -132,6 +173,10 @@ class MovieDisplay extends React.Component {
                             loggedIn: true,
                             username: result[1]
                         });
+                        if(this.state.type === "My Watch List")
+                        {
+                            this.props.removeMovieDisplay(this.state.index);
+                        }
                     }
                     else if(status === 200 && result[0] === "Movie already on watch list")
                     {
@@ -150,6 +195,10 @@ class MovieDisplay extends React.Component {
                             loggedIn: true,
                             username: result[1]
                         });
+                        if(this.state.type === "My Watch List")
+                        {
+                            this.props.removeMovieDisplay(this.state.index);
+                        }
                     }
                     else
                     {
@@ -213,7 +262,6 @@ class MovieDisplay extends React.Component {
                 else
                 {
                     let username = result[1];
-                    alert(result[0]);
                     if(status === 200 && result[0] === "Movie added to movies watched list")
                     {
                         this.setState({
@@ -229,6 +277,10 @@ class MovieDisplay extends React.Component {
                             loggedIn: true,
                             username: result[1]
                         });
+                        if(this.state.type === "My Watched Movies")
+                        {
+                            this.props.removeMovieDisplay(this.state.index);
+                        }
                     }
                     else if(status === 200 && result[0] === "Movie already on movies watched list")
                     {
@@ -247,6 +299,10 @@ class MovieDisplay extends React.Component {
                             loggedIn: true,
                             username: result[1]
                         });
+                        if(this.state.type === "My Watched Movies")
+                        {
+                            this.props.removeMovieDisplay(this.state.index);
+                        }
                     }
                     else
                     {
@@ -274,8 +330,8 @@ class MovieDisplay extends React.Component {
             moviePopup = <MovieDisplayPopUp movie={this.state.movie} removeFunction={this.posterClickHandler}/>;
         }
         let watchListIcon = (
-            <div className={`${style.watchListIcon}`}>
-                <i class={`fa fa-eye ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
+            <div className={`${style.watchListIconContainer}`}>
+                <i class={`fa fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
                     <span class={style.tooltiptext}>Add to watch list</span>
                 </i>
             </div>
@@ -283,16 +339,16 @@ class MovieDisplay extends React.Component {
         if(this.state.watchList)
         {
             watchListIcon = (
-                <div className={`${style.watchListIconSelected}`}>
-                    <i class={`fa fa-eye ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
+                <div className={`${style.watchListIconContainer}`}>
+                    <i class={`fa fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
                         <span class={style.tooltiptext}>Remove from watch list</span>
                     </i>
                 </div>
             )
         }
         let watchedIcon = (
-            <div className={`${style.watchedIcon}`} onClick={(event) => this.movieWatchedHandler(event)}>
-                <i class={`fa fa-star ${style.tooltip}`}>
+            <div className={`${style.watchedIconContainer}`} >
+                <i class={`fa fa-star ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
                     <span class={style.tooltiptext}>Add to movies watched</span>
                 </i>
             </div>
@@ -300,8 +356,8 @@ class MovieDisplay extends React.Component {
         if(this.state.watched)
         {
             watchedIcon = (
-                <div className={`${style.watchedIconSelected}`} onClick={(event) => this.movieWatchedHandler(event)}>
-                    <i class={`fa fa-star ${style.tooltip}`}>
+                <div className={`${style.watchedIconContainer}`}>
+                    <i class={`fa fa-star ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
                         <span class={style.tooltiptext}>Remove movie from watched</span>
                     </i>
                 </div>

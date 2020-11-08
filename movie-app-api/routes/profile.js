@@ -490,7 +490,6 @@ const addToWatchList = async (cookie, req, res) =>
     }
     else
     {
-        console.log(req.body);
         if(isNaN(req.body.movieId))
         {
             res.status(400).send(["The movie ID " + req.body.movieId + " is not a valid integer", loggedInUser]);
@@ -575,7 +574,6 @@ const addToWatched = async (cookie, req, res) =>
     }
     else
     {
-        console.log(req.body);
         if(isNaN(req.body.movieId))
         {
             res.status(400).send(["The movie ID " + req.body.movieId + " is not a valid integer", loggedInUser]);
