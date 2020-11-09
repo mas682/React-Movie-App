@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {Link, Redirect, withRouter} from 'react-router-dom';
 import style from './css/Movies/MovieDisplay.module.css'
 import MovieDisplayPopUp from './MovieDisplayPopUp.js';
+import SignInPopup from './SignIn.js';
 
 class MovieDisplay extends React.Component {
     constructor(props){
@@ -40,12 +41,14 @@ class MovieDisplay extends React.Component {
             watchList: watchList,
             watched: watched,
             index: this.props.index,
-            type: this.props.type
+            type: this.props.type,
+            displaySignIn: false
         };
         this.posterClickHandler = this.posterClickHandler.bind(this);
         this.movieWatchListHandler = this.movieWatchListHandler.bind(this);
         this.movieWatchedHandler = this.movieWatchedHandler.bind(this);
         this.setDisplayState = this.setDisplayState.bind(this);
+        this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
     }
 
     // called when component receiving new props
@@ -111,8 +114,11 @@ class MovieDisplay extends React.Component {
 
         if(!this.state.loggedIn)
         {
+            this.setState({
+                displaySignIn: true
+            });
             // eventually need to show this..
-            this.props.showLoginPopUp(true);
+            //this.props.showLoginPopUp(true);
             return;
         }
 
@@ -216,7 +222,14 @@ class MovieDisplay extends React.Component {
         if(!this.state.loggedIn)
         {
             // eventually need to show this..
-            this.props.showLoginPopUp(true);
+            //this.props.showLoginPopUp(true);
+            //return;
+
+            this.setState({
+                displaySignIn: true
+            });
+            // eventually need to show this..
+            //this.props.showLoginPopUp(true);
             return;
         }
 
@@ -312,11 +325,30 @@ class MovieDisplay extends React.Component {
             });
     }
 
+    signInRemoveFunction = (username) =>
+    {
+        if(username !== undefined)
+        {
+            this.props.updateLoggedIn(username, true);
+        }
+        this.setState({
+            displaySignIn: false,
+            loggedIn: true,
+            username: username
+        });
+    }
+
     render()
     {
         if(this.state.loading)
         {
             return null;
+        }
+
+        let signInPopup = "";
+        if(this.state.displaySignIn)
+        {
+            signInPopup = <SignInPopup removeFunction={this.signInRemoveFunction} redirectOnLogin={false}/>;
         }
 
         let posterPath = "";
@@ -365,11 +397,11 @@ class MovieDisplay extends React.Component {
         }
 
         return (
-            <div className={style.main} onClick={this.posterClickHandler}>
-                <div className={style.movieImageContainer}>
+            <div className={style.main}>
+                <div className={style.movieImageContainer} onClick={this.posterClickHandler}>
                     <img className={style.moviePoster} src={posterPath}/>
                 </div>
-                <div className={style.bottomContainer}>
+                <div className={style.bottomContainer} onClick={this.posterClickHandler}>
                     <div className={style.movieDetailsContainer}>
                         <div className={style.movieTitle}>
                             {this.state.movie.title}
@@ -384,6 +416,7 @@ class MovieDisplay extends React.Component {
                     </div>
                 </div>
                 {moviePopup}
+                {signInPopup}
             </div>
         )
     }

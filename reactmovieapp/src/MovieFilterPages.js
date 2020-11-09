@@ -214,7 +214,7 @@ class MovieFilterPage extends React.Component {
         this.state.movies.forEach((movie, index) => {
             let html = (
                 <div className={style.movieContainer}>
-                    <MovieDisplay movie={movie} type={this.state.header} index={index} removeMovieDisplay={this.removeMovieDisplay} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp} username={this.state.username} loggedIn={this.state.loggedIn}/>
+                    <MovieDisplay movie={movie} type={this.state.header} index={index} removeMovieDisplay={this.removeMovieDisplay} updateLoggedIn={this.props.updateLoggedIn} username={this.state.username} loggedIn={this.state.loggedIn}/>
                 </div>
             );
             movies.push(html);

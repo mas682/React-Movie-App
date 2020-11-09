@@ -10,13 +10,19 @@ import './css/signin.css';
 class SignInPopup extends React.Component {
 	constructor(props) {
 		super(props);
+		let redirectOnLogin = this.props.redirectOnLogin;
+		if(redirectOnLogin === undefined)
+		{
+			redirectOnLogin = true;
+		}
 		this.state = {
 			open: true,
 			username: "",
 			password: "",
 			usernameError: "",
 			passwordError: "",
-			redirect: false
+			redirect: false,
+			redirectOnLogin: redirectOnLogin
 		};
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
@@ -85,7 +91,6 @@ class SignInPopup extends React.Component {
 			this.callApi().then(result => {
 				let status = JSON.parse(result[0]);
 				let user = JSON.parse(result[1]);
-				alert(status);
 				if(status.result == "created cookie")
 				{
 					alert("You have successfully logged in");
@@ -94,7 +99,7 @@ class SignInPopup extends React.Component {
 						redirect: true,
 						username: user.user
 					});
-					this.props.removeFunction();
+					this.props.removeFunction(user.user);
 				}
 				else if(status.result == "You are already logged in")
 				{
@@ -112,7 +117,7 @@ class SignInPopup extends React.Component {
 
     render() {
 		// if the user successfully logged in
-		if(!this.state.open && this.state.redirect)
+		if(!this.state.open && this.state.redirect && this.state.redirectOnLogin)
 		{
 			let path = "/profile/" + this.state.username + "/feed";
 			return <Redirect to={path} />
