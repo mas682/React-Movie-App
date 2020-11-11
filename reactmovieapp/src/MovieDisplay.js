@@ -363,7 +363,7 @@ class MovieDisplay extends React.Component {
         }
         let watchListIcon = (
             <div className={`${style.watchListIconContainer}`}>
-                <i class={`fa fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
+                <i class={`fas fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
                     <span class={style.tooltiptext}>Add to watch list</span>
                 </i>
             </div>
@@ -372,7 +372,7 @@ class MovieDisplay extends React.Component {
         {
             watchListIcon = (
                 <div className={`${style.watchListIconContainer}`}>
-                    <i class={`fa fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
+                    <i class={`fas fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
                         <span class={style.tooltiptext}>Remove from watch list</span>
                     </i>
                 </div>
@@ -380,7 +380,7 @@ class MovieDisplay extends React.Component {
         }
         let watchedIcon = (
             <div className={`${style.watchedIconContainer}`} >
-                <i class={`fa fa-star ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
+                <i class={`fas fa-ticket-alt ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
                     <span class={style.tooltiptext}>Add to movies watched</span>
                 </i>
             </div>
@@ -389,7 +389,7 @@ class MovieDisplay extends React.Component {
         {
             watchedIcon = (
                 <div className={`${style.watchedIconContainer}`}>
-                    <i class={`fa fa-star ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
+                    <i class={`fas fa-ticket-alt ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
                         <span class={style.tooltiptext}>Remove movie from watched</span>
                     </i>
                 </div>

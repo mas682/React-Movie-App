@@ -162,6 +162,8 @@ class MovieDisplayPopUp extends React.Component {
 
 	generateGenres()
 	{
+		console.log("Movie");
+		console.log(this.state.movie);
 		if(this.state.movie.Genres.length > 0)
 		{
 			let genres = "";

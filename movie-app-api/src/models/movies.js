@@ -785,20 +785,40 @@ const movie = (sequelize, DataTypes) => {
     }
 
     // function to get the information for a individual movie
-    Movie.getMovieInfo = async (id, models) =>
+    Movie.getMovieInfo = async (id, models, username) =>
     {
+
+        let includeArray = [];
+        includeArray.push({
+            model: models.Genre,
+            as: "Genres",
+            attributes: ["id", "value"],
+            through: {attributes: []}
+        });
+        if(username !== undefined)
+        {
+            includeArray.push({
+                model: models.User,
+                as: "UserWatchLists",
+                required: false,
+                where: {
+                    username: username
+                }
+            });
+            includeArray.push({
+                model: models.User,
+                as: "UsersWhoWatched",
+                required: false,
+                where: {
+                    username: username
+                }
+            });
+        }
         let movie = await Movie.findOne({
             where: {
               id: id
             },
-            include: [
-              {
-                  model: models.Genre,
-                  as: "Genres",
-                  attributes: ["id", "value"],
-                  through: {attributes: []}
-              }
-            ]
+            include: includeArray
         });
         return movie;
     }

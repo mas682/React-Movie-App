@@ -58,22 +58,19 @@
 
 .watchListIconContainer {
     width: 100%;
-    margin-bottom: 2px;
     display: flex;
     justify-content: flex-end;
     font-size: 1.5em;
 }
 .watchListIcon {
-    opacity: 50%;
+    color: rgb(9, 49, 69, .5);
 }
 
 .watchListIconSelected {
-    opacity: 100%;
     color: red;
 }
 
 .watchListIcon:hover {
-    opacity: 100%;
     color: red;
 }
 
@@ -85,26 +82,25 @@
 }
 
 .watchedIcon {
-    opacity: 50%;
+    color: rgb(9, 49, 69, .5);
 }
 
 .watchedIconSelected {
-    opacity: 100%;
-    color: orange;
+    color: #006400;
 }
 
 .watchListIconSelected:hover {
-    color: #093145;
+    color: rgb(9, 49, 69, 0.5);
 }
 
 .watchedIconSelected:hover {
-    color: #093145;
+    color: rgb(9, 49, 69, .5);
 }
 
 .watchedIcon:hover {
-    color: orange;
-    opacity: 100%;
+    color: #006400;
 }
+
 
 .tooltip .tooltiptext {
   visibility: hidden;
@@ -118,8 +114,7 @@
   /* Position the tooltip */
   position: absolute;
   z-index: 1;
-  right: 9%;
-  opacity: 100% !important;
+  right: 10%;
 }
 
 .tooltip:hover .tooltiptext {
@@ -127,4 +122,5 @@
   font-weight: normal;
 }
 
-.tooltiptext {}
+.tooltiptext {
+}

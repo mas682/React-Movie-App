@@ -359,12 +359,14 @@ class MoviePost extends React.Component {
     }
 
     componentDidMount() {
+        /* no longer needed as manually appended to body
         // get external script to add comment icon
         const script = document.createElement("script");
         script.async = true;
         script.src = "https://kit.fontawesome.com/a076d05399.js";
         // For body
         document.body.appendChild(script);
+        */
     }
 
     // function used to update the movie post after edited

@@ -2,13 +2,12 @@ import React, { Component } from 'react';
 import {Link, Redirect, withRouter} from 'react-router-dom';
 import MoviePosterPopUp from './MoviePosterPopUp.js';
 import queryString from "query-string";
-import style from './css/Movies/movieinfo.module.css'
+import style from './css/Movies/movieinfo.module.css';
 
 
 class MovieInfoPage extends React.Component {
   constructor(props){
       super(props);
-      props.updateLoggedIn("admin", true);
       let movieQuery = this.props.match.params.id;
       let queryElements = movieQuery.split("-", 1);
       let id = null;
@@ -31,7 +30,11 @@ class MovieInfoPage extends React.Component {
           movie: null,
           url: this.props.match.params.id,
           posterPopup: false,
-          movieInfoString: ""
+          movieInfoString: "",
+          loggedIn: false,
+          username: "",
+          watchList: false,
+          watched: false
       }
       this.generateRatingStars = this.generateRatingStars.bind(this);
       this.generateMoviePoster = this.generateMoviePoster.bind(this);
@@ -44,6 +47,8 @@ class MovieInfoPage extends React.Component {
       this.generateGenres = this.generateGenres.bind(this);
       this.getMovieInfo = this.getMovieInfo.bind(this);
       this.updateMovieInfo = this.updateMovieInfo.bind(this);
+      this.movieWatchedHandler = this.movieWatchedHandler.bind(this);
+      this.movieWatchListHandler = this.movieWatchListHandler.bind(this);
 	}
 
   // called when the component is receiving new props
@@ -98,14 +103,7 @@ class MovieInfoPage extends React.Component {
       return fetch(url, requestOptions)
           .then(res => {
               status = res.status;
-              if(status === 200)
-              {
-                  return res.json();
-              }
-              else
-              {
-                  return res.text();
-              }
+              return res.json();
           }).then(result=> {
               return [status, result];
           });
@@ -118,19 +116,56 @@ class MovieInfoPage extends React.Component {
       let status = movieData[0];
       if(status === 200)
       {
-          let movieInfo = this.generateMovieInfo(movieData[1]);
+          let movieInfo = this.generateMovieInfo(movieData[1][0]);
+          let movie = movieData[1][0];
+          let username = movieData[1][1];
           console.log("Movie Info");
-          console.log(movieData[1]);
+          console.log(movie);
+          let signedIn = false;
+          if(username !== "")
+          {
+              signedIn = true;
+          }
+          let watchList = false;
+          let watched = false;
+          if(signedIn)
+          {
+              if(movie.UserWatchLists !== undefined)
+              {
+                  if(movie.UserWatchLists.length > 0)
+                  {
+                      if(movie.UserWatchLists[0].username === username)
+                      {
+                          watchList = true;
+                      }
+                  }
+              }
+              if(movie.UsersWhoWatched !== undefined)
+              {
+                  if(movie.UsersWhoWatched.length > 0)
+                  {
+                      if(movie.UsersWhoWatched[0].username === username)
+                      {
+                          watched = true;
+                      }
+                  }
+              }
+          }
           this.setState({
-            id: movieData[1].id,
-            poster: movieData[1].poster,
-            headerImage: movieData[1].backgroundImage,
-            trailer: movieData[1].trailer,
-            movie: movieData[1],
-            movieInfoString: movieInfo
+            id: movie.id,
+            poster: movie.poster,
+            headerImage: movie.backgroundImage,
+            trailer: movie.trailer,
+            movie: movie,
+            movieInfoString: movieInfo,
+            loggedIn: signedIn,
+            username: username,
+            watchList: watchList,
+            watched: watched
           });
-          let title = movieData[1].title.replaceAll(" ", "_");
-          let newUrl = movieData[1].id + "-" + title;
+          this.props.updateLoggedIn(username, signedIn);
+          let title = movie.title.replaceAll(" ", "_");
+          let newUrl = movie.id + "-" + title;
           // fix the url to the appropriate value if title incorrect
           if(newUrl !== this.state.url)
           {
@@ -147,6 +182,225 @@ class MovieInfoPage extends React.Component {
   {
       this.updateMovieInfo(this.state.id);
   }
+
+  movieWatchListHandler(event)
+  {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if(!this.state.loggedIn)
+      {
+          this.setState({
+              displaySignIn: true
+          });
+          // eventually need to show this..
+          //this.props.showLoginPopUp(true);
+          return;
+      }
+
+      const requestOptions = {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+              movieId: this.state.id
+          })
+      };
+
+      let status = 0;
+      let url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watchlist";
+      if(this.state.watchList)
+      {
+          url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
+      }
+      fetch(url, requestOptions)
+          .then(res => {
+              status = res.status;
+              if(status !== 401)
+              {
+                  return res.json();
+              }
+              else
+              {
+                  return res.text();
+              }
+          }).then(result =>{
+              // not logged in/cookie not found
+              if(status === 401)
+              {
+                  this.props.updateLoggedIn("", false);
+                  if(this.state.loggedIn)
+                  {
+                      this.setState({
+                          loggedIn: false,
+                          username: ""
+                      })
+                  }
+              }
+              else
+              {
+                  let username = result[1];
+                  if(status === 200 && result[0] === "Movie added to watch list")
+                  {
+                      this.setState({
+                          watchList: true,
+                          loggedIn: true,
+                          username: result[1]
+                      });
+                  }
+                  else if(status === 200 && result[0] === "Movie removed from watch list")
+                  {
+                      this.setState({
+                          watchList: false,
+                          loggedIn: true,
+                          username: result[1]
+                      });
+                      if(this.state.type === "My Watch List")
+                      {
+                          this.props.removeMovieDisplay(this.state.index);
+                      }
+                  }
+                  else if(status === 200 && result[0] === "Movie already on watch list")
+                  {
+                      alert(result[0]);
+                      this.setState({
+                          watchList: true,
+                          loggedIn: true,
+                          username: result[1]
+                      });
+                  }
+                  else if(status === 200 && result[1] === "Movie already not on watch list")
+                  {
+                      alert(result[0]);
+                      this.setState({
+                          watchList: false,
+                          loggedIn: true,
+                          username: result[1]
+                      });
+                      if(this.state.type === "My Watch List")
+                      {
+                          this.props.removeMovieDisplay(this.state.index);
+                      }
+                  }
+                  else
+                  {
+                      alert(result[0]);
+                  }
+              }
+          });
+  }
+
+  movieWatchedHandler(event)
+  {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if(!this.state.loggedIn)
+      {
+          // eventually need to show this..
+          //this.props.showLoginPopUp(true);
+          //return;
+
+          this.setState({
+              displaySignIn: true
+          });
+          // eventually need to show this..
+          //this.props.showLoginPopUp(true);
+          return;
+      }
+
+      const requestOptions = {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json'},
+          body: JSON.stringify({
+              movieId: this.state.id
+          })
+      };
+
+      let status = 0;
+      let url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watched";
+      if(this.state.watched)
+      {
+          url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watched";
+      }
+      fetch(url, requestOptions)
+          .then(res => {
+              status = res.status;
+              if(status !== 401)
+              {
+                  return res.json();
+              }
+              else
+              {
+                  return res.text();
+              }
+          }).then(result =>{
+              // not logged in/cookie not found
+              if(status === 401)
+              {
+                  this.props.updateLoggedIn("", false);
+                  if(this.state.loggedIn)
+                  {
+                      this.setState({
+                          loggedIn: false,
+                          username: ""
+                      })
+                  }
+              }
+              else
+              {
+                  let username = result[1];
+                  if(status === 200 && result[0] === "Movie added to movies watched list")
+                  {
+                      this.setState({
+                          watched: true,
+                          loggedIn: true,
+                          username: result[1]
+                      });
+                  }
+                  else if(status === 200 && result[0] === "Movie removed from watched movies list")
+                  {
+                      this.setState({
+                          watched: false,
+                          loggedIn: true,
+                          username: result[1]
+                      });
+                      if(this.state.type === "My Watched Movies")
+                      {
+                          this.props.removeMovieDisplay(this.state.index);
+                      }
+                  }
+                  else if(status === 200 && result[0] === "Movie already on movies watched list")
+                  {
+                      alert(result[0]);
+                      this.setState({
+                          watched: true,
+                          loggedIn: true,
+                          username: result[1]
+                      });
+                  }
+                  else if(status === 200 && result[1] === "Movie already not on watched movies list")
+                  {
+                      alert(result[0]);
+                      this.setState({
+                          watched: false,
+                          loggedIn: true,
+                          username: result[1]
+                      });
+                      if(this.state.type === "My Watched Movies")
+                      {
+                          this.props.removeMovieDisplay(this.state.index);
+                      }
+                  }
+                  else
+                  {
+                      alert(result[0]);
+                  }
+              }
+          });
+  }
+
 
   /*
       This function is used to generate the stars and set the appropriate ones to being colored or not
@@ -408,21 +662,13 @@ class MovieInfoPage extends React.Component {
         return "";
     }
 
+
   	render() {
         if(this.state.movie === null)
         {
             return null;
         }
-    		console.log(queryString.parse(this.props.location.search));
-        /*
-        $239,100,000<br></br>
-        writer<br></br>
-        https://www.tenetfilm.com<br></br>
-        // images
-        https://api.themoviedb.org/3/movie/616251/images?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&include_image_language=include_image_language%3Den%2Cnull
-        */
-        // set the movie page headers background
-        // if there is a image, use it, otherwise just make it gray..
+
         let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
         if(this.state.headerImage !== null)
         {
@@ -439,6 +685,43 @@ class MovieInfoPage extends React.Component {
         let director = this.generateDirector();
         let overview = this.generateOverview();
         let genres = this.generateGenres();
+
+        let watchListIcon = (
+            <div className={`${style.watchListIconContainer}`}>
+                <i class={`fas fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
+                    <span class={style.tooltiptext}>Add to watch list</span>
+                </i>
+            </div>
+        );
+        if(this.state.watchList)
+        {
+            watchListIcon = (
+                <div className={`${style.watchListIconContainer}`}>
+                    <i class={`fas fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
+                        <span class={style.tooltiptext}>Remove from watch list</span>
+                    </i>
+                </div>
+            )
+        }
+        let watchedIcon = (
+            <div className={`${style.watchedIconContainer}`} >
+                <i className={`fas fa-ticket-alt ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
+                    <span class={style.tooltiptext}>Add to watched movies</span>
+                </i>
+            </div>
+        );
+
+        //<h1> TEST </h1>
+        if(this.state.watched)
+        {
+            watchedIcon = (
+                <div className={`${style.watchedIconContainer}`}>
+                    <i className={`fas fa-ticket-alt ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
+                        <span class={style.tooltiptext}>Remove movie from watched</span>
+                    </i>
+                </div>
+            );
+        }
 
         // if the poster was clicked, show it larger
         let posterPopup = "";
@@ -466,6 +749,10 @@ class MovieInfoPage extends React.Component {
                               <fieldset className={style.rating}>
                                   {stars}
                               </fieldset>
+                          </div>
+                          <div className={style.icons}>
+                                {watchedIcon}
+                                {watchListIcon}
                           </div>
                           <div className={style.ratingContainer}>
                           </div>

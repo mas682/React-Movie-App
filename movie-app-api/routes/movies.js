@@ -94,10 +94,15 @@ const getMovieTitles = async (cookie, req, res, cookieValid) =>
 
 const getMovieInfo = async(cookie, req, res, cookieValid) =>
 {
+		let username = "";
+		if(cookieValid)
+		{
+			username = cookie.name;
+		}
 		// prevent the id being sent in from being too long
 		if(req.params.id.length > 10)
 		{
-			res.status(404).send("Movie ID formatted incorrectly");
+			res.status(404).send(["Movie ID formatted incorrectly", username]);
 		}
 		let id = req.params.id;
 		// strings length
@@ -109,7 +114,7 @@ const getMovieInfo = async(cookie, req, res, cookieValid) =>
 		if(isNaN(idInt))
 		{
 			console.log("Did not find a movie ID");
-			res.status(404).send("Did nto find a movie ID in the request");
+			res.status(404).send(["Did nto find a movie ID in the request", username]);
 			return;
 		}
 		let convertedLength = idInt.toString().length;
@@ -118,19 +123,27 @@ const getMovieInfo = async(cookie, req, res, cookieValid) =>
 		if(idLength !== convertedLength)
 		{
 			console.log("Movie ID formatted incorrectly");
-			res.status(404).send("Movie ID formatted incorrectly");
+			res.status(404).send(["Movie ID formatted incorrectly", username]);
 			return;
 		}
-		let movie = await models.Movies.getMovieInfo(id, models);
+		let movie;
+		if(cookieValid)
+		{
+			movie = await models.Movies.getMovieInfo(id, models, cookie.name);
+		}
+		else
+		{
+			movie = await models.Movies.getMovieInfo(id, models, undefined);
+		}
 		console.log("MOVIE");
 		console.log(movie);
 		if(movie === undefined)
 		{
-			res.status(404).send("Unable to find the information for the requested movie");
+			res.status(404).send(["Unable to find the information for the requested movie", username]);
 		}
 		else
 		{
-			res.status(200).send(movie);
+			res.status(200).send([movie, username]);
 		}
 
 };
@@ -143,11 +156,24 @@ const getWatchList = async(cookie, req, res) =>
 		include: {
 			model: models.Movies,
 			as: "WatchList",
-			include: {
-				model: models.User,
-				as: "UserWatchLists",
-				required: false
-			}
+			include: [
+				{
+					model: models.User,
+					as: "UserWatchLists",
+					required: false
+				},
+				{
+					model: models.User,
+					as: "UsersWhoWatched",
+					required: false
+				},
+				{
+					model: models.Genre,
+					as: "Genres",
+					attributes: ["id", "value"],
+					through: {attributes: []}
+				}
+			]
 		}
 	});
 	console.log(user.WatchList);
@@ -162,11 +188,25 @@ const getWatchedList = async(cookie, req, res) =>
 		include: {
 			model: models.Movies,
 			as: "WatchedMovie",
-			include: {
-				model: models.User,
-				as: "UsersWhoWatched",
-				required: false
-			}
+			include: [
+				{
+					model: models.User,
+					as: "UsersWhoWatched",
+					required: false
+				},
+				{
+					model: models.Genre,
+					as: "Genres",
+					attributes: ["id", "value"],
+					through: {attributes: []}
+				},
+				{
+					model: models.User,
+					as: "UserWatchLists",
+					required: false
+				}
+
+			]
 		}
 	});
 	res.status(200).send([user.WatchedMovie, username]);
