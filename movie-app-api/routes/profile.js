@@ -506,6 +506,8 @@ const addToWatchList = async (cookie, req, res) =>
         else
         {
             let result = await user.addWatchList(movie.id);
+            console.log("Adding movie to watch list");
+            console.log(result);
             if(result === undefined)
             {
                 res.status(200).send(["Movie already on watch list", loggedInUser]);
@@ -548,13 +550,17 @@ const removeFromWatchList = async (cookie, req, res) =>
         else
         {
             let result = await user.removeWatchList(movie.id);
-            if(result === undefined)
+            if(result === 1)
+            {
+                res.status(200).send(["Movie removed from watch list", loggedInUser]);
+            }
+            else if(result === 0)
             {
                 res.status(200).send(["Movie already not on watch list", loggedInUser]);
             }
             else
             {
-                res.status(200).send(["Movie removed from watch list", loggedInUser]);
+                res.status(200).send(["There was an error removing the movie from the watch list", loggedInUser]);
             }
         }
     }
@@ -632,13 +638,17 @@ const removeFromWatched = async (cookie, req, res) =>
         else
         {
             let result = await user.removeWatchedMovie(movie.id);
-            if(result === undefined)
+            if(result === 1)
+            {
+                res.status(200).send(["Movie removed from watched movies list", loggedInUser]);
+            }
+            else if(result === 0)
             {
                 res.status(200).send(["Movie already not on watched movies list", loggedInUser]);
             }
             else
             {
-                res.status(200).send(["Movie removed from watched movies list", loggedInUser]);
+                res.status(200).send(["An error occurred removing the movie from the watched movies list", loggedInUser]);
             }
         }
     }

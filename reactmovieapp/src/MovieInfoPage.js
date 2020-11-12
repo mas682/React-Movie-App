@@ -3,6 +3,7 @@ import {Link, Redirect, withRouter} from 'react-router-dom';
 import MoviePosterPopUp from './MoviePosterPopUp.js';
 import queryString from "query-string";
 import style from './css/Movies/movieinfo.module.css';
+import SignInPopup from './SignIn.js';
 
 
 class MovieInfoPage extends React.Component {
@@ -34,7 +35,8 @@ class MovieInfoPage extends React.Component {
           loggedIn: false,
           username: "",
           watchList: false,
-          watched: false
+          watched: false,
+          displaySignIn: false
       }
       this.generateRatingStars = this.generateRatingStars.bind(this);
       this.generateMoviePoster = this.generateMoviePoster.bind(this);
@@ -47,8 +49,10 @@ class MovieInfoPage extends React.Component {
       this.generateGenres = this.generateGenres.bind(this);
       this.getMovieInfo = this.getMovieInfo.bind(this);
       this.updateMovieInfo = this.updateMovieInfo.bind(this);
-      this.movieWatchedHandler = this.movieWatchedHandler.bind(this);
-      this.movieWatchListHandler = this.movieWatchListHandler.bind(this);
+      this.buttonHandler = this.buttonHandler.bind(this);
+      this.movieWatchedResultsHandler = this.movieWatchedResultsHandler.bind(this);
+      this.movieWatchListResultsHandler = this.movieWatchListResultsHandler.bind(this);
+      this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
 	}
 
   // called when the component is receiving new props
@@ -161,7 +165,8 @@ class MovieInfoPage extends React.Component {
             loggedIn: signedIn,
             username: username,
             watchList: watchList,
-            watched: watched
+            watched: watched,
+            displaySignIn: false
           });
           this.props.updateLoggedIn(username, signedIn);
           let title = movie.title.replaceAll(" ", "_");
@@ -183,18 +188,17 @@ class MovieInfoPage extends React.Component {
       this.updateMovieInfo(this.state.id);
   }
 
-  movieWatchListHandler(event)
+  // function to handle buttons that let user set the movie to their watch list,
+  // or add the movie to the movies that they have watched
+  buttonHandler(event, type)
   {
       event.preventDefault();
       event.stopPropagation();
-
       if(!this.state.loggedIn)
       {
           this.setState({
               displaySignIn: true
           });
-          // eventually need to show this..
-          //this.props.showLoginPopUp(true);
           return;
       }
 
@@ -208,10 +212,26 @@ class MovieInfoPage extends React.Component {
       };
 
       let status = 0;
-      let url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watchlist";
-      if(this.state.watchList)
+      let url = "";
+      if(type === "watched")
       {
-          url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
+          url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watched";
+          if(this.state.watched)
+          {
+              url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watched";
+          }
+      }
+      else if(type === "watchlist")
+      {
+          url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watchlist";
+          if(this.state.watchList)
+          {
+              url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
+          }
+      }
+      else
+      {
+          return;
       }
       fetch(url, requestOptions)
           .then(res => {
@@ -225,87 +245,145 @@ class MovieInfoPage extends React.Component {
                   return res.text();
               }
           }).then(result =>{
-              // not logged in/cookie not found
-              if(status === 401)
+              if(type === "watched")
               {
-                  this.props.updateLoggedIn("", false);
-                  if(this.state.loggedIn)
-                  {
-                      this.setState({
-                          loggedIn: false,
-                          username: ""
-                      })
-                  }
+                  this.movieWatchedResultsHandler(status, result);
               }
               else
               {
-                  let username = result[1];
-                  if(status === 200 && result[0] === "Movie added to watch list")
-                  {
-                      this.setState({
-                          watchList: true,
-                          loggedIn: true,
-                          username: result[1]
-                      });
-                  }
-                  else if(status === 200 && result[0] === "Movie removed from watch list")
-                  {
-                      this.setState({
-                          watchList: false,
-                          loggedIn: true,
-                          username: result[1]
-                      });
-                      if(this.state.type === "My Watch List")
-                      {
-                          this.props.removeMovieDisplay(this.state.index);
-                      }
-                  }
-                  else if(status === 200 && result[0] === "Movie already on watch list")
-                  {
-                      alert(result[0]);
-                      this.setState({
-                          watchList: true,
-                          loggedIn: true,
-                          username: result[1]
-                      });
-                  }
-                  else if(status === 200 && result[1] === "Movie already not on watch list")
-                  {
-                      alert(result[0]);
-                      this.setState({
-                          watchList: false,
-                          loggedIn: true,
-                          username: result[1]
-                      });
-                      if(this.state.type === "My Watch List")
-                      {
-                          this.props.removeMovieDisplay(this.state.index);
-                      }
-                  }
-                  else
-                  {
-                      alert(result[0]);
-                  }
+                  this.movieWatchListResultsHandler(status, result);
               }
           });
   }
 
-  movieWatchedHandler(event)
+    movieWatchListResultsHandler(status, result)
+    {
+        // not logged in/cookie not found
+        if(status === 401)
+        {
+            this.props.updateLoggedIn("", false);
+            if(this.state.loggedIn)
+            {
+                this.setState({
+                    loggedIn: false,
+                    username: ""
+                })
+            }
+        }
+        else
+        {
+            let username = result[1];
+            let message = result[0];
+            if(status === 200 && message === "Movie added to watch list")
+            {
+                this.setState({
+                    watchList: true,
+                    loggedIn: true,
+                    username: username
+                });
+            }
+            else if(status === 200 && message === "Movie removed from watch list")
+            {
+                this.setState({
+                    watchList: false,
+                    loggedIn: true,
+                    username: username
+                });
+            }
+            else if(status === 200 && message === "Movie already on watch list")
+            {
+                alert(message);
+                this.setState({
+                    watchList: true,
+                    loggedIn: true,
+                    username: username
+                });
+            }
+            else if(status === 200 && message === "Movie already not on watch list")
+            {
+                alert(message);
+                this.setState({
+                    watchList: false,
+                    loggedIn: true,
+                    username: username
+                });
+            }
+            else
+            {
+                alert(result[0]);
+            }
+        }
+    }
+
+  movieWatchedResultsHandler(status, result)
+  {
+      // not logged in/cookie not found
+      if(status === 401)
+      {
+          // update logged in to indicate not logged in
+          this.props.updateLoggedIn("", false);
+          if(this.state.loggedIn)
+          {
+              this.setState({
+                  loggedIn: false,
+                  username: ""
+              })
+          }
+      }
+      else
+      {
+          let username = result[1];
+          let message = result[0];
+          if(status === 200 && message === "Movie added to movies watched list")
+          {
+              this.setState({
+                  watched: true,
+                  loggedIn: true,
+                  username: username
+              });
+          }
+          else if(status === 200 && message === "Movie removed from watched movies list")
+          {
+              this.setState({
+                  watched: false,
+                  loggedIn: true,
+                  username: username
+              });
+          }
+          else if(status === 200 && message === "Movie already on movies watched list")
+          {
+              alert(message);
+              this.setState({
+                  watched: true,
+                  loggedIn: true,
+                  username: username
+              });
+          }
+          else if(status === 200 && message === "Movie already not on watched movies list")
+          {
+              alert(message);
+              this.setState({
+                  watched: false,
+                  loggedIn: true,
+                  username: username
+              });
+          }
+          else
+          {
+              alert(message);
+          }
+      }
+  }
+
+  buttonHandler(event, type)
   {
       event.preventDefault();
       event.stopPropagation();
-
       if(!this.state.loggedIn)
       {
-          // eventually need to show this..
-          //this.props.showLoginPopUp(true);
-          //return;
-
           this.setState({
               displaySignIn: true
           });
-          // eventually need to show this..
-          //this.props.showLoginPopUp(true);
           return;
       }
 
@@ -319,10 +397,26 @@ class MovieInfoPage extends React.Component {
       };
 
       let status = 0;
-      let url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watched";
-      if(this.state.watched)
+      let url = "";
+      if(type === "watched")
       {
-          url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watched";
+          url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watched";
+          if(this.state.watched)
+          {
+              url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watched";
+          }
+      }
+      else if(type === "watchlist")
+      {
+          url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watchlist";
+          if(this.state.watchList)
+          {
+              url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
+          }
+      }
+      else
+      {
+          return;
       }
       fetch(url, requestOptions)
           .then(res => {
@@ -336,67 +430,13 @@ class MovieInfoPage extends React.Component {
                   return res.text();
               }
           }).then(result =>{
-              // not logged in/cookie not found
-              if(status === 401)
+              if(type === "watched")
               {
-                  this.props.updateLoggedIn("", false);
-                  if(this.state.loggedIn)
-                  {
-                      this.setState({
-                          loggedIn: false,
-                          username: ""
-                      })
-                  }
+                  this.movieWatchedResultsHandler(status, result);
               }
               else
               {
-                  let username = result[1];
-                  if(status === 200 && result[0] === "Movie added to movies watched list")
-                  {
-                      this.setState({
-                          watched: true,
-                          loggedIn: true,
-                          username: result[1]
-                      });
-                  }
-                  else if(status === 200 && result[0] === "Movie removed from watched movies list")
-                  {
-                      this.setState({
-                          watched: false,
-                          loggedIn: true,
-                          username: result[1]
-                      });
-                      if(this.state.type === "My Watched Movies")
-                      {
-                          this.props.removeMovieDisplay(this.state.index);
-                      }
-                  }
-                  else if(status === 200 && result[0] === "Movie already on movies watched list")
-                  {
-                      alert(result[0]);
-                      this.setState({
-                          watched: true,
-                          loggedIn: true,
-                          username: result[1]
-                      });
-                  }
-                  else if(status === 200 && result[1] === "Movie already not on watched movies list")
-                  {
-                      alert(result[0]);
-                      this.setState({
-                          watched: false,
-                          loggedIn: true,
-                          username: result[1]
-                      });
-                      if(this.state.type === "My Watched Movies")
-                      {
-                          this.props.removeMovieDisplay(this.state.index);
-                      }
-                  }
-                  else
-                  {
-                      alert(result[0]);
-                  }
+                  this.movieWatchListResultsHandler(status, result);
               }
           });
   }
@@ -662,11 +702,30 @@ class MovieInfoPage extends React.Component {
         return "";
     }
 
+    signInRemoveFunction(username)
+    {
+        if(username !== undefined)
+        {
+            this.props.updateLoggedIn(username, true);
+        }
+        this.setState({
+            displaySignIn: false,
+            loggedIn: true,
+            username: username
+        });
+    }
+
 
   	render() {
         if(this.state.movie === null)
         {
             return null;
+        }
+
+        let signInPopup = "";
+        if(this.state.displaySignIn)
+        {
+            signInPopup = <SignInPopup removeFunction={this.signInRemoveFunction} redirectOnLogin={false}/>;
         }
 
         let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
@@ -688,7 +747,7 @@ class MovieInfoPage extends React.Component {
 
         let watchListIcon = (
             <div className={`${style.watchListIconContainer}`}>
-                <i class={`fas fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
+                <i class={`fas fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
                     <span class={style.tooltiptext}>Add to watch list</span>
                 </i>
             </div>
@@ -697,7 +756,7 @@ class MovieInfoPage extends React.Component {
         {
             watchListIcon = (
                 <div className={`${style.watchListIconContainer}`}>
-                    <i class={`fas fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.movieWatchListHandler(event)}>
+                    <i class={`fas fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
                         <span class={style.tooltiptext}>Remove from watch list</span>
                     </i>
                 </div>
@@ -705,7 +764,7 @@ class MovieInfoPage extends React.Component {
         }
         let watchedIcon = (
             <div className={`${style.watchedIconContainer}`} >
-                <i className={`fas fa-ticket-alt ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
+                <i className={`fas fa-ticket-alt ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
                     <span class={style.tooltiptext}>Add to watched movies</span>
                 </i>
             </div>
@@ -716,7 +775,7 @@ class MovieInfoPage extends React.Component {
         {
             watchedIcon = (
                 <div className={`${style.watchedIconContainer}`}>
-                    <i className={`fas fa-ticket-alt ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.movieWatchedHandler(event)}>
+                    <i className={`fas fa-ticket-alt ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
                         <span class={style.tooltiptext}>Remove movie from watched</span>
                     </i>
                 </div>
@@ -764,6 +823,7 @@ class MovieInfoPage extends React.Component {
               </div>
               {trailer}
               {posterPopup}
+              {signInPopup}
           </div>
     		);
   	}
