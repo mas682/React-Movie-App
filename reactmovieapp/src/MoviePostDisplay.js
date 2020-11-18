@@ -2,122 +2,83 @@ import React from 'react';
 // should get rid of this eventually
 import { withRouter } from "react-router-dom";
 import MoviePost from './moviePost.js';
-
+import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 class MoviePostDisplay extends React.Component {
     constructor(props)
     {
-        super(props)
+        super(props);
         this.state ={
             // this gets the username from the url
-            // in the router, set the username as :id
             username: this.props.username,
             // this will be set by the api call
             posts: [],
-            currentUser: "",
+            // the logged in users username or ""
+            currentUser: this.props.currentUser,
             loading: true
         }
-    }
-
-    // this gets called when the component is changing from user to another
-    // such as when clicking on a users link when the userProfile page is already
-    // up
-    componentWillReceiveProps(nextProps) {
-       if(this.props.username !== nextProps.username) {
-           this.getData(nextProps.username);
-       }
-    }
-
-    // this only gets called by the above method to update the state on
-    // user profile change
-    getData = (param) => {
-        this.callApi(param).then(result =>{
-            // set status to result[0]
-            let status = result[0];
-            // see if request succeeded
-            if(status == 200)
-            {
-                let oldCount = this.state.posts.length;
-                this.setState({
-                    username: param,
-                    posts: result[1][0],
-                    currentUser: result[1][1]
-                });
-                if(result[1][1] !== "")
-                {
-                    this.props.updateLoggedIn(result[1][1], true);
-                }
-                else
-                {
-                    this.props.updateLoggedIn(result[1][1], false);
-                }
-                if(result[1].length !== oldCount)
-                {
-                    this.props.setPostCount(result[1][0].length);
-                }
-            }
-            else
-            {
-                alert("request for users posts failed");
-            }
-        });
+        this.getData = this.getData.bind(this);
+        this.checkApiResults = this.checkApiResults.bind(this);
     }
 
     async componentDidMount()
     {
-        this.callApi(undefined).then(result =>{
-            // set status to result[0]
-            let status = result[0];
-            // see if request succeeded
-            if(status == 200)
-            {
-                let oldCount = this.state.posts.length;
-                this.setState({
-                    posts: result[1][0],
-                    currentUser: result[1][1],
-                    loading: false
-                });
-                if(result[1][1] !== "")
-                {
-                    this.props.updateLoggedIn(result[1][1], true);
-                }
-                else
-                {
-                    this.props.updateLoggedIn(result[1][1], false);
-                }
-                if(result[1].length !== oldCount)
-                {
-                    this.props.setPostCount(result[1][0].length);
-                }
-            }
-            else
-            {
-                alert("request for users posts failed");
-            }
+        this.getData(this.state.username);
+    }
+
+    // when the component receives new props, update the state here
+    componentDidUpdate(prevProps, prevState) {
+        if(prevProps.username !== this.props.username)
+        {
+            this.getData(this.props.username);
+        }
+        else if(prevProps.currentUser !== this.props.currentUser)
+        {
+            this.getData(this.props.username);
+        }
+    }
+
+    // handles calling api for componentDidMount and componentDidUpdate
+    getData(username)
+    {
+        let url = "http://localhost:9000/profile/" + username;
+        apiGetJsonRequest(url).then(result =>{
+            this.checkApiResults(result, username);
         });
     }
 
-    callApi(username)
+    checkApiResults(result, username)
     {
-        if(username === undefined)
+        let status = result[0];
+        if(status == 200)
         {
-          username = this.state.username;
-        }
-        const requestOptions = {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-        };
-
-        let url = "http://localhost:9000/profile/" + username;
-        let status = 0;
-        return fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result =>{
-                return [status, result];
+            let oldCount = this.state.posts.length;
+            // consider putting this part into a static function
+            if(result[1][1] !== "")
+            {
+                this.props.updateLoggedIn(result[1][1], true);
+            }
+            else
+            {
+                this.props.updateLoggedIn(result[1][1], false);
+            }
+            ///////////////^^^^^^^^^^^^^^^^^^^////////////////
+            if(result[1][0].length !== oldCount)
+            {
+                this.props.setPostCount(result[1][0].length);
+            }
+            this.setState({
+                username: username,
+                posts: result[1][0],
+                currentUser: result[1][1],
+                loading: false
             });
+        }
+        else
+        {
+            alert("request for users posts failed");
+            return null;
+        }
     }
 
     render()
@@ -126,13 +87,11 @@ class MoviePostDisplay extends React.Component {
         {
             return null;
         }
-        let posts = []
+        let posts = [];
         // generate the posts
         this.state.posts.forEach((p) => {
-            posts.push(<MoviePost data={p} usersPage={this.state.username} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction} showLoginPopUp={this.props.showLoginPopUp}/>)
+            posts.push(<MoviePost data={p} usersPage={this.state.username} currentUser={this.state.currentUser} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction} showLoginPopUp={this.props.showLoginPopUp} updateLoggedIn={this.props.updateLoggedIn}/>)
         });
-
-
         return (<React.Fragment>{posts}</React.Fragment>);
     }
 }

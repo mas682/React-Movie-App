@@ -6,7 +6,8 @@ import MoviePostPopUp from './moviePostPopUp.js';
 import UserListPopUp from './UserListPopUp.js';
 import './css/MoviePost/moviePost.css';
 import ReviewForm from './ReviewForm.js';
-import Dropdown from 'react-bootstrap/Dropdown'
+import Dropdown from 'react-bootstrap/Dropdown';
+import SignInPopup from './SignIn.js';
 
 
 
@@ -24,8 +25,6 @@ class MoviePost extends React.Component {
                 liked: this.props.data.liked,
                 // count of likes on post
                 likeCount: this.props.data.likeCount,
-                // userId for user who posted the review
-                userId: this.props.data.userId,
                 // title of post
                 title: this.props.data.title,
                 // post for the movie
@@ -51,11 +50,18 @@ class MoviePost extends React.Component {
                 removePost: false,
                 type: "popup",
                 // path to movies page
-                moviePath: this.props.data.moviePath
+                moviePath: this.props.data.moviePath,
+                // boolean used to indicate if user logged in
+                loggedIn: false
             };
         }
         else
         {
+            let loggedIn = false;
+            if(this.props.currentUser)
+            {
+                loggedIn = true;
+            }
             let moviePath = this.props.data.review.movie.title.replace(" ", "-");
             moviePath = "/movie/" + this.props.data.review.movie.id + "-" + moviePath;
             this.state = {
@@ -67,8 +73,6 @@ class MoviePost extends React.Component {
                 liked: this.props.data.liked,
                 // count of likes on post
                 likeCount: this.props.data.review.likes.length,
-                // userId for user who posted the review
-                userId: this.props.data.review.userId,
                 // title of post
                 title: this.props.data.review.movie.title,
                 poster: 'https://image.tmdb.org/t/p/w500' + this.props.data.review.movie.poster,
@@ -82,8 +86,8 @@ class MoviePost extends React.Component {
                 rating: this.props.data.review.rating,
                 /* no longer needed */
                 //comments: this.props.data.review.comments,
-                usedGoodButtons: this.getGoodButtons(this.props.data.review.goodTags),
-                usedBadButtons: this.getBadButtons(this.props.data.review.badTags),
+                usedGoodButtons: MoviePost.getGoodButtons(this.props.data.review.goodTags),
+                usedBadButtons: MoviePost.getBadButtons(this.props.data.review.badTags),
                 review: this.props.data.review.review,
                 time: this.props.data.review.createdAt,
                 // the logged in users username
@@ -95,7 +99,17 @@ class MoviePost extends React.Component {
                 // used as boolean as to whether or not to show remove post buttons when clicked
                 removePost: false,
                 type: "non-popup",
-                moviePath: moviePath
+                moviePath: moviePath,
+                // has the user watched the movie?
+                watched: false,
+                // is the movie on he users watchlist
+                watchList: false,
+                // used to diplay sign in if not logged in and user tries to do add movie to watch list,
+                // or like a post
+                displayLogin: false,
+                // boolean used to indicate if user logged in
+                loggedIn: loggedIn
+
             };
         }
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
@@ -109,22 +123,24 @@ class MoviePost extends React.Component {
         this.generateEditButtons = this.generateEditButtons.bind(this);
         this.generateLikedButton = this.generateLikedButton.bind(this);
         this.generateEditPopUp = this.generateEditPopUp.bind(this);
-        this.generateGoodButtons = this.generateGoodButtons.bind(this);
-        this.generateBadButtons = this.generateBadButtons.bind(this);
         this.generateLikeCount = this.generateLikeCount.bind(this);
         this.generateLikesPopUp = this.generateLikesPopUp.bind(this);
         this.generatePostPopUp = this.generatePostPopUp.bind(this);
         this.generatePostPopUpButton = this.generatePostPopUpButton.bind(this);
         this.updateLiked = this.updateLiked.bind(this);
         this.removeFunction = this.removeFunction.bind(this);
-        this.generateMoviePage = this.generateMoviePage.bind(this);
+        this.generateMovieButtons = this.generateMovieButtons.bind(this);
+        this.buttonHandler = this.buttonHandler.bind(this);
+        this.movieWatchedResultsHandler = this.movieWatchedResultsHandler.bind(this);
+        this.movieWatchListResultsHandler = this.movieWatchListResultsHandler.bind(this);
+        this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
     }
 
     /*
         this function is used to extract the good tags out of the props that are passed
         into the component and create an array with the values to put into the state
     */
-    getGoodButtons(buttonArray)
+    static getGoodButtons(buttonArray)
     {
         let tempArr = [];
         buttonArray.forEach((tag) => {
@@ -134,11 +150,87 @@ class MoviePost extends React.Component {
         return tempArr;
     }
 
+    static getDerivedStateFromProps(nextProps, prevState)
+    {
+        // if there was a change in the props movie id or
+        // if there was a change in the user logged in
+        if(prevState.id !== nextProps.data.review.id || prevState.currentUser !== nextProps.currentUser)
+        {
+            return MoviePost.newPropState(nextProps);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    shouldComponentUpdate() {
+        return true;
+    }
+
+    static newPropState(props)
+    {
+        let loggedIn = false;
+        if(props.currentUser)
+        {
+            loggedIn = true;
+        }
+        let moviePath = props.data.review.movie.title.replace(" ", "-");
+        moviePath = "/movie/" + props.data.review.movie.id + "-" + moviePath;
+        return {
+            // boolean for opening the edit pop up
+            openEdit: false,
+            // boolean to open popup to comment on post
+            openPopUp: false,
+            // boolean indicating if logged in user liked post
+            liked: props.data.liked,
+            // count of likes on post
+            likeCount: props.data.review.likes.length,
+            // title of post
+            title: props.data.review.movie.title,
+            poster: 'https://image.tmdb.org/t/p/w500' + props.data.review.movie.poster,
+            movie: props.data.review.movie,
+            // form id for post
+            form: "form" + props.data.review.id,
+            // username for the user who posted the review
+            username: props.data.review.user.username,
+            // id of the review post
+            id: props.data.review.id,
+            rating: props.data.review.rating,
+            /* no longer needed */
+            //comments: props.data.review.comments,
+            usedGoodButtons: MoviePost.getGoodButtons(props.data.review.goodTags),
+            usedBadButtons: MoviePost.getBadButtons(props.data.review.badTags),
+            review: props.data.review.review,
+            time: props.data.review.createdAt,
+            // the logged in users username
+            currentUser: props.currentUser,
+            // theusername of the user whose page this post is currently on
+            usersPage: props.usersPage,
+            // used to show likes pop up
+            displayLikes: false,
+            // used as boolean as to whether or not to show remove post buttons when clicked
+            removePost: false,
+            type: "non-popup",
+            moviePath: moviePath,
+            // has the user watched the movie?
+            watched: false,
+            // is the movie on he users watchlist
+            watchList: false,
+            // used to diplay sign in if not logged in and user tries to do add movie to watch list,
+            // or like a post
+            displayLogin: false,
+            // boolean used to indicate if user logged in
+            loggedIn: loggedIn
+
+        };
+    }
+
     /*
         this function is used to extract the bad tags out of the props that are passed
         into the component and create an array with the values to put into the state
     */
-    getBadButtons(buttonArray)
+    static getBadButtons(buttonArray)
     {
         let tempArr = [];
         buttonArray.forEach((tag) => {
@@ -358,17 +450,6 @@ class MoviePost extends React.Component {
             });
     }
 
-    componentDidMount() {
-        /* no longer needed as manually appended to body
-        // get external script to add comment icon
-        const script = document.createElement("script");
-        script.async = true;
-        script.src = "https://kit.fontawesome.com/a076d05399.js";
-        // For body
-        document.body.appendChild(script);
-        */
-    }
-
     // function used to update the movie post after edited
     // called by ReviewForm component when creator is editing their existing post
     updateState(titleUpdate, ratingUpdate, reviewUpdate, goodButtonUpdate, badButtonUpdate)
@@ -477,6 +558,209 @@ class MoviePost extends React.Component {
             this.setState({likeCount: count});
         }
     }
+
+    // function to handle user adding a movie to their watchlist
+    // or to their movies watched list
+    buttonHandler(event, type)
+    {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if(!this.state.loggedIn)
+        {
+            this.props.showLoginPopUp(true, false);
+            return;
+        }
+
+        const requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                movieId: this.state.movie.id
+            })
+        };
+
+        let status = 0;
+        let url = "";
+        if(type === "watched")
+        {
+            url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watched";
+            if(this.state.watched)
+            {
+                url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watched";
+            }
+        }
+        else if(type === "watchlist")
+        {
+            url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watchlist";
+            if(this.state.watchList)
+            {
+                url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
+            }
+        }
+        fetch(url, requestOptions)
+            .then(res => {
+                status = res.status;
+                if(status !== 401)
+                {
+                    return res.json();
+                }
+                else
+                {
+                    return res.text();
+                }
+            }).then(result =>{
+                if(type === "watched")
+                {
+                    this.movieWatchedResultsHandler(status, result);
+                }
+                else
+                {
+                    this.movieWatchListResultsHandler(status, result);
+                }
+            });
+    }
+
+
+    movieWatchListResultsHandler(status, result)
+    {
+        // not logged in/cookie not found
+        if(status === 401)
+        {
+            this.props.updateLoggedIn("");
+            if(this.state.loggedIn)
+            {
+                this.setState({
+                    loggedIn: false,
+                    currentUser: "",
+                    displaySignIn: true
+                })
+            }
+        }
+        else
+        {
+            let username = result[1];
+            let message = result[0];
+            if(status === 200 && message === "Movie added to watch list")
+            {
+                this.setState({
+                    watchList: true,
+                    loggedIn: true,
+                    currentUser: username
+                });
+            }
+            else if(status === 200 && message === "Movie removed from watch list")
+            {
+                this.setState({
+                    watchList: false,
+                    loggedIn: true,
+                    currentUser: username
+                });
+            }
+            else if(status === 200 && message === "Movie already on watch list")
+            {
+                alert(result[0]);
+                this.setState({
+                    watchList: true,
+                    loggedIn: true,
+                    currentUser: username
+                });
+            }
+            else if(status === 200 && message === "Movie already not on watch list")
+            {
+                alert(result[0]);
+                this.setState({
+                    watchList: false,
+                    loggedIn: true,
+                    currentUser: username
+                });
+            }
+            else
+            {
+                alert(result[0]);
+            }
+        }
+    }
+
+    movieWatchedResultsHandler(status, result)
+    {
+        // not logged in/cookie not found
+        if(status === 401)
+        {
+            this.props.updateLoggedIn("");
+            if(this.state.loggedIn)
+            {
+                this.setState({
+                    loggedIn: false,
+                    currentUser: ""
+                })
+            }
+        }
+        else
+        {
+            let username = result[1];
+            let message = result[0];
+            if(status === 200 && message === "Movie added to movies watched list")
+            {
+                this.setState({
+                    watched: true,
+                    loggedIn: true,
+                    currentUser: username
+                });
+            }
+            else if(status === 200 && message === "Movie removed from watched movies list")
+            {
+                this.setState({
+                    watched: false,
+                    loggedIn: true,
+                    currentUser: username
+                });
+            }
+            else if(status === 200 && message === "Movie already on movies watched list")
+            {
+                alert(message);
+                this.setState({
+                    watched: true,
+                    loggedIn: true,
+                    currentUser: username
+                });
+            }
+            else if(status === 200 && message === "Movie already not on watched movies list")
+            {
+                alert(message);
+                this.setState({
+                    watched: false,
+                    loggedIn: true,
+                    currentUser: username
+                });
+            }
+            else
+            {
+                alert(message);
+            }
+        }
+    }
+
+    signInRemoveFunction = (username) =>
+    {
+        let loggedIn = false;
+        let user = "";
+        if(username !== undefined)
+        {
+            loggedIn = true;
+            user = username;
+        }
+        this.props.updateLoggedIn(user);
+
+        this.setState({
+            displaySignIn: false,
+            loggedIn: loggedIn,
+            currentUser: username
+        });
+    }
+
+
     /*
         This function is used to generate the appropriate liked button based off of
         the value of the liked field in the state
@@ -610,9 +894,39 @@ class MoviePost extends React.Component {
         }
     }
 
-    generateMoviePage()
+    generateMovieButtons()
     {
+        let watchedButton = (
+            <i class={`fas fa-ticket-alt ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
+                <span class={style.tooltiptext}>Add to movies watched</span>
+            </i>);
+        if(this.state.watched)
+        {
+            watchedButton = (
+                <i class={`fas fa-ticket-alt ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
+                    <span class={style.tooltiptext}>Remove movie from watched</span>
+                </i>
+            );
+        }
+        let watchlistButton = (
+            <i class={`fas fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
+                <span class={style.tooltiptext}>Add to watch list</span>
+            </i>);
+        if(this.state.watchList)
+        {
+            watchlistButton = (
+                <i class={`fas fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
+                    <span class={style.tooltiptext}>Remove from watch list</span>
+                </i>
+            );
+        }
 
+        return (
+            <div className={style.iconContainer}>
+                {watchedButton}
+                {watchlistButton}
+            </div>
+        );
     }
 
 
@@ -628,6 +942,7 @@ class MoviePost extends React.Component {
         let likesPopUp = this.generateLikesPopUp();
         let postPopUp = this.generatePostPopUp();
         let popUpButton = this.generatePostPopUpButton();
+        let movieButtons = this.generateMovieButtons();
         let profilePath = "/profile/" + this.state.username;
         return(<React.Fragment>
             <div className={style.postHeader}>
@@ -684,9 +999,12 @@ class MoviePost extends React.Component {
             <div className={style.timestampContainer}>
                 {this.state.time}
             </div>
-            <div className={style.likeContainer}>
-                {likeCount}
-                {likesPopUp}
+            <div className={style.reactionContainer}>
+                <div className={style.likeContainer}>
+                    {likeCount}
+                    {likesPopUp}
+                </div>
+                {movieButtons}
             </div>
             <div className="socialButtonContainer">
                 <div className="socialButtons">
@@ -722,6 +1040,7 @@ class MoviePost extends React.Component {
         }
         else
         {
+            console.log(this.state.liked);
             let html = this.generateHTML();
             if(this.state.type !== "popup")
             {

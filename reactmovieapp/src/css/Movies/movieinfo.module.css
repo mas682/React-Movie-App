@@ -148,9 +148,6 @@
     color: red;
 }
 
-.watchListIcon:hover {
-    color: red;
-}
 
 .watchedIconContainer {
     width: 12%;
@@ -177,16 +174,6 @@
 
 .watchedIcon:hover {
     color: #006400;
-}
-
-.watchedIcon:hover .tooltiptext {
-    visibility: visible;
-}
-
-.watchedText {
-    color: #006400;
-    margin-left: 4px;
-    font-size: 1.0em;
 }
 
 .tooltip .tooltiptext {

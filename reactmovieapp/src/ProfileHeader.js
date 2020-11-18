@@ -4,6 +4,7 @@ import { withRouter } from "react-router-dom";
 import UserListPopUp from './UserListPopUp.js';
 import style5 from './css/userProfile.module.css';
 import './css/forms.css'
+import {apiGetJsonRequest, apiPostTextRequest} from './StaticFunctions/ApiFunctions.js';
 
 
 class ProfileHeader extends React.Component {
@@ -11,6 +12,7 @@ class ProfileHeader extends React.Component {
     {
         super(props)
         this.state ={
+            // name of user whose profile this belongs to
             username: this.props.username,
             id: -1,
             // if this is the current user, set to true
@@ -73,8 +75,6 @@ class ProfileHeader extends React.Component {
     }
 
 
-
-
     // this gets called when the component is changing from user to another
     // such as when clicking on a users link when the userProfile page is already
     // up
@@ -105,17 +105,17 @@ class ProfileHeader extends React.Component {
         this.setState({postCount: count});
     }
 
-    // this only gets called by the above method to update the state on
-    // user profile change
-    getData = (param) => {
-        this.callApi(param).then(result =>{
+    // function to handle getting data from api
+    getData = (username) => {
+        let url = "http://localhost:9000/profile/" + username + "/user_info";
+        apiGetJsonRequest(url).then(result =>{
             // set status to result[0]
             let status = result[0];
             // see if request succeeded
             if(status === 200)
             {
                 this.setState({
-                    username: param,
+                    username: username,
                     // get the users id from the response
                     id: result[1][0],
                     currentUser: result[1][1],
@@ -124,6 +124,7 @@ class ProfileHeader extends React.Component {
                     followingCount: result[1][4],
                     displayFollowers: false,
                     displayFollowed: false,
+                    loading: false,
                     loggedInUser: result[1][5]
                 });
                 if(result[1][1] !== "")
@@ -144,62 +145,7 @@ class ProfileHeader extends React.Component {
 
     async componentDidMount()
     {
-        this.callApi(undefined).then(result =>{
-            // set status to result[0]
-            let status = result[0];
-            // see if request succeeded
-            if(status == 200)
-            {
-                this.setState({
-                    // get the users id from the response
-                    id: result[1][0],
-                    currentUser: result[1][1],
-                    following: result[1][2],
-                    followerCount: result[1][3],
-                    followingCount: result[1][4],
-                    displayFollowers: false,
-                    displayFollowed: false,
-                    loading: false,
-                    loggedInUser: result[1][5]
-                });
-                if(result[1][1] !== "")
-                {
-                    this.props.updateLoggedIn(result[1][5], true);
-                }
-                else
-                {
-                    this.props.updateLoggedIn(result[1][5], false);
-                }
-
-            }
-            else
-            {
-                alert("request for user profile header failed");
-            }
-        });
-    }
-
-    callApi(username)
-    {
-        if(username === undefined)
-        {
-          username = this.state.username;
-        }
-        const requestOptions = {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-        };
-
-        let url = "http://localhost:9000/profile/" + username + "/user_info";
-        let status = 0;
-        return fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result =>{
-                return [status, result];
-            });
+        this.getData(this.state.username);
     }
 
 
@@ -286,23 +232,12 @@ class ProfileHeader extends React.Component {
         }
         // will have to update the state to indicate you are now following the user
         // call api
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                id: this.state.id
-            })
-        };
-
-        let status = 0;
+        let parameters = {id: this.state.id};
         let url = "http://localhost:9000/profile/" + this.state.username + "/unfollow";
-        fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.text();
-            }).then(result =>{
-                if(status === 200 && result === "User successfully unfollowed")
+        apiPostTextRequest(url, parameters).then(result =>{
+                let status = result[0];
+                let message = result[1];
+                if(status === 200 && message === "User successfully unfollowed")
                 {
                     let value = this.state.followerCount - 1;
                     this.setState({
@@ -310,29 +245,29 @@ class ProfileHeader extends React.Component {
                         followerCount: value
                     });
                 }
-                else if(status === 401 && result === "Unable to verify requester")
+                else if(status === 401 && message === "Unable to verify requester")
                 {
                     alert("You must login to follow this user");
                 }
-                else if(status === 404 && result === "Unable to find user to unfollow")
+                else if(status === 404 && message === "Unable to find user to unfollow")
                 {
                     alert("The user to unfollow could not be found");
                 }
-                else if(status === 404 && result === "User cannot unfollow themself")
+                else if(status === 404 && message === "User cannot unfollow themself")
                 {
-                    alert(result);
+                    alert(message);
                 }
-                else if(status === 404 && result === "The id passed in the request does not match the user")
+                else if(status === 404 && message === "The id passed in the request does not match the user")
                 {
-                    alert(result);
+                    alert(message);
                 }
-                else if(status === 406 && result === "You already do not follow the user or the user does not exist")
+                else if(status === 406 && message === "You already do not follow the user or the user does not exist")
                 {
-                    alert(result);
+                    alert(message);
                 }
                 else
                 {
-                    alert(result);
+                    alert(message);
                     alert("Some unknown error occurred when trying to unfollow the user");
                     this.setState({following: false});
                 }

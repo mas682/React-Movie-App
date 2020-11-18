@@ -67,7 +67,6 @@ class Landing extends React.Component {
 
 
 	render() {
-		alert("rendering");
 		if(this.state.authenticated === null)
 		{
 			return null;

@@ -20,7 +20,7 @@ class Header extends React.Component {
             displaySignIn: this.props.showLoginPopUp,
             displaySignUp: false,
             redirect: false,
-            causeRender: false
+            redirectOnLogin: this.props.redirectOnLogin
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
@@ -43,11 +43,15 @@ class Header extends React.Component {
         this.setState({displaySignUp: true});
     }
 
-    signInRemoveFunction = () =>
+    signInRemoveFunction = (username) =>
     {
-        alert("Removing");
+        let user = "";
+        if(username !== undefined)
+        {
+            user = username;
+        }
+        this.props.removeLoginPopUp(user);
         this.setState({displaySignIn: false});
-        this.props.removeLoginPopUp(false);
     }
 
     showSignInForm()
@@ -59,7 +63,6 @@ class Header extends React.Component {
         if(this.state.currentUser !== nextProps.currentUser || this.state.loggedIn !== nextProps.loggedIn || nextProps.showLoginPopUp) {
             this.updateNewState(nextProps);
         }
-
     }
 
     updateNewState(nextProps)
@@ -67,7 +70,8 @@ class Header extends React.Component {
         this.setState({
             currentUser: nextProps.currentUser,
             loggedIn: nextProps.loggedIn,
-            displaySignIn: nextProps.showLoginPopUp
+            displaySignIn: nextProps.showLoginPopUp,
+            redirectOnLogin: nextProps.redirectOnLogin
         });
     }
 
@@ -203,12 +207,12 @@ class Header extends React.Component {
                             </div>
         				</div>
         				<div className="searchBar">
-                      <div className="searchInputBox">
-        					         <SearchDropDown getSuggestions={this.getSearchSuggestions} multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}} redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}/>
-                      </div>
-                      <div className="searchIconBox">
-                           <i class="fas fa-search searchIcon" />
-                      </div>
+                            <div className="searchInputBox">
+        					    <SearchDropDown getSuggestions={this.getSearchSuggestions} multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}} redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}/>
+                            </div>
+                            <div className="searchIconBox">
+                                <i class="fas fa-search searchIcon" />
+                            </div>
         				</div>
                         {reviewForm}
         			</div>
@@ -220,7 +224,12 @@ class Header extends React.Component {
             let signInForm = "";
             if(this.state.displaySignIn)
             {
-                signInForm = <SignInPopup removeFunction={this.signInRemoveFunction} />
+                let redirect = false;
+                if(this.state.redirectOnLogin)
+                {
+                    redirect = true;
+                }
+                signInForm = <SignInPopup removeFunction={this.signInRemoveFunction} redirectOnLogin={redirect}/>
             }
             let signUpForm = "";
             if(this.state.displaySignUp)
@@ -262,7 +271,12 @@ class Header extends React.Component {
                         </div>
                     </div>
                     <div className="searchBar">
-                        <form><input type="text" placeholder=" Search" name="search"></input></form>
+                        <div className="searchInputBox">
+                            <SearchDropDown getSuggestions={this.getSearchSuggestions} multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}} redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}/>
+                        </div>
+                        <div className="searchIconBox">
+                            <i class="fas fa-search searchIcon" />
+                        </div>
                     </div>
                     {signInForm}
                     {reviewForm}

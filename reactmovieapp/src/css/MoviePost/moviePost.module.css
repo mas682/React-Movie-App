@@ -150,10 +150,28 @@
 
 .likeContainer
 {
-	width: 98%;
+	width: 48%;
 	text-align: left;
 	margin-left: 2%;
 	font-size: 1.5em;
+}
+
+.reactionContainer
+{
+	width: 100%;
+	display: flex;
+	flex-flow: row wrap;
+}
+
+.iconContainer
+{
+	width: 50%;
+	margin-right: 0%;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: flex-end;
+	font-size: 2em;
+	align-content: space-around;
 }
 
 .likeCountThumb
@@ -175,7 +193,62 @@
 }
 
 .moviePoster {
-		width: 50%;
+	width: 50%;
+}
+
+.watchListIcon {
+    color: rgb(168, 169, 169, .4);
+	margin-left: 2%;
+}
+
+.watchListIcon:hover {
+    color: red;
+}
+
+.watchedIcon {
+    color: rgb(169, 169, 169, .4);
+}
+
+.watchedIcon:hover {
+    color: #006400;
+}
+
+.watchListIconSelected:hover {
+    color: rgb(168, 169, 169, .4);
+}
+
+.watchListIconSelected {
+    color: red;
+	margin-left: 2%;
+}
+
+.watchedIconSelected:hover {
+    color: rgb(168, 169, 169, .4);
+}
+
+.watchedIconSelected {
+    color: #006400;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  font-size: .5em;
+  background-color: black;
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  margin-left: 10px;
+  margin-top: 5px;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  font-weight: normal;
 }
 
 /* Below is for the star ratings */

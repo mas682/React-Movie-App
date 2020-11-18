@@ -29,11 +29,6 @@ const movieHandler = (req, res, next) => {
 
 const selectPath = (cookie, req, res, cookieValid) =>
 {
-    // if here, the path is /movie/get_movie_titles
-	// only allowed to use this if logged in
-	//console.log(Object.keys(req.params).length);
-	console.log("Request params:");
-	console.log(req.params);
     if(req.params.type === "get_movie_titles" && cookieValid)
     {
         getMovieTitles(cookie, req, res, cookieValid);
@@ -50,13 +45,10 @@ const selectPath = (cookie, req, res, cookieValid) =>
 	{
 		getWatchedList(cookie, req, res);
 	}
-
-		/*
-    else if(!cookieValid)
-    {
-        res.status(401).send("No cookie or cookie invalid");
-    }
-		*/
+	else if((req.params.type === "my_watched_list" || req.params.type === "my_watch_list") && !cookieValid)
+	{
+		res.status(401).send("No cookie or cookie invalid");
+	}
     // some unknow path given
     else
     {
@@ -176,8 +168,14 @@ const getWatchList = async(cookie, req, res) =>
 			]
 		}
 	});
-	console.log(user.WatchList);
-	res.status(200).send([user.WatchList, username]);
+	if(user === null)
+	{
+		res.status(404).send(["The user could not be found", username]);
+	}
+	else
+	{
+		res.status(200).send([user.WatchList, username]);
+	}
 };
 
 const getWatchedList = async(cookie, req, res) =>
@@ -209,7 +207,15 @@ const getWatchedList = async(cookie, req, res) =>
 			]
 		}
 	});
-	res.status(200).send([user.WatchedMovie, username]);
+	username = cookie.name;
+	if(user === null)
+	{
+		res.status(404).send(["The user could not be found", username]);
+	}
+	else
+	{
+		res.status(200).send([user.WatchedMovie, username]);
+	}
 };
 
 

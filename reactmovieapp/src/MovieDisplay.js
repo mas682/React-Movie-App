@@ -276,13 +276,15 @@ class MovieDisplay extends React.Component {
 
     signInRemoveFunction = (username) =>
     {
+        let loggedIn = false;
         if(username !== undefined)
         {
             this.props.updateLoggedIn(username, true);
+            loggedIn = true;
         }
         this.setState({
             displaySignIn: false,
-            loggedIn: true,
+            loggedIn: loggedIn,
             username: username
         });
     }

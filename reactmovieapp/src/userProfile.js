@@ -19,20 +19,25 @@ class UserProfile extends React.Component {
             // this will be set by the api call
             postCount: 0,
             followingCountChange: 0,
-            followerCountChange: 0
+            followerCountChange: 0,
+            currentUser: this.props.currentUser
         }
         this.setPostCount = this.setPostCount.bind(this);
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
         this.updateFollowerCount = this.updateFollowerCount.bind(this);
     }
 
-    // this gets called when the component is changing from user to another
-    // such as when clicking on a users link when the userProfile page is already
-    // up
-    // may not need this
-    componentWillReceiveProps(nextProps) {
-        if(this.props.match.params.id !== nextProps.match.params.id) {
-            this.getData(nextProps.match.params.id);
+    // update the state if new props came in with a different profile
+    // or a different user logged in
+    static getDerivedStateFromProps(nextProps, prevState)
+    {
+        if(prevState.username !== nextProps.match.params.id)
+        {
+            return UserProfile.setProfileUser(nextProps.match.params.id, nextProps.currentUser);
+        }
+        else if(prevState.currentUser !== nextProps.currentUser)
+        {
+            return UserProfile.setProfileUser(nextProps.match.params.id, nextProps.currentUser);
         }
     }
 
@@ -60,7 +65,9 @@ class UserProfile extends React.Component {
         // whose page we are currently on
         return (nextState.followingCountChange !== 0
              || nextState.followerCountChange !== 0
-             || nextState.username !== this.state.username);
+             || nextState.username !== this.state.username
+             || nextState.currentUser !== this.state.currentUser
+             || nextState.postCount !== this.state.postCount);
     }
 
     updateFollowingCount(value)
@@ -79,13 +86,13 @@ class UserProfile extends React.Component {
         this.setState({postCount:value});
     }
 
-
     // this only gets called by the above method to update the state on
     // user profile change
-    getData = (param) => {
-        this.setState({
+    static setProfileUser = (param, currentUser) => {
+        return {
             username: param,
-        });
+            currentUser: currentUser
+        };
     }
 
     render()
@@ -94,7 +101,7 @@ class UserProfile extends React.Component {
 
             <div className={style5.mainBodyContainer}>
                 <ProfileHeader username={this.state.username} postCount={this.state.postCount} updateFollowingCount={this.state.followingCountChange} updateFollowerCount={this.state.followerCountChange} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp}/>
-                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount} updateFollowersFunction={this.updateFollowerCount} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp}/>
+                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount} updateFollowersFunction={this.updateFollowerCount} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp} currentUser={this.state.currentUser}/>
             </div>
         );
     }

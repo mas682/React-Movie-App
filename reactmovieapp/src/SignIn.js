@@ -94,6 +94,7 @@ class SignInPopup extends React.Component {
 				if(status.result == "created cookie")
 				{
 					alert("You have successfully logged in");
+					console.log(user);
 					this.setState({
 						open: false,
 						redirect: true,

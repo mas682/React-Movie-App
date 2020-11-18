@@ -10,15 +10,16 @@ class MovieFilterPage extends React.Component {
     constructor(props){
         super(props);
 
+        // the function returns the query string and the start date
+        // made this function as these steps are also done when
+        // recieving new props
         let values = this.updateMovieFilter(false, this.props);
         let query = values[0];
         let startDate = values[1];
-        // will need fixed
-        props.updateLoggedIn("admin", true);
         this.state = {
             header: this.props.type,
             movies: [],
-            loading: false,
+            loading: true,
             startDate: startDate,
             queryString: query,
             loggedIn: false,
@@ -126,7 +127,7 @@ class MovieFilterPage extends React.Component {
 
     async componentDidMount()
     {
-        this.getMovies();
+        this.getMovies(undefined, this.state.header);
     }
 
     // function to handle call to api and result
@@ -134,26 +135,57 @@ class MovieFilterPage extends React.Component {
     {
         let movieData = await this.apiCall(query, type);
         let status = movieData[0];
-        let loggedIn = false;
-        let username = movieData[1][1];
-        if(username !== "")
-        {
-            loggedIn = true;
-        }
-        this.props.updateLoggedIn(username, loggedIn);
         if(status === 200)
         {
-            console.log("Movie Info");
-            console.log(movieData[1][0]);
+            let loggedIn = false;
+            let username = movieData[1][1];
+            if(username !== "")
+            {
+                loggedIn = true;
+            }
+            this.props.updateLoggedIn(username, loggedIn);
             this.setState({
               movies: movieData[1][0],
               username: username,
-              loggedIn: loggedIn
+              loggedIn: loggedIn,
+              loading: false
+            });
+        }
+        else if(status === 401)
+        {
+            // if not logged in, update the header so it knows user not logged in
+            this.props.updateLoggedIn("", false);
+            // also show the login pop up
+            // this will be dipslayed immediately but will be redirected to the home page
+            // almost immediately to display there
+            this.props.showLoginPopUp(true);
+            this.setState({
+                loggedIn: false,
+                username: ""
+            });
+        }
+        else if(status === 404)
+        {
+            alert(movieData[1][0]);
+            let username = movieData[1][1];
+            let loggedIn = false;
+            if(username !== "")
+            {
+                loggedIn = true;
+            }
+            this.props.updateLoggedIn(username, loggedIn);
+            this.setState({
+                username: username,
+                loggedIn: loggedIn,
+                loading: false
             });
         }
         else
         {
             alert(movieData[1][0]);
+            this.setState({
+                loading: false,
+            });
         }
     }
 
@@ -185,13 +217,11 @@ class MovieFilterPage extends React.Component {
         {
             url = "http://localhost:9000/search/movies/" + query;
         }
-        console.log("query string");
-        console.log(this.state.queryString);
-        //url = "http://localhost:9000/search/movies/?date_gt=9-20-20";
+
         return fetch(url, requestOptions)
             .then(res => {
                 status = res.status;
-                return res.json();
+                return res.json()
             }).then(result=> {
                 return [status, result];
             });
@@ -228,6 +258,10 @@ class MovieFilterPage extends React.Component {
         if(this.state.loading)
         {
             return null;
+        }
+        else if(!this.state.loggedIn && (this.state.header === "My Watch List" || this.state.header === "My Watched Movies"))
+        {
+            return <Redirect to={"/"} />;
         }
         let movies = this.generateMovieDisplays();
 
