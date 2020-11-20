@@ -1,6 +1,6 @@
 import React from 'react';
 // should get rid of this eventually
-import { withRouter } from "react-router-dom";
+import {Redirect, withRouter} from 'react-router-dom';
 import MoviePost from './moviePost.js';
 import style5 from './css/userProfile.module.css';
 import './css/forms.css'
@@ -20,11 +20,13 @@ class UserProfile extends React.Component {
             postCount: 0,
             followingCountChange: 0,
             followerCountChange: 0,
-            currentUser: this.props.currentUser
+            currentUser: this.props.currentUser,
+            redirect: false
         }
         this.setPostCount = this.setPostCount.bind(this);
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
         this.updateFollowerCount = this.updateFollowerCount.bind(this);
+        this.redirectToHome = this.redirectToHome.bind(this);
     }
 
     // update the state if new props came in with a different profile
@@ -67,7 +69,18 @@ class UserProfile extends React.Component {
              || nextState.followerCountChange !== 0
              || nextState.username !== this.state.username
              || nextState.currentUser !== this.state.currentUser
-             || nextState.postCount !== this.state.postCount);
+             || nextState.postCount !== this.state.postCount
+             || nextState.redirect === true);
+    }
+
+    redirectToHome()
+    {
+        if(!this.state.redirect)
+        {
+            this.setState({
+                redirect: true
+            });
+        }
     }
 
     updateFollowingCount(value)
@@ -97,11 +110,33 @@ class UserProfile extends React.Component {
 
     render()
     {
+        if(this.state.redirect)
+        {
+            return <Redirect to={"/"} />;
+        }
         return (
 
             <div className={style5.mainBodyContainer}>
-                <ProfileHeader username={this.state.username} postCount={this.state.postCount} updateFollowingCount={this.state.followingCountChange} updateFollowerCount={this.state.followerCountChange} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp}/>
-                <MoviePostDisplay username={this.state.username} setPostCount={this.setPostCount} updateFunction={this.updateFollowingCount} updateFollowersFunction={this.updateFollowerCount} updateLoggedIn={this.props.updateLoggedIn} showLoginPopUp={this.props.showLoginPopUp} currentUser={this.state.currentUser}/>
+                <ProfileHeader
+                    username={this.state.username}
+                    postCount={this.state.postCount}
+                    updateFollowingCount={this.state.followingCountChange}
+                    updateFollowerCount={this.state.followerCountChange}
+                    updateLoggedIn={this.props.updateLoggedIn}
+                    showLoginPopUp={this.props.showLoginPopUp}
+                    currentUser={this.state.currentUser}
+                    redirectToHome={this.redirectToHome}
+                />
+                <MoviePostDisplay
+                    username={this.state.username}
+                    setPostCount={this.setPostCount}
+                    updateFunction={this.updateFollowingCount}
+                    updateFollowersFunction={this.updateFollowerCount}
+                    updateLoggedIn={this.props.updateLoggedIn}
+                    showLoginPopUp={this.props.showLoginPopUp}
+                    currentUser={this.state.currentUser}
+                    redirectToHome={this.redirectToHome}
+                />
             </div>
         );
     }

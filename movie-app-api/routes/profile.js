@@ -157,9 +157,9 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
     models.User.findByLogin(username)
     .then(async (user)=>{
         // if the user was not found
-        if(user === undefined)
+        if(user === null)
         {
-            res.status(404).send(["Unable to find the requested user"]);
+            res.status(404).send(["Unable to find the requested user", cookie.name]);
             return;
         }
         // boolean to indicate if the requester and username are the same
@@ -211,7 +211,7 @@ const getReviews = async (cookie, req, res, cookieValid) =>
     // find a user by their login
     models.User.findByLogin(username)
     .then(async (user)=>{
-        if(user === undefined)
+        if(user === null)
         {
             res.status(404).send(["Unable to find the requested user"]);
             return;
@@ -271,98 +271,81 @@ const followUser = (cookie, req, res) =>
 {
     // requesting users username
     let requestingUser = cookie.name;
-    // user to follows id number
-    let userToFollowId = req.body.id;
     // user to follows username
     let followUname = req.params.userId;
-    // see if the user already follows the user to follow
-    models.User.findWithFollower(requestingUser, userToFollowId)
-    .then((returnedUser) =>{
-        // if the user is not following the user
-        if(returnedUser === null)
+    // get the user and see if the requester follows them
+    models.User.findWithFollowing(followUname, cookie.id)
+    .then((userToFollow) => {
+        if(userToFollow === null)
         {
-            // find the requesting user
-            models.User.findByLogin(requestingUser)
-            .then((requester)=>{
-                if(requester === null)
-                {
-                    res.status(401).send("Unable to verify requester");
-                }
-                else
-                {
-                    // find user to follow to verify they exist
-                    models.User.findByLogin(followUname)
-                    .then((requestedUser) => {
-                        // if user not found
-                        if(requestedUser === null)
-                        {
-                            res.status(404).send("Unable to find user to follow");
-                        }
-                        else if(userToFollowId !== requestedUser.id)
-                        {
-                            res.status(404).send("The id passed in the request does not match the user");
-                        }
-                        else if(requestedUser.id === requester.id)
-                        {
-                            res.status(404).send("User cannot follow themself");
-                        }
-                        else
-                        {
-                            // add the user to the requesters following users
-                            requester.addFollow(requestedUser.id).then((result) => {
-                                if(result === undefined)
-                                {
-                                    res.status(406).send("Some error occured trying to follow the user");
-                                }
-                                else
-                                {
-                                    res.status(200).send("User successfully followed");
-                                }
-                            });
-                        }
-                    })
-                }
-
-            });
+            res.status(404).send(["Unable to find user to follow", requestingUser]);
+        }
+        // if the user is not already following the user
+        else if(userToFollow.dataValues.Followers.length < 1)
+        {
+            if(userToFollow.id === cookie.id)
+            {
+                res.status(400).send(["User cannot follow themself", requestingUser]);
+            }
+            else
+            {
+                // add the user to the requesters following users
+                //userToFollow.addFollower(cookie.id).then((result) => {
+                userToFollow.addFollower(cookie.id).then((result) => {
+                    if(result === undefined)
+                    {
+                        res.status(500).send(["Some error occured trying to follow the user", requestingUser]);
+                    }
+                    else
+                    {
+                        res.status(200).send(["User successfully followed", requestingUser]);
+                    }
+                });
+            }
         }
         else
         {
-            res.status(406).send("You already follow the user");
+            res.status(400).send(["You already follow the user", requestingUser]);
         }
+
     });
 }
 
 const unfollowUser = (cookie, req, res) =>
 {
     let requestingUser = cookie.name;
-    let userToUnFollowId = req.body.id;
     let unfollowUname = req.params.userId;
-    // find requesting user by their id
-    models.User.findWithFollower(requestingUser, userToUnFollowId)
-    .then((returnedUser) =>{
-        // if the user is not following the user
-        if(returnedUser === null)
+    // get the user and see if the requester follows them
+    models.User.findWithFollowing(unfollowUname, cookie.id)
+    .then((userToUnfollow) => {
+
+        if(userToUnfollow === null)
         {
-            res.status(406).send("You already do not follow the user or the user does not exist");
+            res.status(404).send(["Unable to find user to unfollow", requestingUser]);
+        }
+        else if(userToUnfollow.dataValues.Followers.length > 0)
+        {
+            if(userToUnfollow.id === cookie.id)
+            {
+                res.status(400).send(["User cannot unfollow themself", requestingUser]);
+            }
+            else
+            {
+                userToUnfollow.removeFollower(cookie.id).then((result) => {
+                    if(result === undefined)
+                    {
+                        res.status(500).send(["Some error occured trying to unfollow the user", requestingUser]);
+                    }
+                    else
+                    {
+                        res.status(200).send(["User successfully unfollowed", requestingUser]);
+                    }
+                });
+            }
         }
         else
         {
-            if(returnedUser.Following[0].id !== userToUnFollowId)
-            {
-                res.status(404).send("The id passed in tthe request does not match the user");
-                return;
-            }
-            returnedUser.removeFollow(returnedUser.Following[0].id).then((result)=> {
-                // if the request succeeded
-                if(result === 1)
-                {
-                    res.status(200).send("User successfully unfollowed");
-                }
-                else
-                {
-                    res.status(500).send("Something went wrong on the server");
-                }
-            });
+            res.status(400).send(["You already do not follow the user", requestingUser]);
         }
     });
 }

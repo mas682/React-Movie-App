@@ -39,6 +39,7 @@ class Routes extends React.Component
 
     showLoginPopUp(value, redirect)
     {
+        alert("Redirect: " + redirect);
         if(!this.state.displayLogin)
         {
             if(redirect === undefined)
@@ -71,10 +72,15 @@ class Routes extends React.Component
         //}
     }
 
-    updateLoggedIn(username, signedIn)
+    updateLoggedIn(username)
     {
+        let loggedIn = false;
+        if(username !== "")
+        {
+            loggedIn = true;
+        }
         // do not cause rerender if state not changing
-        if(this.state.currentUser === username && this.state.loggedIn === signedIn)
+        if(this.state.currentUser === username && this.state.loggedIn === loggedIn)
         {
             return;
         }
@@ -82,7 +88,7 @@ class Routes extends React.Component
         {
             this.setState({
                 currentUser: username,
-                loggedIn: signedIn
+                loggedIn: loggedIn
             });
         }
     }

@@ -121,7 +121,27 @@ const user = (sequelize, DataTypes) => {
                 // include the user that is followed
                 model: User,
                 as: "Following",
-                where: {id: followedId}
+                where: {id: followedId},
+                // include the user
+                required: false
+            },
+        });
+        // returns null if follower not found
+        return user;
+    };
+
+    // function to get a user and a user who follows them
+    User.findWithFollowing = async (username, follower) =>
+    {
+        let user = await User.findOne({
+            where: { username: username },
+            include: {
+                // include the user that is followed
+                model: User,
+                as: "Followers",
+                where: {id: follower},
+                // include the user
+                required: false
             },
         });
         // returns null if follower not found

@@ -41,9 +41,25 @@ const apiPostTextRequest = (url, parameters) =>
         });
 };
 
-const api2 = () =>
+const apiPostJsonRequest = (url, parameters) =>
 {
+    const requestOptions = {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json'},
+        body: JSON.stringify(
+            parameters
+        )
+    };
 
+    let status = 0;
+    return fetch(url, requestOptions)
+        .then(res => {
+            status = res.status;
+            return res.json();
+        }).then(result =>{
+            return [status, result];
+        });
 };
 
-export {apiGetJsonRequest, apiPostTextRequest};
+export {apiGetJsonRequest, apiPostTextRequest, apiPostJsonRequest};

@@ -1,10 +1,10 @@
 import React from 'react';
 // should get rid of this eventually
-import { withRouter } from "react-router-dom";
+import {Link, Redirect, withRouter} from 'react-router-dom';
 import UserListPopUp from './UserListPopUp.js';
 import style5 from './css/userProfile.module.css';
 import './css/forms.css'
-import {apiGetJsonRequest, apiPostTextRequest} from './StaticFunctions/ApiFunctions.js';
+import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 
 class ProfileHeader extends React.Component {
@@ -26,14 +26,18 @@ class ProfileHeader extends React.Component {
             displayFollowed: false,
             postCount: this.props.postCount,
             loading: true,
-            loggedInUser: ""
-        }
+            loggedInUser: this.props.currentUser,
+            redirect: false
+        };
         this.removePopUp = this.removePopUp.bind(this);
         this.updateFollowerCount = this.updateFollowerCount.bind(this);
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
         this.changeFollowedCount = this.changeFollowedCount.bind(this);
         this.changeFollowingCount = this.changeFollowingCount.bind(this);
-        this.updatePostCount = this.updatePostCount.bind(this);
+        //this.updatePostCount = this.updatePostCount.bind(this);
+        this.followHandler = this.followHandler.bind(this);
+        this.unfollowResultsHandler = this.unfollowResultsHandler.bind(this);
+        this.followResultsHandler = this.followResultsHandler.bind(this);
     }
 
     // function to change the followed count to the passed in value if it is not equal
@@ -74,35 +78,40 @@ class ProfileHeader extends React.Component {
         this.setState({followingCount: count});
     }
 
-
-    // this gets called when the component is changing from user to another
-    // such as when clicking on a users link when the userProfile page is already
-    // up
-    componentWillReceiveProps(nextProps) {
-       if(this.props.username !== nextProps.username) {
-           this.getData(nextProps.username);
-           return;
-       }
-       // if the post count is updated, rerender the header
-       if(this.props.postCount !== nextProps.postCount)
-       {
-           this.updatePostCount(nextProps.postCount);
-       }
-       if(nextProps.updateFollowingCount === 1 || nextProps.updateFollowingCount === -1)
-       {
-           this.updateFollowingCount(nextProps.updateFollowingCount);
-       }
-       if(nextProps.updateFollowerCount === 1 || nextProps.updateFollowerCount === -1)
-       {
-           this.updateFollowerCount(nextProps.updateFollowerCount);
-       }
-
+    static getDerivedStateFromProps(nextProps, prevState)
+    {
+        if(prevState.postCount !== nextProps.postCount)
+        {
+            return {postCount: nextProps.postCount};
+        }
+        else if(nextProps.updateFollowingCount !== 0)
+        {
+            let count = prevState.followingCount + nextProps.updateFollowingCount;
+            return {followingCount: count};
+        }
+        else if(nextProps.updateFollowerCount !== 0)
+        {
+            let count = prevState.followerCount + nextProps.updateFollowerCount;
+            return {followerCount: count};
+        }
+        else
+        {
+            return null;
+        }
     }
 
-    // function to update the post count when the props are updated
-    updatePostCount(count)
+    componentDidUpdate(prevProps, prevState)
     {
-        this.setState({postCount: count});
+        // if the changing from one users profile page to another
+        if(this.props.username !== prevState.username)
+        {
+            this.getData(this.props.username);
+        }
+        // when the logged in user changes, do this
+        else if(this.props.currentUser !== prevState.loggedInUser)
+        {
+            this.getData(this.props.username);
+        }
     }
 
     // function to handle getting data from api
@@ -119,7 +128,8 @@ class ProfileHeader extends React.Component {
                     // get the users id from the response
                     id: result[1][0],
                     currentUser: result[1][1],
-                    following: result[1][2],
+                    //following: result[1][2],
+                    following: true,
                     followerCount: result[1][3],
                     followingCount: result[1][4],
                     displayFollowers: false,
@@ -127,18 +137,12 @@ class ProfileHeader extends React.Component {
                     loading: false,
                     loggedInUser: result[1][5]
                 });
-                if(result[1][1] !== "")
-                {
-                    this.props.updateLoggedIn(result[1][5], true);
-                }
-                else
-                {
-                    this.props.updateLoggedIn(result[1][5], false);
-                }
+                this.props.updateLoggedIn(result[1][5]);
             }
             else
             {
-                alert("request for user profile failed");
+                alert(result[1][0]);
+                this.props.redirectToHome();
             }
         });
     }
@@ -148,130 +152,150 @@ class ProfileHeader extends React.Component {
         this.getData(this.state.username);
     }
 
-
-// next deal with unfollowing users, make sure everything working as expected
-
-    followHandler()
+    // function to handle following or unfollowing a user
+    followHandler(e,type)
     {
+        e.preventDefault();
         if(!this.state.loggedInUser)
         {
             this.props.showLoginPopUp(true);
             return;
         }
-        // if here, no reason to try to follow a user you already follow
-        if(this.state.following)
+        let parameters = {};
+        let url;
+        if(type === "follow")
+        {
+            url = "http://localhost:9000/profile/" + this.state.username + "/follow";
+        }
+        else if(type === "unfollow")
+        {
+            url = "http://localhost:9000/profile/" + this.state.username + "/unfollow";
+        }
+        else
         {
             return;
         }
-        // will have to update the state to indicate you are now following the user
-        // call api
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                id: this.state.id
-            })
-        };
-
-        let status = 0;
-        let url = "http://localhost:9000/profile/" + this.state.username + "/follow";
-        fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.text();
-            }).then(result =>{
-                if(status === 200 && result === "User successfully followed")
+        apiPostJsonRequest(url, parameters)
+            .then(result =>{
+                let status = result[0];
+                let message = result[1][0];
+                let loggedInUser = result[1][1];
+                this.props.updateLoggedIn(loggedInUser);
+                if(type === "follow")
                 {
-                    let value = this.state.followerCount + 1;
-                    this.setState({
-                        following: true,
-                        followerCount: value
-                    });
-                }
-                else if(status === 401 && result === "Unable to verify requester")
-                {
-                    alert("You must login to follow this user");
-                }
-                else if(status === 404 && result === "Unable to find user to follow")
-                {
-                    alert("The user to follow could not be found");
-                }
-                else if(status === 404 && result === "User cannot follow themself")
-                {
-                    alert(result);
-                }
-                else if(status === 406 && result === "You already follow the user")
-                {
-                    alert(result);
+                    this.followResultsHandler(status, message, loggedInUser);
                 }
                 else
                 {
-                    alert(result);
-                    alert("Some unknown error occurred when trying to follow the user");
-                    this.setState({following: false});
+                    this.unfollowResultsHandler(status, message, loggedInUser);
                 }
-                //return [status, result];
-                // update button to indicate now following user
-                // may want to send updated friends list to user eventually
-                // if fails, do a alert
             });
     }
 
-    unfollowHandler()
+    followResultsHandler(status, message, loggedInUser)
     {
-        if(!this.state.loggedInUser)
+        if(status === 200)
         {
-            this.props.showLoginPopUp(true);
-            return;
-        }
-        // if here, no use trying to unfollow a user you do not already follow
-        if(!this.state.following)
-        {
-            return;
-        }
-        // will have to update the state to indicate you are now following the user
-        // call api
-        let parameters = {id: this.state.id};
-        let url = "http://localhost:9000/profile/" + this.state.username + "/unfollow";
-        apiPostTextRequest(url, parameters).then(result =>{
-                let status = result[0];
-                let message = result[1];
-                if(status === 200 && message === "User successfully unfollowed")
-                {
-                    let value = this.state.followerCount - 1;
-                    this.setState({
-                        following: false,
-                        followerCount: value
-                    });
-                }
-                else if(status === 401 && message === "Unable to verify requester")
-                {
-                    alert("You must login to follow this user");
-                }
-                else if(status === 404 && message === "Unable to find user to unfollow")
-                {
-                    alert("The user to unfollow could not be found");
-                }
-                else if(status === 404 && message === "User cannot unfollow themself")
-                {
-                    alert(message);
-                }
-                else if(status === 404 && message === "The id passed in the request does not match the user")
-                {
-                    alert(message);
-                }
-                else if(status === 406 && message === "You already do not follow the user or the user does not exist")
-                {
-                    alert(message);
-                }
-                else
-                {
-                    alert(message);
-                    alert("Some unknown error occurred when trying to unfollow the user");
-                    this.setState({following: false});
-                }
+            // user successfully followed
+            let value = this.state.followerCount + 1;
+            this.setState({
+                following: true,
+                followerCount: value,
+                loggedInUser: loggedInUser
             });
+        }
+        else if(status === 401)
+        {
+            alert(message);
+            this.setState({
+                loggedInUser: ""
+            });
+            // will probably need to reload whole page in this case to determine if
+            // reroute or not..
+            this.props.showLoginPopUp(true, false);
+        }
+        else if(status === 404 && message === "Unable to find user to follow")
+        {
+            alert(message);
+            this.setState({
+                loggedInUser: loggedInUser,
+                redirect: true
+            });
+            // cause a page reload and then force to home/404 page
+            // redirect to home or 404 page
+        }
+        else if(status === 400 && message === "User cannot follow themself")
+        {
+            alert(message);
+            this.setState({
+                currentUser: true,
+                loggedInUser: loggedInUser
+            });
+        }
+        else if(status === 400 && message === "You already follow the user")
+        {
+            alert(message);
+            this.setState({
+                following: true,
+                loggedInUser: loggedInUser
+            });
+        }
+        else
+        {
+            alert("Some unknown error occurred when trying to follow the user");
+        }
+    }
+
+    unfollowResultsHandler(status, message, loggedInUser)
+    {
+        // user successfully unfollowed
+        if(status === 200)
+        {
+            let value = this.state.followerCount - 1;
+            this.setState({
+                following: false,
+                followerCount: value,
+                loggedInUser: loggedInUser
+            });
+        }
+        else if(status === 401)
+        {
+            alert("You must login to follow this user");
+            this.setState({
+                loggedInUser: loggedInUser
+            });
+            // will probably need to reload whole page in this case to determine if
+            // reroute or not..
+            this.props.showLoginPopUp(true, false);
+        }
+        else if(status === 404 && message === "Unable to find user to unfollow")
+        {
+            alert(message);
+            this.setState({
+                loggedInUser: loggedInUser,
+                redirect: true
+            });
+        }
+        else if(status === 400 && message === "User cannot unfollow themself")
+        {
+            alert(message);
+            this.setState({
+                currentUser: true,
+                loggedInUser: loggedInUser
+            });
+        }
+        else if(status === 400 && message === "You already do not follow the user")
+        {
+            alert(message);
+            this.setState({
+                following: false,
+                loggedInUser
+            });
+        }
+        else
+        {
+            alert("Some unknown error occurred when trying to unfollow the user");
+        }
     }
 
     // update state to set boolean to display followers or following
@@ -334,16 +358,33 @@ class ProfileHeader extends React.Component {
         {
             return null;
         }
+        else if(this.state.redirect)
+        {
+            return <Redirect to={"/"} />;
+        }
 
         // used to generate users followers/following lists
         let popup = "";
         if(this.state.displayFollowers)
         {
-            popup = <UserListPopUp username={this.state.username} type="Followers" removeFunction={this.removePopUp} updateFunction={this.updateFollowerCount} currentUser={this.state.currentUser} changeFunction={this.changeFollowedCount}/>;
+            popup = <UserListPopUp
+                        username={this.state.username}
+                        type="Followers"
+                        removeFunction={this.removePopUp}
+                        updateFunction={this.updateFollowingCount}
+                        currentUser={this.state.currentUser}
+                        changeFunction={this.changeFollowedCount}
+                    />;
         }
         if(this.state.displayFollowed)
         {
-            popup = <UserListPopUp username={this.state.username} type="Following" removeFunction={this.removePopUp} updateFunction={this.updateFollowingCount} currentUser={this.state.currentUser} changeFunction={this.changeFollowingCount}/>;
+            popup = <UserListPopUp
+                        username={this.state.username}
+                        type="Following" removeFunction={this.removePopUp}
+                        updateFunction={this.updateFollowingCount}
+                        currentUser={this.state.currentUser}
+                        changeFunction={this.changeFollowingCount}
+                    />;
         }
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";
@@ -355,11 +396,11 @@ class ProfileHeader extends React.Component {
         {
             if(this.state.following)
             {
-                followButton = <button className={`${style5.followButton} ${style5.followColor}`} onClick={(e)=> this.unfollowHandler(e)}>Follow</button>;
+                followButton = <button className={`${style5.followButton} ${style5.followColor}`} onClick={(e)=> this.followHandler(e, "unfollow")}>Follow</button>;
             }
             else
             {
-                followButton = <button className={`${style5.followButton} ${style5.notFollowingColor}`} onClick={(e)=> this.followHandler(e)}>Follow</button>;
+                followButton = <button className={`${style5.followButton} ${style5.notFollowingColor}`} onClick={(e)=> this.followHandler(e, "follow")}>Follow</button>;
             }
         }
 

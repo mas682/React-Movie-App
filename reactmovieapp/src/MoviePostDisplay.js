@@ -77,6 +77,7 @@ class MoviePostDisplay extends React.Component {
         else
         {
             alert("request for users posts failed");
+            this.props.redirectToHome();
             return null;
         }
     }
