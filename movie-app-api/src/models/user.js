@@ -152,67 +152,50 @@ const user = (sequelize, DataTypes) => {
     // the requesting user also follows
     // friendName is the username of the user whose friends list you are checking
     // userId is the user id of the requesting user
-    User.getMutualFollowers = async (friendName, userId) => {
+    User.getFollowers = async (friendName, userId) => {
         let user = await User.findByLogin(friendName);
         if(user === null)
         {
             return null;
         }
-        let mutualFollowers = await user.getFollowers({
+        let followers = await user.getFollowers({
+            attributes: ["username"],
             include:[
                 {
                     model: User,
                     as: "Followers",
-                    where: {id: userId}
+                    attributes:["username"],
+                    where: {id: userId},
+                    required: false
                 }
             ]
         });
-        return mutualFollowers;
-    };
-
-    // function to return all followers from a friends list of followers that
-    // the requesting user does not follow
-    // friendName is the username of the user whose friends list you are checking
-    // userId is the user id of the requesting user
-    // ids is an array of user ids that the requester already follows
-    User.getNotFollowedFollowers = async (friendName, userId, ids) => {
-        let user = await User.findByLogin(friendName);
-        if(user === null)
-        {
-            return null;
-        }
-        let notMutualFollowers = await user.getFollowers({
-                where: {id:{[Op.notIn]:ids}},
-                include:[
-                    {
-                        model: User,
-                        as: "Followers",
-                    }
-                ]
-        });
-        return notMutualFollowers;
+        return followers;
     };
 
     // function to return all of the users that a user follows that the
     // requesting user also follows
     // friendName is the username fo the user whose friends list you are checking
     // userId is the user id of the requesting user
-    User.getMutualFollowing = async (friendName, userId) => {
+    User.getFollowing = async (friendName, userId) => {
         let user = await User.findByLogin(friendName);
         if(user === null)
         {
             return null;
         }
-        let mutualFollowing = await user.getFollowing({
+        let following = await user.getFollowing({
+            attributes: ["username"],
             include:[
                 {
                     model: User,
                     as: "Followers",
-                    where: {id: userId}
+                    attributes: ["username"],
+                    where: {id: userId},
+                    required: false
                 }
             ]
         });
-        return mutualFollowing;
+        return following;
     }
 
     // funciton to return all of the users that a user follows that the

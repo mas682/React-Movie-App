@@ -32,33 +32,44 @@ class Routes extends React.Component
         // if the displayLogin was reset to false, do not cause a rerender
         if(this.state.displayLogin === true && nextState.displayLogin === false)
         {
+            // if login display closed but user logged in
+            if(this.state.currentUser !== nextState.currentUser)
+            {
+                return true;
+            }
             return false;
         }
         return true;
     }
 
-    showLoginPopUp(value, redirect)
+    showLoginPopUp(redirect)
     {
-        alert("Redirect: " + redirect);
+        // if the login pop up is not already visible
         if(!this.state.displayLogin)
         {
             if(redirect === undefined)
             {
                 redirect = true;
             }
+            // if displaying login, user must not be logged in
             this.setState({
                 // need to change this to true..
-                displayLogin: value,
-                redirect: redirect
+                displayLogin: true,
+                redirect: redirect,
+                currentUser: "",
+                loggedIn: false
             });
         }
     }
 
     removeLoginPopUp(username)
     {
-        //if(this.state.displayLogin)
-        //{
-            //alert("USERNAME in router: " + username);
+        if(this.state.displayLogin)
+        {
+            if(username === undefined)
+            {
+                username = "";
+            }
             let loggedIn = false;
             if(username !== "")
             {
@@ -69,7 +80,7 @@ class Routes extends React.Component
                 currentUser: username,
                 loggedIn: loggedIn
             });
-        //}
+        }
     }
 
     updateLoggedIn(username)
@@ -95,7 +106,6 @@ class Routes extends React.Component
 
     render()
     {
-        //alert("rendering router");
         //<Route exact path="/movie" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} />} />
 
         console.log("username in router " + this.state.currentUser);

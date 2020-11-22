@@ -1,8 +1,10 @@
 import React from 'react';
 import Popup from 'reactjs-popup';
 import FollowerDisplay from './FollowerDisplay.js';
+import {Redirect, withRouter} from 'react-router-dom';
 import './css/forms.css';
 import style from './css/UserListPopUp.module.css';
+import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 class UserListPopUp extends React.Component {
     constructor(props) {
@@ -15,17 +17,12 @@ class UserListPopUp extends React.Component {
                 open: true,
                 // the user whose page the likes are being shown on
                 username: this.props.username,
-                followedUsers: [],
-                notFollowedUsers: [],
-                requester: "",
-                // true if this list is on the loggedin users page
-                currentUser: this.props.currentUser,
-                // not currently used by may be used in the future if users can click a button
-                // to follow usres in the list
-                redirect: false,
+                users: [],
+                loggedInUser: this.props.loggedInUser,
                 // the pop up can either be for Followers or Following
                 type: this.props.type,
-                loading: true
+                loading: true,
+                redirectToHome: false
             };
         }
         else
@@ -33,24 +30,22 @@ class UserListPopUp extends React.Component {
             this.state ={
                 // indicates if the popup is visible on the screen or not
                 open: true,
+                // username of user whose page this belongs to
                 username: this.props.username,
-                followedUsers: [],
-                notFollowedUsers: [],
-                requester: "",
-                // true if this list is on the loggedin users page
-                currentUser: this.props.currentUser,
-                // not currently used by may be used in the future if users can click a button
-                // to follow usres in the list
+                users: [],
+                loggedInUser: this.props.loggedInUser,
                 redirect: false,
                 // this is Likes
                 type: this.props.type,
                 reviewId: this.props.reviewId,
-                loading: true
+                loading: true,
+                redirectToHome: false
             };
         }
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.generateUserDisplay = this.generateUserDisplay.bind(this);
+        this.getUsers = this.getUsers.bind(this);
     }
 
     // load the data in here
@@ -64,26 +59,58 @@ class UserListPopUp extends React.Component {
         else
         {
             result = await this.getUsers();
+            console.log(result);
         }
         let status = result[0];
+        let message = result[1][0];
+        let user = result[1][1];
         if(status === 200)
         {
             this.setState({
-                followedUsers: result[1][0],
-                notFollowedUsers: result[1][1],
-                requester: result[1][2],
+                users: result[1][2],
+                loggedInUser: user,
                 loading: false
             });
-            let count = result[1][0].length + result[1][1].length;
+            this.props.updateLoggedIn(user);
             // this will update the profile header if the count of following
             // or followers has changed since loading originally
             // if this is for Likes on a post, this will update the like count
             // if it has changed since the page loaded
-            this.props.changeFunction(count);
+            this.props.changeFunction(result[1][2].length);
         }
         else
         {
-            alert("Failed to get users for the popup");
+            alert(message);
+            if(status === 401)
+            {
+                // not logged in so show login pop up and close this pop up
+                this.closeModal();
+                this.props.showLoginPopUp(false);
+            }
+            else if(status === 400)
+            {
+                // username not in correct format
+                // redirect to home?..or just say request failed
+                this.setState({
+                    redirectToHome: true,
+                    loading: false
+                });
+            }
+            else if(status === 404)
+            {
+                // user could not be found
+                // redirect to home or 404 page?
+                this.setState({
+                    redirectToHome: true,
+                    loading: false
+                });
+                this.props.updateLoggedIn("");
+            }
+            else
+            {
+                alert(message);
+                alert("Failed to get users for the popup");
+            }
         }
     }
 
@@ -110,14 +137,8 @@ class UserListPopUp extends React.Component {
     }
 
     // function to call the api to get the users to display
-    getUsers()
+    async getUsers()
     {
-        const requestOptions = {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-        };
-
         let url;
         if(this.state.type === "Followers")
         {
@@ -127,14 +148,11 @@ class UserListPopUp extends React.Component {
         {
             url = "http://localhost:9000/profile/" + this.state.username + "/getfollowing";
         }
-        let status = 0;
-        return fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result =>{
-                return [status, result];
+        let result = await apiGetJsonRequest(url)
+            .then(result => {
+                return result;
             });
+        return result;
     }
 
 
@@ -164,22 +182,56 @@ class UserListPopUp extends React.Component {
     // function to generate HTML for each section such as first name, last name, username, email
     generateUserDisplay()
     {
-        let usersArray = [];
-        this.state.followedUsers.forEach((user) => {
-            // path to users profile page
-            let userHtml = (<FollowerDisplay user={user} following={true} requester={this.state.requester} currentUser={this.state.currentUser} username={this.state.username} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction}/>);
-            usersArray.push(userHtml);
+        let followedUsers = [];
+        let notFollowedUsers = [];
+        this.state.users.forEach((user) => {
+            let userHtml;
+            let following = false;
+            // the if/else is used to sort the followed users so that they are shown first
+            if(user.Followers.length > 0)
+            {
+                userHtml = (<FollowerDisplay
+                                user={user}
+                                following={true}
+                                loggedInUser={this.state.loggedInUser}
+                                username={this.state.username}
+                                updateFunction={this.props.updateFunction}
+                                updateFollowersFunction={this.props.updateFollowersFunction}
+                                updateLoggedIn={this.props.updateLoggedIn}
+                                showLoginPopUp={this.props.showLoginPopUp}
+                                closeModal={this.closeModal}
+                            />);
+                followedUsers.push(userHtml);
+            }
+            else
+            {
+                userHtml = (<FollowerDisplay
+                                user={user}
+                                following={false}
+                                loggedInUser={this.state.loggedInUser}
+                                username={this.state.username}
+                                updateFunction={this.props.updateFunction}
+                                updateFollowersFunction={this.props.updateFollowersFunction}
+                                showLoginPopUp={this.props.showLoginPopUp}
+                                updateLoggedIn={this.props.updateLoggedIn}
+                                closeModal={this.closeModal}
+                            />);
+                notFollowedUsers.push(userHtml);
+            }
         });
-        this.state.notFollowedUsers.forEach((user) => {
-            // path to users profile page
-            let userHtml = (<FollowerDisplay user={user} following={false} requester={this.state.requester} currentUser={this.state.currentUser} username={this.state.username} updateFunction={this.props.updateFunction} updateFollowersFunction={this.props.updateFollowersFunction}/>);
-            usersArray.push(userHtml);
-        });
-        return usersArray;
+        return followedUsers.concat(notFollowedUsers);
 
     }
 
     render() {
+        if(this.state.loading)
+        {
+            return null;
+        }
+        if(this.state.redirectToHome)
+        {
+            return <Redirect to={"/"} />;
+        }
         // get the html for the users
         let userDisplay = this.generateUserDisplay();
 

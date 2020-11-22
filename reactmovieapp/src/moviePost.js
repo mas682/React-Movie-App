@@ -362,7 +362,8 @@ class MoviePost extends React.Component {
         event.preventDefault();
         if(!this.state.currentUser)
         {
-            this.props.showLoginPopUp(true);
+            // passed false so that it does not redirect
+            this.props.showLoginPopUp(false);
             return;
         }
         if(!this.state.liked)
@@ -477,7 +478,7 @@ class MoviePost extends React.Component {
         }
         if(key === "displayLikes" && !this.state.currentUser)
         {
-            this.props.showLoginPopUp(true);
+            this.props.showLoginPopUp(false);
             return;
         }
         this.setState({[key]: value});
@@ -568,7 +569,7 @@ class MoviePost extends React.Component {
 
         if(!this.state.loggedIn)
         {
-            this.props.showLoginPopUp(true, false);
+            this.props.showLoginPopUp(false);
             return;
         }
 

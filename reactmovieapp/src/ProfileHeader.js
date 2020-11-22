@@ -18,8 +18,6 @@ class ProfileHeader extends React.Component {
             // if this is the current user, set to true
             // if this is someone else, set to appropriate value
             following: false,
-            // this will be set by the api call
-            currentUser: false,
             followerCount: 0,
             followingCount: 0,
             displayFollowers: false,
@@ -127,17 +125,15 @@ class ProfileHeader extends React.Component {
                     username: username,
                     // get the users id from the response
                     id: result[1][0],
-                    currentUser: result[1][1],
-                    //following: result[1][2],
-                    following: true,
-                    followerCount: result[1][3],
-                    followingCount: result[1][4],
+                    following: result[1][1],
+                    followerCount: result[1][2],
+                    followingCount: result[1][3],
                     displayFollowers: false,
                     displayFollowed: false,
                     loading: false,
-                    loggedInUser: result[1][5]
+                    loggedInUser: result[1][4]
                 });
-                this.props.updateLoggedIn(result[1][5]);
+                this.props.updateLoggedIn(result[1][4]);
             }
             else
             {
@@ -158,7 +154,7 @@ class ProfileHeader extends React.Component {
         e.preventDefault();
         if(!this.state.loggedInUser)
         {
-            this.props.showLoginPopUp(true);
+            this.props.showLoginPopUp(false);
             return;
         }
         let parameters = {};
@@ -212,7 +208,7 @@ class ProfileHeader extends React.Component {
             });
             // will probably need to reload whole page in this case to determine if
             // reroute or not..
-            this.props.showLoginPopUp(true, false);
+            this.props.showLoginPopUp(false);
         }
         else if(status === 404 && message === "Unable to find user to follow")
         {
@@ -228,7 +224,6 @@ class ProfileHeader extends React.Component {
         {
             alert(message);
             this.setState({
-                currentUser: true,
                 loggedInUser: loggedInUser
             });
         }
@@ -266,7 +261,7 @@ class ProfileHeader extends React.Component {
             });
             // will probably need to reload whole page in this case to determine if
             // reroute or not..
-            this.props.showLoginPopUp(true, false);
+            this.props.showLoginPopUp(false);
         }
         else if(status === 404 && message === "Unable to find user to unfollow")
         {
@@ -280,7 +275,6 @@ class ProfileHeader extends React.Component {
         {
             alert(message);
             this.setState({
-                currentUser: true,
                 loggedInUser: loggedInUser
             });
         }
@@ -289,7 +283,7 @@ class ProfileHeader extends React.Component {
             alert(message);
             this.setState({
                 following: false,
-                loggedInUser
+                loggedInUser: loggedInUser
             });
         }
         else
@@ -303,7 +297,7 @@ class ProfileHeader extends React.Component {
         event.preventDefault();
         if(!this.state.loggedInUser)
         {
-            this.props.showLoginPopUp(true);
+            this.props.showLoginPopUp(false);
             return;
         }
         if(type === "followers")
@@ -372,23 +366,29 @@ class ProfileHeader extends React.Component {
                         type="Followers"
                         removeFunction={this.removePopUp}
                         updateFunction={this.updateFollowingCount}
-                        currentUser={this.state.currentUser}
                         changeFunction={this.changeFollowedCount}
+                        loggedInUser={this.state.loggedInUser}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
                     />;
         }
         if(this.state.displayFollowed)
         {
             popup = <UserListPopUp
                         username={this.state.username}
-                        type="Following" removeFunction={this.removePopUp}
+                        type="Following"
+                        removeFunction={this.removePopUp}
                         updateFunction={this.updateFollowingCount}
-                        currentUser={this.state.currentUser}
                         changeFunction={this.changeFollowingCount}
+                        loggedInUser={this.state.loggedInUser}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
                     />;
         }
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";
-        if(this.state.currentUser)
+        // if this header is for the logged in users page
+        if(this.state.username === this.state.loggedInUser)
         {
             followButton = "";
         }

@@ -95,12 +95,12 @@ class SignInPopup extends React.Component {
 				{
 					alert("You have successfully logged in");
 					console.log(user);
+					this.props.removeFunction(user.user);
 					this.setState({
 						open: false,
 						redirect: true,
 						username: user.user
 					});
-					this.props.removeFunction(user.user);
 				}
 				else if(status.result == "You are already logged in")
 				{

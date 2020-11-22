@@ -63,11 +63,11 @@ const selectPath = (cookie, req, res, cookieValid) =>
     {
         updatePassword(cookie, req, res);
     }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "getfollowers")
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "getfollowers" && cookieValid)
     {
         getFollowers(cookie, req, res);
     }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "getfollowing")
+    else if(Object.keys(req.params).length == 2 && req.params[0] === "getfollowing" && cookieValid)
     {
         getFollowing(cookie, req, res);
     }
@@ -89,7 +89,7 @@ const selectPath = (cookie, req, res, cookieValid) =>
     }
     else if(!cookieValid)
     {
-        res.status(401).send("No cookie or cookie invalid");
+        res.status(401).send(["No cookie or cookie invalid", ""]);
     }
     // some unknow path given
     else
@@ -120,30 +120,44 @@ const getFollowers = async (cookie, req, res, cookieValid) =>
 {
 
     let username = req.params.userId;
-    let mutualFollowerIds = [];
-    // may want to do this somewhere else as the feed is also doing this..
-    let mutualFollowers = await models.User.getMutualFollowers(username, cookie.id);
-    // this could be very slow....
-    mutualFollowers.forEach((follower)=> {
-        mutualFollowerIds.push(follower.id);
-    });
-    let notMutualFollowers = await models.User.getNotFollowedFollowers(username, cookie.id, mutualFollowerIds);
-    res.status(200).send([mutualFollowers, notMutualFollowers, cookie.name]);
+    let userLength = username.length;
+    // limit usernames to 1-20 characters
+    if(userLength > 20 || userLength < 1)
+    {
+        res.status(400).send(["Username is invalid", cookie.id]);
+    }
+    // returns a empty array if no followers
+    // null if invalid user
+    let followers = await models.User.getFollowers(username, cookie.id);
+    if(followers === null)
+    {
+        res.status(404).send(["The user could not be found", cookie.name]);
+    }
+    else
+    {
+        res.status(200).send(["Users followers found",cookie.name, followers]);
+    }
 }
 
 // this function will return a users following for their page
 const getFollowing = async (cookie, req, res) =>
 {
     let username = req.params.userId;
-    let mutualFollowingIds = [];
-    let mutualFollowing = await models.User.getMutualFollowing(username, cookie.id);
-    // this could be very slow...
-    mutualFollowing.forEach((follower)=> {
-        mutualFollowingIds.push(follower.id);
-    });
-    let notMutualFollowing = await models.User.getNotFollowedFollowing(username, cookie.id, mutualFollowingIds);
-    res.status(200).send([mutualFollowing, notMutualFollowing, cookie.name]);
-
+    let userLength = username.length;
+    // limit usernames to 1-20 characters
+    if(userLength > 20 || userLength < 1)
+    {
+        res.status(400).send(["Username is invalid", cookie.id]);
+    }
+    let following = await models.User.getFollowing(username, cookie.id);
+    if(following === null)
+    {
+        res.status(404).send(["The user could not be found", cookie.name]);
+    }
+    else
+    {
+        res.status(200).send(["Users following users found",cookie.name, following]);
+    }
 }
 
 // function to get data for the users profile header
@@ -162,11 +176,8 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
             res.status(404).send(["Unable to find the requested user", cookie.name]);
             return;
         }
-        // boolean to indicate if the requester and username are the same
-        let currentUser = false;
         // boolean to indicate if the requester if following the user
         let followed = false;
-
         // get the number of followers the user has
         let followerCount = (await user.getFollowers()).length;
         // get the number of following users the user has
@@ -177,12 +188,8 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
         if(cookieValid)
         {
             loggedInUser = cookie.name;
-            if(cookie.name === user.username)
-            {
-                currentUser = true;
-            }
             // current user looking at another page
-            else
+            if(loggedInUser !== user.username)
             {
                 // see if the user they are looking at has them as a follower
                 let following = await user.getFollowers( {where: {id: cookie.id} } );
@@ -193,7 +200,7 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
                 }
             }
         }
-        res.status(200).send([user.id, currentUser, followed, followerCount, followingCount, loggedInUser]);
+        res.status(200).send([user.id, followed, followerCount, followingCount, loggedInUser]);
     });
 }
 
