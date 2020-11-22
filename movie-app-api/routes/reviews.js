@@ -24,7 +24,9 @@ const review = (req, res, next) =>
             else
             {
                 console.log("HERE1");
-                res.status(401).send("You are not logged in");
+                res.status(401).send({
+                    message:"You are not logged in",
+                    requester: ""});
             }
         });
     }
@@ -32,7 +34,9 @@ const review = (req, res, next) =>
     else
     {
         console.log("HERE2");
-        res.status(401).send("You are not logged in");
+        res.status(401).send({
+            message:"You are not logged in",
+            requester: ""});
     }
 
 };
@@ -97,7 +101,9 @@ const selectPath = (cookie, req, res) =>
     // some unknow path given
     else
     {
-        res.status(404).send("The review path sent to the server does not exist");
+        res.status(404).send({
+            message:"The review path sent to the server does not exist",
+            requester: cookie.name});
     }
 };
 
@@ -407,18 +413,41 @@ const addBadTags = (badString, review, userId) => {
 const getLikes = async (cookie, req, res) =>
 {
     let reviewId = req.body.reviewId;
+    if(reviewId === undefined)
+    {
+        res.status(400).send({
+            message:"Review ID is invalid",
+            requester: cookie.id
+        });
+        return;
+    }
+    else if(isNaN(reviewId) || reviewId.toString().length > 15)
+    {
+        res.status(400).send({
+            message:"Review ID is invalid",
+            requester: cookie.id
+        });
+        return;
+    }
+    // test to make sure valid number as well
     // holds the ids of the users who are already followed
-    let followedIds = [];
-    // get the users who liked the post that the requester follows
-    let followedUsers = await models.Review.getFollowingFromLikes(reviewId, cookie.id, models);
-    // this could be very slow....
-    followedUsers.forEach((user)=> {
-        followedIds.push(user.id);
-    });
-    // get the users who liked the post taht the requester does not follow
-    let notFollowedUsers = await models.Review.getNotFollowingFromLikes(reviewId, cookie.id, followedIds, models);
-    // return the followed users, not followed users, and the username of the requesting user
-    res.status(200).send([followedUsers, notFollowedUsers, cookie.name]);
+    let usersWhoLiked = await models.Review.getLikes(reviewId, cookie.id, models);
+    if(usersWhoLiked === null)
+    {
+        res.status(404).send({
+            message: "The review could not be found",
+            requester: cookie.name
+         });
+    }
+    else
+    {
+        res.status(200).send({
+            message: "Reviews likes found",
+            requester: cookie.name,
+            users: usersWhoLiked
+         });
+    }
+
 }
 
 

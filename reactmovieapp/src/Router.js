@@ -91,6 +91,7 @@ class Routes extends React.Component
             loggedIn = true;
         }
         // do not cause rerender if state not changing
+        //alert("Update loggedin: " + this.state.currentUser + " " + username + " loggedin: " + this.state.loggedIn + " " + loggedIn);
         if(this.state.currentUser === username && this.state.loggedIn === loggedIn)
         {
             return;
@@ -109,8 +110,8 @@ class Routes extends React.Component
         //<Route exact path="/movie" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} />} />
 
         console.log("username in router " + this.state.currentUser);
+        //alert("Router: " + this.state.currentUser);
         return (<React.Fragment>
-
             <Router history={history}>
                 <Header currentUser={this.state.currentUser} loggedIn={this.state.loggedIn} updateLoggedIn={this.updateLoggedIn} redirectOnLogin={this.state.redirect} showLoginPopUp={this.state.displayLogin} removeLoginPopUp={this.removeLoginPopUp}/>
                 <main>
@@ -122,7 +123,7 @@ class Routes extends React.Component
                         <Route exact path="/new_releases" render={(props)=> <MovieFilterPage {...props} type="New Releases" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/>}/>
     					<Route exact path="/movieInfo/" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn}/>}/>
                         <Route exact path="/profile/:id" render={()=> <UserProfile updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} removeLoginPopUp={this.removeLoginPopUp} currentUser={this.state.currentUser}/> } />
-                        <Route exact path="/profile/:id/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn}/> } />
+                        <Route exact path="/profile/:id/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/> } />
                         <Route exact path="/settings" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn}/>} />
                         <Route exact path="/movie/:id" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} />} />
                     </Switch>

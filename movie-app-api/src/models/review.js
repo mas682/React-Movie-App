@@ -195,6 +195,26 @@ const review = (sequelize, DataTypes) => {
         return reviews;
     }
 
+    Review.getLikes = async (reviewId, userId, models) => {
+        let review = await Review.findOne({where: {id: reviewId}});
+        if(review === null)
+        {
+            return null;
+        }
+        let usersWhoLiked = await review.getLikes({
+            attributes: ["username"],
+            include: [
+                {
+                    model: models.User,
+                    as: "Followers",
+                    attributes:["username"],
+                    where: {id: userId},
+                    required: false
+                }
+            ]
+        });
+        return usersWhoLiked;
+    };
 
     // function to return all users from a list of users who liked a post that
     // the requesting user follows

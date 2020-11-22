@@ -14,7 +14,8 @@ class FollowerDisplay extends React.Component {
             loggedInUser: this.props.loggedInUser,
             // users whose page the likes are on if on a likes page
             username: this.props.username,
-            redirectToHome: false
+            redirectToHome: false,
+            type: this.props.type
         };
         this.generateFollowButton = this.generateFollowButton.bind(this);
         this.followHandler = this.followHandler.bind(this);
@@ -47,12 +48,11 @@ class FollowerDisplay extends React.Component {
         {
             return;
         }
-        url = "http://localhost:9000/profile/abc/follow";
         apiPostJsonRequest(url, parameters)
             .then(result =>{
                 let status = result[0];
-                let message = result[1][0];
-                let loggedInUser = result[1][1];
+                let message = result[1].message;
+                let loggedInUser = result[1].requester;
                 this.props.updateLoggedIn(loggedInUser);
                 if(type === "follow")
                 {
@@ -74,16 +74,19 @@ class FollowerDisplay extends React.Component {
                 following: true,
                 loggedInUser: loggedInUser
             });
-            // if this is the current user, update their following count
-            if(loggedInUser === this.state.username)
+            if(this.state.type !== "Likes")
             {
-                this.props.updateFunction(1);
-            }
-            // if the clicked on username to follow is the user whose page we are on
-            // update their follower count
-            else if(this.state.user.username === this.state.username)
-            {
-                this.props.updateFollowersFunction(1);
+                // if this is the current user, update their following count
+                if(loggedInUser === this.state.username)
+                {
+                    this.props.updateFunction(1);
+                }
+                // if the clicked on username to follow is the user whose page we are on
+                // update their follower count
+                else if(this.state.user.username === this.state.username)
+                {
+                    this.props.updateFollowersFunction(1);
+                }
             }
         }
         else if(status === 401)

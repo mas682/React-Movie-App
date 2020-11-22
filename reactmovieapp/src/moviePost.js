@@ -866,7 +866,16 @@ class MoviePost extends React.Component {
         {
             // currentUser is false as we do not want the updateFunction called here
             // the updateFunction is used to only update the profile headers follower/following count
-            likesPopUp = <UserListPopUp reviewId={this.state.id} type="Likes" removeFunction={this.changeState} updateFunction={null} currentUser={false} changeFunction={this.changeLikes}/>;
+            likesPopUp = <UserListPopUp
+                            reviewId={this.state.id}
+                            type="Likes"
+                            removeFunction={this.changeState}
+                            updateFunction={null}
+                            loggedInUser={this.state.currentUser}
+                            changeFunction={this.changeLikes}
+                            updateLoggedIn={this.props.updateLoggedIn}
+                            showLoginPopUp={this.props.showLoginPopUp}
+                        />;
         }
         return likesPopUp;
     }

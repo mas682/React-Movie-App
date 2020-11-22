@@ -114,6 +114,7 @@ class UserProfile extends React.Component {
         {
             return <Redirect to={"/"} />;
         }
+        //alert("PROFILE: " + this.state.currentUser);
         return (
 
             <div className={style5.mainBodyContainer}>

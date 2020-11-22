@@ -34,7 +34,6 @@ class UserListPopUp extends React.Component {
                 username: this.props.username,
                 users: [],
                 loggedInUser: this.props.loggedInUser,
-                redirect: false,
                 // this is Likes
                 type: this.props.type,
                 reviewId: this.props.reviewId,
@@ -46,6 +45,7 @@ class UserListPopUp extends React.Component {
         this.changeHandler = this.changeHandler.bind(this);
         this.generateUserDisplay = this.generateUserDisplay.bind(this);
         this.getUsers = this.getUsers.bind(this);
+        this.getLikesResultsHandler = this.getLikesResultsHandler.bind(this);
     }
 
     // load the data in here
@@ -59,81 +59,19 @@ class UserListPopUp extends React.Component {
         else
         {
             result = await this.getUsers();
-            console.log(result);
         }
+        console.log(result);
         let status = result[0];
-        let message = result[1][0];
-        let user = result[1][1];
-        if(status === 200)
+        let message = result[1].message;
+        let user = result[1].requester;
+        if(this.state.type === "Likes")
         {
-            this.setState({
-                users: result[1][2],
-                loggedInUser: user,
-                loading: false
-            });
-            this.props.updateLoggedIn(user);
-            // this will update the profile header if the count of following
-            // or followers has changed since loading originally
-            // if this is for Likes on a post, this will update the like count
-            // if it has changed since the page loaded
-            this.props.changeFunction(result[1][2].length);
+            this.getLikesResultsHandler(status, message, user, result);
         }
         else
         {
-            alert(message);
-            if(status === 401)
-            {
-                // not logged in so show login pop up and close this pop up
-                this.closeModal();
-                this.props.showLoginPopUp(false);
-            }
-            else if(status === 400)
-            {
-                // username not in correct format
-                // redirect to home?..or just say request failed
-                this.setState({
-                    redirectToHome: true,
-                    loading: false
-                });
-            }
-            else if(status === 404)
-            {
-                // user could not be found
-                // redirect to home or 404 page?
-                this.setState({
-                    redirectToHome: true,
-                    loading: false
-                });
-                this.props.updateLoggedIn("");
-            }
-            else
-            {
-                alert(message);
-                alert("Failed to get users for the popup");
-            }
+            this.getUsersResultsHandler(status, message, user, result);
         }
-    }
-
-    // function to call the api to get the users who liked the post
-    getLikes()
-    {
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                reviewId: this.state.reviewId
-            })
-        };
-
-        let status = 0;
-        return fetch("http://localhost:9000/review/getlikes", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result =>{
-                return [status, result];
-            });
     }
 
     // function to call the api to get the users to display
@@ -153,6 +91,124 @@ class UserListPopUp extends React.Component {
                 return result;
             });
         return result;
+    }
+
+    // function to call the api to get the users who liked the post
+    async getLikes()
+    {
+        let url = "http://localhost:9000/review/getlikes";
+        let params = {reviewId: this.state.reviewId};
+        return await apiPostJsonRequest(url, params);
+    }
+
+    getUsersResultsHandler(status, message, user, result)
+    {
+        if(status === 200)
+        {
+            this.setState({
+                users: result[1].users,
+                loggedInUser: user,
+                loading: false
+            });
+            this.props.updateLoggedIn(user);
+            // this will update the profile header if the count of following
+            // or followers has changed since loading originally
+            // if this is for Likes on a post, this will update the like count
+            // if it has changed since the page loaded
+            this.props.changeFunction(result[1].users.length);
+        }
+        else
+        {
+            alert(message);
+            if(status === 401)
+            {
+                // not logged in so show login pop up and close this pop up
+                this.closeModal();
+                this.props.showLoginPopUp(false);
+            }
+            else if(status === 400)
+            {
+                // username not in correct format
+                // redirect to home?..or just say request failed
+                this.setState({
+                    redirectToHome: true,
+                    loading: false
+                });
+                this.props.updateLoggedIn(user);
+            }
+            else if(status === 404)
+            {
+                // user could not be found for followers could not be found
+                // redirect to home or 404 page?
+                this.setState({
+                    redirectToHome: true,
+                    loading: false
+                });
+                this.props.updateLoggedIn(user);
+            }
+            else
+            {
+                this.setState({
+                    loading: false
+                })
+                alert(message);
+                alert("Failed to get users for the popup");
+            }
+        }
+    }
+
+    getLikesResultsHandler(status, message, user, result)
+    {
+        if(status === 200)
+        {
+            this.setState({
+                users: result[1].users,
+                loggedInUser: user,
+                loading: false
+            });
+            this.props.updateLoggedIn(user);
+            // if this is for Likes on a post, this will update the like count
+            // if it has changed since the page loaded
+            this.props.changeFunction(result[1].users.length);
+        }
+        else
+        {
+            alert(message);
+            if(status === 401)
+            {
+                // not logged in so show login pop up and close this pop up
+                this.closeModal();
+                this.props.showLoginPopUp(false);
+            }
+            else if(status === 400)
+            {
+                // review id invalid or undefined
+                // will want to do something to movie post such as indicating not correct
+                this.setState({
+                    loading: false,
+                    loggedInUser: user
+                });
+                this.props.updateLoggedIn(user);
+                this.closeModal();
+            }
+            else if(status === 404)
+            {
+                // review could not be found, same issue as above
+                this.setState({
+                    loading: false,
+                    loggedInUser: user
+                });
+                this.props.updateLoggedIn(user);
+            }
+            else
+            {
+                this.setState({
+                    loading: false
+                });
+                alert(message);
+                alert("Failed to get users for the popup");
+            }
+        }
     }
 
 
@@ -200,6 +256,7 @@ class UserListPopUp extends React.Component {
                                 updateLoggedIn={this.props.updateLoggedIn}
                                 showLoginPopUp={this.props.showLoginPopUp}
                                 closeModal={this.closeModal}
+                                type={this.state.type}
                             />);
                 followedUsers.push(userHtml);
             }
@@ -215,6 +272,7 @@ class UserListPopUp extends React.Component {
                                 showLoginPopUp={this.props.showLoginPopUp}
                                 updateLoggedIn={this.props.updateLoggedIn}
                                 closeModal={this.closeModal}
+                                type={this.state.type}
                             />);
                 notFollowedUsers.push(userHtml);
             }

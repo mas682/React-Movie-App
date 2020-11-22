@@ -101,44 +101,69 @@ class ProfileHeader extends React.Component {
     componentDidUpdate(prevProps, prevState)
     {
         // if the changing from one users profile page to another
-        if(this.props.username !== prevState.username)
+        if(!prevState.loading && this.props.username !== prevProps.username)
         {
+            alert("HERE1");
             this.getData(this.props.username);
         }
         // when the logged in user changes, do this
-        else if(this.props.currentUser !== prevState.loggedInUser)
+        else if(!prevState.loading && this.props.currentUser !== prevProps.currentUser)
         {
+            alert(this.props.currentUser + " " + prevProps.currentUser);
             this.getData(this.props.username);
         }
     }
 
     // function to handle getting data from api
-    getData = (username) => {
+    getData = async (username) => {
         let url = "http://localhost:9000/profile/" + username + "/user_info";
-        apiGetJsonRequest(url).then(result =>{
+        await apiGetJsonRequest(url).then(result =>{
             // set status to result[0]
             let status = result[0];
+            let message = result[1].message;
+            let loggedInUser = result[1].requester;
+            this.props.updateLoggedIn(loggedInUser);
             // see if request succeeded
             if(status === 200)
             {
                 this.setState({
                     username: username,
                     // get the users id from the response
-                    id: result[1][0],
-                    following: result[1][1],
-                    followerCount: result[1][2],
-                    followingCount: result[1][3],
+                    id: result[1].userID,
+                    following: result[1].following,
+                    followerCount: result[1].followerCount,
+                    followingCount: result[1].followingCount,
                     displayFollowers: false,
                     displayFollowed: false,
                     loading: false,
-                    loggedInUser: result[1][4]
+                    loggedInUser: loggedInUser
                 });
-                this.props.updateLoggedIn(result[1][4]);
+                this.props.updateLoggedIn(loggedInUser);
             }
             else
             {
-                alert(result[1][0]);
-                this.props.redirectToHome();
+                alert(message);
+                if(status === 404)
+                {
+                    this.setState({
+                        loading: false
+                    });
+                    // user not found
+                    this.props.redirectToHome();
+                }
+                else if(status === 400)
+                {
+                    // request not understood due to invalid username format
+                    this.setState({
+                        loading: false
+                    });
+                }
+                else
+                {
+                    this.setState({
+                        loading: false
+                    });
+                }
             }
         });
     }
@@ -174,8 +199,8 @@ class ProfileHeader extends React.Component {
         apiPostJsonRequest(url, parameters)
             .then(result =>{
                 let status = result[0];
-                let message = result[1][0];
-                let loggedInUser = result[1][1];
+                let message = result[1].message;
+                let loggedInUser = result[1].requester;
                 this.props.updateLoggedIn(loggedInUser);
                 if(type === "follow")
                 {

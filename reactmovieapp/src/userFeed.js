@@ -43,7 +43,7 @@ class UserFeed extends React.Component {
                     loading: false
                 });
                 console.log(this.state.username);
-                this.props.updateLoggedIn(this.state.username, true);
+                this.props.updateLoggedIn(this.state.username);
             }
             else
             {
@@ -55,7 +55,7 @@ class UserFeed extends React.Component {
                         redirect: true,
                         redirectLogin: true
                     });
-                    this.props.updateLoggedIn("", false);
+                    this.props.updateLoggedIn("");
                 }
                 this.setState({
                     loading: false,
