@@ -89,7 +89,10 @@ const selectPath = (cookie, req, res, cookieValid) =>
     }
     else if(!cookieValid)
     {
-        res.status(401).send(["No cookie or cookie invalid", ""]);
+        res.status(401).send({
+            message: "No cookie or cookie invalid",
+            requester: ""
+        });
     }
     // some unknow path given
     else
@@ -254,13 +257,33 @@ const getReviews = async (cookie, req, res, cookieValid) =>
 {
     //let username = cookie.name;
     let username = req.params.userId;
-    console.log(username);
-    // find a user by their login
+    if(username === undefined)
+    {
+        res.status(400).send({
+            message: "Username is invalid",
+            requester: cookie.id
+        });
+        return;
+    }
+    let userLength = username.length;
+    // limit usernames to 1-20 characters
+    if(userLength > 20 || userLength < 1)
+    {
+        res.status(400).send({
+            message: "Username is invalid",
+            requester: cookie.id
+        });
+        return;
+    }
+    // find the user by their login
     models.User.findByLogin(username)
     .then(async (user)=>{
         if(user === null)
         {
-            res.status(404).send(["Unable to find the requested user"]);
+            res.status(404).send({
+                message: "Unable to find the requested user",
+                requester: cookie.id
+            });
             return;
         }
         if(cookieValid)
@@ -268,9 +291,12 @@ const getReviews = async (cookie, req, res, cookieValid) =>
             models.Review.findByIds(models, [user.id], cookie.id)
             .then((reviews)=>
             {
-                console.log(reviews);
                 // send the reveiws associated with the user and their id
-                res.status(200).send([reviews, cookie.name]);
+                res.status(200).send({
+                    message: "Reviews sucessfully found for the user",
+                    requester: cookie.name,
+                    reviews: reviews
+                });
             });
         }
         else
@@ -279,7 +305,11 @@ const getReviews = async (cookie, req, res, cookieValid) =>
             .then((reviews)=>
             {
                 // send the reveiws associated with the user and their id
-                res.status(200).send([reviews, ""]);
+                res.status(200).send({
+                    message: "Reviews successfully found for the user",
+                    requester: cookie.name,
+                    reviews: reviews
+                });
             });
         }
     });

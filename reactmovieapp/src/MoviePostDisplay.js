@@ -43,42 +43,64 @@ class MoviePostDisplay extends React.Component {
     {
         let url = "http://localhost:9000/profile/" + username;
         apiGetJsonRequest(url).then(result =>{
-            this.checkApiResults(result, username);
+            let status = result[0];
+            let message = result[1].message;
+            let user = result[1].requester;
+            this.checkApiResults(status, message, user, result, username);
         });
     }
 
-    checkApiResults(result, username)
+    checkApiResults(status, message, user, result, username)
     {
-        let status = result[0];
         if(status == 200)
         {
-            let oldCount = this.state.posts.length;
-            // consider putting this part into a static function
-            if(result[1][1] !== "")
-            {
-                this.props.updateLoggedIn(result[1][1], true);
-            }
-            else
-            {
-                this.props.updateLoggedIn(result[1][1], false);
-            }
-            ///////////////^^^^^^^^^^^^^^^^^^^////////////////
-            if(result[1][0].length !== oldCount)
-            {
-                this.props.setPostCount(result[1][0].length);
-            }
+            let reviews = result[1].reviews;
+            this.props.updateLoggedIn(user);
+            this.props.setPostCount(reviews.length);
             this.setState({
                 username: username,
-                posts: result[1][0],
-                currentUser: result[1][1],
+                posts: reviews,
+                currentUser: user,
                 loading: false
             });
         }
         else
         {
-            alert("request for users posts failed");
-            this.props.redirectToHome();
-            return null;
+            alert(message);
+            if(status === 401)
+            {
+                // not an issue right now as all reviews are public
+            }
+            else if(status === 400)
+            {
+                // request failed due to invalid username
+                this.setState({
+                    username: username,
+                    posts: [],
+                    currentUser: user,
+                    loading: false
+                });
+                this.props.setPostCount(0);
+            }
+            else if(status === 404)
+            {
+                // request failed as user not found
+                this.setState({
+                    username: username,
+                    posts: [],
+                    currentUser: user,
+                    loading: false
+                });
+                this.props.setPostCount(0);
+                this.props.redirectToHome();
+            }
+            else
+            {
+                alert("request for users posts failed");
+                this.setState({
+                    loading: false
+                });
+            }
         }
     }
 
@@ -99,6 +121,7 @@ class MoviePostDisplay extends React.Component {
                             updateFollowersFunction={this.props.updateFollowersFunction}
                             showLoginPopUp={this.props.showLoginPopUp}
                             updateLoggedIn={this.props.updateLoggedIn}
+                            redirectToHome={this.props.redirectToHome}
                         />);
         });
         return (<React.Fragment>{posts}</React.Fragment>);

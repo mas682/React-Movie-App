@@ -195,6 +195,23 @@ const review = (sequelize, DataTypes) => {
         return reviews;
     }
 
+    // function to get a review and include a specific user who liked it
+    Review.getReviewWithLikedUser = async (reviewId, userId, models) =>
+    {
+        return models.Review.findOne({
+            where: {id: reviewId},
+            include: [
+                {
+                    model: models.User,
+                    as: "likes",
+                    where: {id: userId},
+                    required: false
+                }
+            ]
+        });
+    }
+
+    // function to get the users who liked a reveiw
     Review.getLikes = async (reviewId, userId, models) => {
         let review = await Review.findOne({where: {id: reviewId}});
         if(review === null)

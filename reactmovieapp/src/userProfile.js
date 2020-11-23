@@ -96,7 +96,10 @@ class UserProfile extends React.Component {
     // function to be utilized by MoviePostDisplay to update the count of the posts
     setPostCount(value)
     {
-        this.setState({postCount:value});
+        if(value !== this.state.postCount)
+        {
+            this.setState({postCount:value});
+        }
     }
 
     // this only gets called by the above method to update the state on

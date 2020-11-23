@@ -309,29 +309,68 @@ const addLike = (cookie, req, res) =>
 {
     // get the requesters id
     let userId = cookie.id;
+    let reviewId = req.body.reviewId;
+    if(reviewId === undefined)
+    {
+        console.log("Review id 1: " + reviewId);
+        res.status(400).send({
+            message: "The review ID is invalid",
+            requester: cookie.name
+        });
+        return;
+    }
+    else if(isNaN(reviewId) || reviewId.toString().length > 15)
+    {
+        console.log("Review ID 2: " + reviewId);
+        res.status(400).send({
+            message:"Review ID is invalid",
+            requester: cookie.name
+        });
+        return;
+    }
     // get the review
-    models.Review.findOne({
-        where: {id: req.body.reviewId}
-    }).then((review) => {
+    models.Review.getReviewWithLikedUser(reviewId, userId, models)
+    .then((review) => {
+        console.log("Movie review");
+        console.log(review);
         if(review === undefined)
         {
-            res.status(404).send("Review id does not match any reviews");
+            res.status(404).send({
+                message: "The review could not be found",
+                requester: cookie.name
+            });
         }
-        // may want to only let a user like their friends posts???
-        // add the like to the review based off the users id
-        review.addLike(userId)
-        .then((result) => {
-            // if undefined, a association already exists
-            if(result === undefined)
-            {
-                res.status(200).send("Post already liked");
-            }
-            else
-            {
-                res.status(200).send("Post liked");
-            }
-        });
-
+        else if(review.dataValues.likes.length < 1)
+        {
+            console.log(review.dataValues.likes);
+            // may want to only let a user like their friends posts???
+            // add the like to the review based off the users id
+            review.addLike(userId)
+            .then((result) => {
+                // if undefined, a association already exists
+                if(result === undefined)
+                {
+                    res.status(500).send({
+                        message: "Some error occurred trying to like the post",
+                        requester: cookie.name
+                    });
+                }
+                else
+                {
+                    res.status(200).send({
+                        message: "Post liked",
+                        requester: cookie.name
+                    });
+                }
+            });
+        }
+        else
+        {
+            res.status(400).send({
+                message: "Post already liked",
+                requester: cookie.name
+            });
+        }
     });
 };
 

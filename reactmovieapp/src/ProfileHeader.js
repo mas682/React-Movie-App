@@ -103,13 +103,11 @@ class ProfileHeader extends React.Component {
         // if the changing from one users profile page to another
         if(!prevState.loading && this.props.username !== prevProps.username)
         {
-            alert("HERE1");
             this.getData(this.props.username);
         }
         // when the logged in user changes, do this
         else if(!prevState.loading && this.props.currentUser !== prevProps.currentUser)
         {
-            alert(this.props.currentUser + " " + prevProps.currentUser);
             this.getData(this.props.username);
         }
     }
