@@ -8,6 +8,7 @@ import './css/MoviePost/moviePost.css';
 import ReviewForm from './ReviewForm.js';
 import Dropdown from 'react-bootstrap/Dropdown';
 import SignInPopup from './SignIn.js';
+import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 
 
@@ -42,26 +43,17 @@ class MoviePost extends React.Component {
                 time: this.props.data.time,
                 // the logged in users username
                 currentUser: this.props.data.currentUser,
-                // theusername of the user whose page this post is currently on
-                usersPage: this.props.data.usersPage,
                 // used to show likes pop up
                 displayLikes: false,
                 // used as boolean as to whether or not to show remove post buttons when clicked
                 removePost: false,
                 type: "popup",
                 // path to movies page
-                moviePath: this.props.data.moviePath,
-                // boolean used to indicate if user logged in
-                loggedIn: false
+                moviePath: this.props.data.moviePath
             };
         }
         else
         {
-            let loggedIn = false;
-            if(this.props.currentUser)
-            {
-                loggedIn = true;
-            }
             let moviePath = this.props.data.review.movie.title.replace(" ", "-");
             moviePath = "/movie/" + this.props.data.review.movie.id + "-" + moviePath;
             this.state = {
@@ -84,16 +76,13 @@ class MoviePost extends React.Component {
                 // id of the review post
                 id: this.props.data.review.id,
                 rating: this.props.data.review.rating,
-                /* no longer needed */
-                //comments: this.props.data.review.comments,
                 usedGoodButtons: MoviePost.getGoodButtons(this.props.data.review.goodTags),
                 usedBadButtons: MoviePost.getBadButtons(this.props.data.review.badTags),
+                // the review text
                 review: this.props.data.review.review,
                 time: this.props.data.review.createdAt,
                 // the logged in users username
                 currentUser: this.props.currentUser,
-                // theusername of the user whose page this post is currently on
-                usersPage: this.props.usersPage,
                 // used to show likes pop up
                 displayLikes: false,
                 // used as boolean as to whether or not to show remove post buttons when clicked
@@ -104,12 +93,7 @@ class MoviePost extends React.Component {
                 watched: false,
                 // is the movie on he users watchlist
                 watchList: false,
-                // used to diplay sign in if not logged in and user tries to do add movie to watch list,
-                // or like a post
-                displayLogin: false,
-                // boolean used to indicate if user logged in
-                loggedIn: loggedIn
-
+                props: this.props
             };
         }
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
@@ -133,7 +117,7 @@ class MoviePost extends React.Component {
         this.buttonHandler = this.buttonHandler.bind(this);
         this.movieWatchedResultsHandler = this.movieWatchedResultsHandler.bind(this);
         this.movieWatchListResultsHandler = this.movieWatchListResultsHandler.bind(this);
-        this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
+        this.removePostResultsHandler = this.removePostResultsHandler.bind(this);
     }
 
     /*
@@ -154,7 +138,10 @@ class MoviePost extends React.Component {
     {
         // if there was a change in the props movie id or
         // if there was a change in the user logged in
-        if(prevState.id !== nextProps.data.review.id || prevState.currentUser !== nextProps.currentUser)
+        // using props for id because if you set the state to null to remove the post
+        // it will not work correctly
+        // may need to use props for currentUser too?
+        if(prevState.props.data.review.id !== nextProps.data.review.id || prevState.currentUser !== nextProps.currentUser)
         {
             return MoviePost.newPropState(nextProps);
         }
@@ -170,11 +157,6 @@ class MoviePost extends React.Component {
 
     static newPropState(props)
     {
-        let loggedIn = false;
-        if(props.currentUser)
-        {
-            loggedIn = true;
-        }
         let moviePath = props.data.review.movie.title.replace(" ", "-");
         moviePath = "/movie/" + props.data.review.movie.id + "-" + moviePath;
         return {
@@ -205,8 +187,6 @@ class MoviePost extends React.Component {
             time: props.data.review.createdAt,
             // the logged in users username
             currentUser: props.currentUser,
-            // theusername of the user whose page this post is currently on
-            usersPage: props.usersPage,
             // used to show likes pop up
             displayLikes: false,
             // used as boolean as to whether or not to show remove post buttons when clicked
@@ -217,12 +197,8 @@ class MoviePost extends React.Component {
             watched: false,
             // is the movie on he users watchlist
             watchList: false,
-            // used to diplay sign in if not logged in and user tries to do add movie to watch list,
-            // or like a post
-            displayLogin: false,
-            // boolean used to indicate if user logged in
-            loggedIn: loggedIn
-
+            // storing the props as needed for getDerivedStateFromProps
+            props: props
         };
     }
 
@@ -343,6 +319,7 @@ class MoviePost extends React.Component {
 
     // function to update the liked count and sets liked to true/false
     // based on the value of value
+    // used by popup to update parents like button
     updateLiked(count, value)
     {
         let newCount = this.state.likeCount + count;
@@ -351,6 +328,32 @@ class MoviePost extends React.Component {
             likeCount: newCount
         });
     }
+
+    // function to change the likeCount of the post
+    changeLikes(count)
+    {
+        if(count !== this.state.likeCount)
+        {
+            this.setState({likeCount: count});
+        }
+    }
+
+    // function to send request to server to remove like from a post
+    removeLike()
+    {
+        let url = "http://localhost:9000/review/removelike";
+        let params = {reviewId: this.state.id};
+        return apiPostJsonRequest(url, params);
+    }
+
+    // function to send request to server to add a like to a post
+    postLike()
+    {
+        let url = "http://localhost:9000/review/addlike";
+        let params = {reviewId: this.state.id};
+        return apiPostJsonRequest(url, params);
+    }
+
     /*
         This sets the state of the post to liked or not depending on if
         it is currently liked or not when clicked
@@ -370,85 +373,169 @@ class MoviePost extends React.Component {
         {
             let result = await this.postLike();
             let status = result[0];
-            if(status === 200)
-            {
-                this.updateLiked(1, true);
-                if(this.state.type === "popup")
-                {
-                    // if the post was liked through the popup, update the parent moviePost state
-                    this.props.updateLiked(1, true);
-                }
-            }
-            else
-            {
-                alert(result[1]);
-            }
+            let message = result[1].message;
+            let user = result[1].requester;
+            this.likedResultsHandler(status, message, user);
         }
         else
         {
             let result = await this.removeLike();
             let status = result[0];
-            let count = this.state.likeCount - 1;
-            if(status === 200)
+            let message = result[1].message;
+            let user = result[1].requester;
+            this.removeLikeResultsHandler(status, message, user);
+        }
+    }
+
+    likedResultsHandler(status, message, user)
+    {
+        if(status === 200)
+        {
+            let newCount = this.state.likeCount + 1;
+            this.setState({
+                currentUser: user,
+                liked: true,
+                likeCount: newCount
+            });
+            if(this.state.type === "popup")
             {
-                let count = this.state.likeCount - 1;
-                this.updateLiked(-1, false);
+                // if the post was liked through the popup, update the parent moviePost state
+                this.props.updateLiked(1, true);
+            }
+            this.props.updateLoggedIn(user);
+        }
+        else
+        {
+            alert(message);
+            if(status === 400)
+            {
+                // review id invalid such as not provided, or invalid format
+                this.props.updateLoggedIn(user);
+                // review id invalid such as not provided, or invalid format
+                // or you already liked the post
+                if(message === "Post already liked")
+                {
+                    let newCount = this.state.likeCount + 1;
+                    this.setState({
+                        currentUser: user,
+                        liked: true,
+                        likeCount: newCount
+                    });
+                    if(this.state.type === "popup")
+                    {
+                        this.props.updateLiked(-1, false);
+                    }
+                }
+                else
+                {
+                    this.setState({
+                        currentUser: user,
+                    });
+                }
+            }
+            else if(status === 401)
+            {
+                // not logged in
+                this.setState({
+                    currentUser: user,
+                });
+                this.props.showLoginPopUp(false);
+                //if not logged in, this shouldn't have been visible..so remove it
                 if(this.state.type === "popup")
                 {
-                    // if the post was liked through the popup, update the parent moviePost state
-                    this.props.updateLiked(-1, false);
+                    this.props.closeFunction();
                 }
+            }
+            else if(status === 404)
+            {
+                // review not found on server
+                // will need to remove the post somehow?
+                // may have to pass this to popup as props
+                this.removeFunction();
             }
             else
             {
-                alert(result[1]);
+                this.setState({
+                    currentUser: user,
+                });
             }
         }
     }
 
-    // function to send request to server to remove like from a post
-    removeLike()
+    removeLikeResultsHandler(status, message, user)
     {
-        // when removing, will need to update the list of users somehow...
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                reviewId: this.state.id
-            })
-        };
-
-        let status = 0;
-        return fetch("http://localhost:9000/review/removelike", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.text();
-            }).then(result =>{
-                return [status, result];
+        if(status === 200)
+        {
+            let newCount = this.state.likeCount - 1;
+            this.setState({
+                currentUser: user,
+                liked: false,
+                likeCount: newCount
             });
-    }
-
-    // function to send request to server to add a like to a post
-    postLike()
-    {
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                reviewId: this.state.id
-            })
-        };
-
-        let status = 0;
-        return fetch("http://localhost:9000/review/addlike", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.text();
-            }).then(result =>{
-                return [status, result];
-            });
+            if(this.state.type === "popup")
+            {
+                // if the post was liked through the popup, update the parent moviePost state
+                this.props.updateLiked(-1, false);
+            }
+            this.props.updateLoggedIn(user);
+        }
+        else
+        {
+            alert(message);
+            if(status === 400)
+            {
+                // review id invalid such as not provided, or invalid format
+                // or you already do not like the post
+                if(message === "Post already not liked")
+                {
+                    let newCount = this.state.likeCount - 1;
+                    this.setState({
+                        currentUser: user,
+                        liked: false,
+                        likeCount: newCount
+                    });
+                    if(this.state.type === "popup")
+                    {
+                        this.props.updateLiked(-1, false);
+                    }
+                }
+                else
+                {
+                    this.setState({
+                        currentUser: user
+                    });
+                }
+                this.props.updateLoggedIn(user);
+            }
+            else if(status === 401)
+            {
+                // not logged in
+                // don't think this is needed here as props will send it down anyways..
+                /*this.setState({
+                    currentUser: user
+                });
+                */
+                this.props.showLoginPopUp(false);
+                // if not logged in, this should not be up so remove it
+                if(this.state.type === "popup")
+                {
+                    this.props.closeFunction();
+                }
+            }
+            else if(status === 404)
+            {
+                // review could not be found
+                // will have to remove reveiw somehow..
+                // may have to pass this as props to popup..
+                this.removeFunction();
+            }
+            else
+            {
+                this.setState({
+                    currentUser: user
+                });
+            }
+        }
     }
 
     // function used to update the movie post after edited
@@ -511,52 +598,78 @@ class MoviePost extends React.Component {
 
 
     // function to handle deleting a post
-    removePost()
+    async removePost()
     {
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                reviewId: this.state.id,
-            })
-        };
-        let status = 0;
-        fetch("http://localhost:9000/review/removepost", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.text();
-            }).then(result => {
-                if(status == 200)
+        let url = "http://localhost:9000/review/removepost";
+        let params = {reviewId: this.state.id};
+        let result = await apiPostJsonRequest(url, params);
+        let status = result[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        this.removePostResultsHandler(status, message, requester);
+    }
+
+    removePostResultsHandler(status, message, user)
+    {
+        if(status == 200)
+        {
+            this.removeFunction();
+            this.props.updateLoggedIn(user);
+            if(this.state.type === "popup")
+            {
+                // cause the parent to remove the post
+                this.props.removePost();
+                // close the popup
+                this.props.closeFunction();
+            }
+        }
+        else
+        {
+            alert(message);
+            if(status === 400)
+            {
+                // bad format to movie id
+                this.props.updateLoggedIn(user);
+            }
+            else if(status === 404)
+            {
+                // review not found so remove it
+                this.removeFunction();
+                this.props.updateLoggedIn(user);
+                if(this.state.type === "popup")
                 {
-                    this.removeFunction();
-                    if(this.state.type === "popup")
-                    {
-                        // cause the parent to remove the post
-                        this.props.removePost();
-                        // close the popup
-                        this.props.closeFunction();
-                    }
+                    // cause the parent to remove the post
+                    this.props.removePost();
+                    // close the popup
+                    this.props.closeFunction();
+                }
+            }
+            else if(status === 401)
+            {
+                if(message === "You cannot remove another users post")
+                {
+                    this.props.updateLoggedIn(user);
+                    // may want to use the remove post handler instead..?
+                    this.setState({
+                        removePost: false
+                    });
                 }
                 else
                 {
-                    alert(result);
-                    if(result === "You cannot remove another users post")
-                    {
-                        this.setState({
-                            removePost: false
-                        })
-                    }
+                    // not logged in
+                    this.setState({
+                        removePost: false
+                    });
+                    this.props.updateLoggedIn(user);
+                    // if this is a private page, may want to do something else
+                    // but since all pages public for now, this is fine
+                    this.props.showLoginPopUp(false);
                 }
-            });
-    }
-
-    // function to change the likeCount of the post
-    changeLikes(count)
-    {
-        if(count !== this.state.likeCount)
-        {
-            this.setState({likeCount: count});
+            }
+            else
+            {
+                this.props.updateLoggedIn(user);
+            }
         }
     }
 
@@ -567,7 +680,7 @@ class MoviePost extends React.Component {
         event.preventDefault();
         event.stopPropagation();
 
-        if(!this.state.loggedIn)
+        if(!this.state.currentUser)
         {
             this.props.showLoginPopUp(false);
             return;
@@ -630,10 +743,9 @@ class MoviePost extends React.Component {
         if(status === 401)
         {
             this.props.updateLoggedIn("");
-            if(this.state.loggedIn)
+            if(this.state.currentUser)
             {
                 this.setState({
-                    loggedIn: false,
                     currentUser: "",
                     displaySignIn: true
                 })
@@ -647,7 +759,6 @@ class MoviePost extends React.Component {
             {
                 this.setState({
                     watchList: true,
-                    loggedIn: true,
                     currentUser: username
                 });
             }
@@ -655,7 +766,6 @@ class MoviePost extends React.Component {
             {
                 this.setState({
                     watchList: false,
-                    loggedIn: true,
                     currentUser: username
                 });
             }
@@ -664,7 +774,6 @@ class MoviePost extends React.Component {
                 alert(result[0]);
                 this.setState({
                     watchList: true,
-                    loggedIn: true,
                     currentUser: username
                 });
             }
@@ -673,7 +782,6 @@ class MoviePost extends React.Component {
                 alert(result[0]);
                 this.setState({
                     watchList: false,
-                    loggedIn: true,
                     currentUser: username
                 });
             }
@@ -690,10 +798,9 @@ class MoviePost extends React.Component {
         if(status === 401)
         {
             this.props.updateLoggedIn("");
-            if(this.state.loggedIn)
+            if(this.state.currentUser)
             {
                 this.setState({
-                    loggedIn: false,
                     currentUser: ""
                 })
             }
@@ -706,7 +813,6 @@ class MoviePost extends React.Component {
             {
                 this.setState({
                     watched: true,
-                    loggedIn: true,
                     currentUser: username
                 });
             }
@@ -714,7 +820,6 @@ class MoviePost extends React.Component {
             {
                 this.setState({
                     watched: false,
-                    loggedIn: true,
                     currentUser: username
                 });
             }
@@ -723,7 +828,6 @@ class MoviePost extends React.Component {
                 alert(message);
                 this.setState({
                     watched: true,
-                    loggedIn: true,
                     currentUser: username
                 });
             }
@@ -732,7 +836,6 @@ class MoviePost extends React.Component {
                 alert(message);
                 this.setState({
                     watched: false,
-                    loggedIn: true,
                     currentUser: username
                 });
             }
@@ -742,25 +845,6 @@ class MoviePost extends React.Component {
             }
         }
     }
-
-    signInRemoveFunction = (username) =>
-    {
-        let loggedIn = false;
-        let user = "";
-        if(username !== undefined)
-        {
-            loggedIn = true;
-            user = username;
-        }
-        this.props.updateLoggedIn(user);
-
-        this.setState({
-            displaySignIn: false,
-            loggedIn: loggedIn,
-            currentUser: username
-        });
-    }
-
 
     /*
         This function is used to generate the appropriate liked button based off of

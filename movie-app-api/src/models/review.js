@@ -209,7 +209,20 @@ const review = (sequelize, DataTypes) => {
                 }
             ]
         });
-    }
+    };
+
+    // function to return a review and the user who created it
+    Review.getReviewWithCreator = async(reviewId, models) =>
+    {
+        return models.Review.findOne({
+            where: {id: reviewId},
+            include: [{
+                model: models.User,
+                as: "user",
+                attributes: ["username", "id"]
+            }]
+        });
+    };
 
     // function to get the users who liked a reveiw
     Review.getLikes = async (reviewId, userId, models) => {

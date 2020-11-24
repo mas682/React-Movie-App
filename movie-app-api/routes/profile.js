@@ -257,11 +257,16 @@ const getReviews = async (cookie, req, res, cookieValid) =>
 {
     //let username = cookie.name;
     let username = req.params.userId;
+    let requester = "";
+    if(cookieValid)
+    {
+        requester = cookie.name;
+    }
     if(username === undefined)
     {
         res.status(400).send({
             message: "Username is invalid",
-            requester: cookie.id
+            requester: requester
         });
         return;
     }
@@ -271,7 +276,7 @@ const getReviews = async (cookie, req, res, cookieValid) =>
     {
         res.status(400).send({
             message: "Username is invalid",
-            requester: cookie.id
+            requester: requester
         });
         return;
     }
@@ -282,7 +287,7 @@ const getReviews = async (cookie, req, res, cookieValid) =>
         {
             res.status(404).send({
                 message: "Unable to find the requested user",
-                requester: cookie.id
+                requester: requester
             });
             return;
         }
@@ -294,7 +299,7 @@ const getReviews = async (cookie, req, res, cookieValid) =>
                 // send the reveiws associated with the user and their id
                 res.status(200).send({
                     message: "Reviews sucessfully found for the user",
-                    requester: cookie.name,
+                    requester: requester,
                     reviews: reviews
                 });
             });
@@ -307,7 +312,7 @@ const getReviews = async (cookie, req, res, cookieValid) =>
                 // send the reveiws associated with the user and their id
                 res.status(200).send({
                     message: "Reviews successfully found for the user",
-                    requester: cookie.name,
+                    requester: requester,
                     reviews: reviews
                 });
             });

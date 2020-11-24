@@ -35,7 +35,7 @@ const review = (req, res, next) =>
     {
         console.log("HERE2");
         res.status(401).send({
-            message:"You are not logged in",
+            message: "You are not logged in",
             requester: ""});
     }
 
@@ -255,48 +255,60 @@ const removePost = async (req, res, cookie) =>
 {
     // also need to verify this is the user that posted the comment...
     let reviewId = req.body.reviewId;
-    if(isNaN(reviewId))
+    if(reviewId === undefined)
     {
-        res.status(400).send("Valid review id not provided");
+        res.status(400).send({
+            message: "The review ID is invalid",
+            requester: cookie.name
+        });
+        return;
+    }
+    else if(isNaN(reviewId) || reviewId.toString().length > 15)
+    {
+        res.status(400).send({
+            message:"Review ID is invalid",
+            requester: cookie.name
+        });
+        return;
+    }
+
+    // try to get the review
+    let review = await models.Review.getReviewWithCreator(reviewId, models);
+    console.log("Review: ");
+    console.log(review);
+    if(review === null)
+    {
+        res.status(404).send({
+            message: "Review could not be found",
+            requester: cookie.name
+        });
     }
     else
     {
-        // try to get the comment
-        let review = await models.Review.findOne(
-            {
-                where: {id: reviewId},
-                include:[
-                    {
-                        model: models.User,
-                        as: "user",
-                        attributes: ["username", "id"]
-                    }
-                ]
-            }
-        );
-        if(review === undefined)
+        // currently only let the user who posted the review remove it
+        if(cookie.id !== review.user.id)
         {
-            res.status(404).send("Review could not be found");
+            res.status(401).send({
+                message: "You cannot remove another users post",
+                requester: cookie.name
+            });
         }
         else
         {
-            // currently only let the user who posted the review remove it
-            if(cookie.id !== review.user.id)
+            let result = await review.destroy();
+            if(result === undefined)
             {
-                res.status(401).send("You cannot remove another users post");
+                res.status(500).send({
+                    message: "Server failed to delete review for some unkown reason",
+                    requester: cookie.name
+                });
             }
             else
             {
-                let result = await review.destroy();
-                if(result === undefined)
-                {
-                    res.status(404).send("Server failed to delete review for some unkown reason");
-                }
-                else
-                {
-                    // returns a empty array on success
-                    res.status(200).send("Review successfully removed");
-                }
+                res.status(200).send({
+                    message: "Review successfully removed",
+                    requester: cookie.name
+                });
             }
         }
     }
@@ -333,16 +345,16 @@ const addLike = (cookie, req, res) =>
     .then((review) => {
         console.log("Movie review");
         console.log(review);
-        if(review === undefined)
+        if(review === null)
         {
             res.status(404).send({
                 message: "The review could not be found",
                 requester: cookie.name
             });
+            return;
         }
         else if(review.dataValues.likes.length < 1)
         {
-            console.log(review.dataValues.likes);
             // may want to only let a user like their friends posts???
             // add the like to the review based off the users id
             review.addLike(userId)
@@ -382,27 +394,68 @@ const removeLike = (cookie, req, res) =>
 {
     // the id of the requester
     let userId = cookie.id;
-    // get the review
-    models.Review.findOne({
-        where: {id: req.body.reviewId}
-    }).then((review) => {
-        if(review === undefined)
-        {
-            res.status(404).send("Review id does not match any reviews");
-        }
-        // may want to only let a user unlike their friends posts???
-        // remove the like from the post based off the requesters id
-        review.removeLike(userId)
-        .then((result) => {
-            if(result === undefined || result === 0)
-            {
-                res.status(200).send("Post was not previously liked");
-            }
-            else
-            {
-                res.status(200).send("Post like removed");
-            }
+    let reviewId = req.body.reviewId;
+    if(reviewId === undefined)
+    {
+        console.log("Review id 1: " + reviewId);
+        res.status(400).send({
+            message: "The review ID is invalid",
+            requester: cookie.name
         });
+        return;
+    }
+    else if(isNaN(reviewId) || reviewId.toString().length > 15)
+    {
+        console.log("Review ID 2: " + reviewId);
+        res.status(400).send({
+            message:"Review ID is invalid",
+            requester: cookie.name
+        });
+        return;
+    }
+    // get the review
+    models.Review.getReviewWithLikedUser(reviewId, userId, models)
+    .then((review) => {
+        console.log("Movie review");
+        console.log(review);
+        if(review === null)
+        {
+            res.status(404).send({
+                message: "The review could not be found",
+                requester: cookie.name
+            });
+            return;
+        }
+        else if(review.dataValues.likes.length > 0)
+        {
+            // may want to only let a user unlike their friends posts???
+            // remove the like from the post based off the requesters id
+            review.removeLike(userId)
+            .then((result) => {
+                // if undefined, a association already exists
+                if(result === undefined)
+                {
+                    res.status(500).send({
+                        message: "Some error occurred trying to remove like from the post",
+                        requester: cookie.name
+                    });
+                }
+                else
+                {
+                    res.status(200).send({
+                        message: "Post like removed",
+                        requester: cookie.name
+                    });
+                }
+            });
+        }
+        else
+        {
+            res.status(400).send({
+                message: "Post already not liked",
+                requester: cookie.name
+            });
+        }
 
     });
 }
