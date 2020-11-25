@@ -32,6 +32,7 @@ class MovieFilterPage extends React.Component {
         this.removeMovieDisplay = this.removeMovieDisplay.bind(this);
     }
 
+    remove this...
     componentWillReceiveProps(nextProps) {
         // currently any time props are received, this will update them
         // but may need to test the query string??

@@ -39,4 +39,52 @@ const verifyLogin= async (cookie)=>
     return valid;
 };
 
-export {router, verifyLogin};
+
+// function to validate that a parameter is actually a integer
+// res is the response to use
+// value is the parameter value
+// username is the logged in user
+// message is the message to return
+const validateIntegerParameter = (res, value, requester, message) => {
+    if(value === undefined)
+    {
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+    else if(isNaN(value) || value.toString().length > 15)
+    {
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+    return true;
+};
+
+const validateUsernameParameter = (res, username, requester, message) => {
+    if(username === undefined)
+    {
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+    let userLength = username.length;
+    // limit usernames to 1-20 characters
+    if(userLength > 20 || userLength < 1)
+    {
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+    return true;
+};
+
+export {router, verifyLogin, validateIntegerParameter, validateUsernameParameter};

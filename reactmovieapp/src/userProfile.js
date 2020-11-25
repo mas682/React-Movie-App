@@ -41,6 +41,10 @@ class UserProfile extends React.Component {
         {
             return UserProfile.setProfileUser(nextProps.match.params.id, nextProps.currentUser);
         }
+        else
+        {
+            return null;
+        }
     }
 
     // called after component was updated

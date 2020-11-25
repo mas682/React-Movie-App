@@ -66,6 +66,7 @@ class MoviePostDisplay extends React.Component {
         }
         else
         {
+            this.props.updateLoggedIn(user);
             alert(message);
             if(status === 401)
             {
@@ -114,6 +115,7 @@ class MoviePostDisplay extends React.Component {
         // generate the posts
         this.state.posts.forEach((p) => {
             posts.push(<MoviePost
+                            key={p.review.id}
                             data={p}
                             usersPage={this.state.username}
                             currentUser={this.state.currentUser}

@@ -106,6 +106,38 @@ const movie = (sequelize, DataTypes) => {
         Movie.belongsToMany(models.User, {as: "UsersWhoWatched", through: models.UsersWhoWatched, onDelete: 'CASCADE'});
     };
 
+    // function to get a movie and include a specific user who has it on their watch list
+    Movie.getMovieWithUserWatchList = async (movieId, userId, models) =>
+    {
+        return Movie.findOne({
+            where: {id: movieId},
+            include: [
+                {
+                    model: models.User,
+                    as: "UserWatchLists",
+                    where: {id: userId},
+                    required: false
+                }
+            ]
+        });
+    };
+
+    // function to get a movie and include a specific user who has watched it
+    Movie.getMovieWtithUserWatched = async (movieId, userId, models) =>
+    {
+        return Movie.findOne({
+            where: {id: movieId},
+            include: [
+                {
+                    model: models.User,
+                    as: "UsersWhoWatched",
+                    where: {id: userId},
+                    required: false
+                }
+            ]
+        });
+    };
+
     // function to handle the releaseDateFilters based off the query string passed in
     // key is the type of filter
     // value is the value to filter for

@@ -60,7 +60,6 @@ class UserListPopUp extends React.Component {
         {
             result = await this.getUsers();
         }
-        console.log(result);
         let status = result[0];
         let message = result[1].message;
         let user = result[1].requester;
@@ -120,6 +119,7 @@ class UserListPopUp extends React.Component {
         else
         {
             alert(message);
+            this.props.updateLoggedIn(user);
             if(status === 401)
             {
                 // not logged in so show login pop up and close this pop up
@@ -134,7 +134,6 @@ class UserListPopUp extends React.Component {
                     redirectToHome: true,
                     loading: false
                 });
-                this.props.updateLoggedIn(user);
             }
             else if(status === 404)
             {
@@ -144,7 +143,6 @@ class UserListPopUp extends React.Component {
                     redirectToHome: true,
                     loading: false
                 });
-                this.props.updateLoggedIn(user);
             }
             else
             {
@@ -174,6 +172,7 @@ class UserListPopUp extends React.Component {
         else
         {
             alert(message);
+            this.props.updateLoggedIn(user);
             if(status === 401)
             {
                 // not logged in so show login pop up and close this pop up
@@ -188,7 +187,6 @@ class UserListPopUp extends React.Component {
                     loading: false,
                     loggedInUser: user
                 });
-                this.props.updateLoggedIn(user);
                 this.closeModal();
             }
             else if(status === 404)
@@ -198,7 +196,6 @@ class UserListPopUp extends React.Component {
                     loading: false,
                     loggedInUser: user
                 });
-                this.props.updateLoggedIn(user);
             }
             else
             {

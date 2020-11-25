@@ -65,6 +65,47 @@ const review = (sequelize, DataTypes) => {
     // also liked by the requester
     Review.findByIds = async (models, ids, requesterId) =>
     {
+        let includeArray = [
+            {
+                model: models.User,
+                as: "user",
+                attributes: ["username", "id"]
+            },
+            {
+                model: models.GoodTag,
+                // included the id to make one less query needed to find tag
+                attributes:["id", "value"],
+                // do not include the association table
+                through: {attributes: []}
+            },
+            {
+                model: models.BadTag,
+                // included the id to make one less query needed to find tag
+                attributes: ["id", "value"],
+                through: {attributes: []}
+            },
+            {
+
+                model: models.User,
+                as: "likes",
+                required: false,
+                attributes: [
+                    // count the number of user id's found in each record and return it as
+                    // the attirube liked
+                    [sequelize.fn("COUNT", sequelize.col("user.id")), "liked"]
+                ],
+                through: {attributes: []},
+                seperate: true
+            },
+            {
+                    model: models.Movies,
+                    as: "movie",
+                    attributes: ["title", "id", "poster"],
+            }
+
+        ];
+        let groupByArray = ["review.id", "user.username", "user.id", "goodTags.id",
+            "badTags.id", "likes.id", "movie.title", "movie.id", "movie.poster"];
         // may need to eventually sort by time stamps if not doing it already
         let reviews = await Review.findAll({
             where: {
@@ -74,45 +115,8 @@ const review = (sequelize, DataTypes) => {
             // only get these attributes
             attributes: ["id", "rating", "review", "updatedAt", "createdAt"],
             // include the following models with the specified attributes
-            include:[
-                {
-                    model: models.User,
-                    as: "user",
-                    attributes: ["username", "id"]
-                },
-                {
-                    model: models.Movies,
-                    as: "movie",
-                    attributes: ["title", "id", "poster"]
-                },
-                {
-                    model: models.GoodTag,
-                    // included the id to make one less query needed to find tag
-                    attributes:["id", "value"],
-                    // do not include the association table
-                    through: {attributes: []}
-                },
-                {
-                    model: models.BadTag,
-                    // included the id to make one less query needed to find tag
-                    attributes: ["id", "value"],
-                    through: {attributes: []}
-                },
-                {
-
-                    model: models.User,
-                    as: "likes",
-                    required: false,
-                    attributes: [
-                        // count the number of user id's found in each record and return it as
-                        // the attirube liked
-                        [sequelize.fn("COUNT", sequelize.col("user.id")), "liked"]
-                    ],
-                    through: {attributes: []}
-                }
-            ],
-            group: ["review.id", "user.username", "user.id", "goodTags.id", "badTags.id", "likes.id", "movie.title", "movie.id", "movie.poster"
-            ]
+            include:includeArray,
+            group: groupByArray
         });
 
         // this will be really slow so will need fixed at some point

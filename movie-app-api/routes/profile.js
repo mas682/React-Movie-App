@@ -1,4 +1,4 @@
-import {verifyLogin} from './globals.js';
+import {verifyLogin, validateIntegerParameter, validateUsernameParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 
 // function to get the reviews associated with a users profile
@@ -121,16 +121,8 @@ const getProfiles = async (cookie, req, res, cookieValid) =>
 const getFollowers = async (cookie, req, res, cookieValid) =>
 {
     let username = req.params.userId;
-    let userLength = username.length;
-    // limit usernames to 1-20 characters
-    if(userLength > 20 || userLength < 1)
-    {
-        res.status(400).send({
-            message: "Username is invalid",
-            requester: cookie.id
-        });
-        return;
-    }
+    let valid = validateUsernameParameter(res, username, cookie.name, "Username is invalid");
+    if(!valid) return;
     // returns a empty array if no followers
     // null if invalid user
     let followers = await models.User.getFollowers(username, cookie.id);
@@ -155,16 +147,8 @@ const getFollowers = async (cookie, req, res, cookieValid) =>
 const getFollowing = async (cookie, req, res) =>
 {
     let username = req.params.userId;
-    let userLength = username.length;
-    // limit usernames to 1-20 characters
-    if(userLength > 20 || userLength < 1)
-    {
-        res.status(400).send({
-            message: "Username is invalid",
-            requester: cookie.id
-        });
-        return;
-    }
+    let valid = validateUsernameParameter(res, username, cookie.name, "Username is invalid");
+    if(!valid) return;
     let following = await models.User.getFollowing(username, cookie.id);
     if(following === null)
     {
@@ -190,16 +174,9 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
 {
     //let username = cookie.name;
     let username = req.params.userId;
-    let userLength = username.length;
-    // limit usernames to 1-20 characters
-    if(userLength > 20 || userLength < 1)
-    {
-        res.status(400).send({
-            message: "Username is invalid",
-            requester: cookie.id
-        });
-        return;
-    }
+    let loggedInUser = (cookieValid) ? cookie.name : "";
+    let valid = validateUsernameParameter(res, username, loggedInUser, "Username is invalid");
+    if(!valid) return;
     // find a user by their login
     models.User.findByLogin(username)
     .then(async (user)=>{
@@ -208,7 +185,7 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
         {
             res.status(404).send({
                 message:"Unable to find the requested user",
-                requester: cookie.name
+                requester: loggedInUser
             });
             return;
         }
@@ -219,11 +196,9 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
         // get the number of following users the user has
         let followingCount = (await user.getFollowing()).length;
 
-        let loggedInUser = "";
         // if the current user is looking at their own page
         if(cookieValid)
         {
-            loggedInUser = cookie.name;
             // current user looking at another page
             if(loggedInUser !== user.username)
             {
@@ -247,39 +222,14 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
     });
 }
 
-// could store index into array for each component
-// then set index in parent to indicate you know follow or do not follow
-// [user, following?]
-// some user??
-
 // function to get reviews for a specific user
 const getReviews = async (cookie, req, res, cookieValid) =>
 {
     //let username = cookie.name;
     let username = req.params.userId;
-    let requester = "";
-    if(cookieValid)
-    {
-        requester = cookie.name;
-    }
-    if(username === undefined)
-    {
-        res.status(400).send({
-            message: "Username is invalid",
-            requester: requester
-        });
-        return;
-    }
-    let userLength = username.length;
-    // limit usernames to 1-20 characters
-    if(userLength > 20 || userLength < 1)
-    {
-        res.status(400).send({
-            message: "Username is invalid",
-            requester: requester
-        });
-        return;
-    }
+    let requester = (cookieValid) ? cookie.name : "";
+    let valid = validateUsernameParameter(res, username, requester, "Username is invalid");
+    if(!valid) return;
     // find the user by their login
     models.User.findByLogin(username)
     .then(async (user)=>{
@@ -355,16 +305,8 @@ const followUser = (cookie, req, res) =>
     let requestingUser = cookie.name;
     // user to follows username
     let followUname = req.params.userId;
-    let userLength = followUname.length;
-    // limit usernames to 1-20 characters
-    if(userLength > 20 || userLength < 1)
-    {
-        res.status(400).send({
-            message: "Username to follow is invalid",
-            requester: cookie.id
-        });
-        return;
-    }
+    let valid = validateUsernameParameter(res, followUname, requestingUser, "Username to follow is invalid");
+    if(!valid) return;
     // get the user and see if the requester follows them
     models.User.findWithFollowing(followUname, cookie.id)
     .then((userToFollow) => {
@@ -421,16 +363,8 @@ const unfollowUser = (cookie, req, res) =>
 {
     let requestingUser = cookie.name;
     let unfollowUname = req.params.userId;
-    let userLength = unfollowUname.length;
-    // limit usernames to 1-20 characters
-    if(userLength > 20 || userLength < 1)
-    {
-        res.status(400).send({
-            message: "Username to unfollow is invalid",
-            requester: cookie.id
-        });
-        return;
-    }
+    let valid = validateUsernameParameter(res, unfollowUname, requestingUser, "Username to unfollow is invalid");
+    if(!valid) return;
     // get the user and see if the requester follows them
     models.User.findWithFollowing(unfollowUname, cookie.id)
     .then((userToUnfollow) => {
@@ -448,7 +382,8 @@ const unfollowUser = (cookie, req, res) =>
             {
                 res.status(400).send({
                     message: "User cannot unfollow themself",
-                    requester: requestingUser});
+                    requester: requestingUser
+                });
             }
             else
             {
@@ -464,7 +399,8 @@ const unfollowUser = (cookie, req, res) =>
                     {
                         res.status(200).send({
                             message: "User successfully unfollowed",
-                            requester: requestingUser});
+                            requester: requestingUser
+                        });
                     }
                 });
             }
@@ -591,178 +527,180 @@ const updateInfo = (cookie, req, res) =>
 const addToWatchList = async (cookie, req, res) =>
 {
     let username = cookie.name;
-    // find a user by their login
-    let user = await models.User.findByLogin(username);
-    // if in this function, already validated cookie
-    let loggedInUser = cookie.name;
-    if(user === null || user === undefined)
+    let movieId = req.body.movieId;
+    let valid = validateIntegerParameter(res, movieId, username, "The movie ID is invalid");
+    if(!valid) return;
+    // get the movie along with the user if they alraedy have it on their watch list
+    let movie = await models.Movies.getMovieWithUserWatchList(movieId, cookie.id, models);
+    if(movie === null || movie === undefined)
     {
-        res.status(404).send(["Could not find the user to add the movie to their watch list", loggedInUser]);
+        res.status(404).send({
+            message: "Could not find the movie to add to the users watch list",
+            requester: username
+        });
         return;
     }
-    else
+    if(movie.dataValues.UserWatchLists.length < 1)
     {
-        if(isNaN(req.body.movieId))
+        //let result = await user.addWatchList(movie.id);
+        let result = await movie.addUserWatchLists(cookie.id);
+        if(result === undefined)
         {
-            res.status(400).send(["The movie ID " + req.body.movieId + " is not a valid integer", loggedInUser]);
-            return;
-        }
-        // at this point, see if the user already has the movie on the watchlist?
-        let movie = await models.Movies.findOne({
-            where: {id: req.body.movieId}
-        });
-        if(movie === null || movie === undefined)
-        {
-            res.status(404).send(["Could not find the movie to add to the user watch list", loggedInUser]);
+            // if undefined, usually means the association already exists..
+            res.status(500).send({
+                message: "A error occurred trying to add the movie to the users watch list",
+                requester: username
+            });
         }
         else
         {
-            let result = await user.addWatchList(movie.id);
-            console.log("Adding movie to watch list");
-            console.log(result);
-            if(result === undefined)
-            {
-                res.status(200).send(["Movie already on watch list", loggedInUser]);
-            }
-            else
-            {
-                res.status(200).send(["Movie added to watch list", loggedInUser]);
-            }
+            res.status(200).send({
+                message: "Movie added to watch list",
+                requester: username
+            });
         }
+    }
+    else
+    {
+        res.status(400).send({
+            message: "The movie is already on the users watch list",
+            requester: username
+        });
     }
 };
 
 const removeFromWatchList = async (cookie, req, res) =>
 {
     let username = cookie.name;
-    // find a user by their login
-    let user = await models.User.findByLogin(username);
-    // if in this function, already validated cookie
-    let loggedInUser = cookie.name;
-    if(user === null || user === undefined)
+    let movieId = req.body.movieId;
+    let valid = validateIntegerParameter(res, movieId, username, "The movie ID is invalid");
+    if(!valid) return;
+    // get the movie along with the user if they alraedy have it on their watch list
+    let movie = await models.Movies.getMovieWithUserWatchList(movieId, cookie.id, models);
+    if(movie === null || movie === undefined)
     {
-        res.status(404).send(["Could not find the user to remove the movie from their watch list", loggedInUser]);
+        res.status(404).send({
+            message: "Could not find the movie to remove the movie from the users watch list",
+            requester: username
+        });
         return;
     }
-    else
+    if(movie.dataValues.UserWatchLists.length > 0)
     {
-        if(isNaN(req.body.movieId))
+        //let result = await user.addWatchList(movie.id);
+        let result = await movie.removeUserWatchLists(cookie.id);
+        if(result === undefined)
         {
-            res.status(400).send(["The movie ID " + req.body.movieId + " is not a valid integer", loggedInUser]);
-            return;
-        }
-        // at this point, see if the user already has the movie on the watchlist?
-        let movie = await models.Movies.findOne({
-            where: {id: req.body.movieId}
-        });
-        if(movie === null || movie === undefined)
-        {
-            res.status(404).send(["Could not find the movie to remove from the users watch list", loggedInUser]);
+            // if undefined, usually means the association already exists..
+            res.status(500).send({
+                message: "A error occurred trying to remove the movie from the users watch list",
+                requester: username
+            });
         }
         else
         {
-            let result = await user.removeWatchList(movie.id);
-            if(result === 1)
-            {
-                res.status(200).send(["Movie removed from watch list", loggedInUser]);
-            }
-            else if(result === 0)
-            {
-                res.status(200).send(["Movie already not on watch list", loggedInUser]);
-            }
-            else
-            {
-                res.status(200).send(["There was an error removing the movie from the watch list", loggedInUser]);
-            }
+            res.status(200).send({
+                message: "Movie removed from watch list",
+                requester: username
+            });
         }
+    }
+    else
+    {
+        res.status(400).send({
+            message: "The movie is already not on the users watch list",
+            requester: username
+        });
     }
 };
 
 const addToWatched = async (cookie, req, res) =>
 {
     let username = cookie.name;
-    // find a user by their login
-    let user = await models.User.findByLogin(username);
-    // if in this function, already validated cookie
-    let loggedInUser = cookie.name;
-    if(user === null || user === undefined)
+    let movieId = req.body.movieId;
+    let valid = validateIntegerParameter(res, movieId, username, "The movie ID is invalid");
+    if(!valid) return;
+    // get the movie along with the user if they alraedy have it on their watch list
+    let movie = await models.Movies.getMovieWtithUserWatched(movieId, cookie.id, models);
+    if(movie === null || movie === undefined)
     {
-        res.status(404).send(["Could not find the user to add the movie to their watched movies list", loggedInUser]);
+        res.status(404).send({
+            message: "Could not find the movie to add to the users watched list",
+            requester: username
+        });
         return;
     }
-    else
+    if(movie.dataValues.UsersWhoWatched.length < 1)
     {
-        if(isNaN(req.body.movieId))
+        //let result = await user.addWatchList(movie.id);
+        let result = await movie.addUsersWhoWatched(cookie.id);
+        if(result === undefined)
         {
-            res.status(400).send(["The movie ID " + req.body.movieId + " is not a valid integer", loggedInUser]);
-            return;
-        }
-        // at this point, see if the user already has the movie on the watchlist?
-        let movie = await models.Movies.findOne({
-            where: {id: req.body.movieId}
-        });
-        if(movie === null || movie === undefined)
-        {
-            res.status(404).send(["Could not find the movie to add to the user watch list", loggedInUser]);
+            // if undefined, usually means the association already exists..
+            res.status(500).send({
+                message: "A error occurred trying to add the movie to the users watched list",
+                requester: username
+            });
         }
         else
         {
-            let result = await user.addWatchedMovie(movie.id);
-            if(result === undefined)
-            {
-                res.status(200).send(["Movie already on movies watched list", loggedInUser]);
-            }
-            else
-            {
-                res.status(200).send(["Movie added to movies watched list", loggedInUser]);
-            }
+            res.status(200).send({
+                message: "Movie added to watched list",
+                requester: username
+            });
         }
+    }
+    else
+    {
+        res.status(400).send({
+            message: "The movie is already on the users watched list",
+            requester: username
+        });
     }
 };
 
 const removeFromWatched = async (cookie, req, res) =>
 {
     let username = cookie.name;
-    // find a user by their login
-    let user = await models.User.findByLogin(username);
-    // if in this function, already validated cookie
-    let loggedInUser = cookie.name;
-    if(user === null || user === undefined)
+    let movieId = req.body.movieId;
+    let valid = validateIntegerParameter(res, movieId, username, "The movie ID is invalid");
+    if(!valid) return;
+    // get the movie along with the user if they alraedy have it on their watch list
+    let movie = await models.Movies.getMovieWtithUserWatched(movieId, cookie.id, models);
+    if(movie === null || movie === undefined)
     {
-        res.status(404).send(["Could not find the user to remove the movie from their watched movies list", loggedInUser]);
+        res.status(404).send({
+            message: "Could not find the movie to remove from the users watched list",
+            requester: username
+        });
         return;
     }
-    else
+    if(movie.dataValues.UsersWhoWatched.length > 0)
     {
-        if(isNaN(req.body.movieId))
+        //let result = await user.addWatchList(movie.id);
+        let result = await movie.removeUsersWhoWatched(cookie.id);
+        if(result === undefined)
         {
-            res.status(400).send(["The movie ID " + req.body.movieId + " is not a valid integer", loggedInUser]);
-            return;
-        }
-        // at this point, see if the user already has the movie on the watchlist?
-        let movie = await models.Movies.findOne({
-            where: {id: req.body.movieId}
-        });
-        if(movie === null || movie === undefined)
-        {
-            res.status(404).send(["Could not find the movie to remove from the users watch list", loggedInUser]);
+            // if undefined, usually means the association already exists..
+            res.status(500).send({
+                message: "A error occurred trying to remove the movie to the users watched list",
+                requester: username
+            });
         }
         else
         {
-            let result = await user.removeWatchedMovie(movie.id);
-            if(result === 1)
-            {
-                res.status(200).send(["Movie removed from watched movies list", loggedInUser]);
-            }
-            else if(result === 0)
-            {
-                res.status(200).send(["Movie already not on watched movies list", loggedInUser]);
-            }
-            else
-            {
-                res.status(200).send(["An error occurred removing the movie from the watched movies list", loggedInUser]);
-            }
+            res.status(200).send({
+                message: "Movie removed from watched list",
+                requester: username
+            });
         }
+    }
+    else
+    {
+        res.status(400).send({
+            message: "The movie is already not on the users watched list",
+            requester: username
+        });
     }
 };
 

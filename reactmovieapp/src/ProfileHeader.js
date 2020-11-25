@@ -101,12 +101,12 @@ class ProfileHeader extends React.Component {
     componentDidUpdate(prevProps, prevState)
     {
         // if the changing from one users profile page to another
-        if(!prevState.loading && this.props.username !== prevProps.username)
+        if(!prevState.loading && (this.props.username !== prevProps.username))
         {
             this.getData(this.props.username);
         }
         // when the logged in user changes, do this
-        else if(!prevState.loading && this.props.currentUser !== prevProps.currentUser)
+        else if(!prevState.loading && (this.props.currentUser !== prevProps.currentUser))
         {
             this.getData(this.props.username);
         }
@@ -120,7 +120,6 @@ class ProfileHeader extends React.Component {
             let status = result[0];
             let message = result[1].message;
             let loggedInUser = result[1].requester;
-            this.props.updateLoggedIn(loggedInUser);
             // see if request succeeded
             if(status === 200)
             {
@@ -136,7 +135,6 @@ class ProfileHeader extends React.Component {
                     loading: false,
                     loggedInUser: loggedInUser
                 });
-                this.props.updateLoggedIn(loggedInUser);
             }
             else
             {
@@ -213,6 +211,7 @@ class ProfileHeader extends React.Component {
 
     followResultsHandler(status, message, loggedInUser)
     {
+        this.props.updateLoggedIn(loggedInUser);
         if(status === 200)
         {
             // user successfully followed
@@ -266,6 +265,7 @@ class ProfileHeader extends React.Component {
 
     unfollowResultsHandler(status, message, loggedInUser)
     {
+        this.props.updateLoggedIn(loggedInUser);
         // user successfully unfollowed
         if(status === 200)
         {
