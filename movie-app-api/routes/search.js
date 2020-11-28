@@ -91,27 +91,25 @@ const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 const getMovies = async (cookie, req, res, cookieValid) =>
 {
 	console.log(req.query);
-	let username = undefined;
-	if(cookieValid)
-	{
-		username = cookie.name;
-	}
+	// consider limiting number of query keys or query length...
+	let username = cookieValid ? cookie.name : "";
+	// returns true, movies on success, false on failure
 	let movies = await models.Movies.queryMovies(models, req.query, username);
-	let loggedInUser = "";
-	// if the current user is looking at their own page
-	if(cookieValid)
-	{
-		loggedInUser = cookie.name;
-	}
-
 	if(!movies[0])
 	{
 		// send the error message
-		res.status(404).send([movies[1], loggedInUser]);
+		res.status(404).send({
+			message: movies[1],
+			requester: username
+		});
 	}
 	else
 	{
-		res.status(200).send([movies[1], loggedInUser]);
+		res.status(200).send({
+			message: "Movies successfully found",
+			requester: username,
+			movies: movies[1]
+		});
 	}
 };
 

@@ -125,3 +125,77 @@
     white-space: pre;
     color: white;
 }
+/*  new for watchlist icons */
+.icons {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    margin-top: 2%;
+}
+
+.watchListIconContainer {
+    width: 10%;
+    display: flex;
+    justify-content: flex-start;
+    font-size: 2.5em;
+}
+
+.watchListIcon {
+    color: rgb(211, 217, 222, .4);
+}
+
+.watchListIconSelected {
+    color: red;
+}
+
+.watchListIcon:hover {
+    color: red;
+}
+
+.watchedIconContainer {
+    width: 10%;
+    display: flex;
+    justify-content: flex-start;
+    font-size: 2.5em;
+}
+
+.watchedIcon {
+    color: rgb(211, 217, 222, .4);
+}
+
+.watchedIconSelected {
+    color: #006400;
+}
+
+.watchListIconSelected:hover {
+    color: rgb(211, 217, 222, .4);
+}
+
+.watchedIconSelected:hover {
+    color: rgb(211, 217, 222, .4);
+}
+
+.watchedIcon:hover {
+    color: #006400;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  font-size: .5em;
+  background-color: black;
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  margin-left: 10px;
+  margin-top: 5px;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  font-weight: normal;
+}

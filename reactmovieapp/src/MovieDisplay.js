@@ -2,41 +2,51 @@ import React, { Component } from 'react';
 import {Link, Redirect, withRouter} from 'react-router-dom';
 import style from './css/Movies/MovieDisplay.module.css'
 import MovieDisplayPopUp from './MovieDisplayPopUp.js';
-import SignInPopup from './SignIn.js';
+import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
+    addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
+     from './StaticFunctions/UserResultsHandlers.js';
 
 class MovieDisplay extends React.Component {
     constructor(props){
         super(props);
 
-        this.setDisplayState(this.props);
+        let state = MovieDisplay.generateDisplayState(this.props);
+        this.state = state;
+        console.log(state);
 
         this.posterClickHandler = this.posterClickHandler.bind(this);
-        this.setDisplayState = this.setDisplayState.bind(this);
-        this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
         this.buttonHandler = this.buttonHandler.bind(this);
-        this.movieWatchListResultsHandler = this.movieWatchListResultsHandler.bind(this);
-        this.movieWatchedResultsHandler = this.movieWatchedResultsHandler.bind(this);
+        this.updateState = this.updateState.bind(this);
     }
 
-    // called when component receiving new props
-    // may or may not be needed
-    componentWillReceiveProps(nextProps) {
-        if(nextProps.movie.id !== this.state.id)
+
+    static getDerivedStateFromProps(nextProps, prevState)
+    {
+        if(prevState.id !== nextProps.movie.id)
         {
-            this.setDisplayState(nextProps);
+            return MovieDisplay.generateDisplayState(nextProps);
         }
-    };
+        else if(prevState.currentUser !== nextProps.currentUser)
+        {
+            return MovieDisplay.generateDisplayState(nextProps);
+        }
+        else
+        {
+            return null;
+        }
+    }
 
     // function to set the state for the movie display
     // called on initialization and whenever new props come in
-    setDisplayState(props)
+    static generateDisplayState(props)
     {
         let watchList = false;
         if(props.movie.UserWatchLists !== undefined)
         {
             if(props.movie.UserWatchLists.length > 0)
             {
-                if(props.movie.UserWatchLists[0].username === this.props.username)
+                if(props.movie.UserWatchLists[0].username === props.currentUser)
                 {
                     watchList = true;
                 }
@@ -47,24 +57,22 @@ class MovieDisplay extends React.Component {
         {
             if(props.movie.UsersWhoWatched.length > 0)
             {
-                if(props.movie.UsersWhoWatched[0].username === this.props.username)
+                if(props.movie.UsersWhoWatched[0].username === props.currentUser)
                 {
                     watched = true;
                 }
             }
         }
-        this.state = {
+        return {
             id: props.movie.id,
             poster: props.movie.poster,
             movie: props.movie,
             moviePopup: false,
-            loggedIn: props.loggedIn,
-            username: props.username,
+            currentUser: props.currentUser,
             watchList: watchList,
             watched: watched,
             index: props.index,
-            type: props.type,
-            displaySignIn: false
+            type: props.type
         };
     }
 
@@ -76,237 +84,107 @@ class MovieDisplay extends React.Component {
         });
     }
 
-    buttonHandler(event, type)
+    async buttonHandler(event, type)
     {
         event.preventDefault();
         event.stopPropagation();
 
-        if(!this.state.loggedIn)
+        if(!this.state.currentUser)
         {
-            this.setState({
-                displaySignIn: true
-            });
+            // will be dependent on the page..
+            this.props.showLoginPopUp(false);
             return;
         }
 
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                movieId: this.state.id
-            })
-        };
-
-        let status = 0;
         let url = "";
+        let params = {movieId: this.state.id};
         if(type === "watched")
         {
-            url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watched";
+            url = "http://localhost:9000/profile/" + this.state.currentUser + "/add_to_watched";
             if(this.state.watched)
             {
-                url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watched";
+                url = "http://localhost:9000/profile/" + this.state.currentUser + "/remove_from_watched";
             }
         }
         else if(type === "watchlist")
         {
-            url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watchlist";
+            url = "http://localhost:9000/profile/" + this.state.currentUser + "/add_to_watchlist";
             if(this.state.watchList)
             {
-                url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
+                url = "http://localhost:9000/profile/" + this.state.currentUser + "/remove_from_watchlist";
             }
         }
-        fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                if(status !== 401)
-                {
-                    return res.json();
-                }
-                else
-                {
-                    return res.text();
-                }
-            }).then(result =>{
-                if(type === "watched")
-                {
-                    this.movieWatchedResultsHandler(status, result);
-                }
-                else
-                {
-                    this.movieWatchListResultsHandler(status, result);
-                }
-            });
-    }
-
-
-    movieWatchListResultsHandler(status, result)
-    {
-        // not logged in/cookie not found
-        if(status === 401)
+        // send the request
+        let apiResult = await apiPostJsonRequest(url, params);
+        let status = apiResult[0];
+        let message = apiResult[1].message;
+        let requester = apiResult[1].requester;
+        let result;
+        if(type === "watched")
         {
-            this.props.updateLoggedIn("", false);
-            if(this.state.loggedIn)
+            if(!this.state.watched)
             {
-                this.setState({
-                    loggedIn: false,
-                    username: ""
-                })
+                result = addMovieToWatchedListResultsHandler(status, message, requester);
+            }
+            else
+            {
+                result = removeWatchedListMovieResultsHandler(status, message, requester, this.state.type);
+                // if the movie was removed from the watchlist page or should have not been there alredy
+                if(result.removeFromDiplay)
+                {
+                    this.props.removeMovieDisplay(this.state.index);
+                    this.props.updateLoggedIn(requester);
+                    return;
+                }
             }
         }
         else
         {
-            let username = result[1];
-            let message = result[0];
-            if(status === 200 && message === "Movie added to watch list")
+            if(!this.state.watchList)
             {
-                this.setState({
-                    watchList: true,
-                    loggedIn: true,
-                    username: username
-                });
-            }
-            else if(status === 200 && message === "Movie removed from watch list")
-            {
-                this.setState({
-                    watchList: false,
-                    loggedIn: true,
-                    username: username
-                });
-                if(this.state.type === "My Watch List")
-                {
-                    this.props.removeMovieDisplay(this.state.index);
-                }
-            }
-            else if(status === 200 && message === "Movie already on watch list")
-            {
-                alert(result[0]);
-                this.setState({
-                    watchList: true,
-                    loggedIn: true,
-                    username: username
-                });
-            }
-            else if(status === 200 && message === "Movie already not on watch list")
-            {
-                alert(result[0]);
-                this.setState({
-                    watchList: false,
-                    loggedIn: true,
-                    username: username
-                });
-                if(this.state.type === "My Watch List")
-                {
-                    this.props.removeMovieDisplay(this.state.index);
-                }
+                result = addMovieToWatchListResultsHandler(status, message, requester);
             }
             else
             {
-                alert(result[0]);
+                result = removeWatchListMovieResultsHandler(status, message, requester, this.state.type);
+                // if the movie was removed from the watchlist page or should have not been there alredy
+                if(result.removeFromDiplay)
+                {
+                    this.props.removeMovieDisplay(this.state.index);
+                    this.props.updateLoggedIn(requester);
+                    return;
+                }
             }
         }
-    }
 
-    movieWatchedResultsHandler(status, result)
-    {
-        // not logged in/cookie not found
-        if(status === 401)
+        if(result.movieNotFound)
         {
-            this.props.updateLoggedIn("", false);
-            if(this.state.loggedIn)
-            {
-                this.setState({
-                    loggedIn: false,
-                    username: ""
-                })
-            }
+            this.props.removeMovieDisplay(this.state.index);
+            this.props.updateLoggedIn(requester);
         }
         else
         {
-            let username = result[1];
-            let message = result[0];
-            if(status === 200 && message === "Movie added to movies watched list")
+            if(result.showLoginPopUp)
             {
-                this.setState({
-                    watched: true,
-                    loggedIn: true,
-                    username: username
-                });
-            }
-            else if(status === 200 && message === "Movie removed from watched movies list")
-            {
-                this.setState({
-                    watched: false,
-                    loggedIn: true,
-                    username: username
-                });
-                if(this.state.type === "My Watched Movies")
-                {
-                    this.props.removeMovieDisplay(this.state.index);
-                }
-            }
-            else if(status === 200 && message === "Movie already on movies watched list")
-            {
-                alert(message);
-                this.setState({
-                    watched: true,
-                    loggedIn: true,
-                    username: username
-                });
-            }
-            else if(status === 200 && message === "Movie already not on watched movies list")
-            {
-                alert(message);
-                this.setState({
-                    watched: false,
-                    loggedIn: true,
-                    username: username
-                });
-                if(this.state.type === "My Watched Movies")
-                {
-                    this.props.removeMovieDisplay(this.state.index);
-                }
+                // this will also update who is logged in
+                this.props.showLoginPopUp(true);
             }
             else
             {
-                alert(message);
+                this.setState(result.state);
+                this.props.updateLoggedIn(requester);
             }
         }
     }
 
-    signInRemoveFunction = (username) =>
+    // function called by popup when user adds/removes a movie to their watchlist or watchedlist
+    updateState(newState)
     {
-        let loggedIn = false;
-        if(username !== undefined)
-        {
-            this.props.updateLoggedIn(username, true);
-            loggedIn = true;
-        }
-        this.setState({
-            displaySignIn: false,
-            loggedIn: loggedIn,
-            username: username
-        });
+        this.setState(newState);
     }
 
-    render()
+    generateWatchListButton()
     {
-        let signInPopup = "";
-        if(this.state.displaySignIn)
-        {
-            signInPopup = <SignInPopup removeFunction={this.signInRemoveFunction} redirectOnLogin={false}/>;
-        }
-
-        let posterPath = "";
-        if(this.state.poster !== null)
-        {
-            posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
-        }
-        let moviePopup = "";
-        if(this.state.moviePopup)
-        {
-            moviePopup = <MovieDisplayPopUp movie={this.state.movie} removeFunction={this.posterClickHandler}/>;
-        }
         let watchListIcon = (
             <div className={`${style.watchListIconContainer}`}>
                 <i class={`fas fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
@@ -324,6 +202,11 @@ class MovieDisplay extends React.Component {
                 </div>
             )
         }
+        return watchListIcon;
+    }
+
+    generateWatchedListButton()
+    {
         let watchedIcon = (
             <div className={`${style.watchedIconContainer}`} >
                 <i class={`fas fa-ticket-alt ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
@@ -341,6 +224,35 @@ class MovieDisplay extends React.Component {
                 </div>
             );
         }
+        return watchedIcon;
+    }
+
+    render()
+    {
+        let posterPath = "";
+        if(this.state.poster !== null)
+        {
+            posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
+        }
+        let moviePopup = "";
+        if(this.state.moviePopup)
+        {
+            moviePopup = <MovieDisplayPopUp
+                            movie={this.state.movie}
+                            removeFunction={this.posterClickHandler}
+                            currentUser = {this.state.currentUser}
+                            watched = {this.state.watched}
+                            watchList = {this.state.watchList}
+                            removeMovieDisplay = {this.props.removeMovieDisplay}
+                            updateLoggedIn = {this.props.updateLoggedIn}
+                            index = {this.state.index}
+                            showLoginPopUp = {this.props.showLoginPopUp}
+                            type = {this.state.type}
+                            updateParentState = {this.updateState}
+                        />;
+        }
+        let watchListIcon = this.generateWatchListButton();
+        let watchedIcon = this.generateWatchedListButton();
 
         return (
             <div className={style.main}>
@@ -362,7 +274,6 @@ class MovieDisplay extends React.Component {
                     </div>
                 </div>
                 {moviePopup}
-                {signInPopup}
             </div>
         )
     }

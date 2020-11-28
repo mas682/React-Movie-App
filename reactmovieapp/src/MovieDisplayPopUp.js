@@ -2,6 +2,12 @@ import React from 'react';
 import Popup from 'reactjs-popup';
 import style from './css/Movies/MovieDisplayPopUp.module.css'
 import {Link, Redirect, withRouter} from 'react-router-dom';
+import {generateWatchListButton, generateWatchedListButton, generateMovieTrailer, generateMovieRuntime,
+generateMovieInfo, generateOverview, generateDirector, generateGenres, generateMoviePoster} from './StaticFunctions/MovieHtmlFunctions.js';
+import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
+    addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
+     from './StaticFunctions/UserResultsHandlers.js';
 
 // component to display the movie poster large on screen when clicked on
 // the movies page
@@ -14,18 +20,19 @@ class MovieDisplayPopUp extends React.Component {
             poster: this.props.movie.poster,
             headerImage: this.props.movie.backgroundImage,
             trailer: this.props.movie.trailer,
-			movieInfoString: this.generateMovieInfo(this.props.movie)
+			currentUser: this.props.currentUser,
+			movieInfoString: generateMovieInfo(this.props.movie),
+			watched: this.props.watched,
+			watchList: this.props.watchList,
+			// index into array of movies if on one of the movie filter pages
+			index: this.props.index,
+			// the type of page the pop up is called from
+			type: this.props.type
 		};
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
 		this.changeHandler = this.changeHandler.bind(this);
-        this.generateMoviePoster = this.generateMoviePoster.bind(this);
-        this.generateMovieTrailer = this.generateMovieTrailer.bind(this);
-		this.generateMovieRuntime = this.generateMovieRuntime.bind(this);
-		this.generateMovieInfo = this.generateMovieInfo.bind(this);
-		this.generateOverview = this.generateOverview.bind(this);
-		this.generateDirector = this.generateDirector.bind(this);
-		this.generateGenres = this.generateGenres.bind(this);
+		this.buttonHandler = this.buttonHandler.bind(this);
 	}
 
 	openModal() {
@@ -45,175 +52,116 @@ class MovieDisplayPopUp extends React.Component {
         this.setState({[name]: value});
     }
 
-    generateMoviePoster()
-    {
-        let posterPath = "";
-        if(this.state.poster !== null)
+	async buttonHandler(event, type)
+	{
+		event.preventDefault();
+        event.stopPropagation();
+
+		/*
+		may or may not need??
+        if(!this.state.currentUser)
         {
-            posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
+            // will be dependent on the page..
+            this.props.showLoginPopUp(false);
+            return;
         }
-		let moviePage = "movie/" + this.state.movie.id;
-        return (
-          <div className={style.movieImageContainer}>
-              <Link to={moviePage}><img className={style.moviePoster} src={posterPath}/></Link>
-          </div>
-        );
-    }
+		*/
 
-	// function to generate the movies runtime as a string
-	generateMovieRuntime(value)
-	{
-		let runTime = "";
-		if(value > 0)
-		{
-			let hours = Math.floor(value / 60);
-			let minutes = value % 60;
-			let hourType = "Hours";
-			if(hours < 2)
-			{
-				hourType = "Hour";
-			}
-			if(minutes > 0)
-			{
-				if(minutes > 1)
-				{
-					runTime = hours + " " + hourType + " " + minutes + " Minutes";
-				}
-				else
-				{
-					runTime = hours + " " + hourType + " " + minutes + " Minute";
-				}
-			}
-			else
-			{
-				runTime = hours + " Hours";
-			}
-		}
-		return runTime;
-	}
-
-	// called whenever the data is recieved from the server
-	generateMovieInfo(movie)
-	{
-		let valuesArray = [];
-		let runTime = this.generateMovieRuntime(movie.runTime);
-		if(movie.rating !== null)
-		{
-			valuesArray.push(movie.rating);
-		}
-		if(runTime.length > 0)
-		{
-			valuesArray.push(runTime);
-		}
-		if(movie.releaseDate !== null)
-		{
-			valuesArray.push(movie.releaseDate);
-		}
-
-		let counter = 0;
-		let movieInfo = "";
-		while(counter < valuesArray.length)
-		{
-			if((counter + 1) < valuesArray.length)
-			{
-				movieInfo = movieInfo + valuesArray[counter] + "    |    ";
-
-			}
-			else
-			{
-				movieInfo = movieInfo + valuesArray[counter];
-			}
-			counter = counter + 1;
-		}
-		return movieInfo;
-	}
-
-	generateOverview()
-	{
-		if(this.state.movie.overview !== null)
-		{
-			return (
-				<div className={style.detailsContainer}>
-					<div className={style.detailsHeader}>
-						Overview
-					</div>
-					{this.state.movie.overview}
-				</div>
-			);
-		}
-		return "";
-	}
-
-	generateDirector()
-	{
-		if(this.state.movie.director !== null)
-		{
-			return (
-			  <div className={style.detailsContainer}>
-				  <div className={style.detailsHeader}>
-					  Director
-				  </div>
-				  {this.state.movie.director}
-			  </div>
-			);
-		}
-		return "";
-	}
-
-	generateGenres()
-	{
-		console.log("Movie");
-		console.log(this.state.movie);
-		if(this.state.movie.Genres.length > 0)
-		{
-			let genres = "";
-			let counter = 0;
-			while(counter < this.state.movie.Genres.length)
-			{
-				if((counter + 1) < this.state.movie.Genres.length)
-				{
-					genres = genres + this.state.movie.Genres[counter].value + ", ";
-				}
-				else
-				{
-					genres = genres + this.state.movie.Genres[counter].value;
-				}
-				counter = counter + 1;
-			}
-			return (
-			  <div className={style.detailsContainer}>
-				  <div className={style.detailsHeader}>
-					  Genre
-				  </div>
-				  {genres}
-			  </div>
-			);
-		}
-		return "";
-	}
-
-    generateMovieTrailer()
-    {
-        let trailerPath = "";
-        let trailerElem = "";
-        if(this.state.trailer !== null)
+        let url = "";
+        let params = {movieId: this.state.movie.id};
+        if(type === "watched")
         {
-            trailerPath = "https://www.youtube.com/embed/" + this.state.trailer;
-            trailerElem = <iframe className={style.movieTrailer} src={trailerPath}></iframe>;
+            url = "http://localhost:9000/profile/" + this.state.currentUser + "/add_to_watched";
+            if(this.state.watched)
+            {
+                url = "http://localhost:9000/profile/" + this.state.currentUser + "/remove_from_watched";
+            }
         }
-        return (
-            <div className={style.movieTrailerContainer}>
-                {trailerElem}
-            </div>
-        );
-    }
+        else if(type === "watchlist")
+        {
+            url = "http://localhost:9000/profile/" + this.state.currentUser + "/add_to_watchlist";
+            if(this.state.watchList)
+            {
+                url = "http://localhost:9000/profile/" + this.state.currentUser + "/remove_from_watchlist";
+            }
+        }
+        // send the request
+        let apiResult = await apiPostJsonRequest(url, params);
+        let status = apiResult[0];
+        let message = apiResult[1].message;
+        let requester = apiResult[1].requester;
+        let result;
+        if(type === "watched")
+        {
+            if(!this.state.watched)
+            {
+                result = addMovieToWatchedListResultsHandler(status, message, requester);
+            }
+            else
+            {
+                result = removeWatchedListMovieResultsHandler(status, message, requester, this.state.type);
+                // if the movie was removed from the watchlist page or should have not been there alredy
+                if(result.removeFromDiplay)
+                {
+                    this.props.removeMovieDisplay(this.state.index);
+                    this.props.updateLoggedIn(requester);
+                    return;
+                }
+            }
+        }
+        else
+        {
+            if(!this.state.watchList)
+            {
+                result = addMovieToWatchListResultsHandler(status, message, requester);
+            }
+            else
+            {
+                result = removeWatchListMovieResultsHandler(status, message, requester, this.state.type);
+                // if the movie was removed from the watchlist page or should have not been there alredy
+                if(result.removeFromDiplay)
+                {
+                    this.props.removeMovieDisplay(this.state.index);
+                    this.props.updateLoggedIn(requester);
+                    return;
+                }
+            }
+        }
+
+        if(result.movieNotFound)
+        {
+            this.props.removeMovieDisplay(this.state.index);
+            this.props.updateLoggedIn(requester);
+        }
+        else
+        {
+            if(result.showLoginPopUp)
+            {
+                // this will also update who is logged in
+                this.props.showLoginPopUp(true);
+            }
+            else
+            {
+                this.setState(result.state);
+				// if the pop up was caused because of a movie review, do not call this
+				if(this.state.type !== "Review")
+				{
+					this.props.updateParentState(result.state);
+				}
+                this.props.updateLoggedIn(requester);
+            }
+        }
+	}
 
     render() {
-            let poster = this.generateMoviePoster();
-            let trailer = this.generateMovieTrailer();
-            let overview = this.generateOverview();
-            let genres = this.generateGenres();
-            let director = this.generateDirector();
+            let poster = generateMoviePoster(style, this.state.poster, this.state.movie.id);
+            let trailer = generateMovieTrailer(style, this.state.trailer);
+            let overview = generateOverview(style, this.state.movie.overview);
+            let genres = generateGenres(style, this.state.movie.Genres);
+            let director = generateDirector(style, this.state.movie.director);
+			let watchListIcon = generateWatchListButton(style, this.buttonHandler, this.state.watchList);
+			let watchedIcon = generateWatchedListButton(style, this.buttonHandler, this.state.watched);
+
 			let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9))"};
 			if(this.state.headerImage !== null)
 			{
@@ -243,6 +191,10 @@ class MovieDisplayPopUp extends React.Component {
                                                 </div>
 												<div className={style.infoContainer}>
 													{this.state.movieInfoString}
+												</div>
+												<div className={style.icons}>
+													{watchedIcon}
+													{watchListIcon}
 												</div>
 												{overview}
                                                 {genres}

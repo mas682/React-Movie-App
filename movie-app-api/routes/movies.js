@@ -47,13 +47,20 @@ const selectPath = (cookie, req, res, cookieValid) =>
 	}
 	else if((req.params.type === "my_watched_list" || req.params.type === "my_watch_list") && !cookieValid)
 	{
-		res.status(401).send("No cookie or cookie invalid");
+		res.status(401).send({
+			message: "No cookie or cookie invalid",
+			requester: ""
+		});
 	}
     // some unknow path given
     else
     {
-        console.log(req.params[0]);
-        res.status(404).send("Request not understood");
+        console.log(req.params);
+		let requester = cookieValid ? cookie.name : "";
+        res.status(404).send({
+			message: "Request not understood",
+			requester: requester
+		});
     }
 };
 
@@ -143,78 +150,41 @@ const getMovieInfo = async(cookie, req, res, cookieValid) =>
 const getWatchList = async(cookie, req, res) =>
 {
 	let username = cookie.name;
-	let user = await models.User.findOne({
-		where: {username: username},
-		include: {
-			model: models.Movies,
-			as: "WatchList",
-			include: [
-				{
-					model: models.User,
-					as: "UserWatchLists",
-					required: false
-				},
-				{
-					model: models.User,
-					as: "UsersWhoWatched",
-					required: false
-				},
-				{
-					model: models.Genre,
-					as: "Genres",
-					attributes: ["id", "value"],
-					through: {attributes: []}
-				}
-			]
-		}
-	});
-	if(user === null)
+	// may need an await here..
+	let movies = await models.User.getWatchList(cookie.id, models);
+	if(movies === null)
 	{
-		res.status(404).send(["The user could not be found", username]);
+		res.status(404).send({
+			message: "The user could not be found",
+			requester: username});
 	}
 	else
 	{
-		res.status(200).send([user.WatchList, username]);
+		res.status(200).send({
+			message: "Users watch list successfully found",
+			requester: username,
+			movies: movies
+		});
 	}
 };
 
 const getWatchedList = async(cookie, req, res) =>
 {
 	let username = cookie.name;
-	let user = await models.User.findOne({
-		where: {username: username},
-		include: {
-			model: models.Movies,
-			as: "WatchedMovie",
-			include: [
-				{
-					model: models.User,
-					as: "UsersWhoWatched",
-					required: false
-				},
-				{
-					model: models.Genre,
-					as: "Genres",
-					attributes: ["id", "value"],
-					through: {attributes: []}
-				},
-				{
-					model: models.User,
-					as: "UserWatchLists",
-					required: false
-				}
-
-			]
-		}
-	});
-	username = cookie.name;
-	if(user === null)
+	let movies = await models.User.getWatchedList(cookie.id, models);
+	if(movies === null)
 	{
-		res.status(404).send(["The user could not be found", username]);
+		res.status(404).send({
+			message: "The user could not be found",
+			requester: username});
 	}
 	else
 	{
-		res.status(200).send([user.WatchedMovie, username]);
+		res.status(200).send({
+			message: "Users watched list successfully found",
+			requester: username,
+			movies: movies
+		});
 	}
 };
 

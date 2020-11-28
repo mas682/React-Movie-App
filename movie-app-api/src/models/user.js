@@ -198,29 +198,80 @@ const user = (sequelize, DataTypes) => {
         return following;
     }
 
-    // funciton to return all of the users that a user follows that the
-    // requesting user does not follow
-    // friendName is the username of the user whose friends list you are checking
-    // userId is the user id of the requesting user
-    // ids is an array of user ids that the requester already follows
-    User.getNotFollowedFollowing = async (friendName, userId, ids) => {
-        let user = await User.findByLogin(friendName);
+    // function to return all of the movies on a users watch list
+    User.getWatchList = async (userId, models) => {
+        let user = await models.User.findOne({
+            attributes: ["username"],
+            where: {id: userId},
+            include: {
+                model: models.Movies,
+                as: "WatchList",
+                include: [
+                    {
+                        model: models.User,
+                        as: "UserWatchLists",
+                        required: false
+                    },
+                    {
+                        model: models.User,
+                        as: "UsersWhoWatched",
+                        required: false
+                    },
+                    {
+                        model: models.Genre,
+                        as: "Genres",
+                        attributes: ["id", "value"],
+                        through: {attributes: []}
+                    }
+                ]
+            }
+        });
         if(user === null)
         {
             return null;
         }
-        let notMutualFollowing = await user.getFollowing({
-                // this where is saying ignore the Following user that is the requester
-                where: {id:{[Op.notIn]:ids}},
-                include:[
+        else
+        {
+            return user.WatchList;
+        }
+    }
+
+    // function to return all of the movies on a users watched list
+    User.getWatchedList = async (userId, models) => {
+        let user = await models.User.findOne({
+            where: {id: userId},
+            include: {
+                model: models.Movies,
+                as: "WatchedMovie",
+                include: [
                     {
-                        model: User,
-                        as: "Followers",
+                        model: models.User,
+                        as: "UsersWhoWatched",
+                        required: false
+                    },
+                    {
+                        model: models.Genre,
+                        as: "Genres",
+                        attributes: ["id", "value"],
+                        through: {attributes: []}
+                    },
+                    {
+                        model: models.User,
+                        as: "UserWatchLists",
+                        required: false
                     }
                 ]
+            }
         });
-        return notMutualFollowing;
-    };
+        if(user === null)
+        {
+            return null;
+        }
+        else
+        {
+            return user.WatchedMovie;
+        }
+    }
 
     // function to get a list of users who match the value passed in
     // username is the username to look for
