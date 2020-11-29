@@ -109,12 +109,12 @@
     color: #093145;
 }
 
-.overviewContainer {
+.detailsContainer {
     margin-top: 10px;
     color: white;
 }
 
-.overviewHeader {
+.detailsHeader {
     font-size: 1.3em;
     font-style: italic;
     font-weight: 500;

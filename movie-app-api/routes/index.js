@@ -58,6 +58,10 @@ router.get('/movies/:type', function(req, res, next) {
     movieHandler(req, res, next);
 });
 
+router.post('/movies/:type', function(req, res, next) {
+    movieHandler(req, res, next);
+});
+
 // used to return the movies from the API call to the screen
 router.get('/movie/:type/*', function(req, res, next) {
     movieHandler(req, res, next);

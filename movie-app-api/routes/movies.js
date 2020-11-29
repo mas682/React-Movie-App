@@ -1,4 +1,4 @@
-import {verifyLogin} from './globals.js';
+import {verifyLogin, validateIntegerParameter, validateUsernameParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 const Op = require('Sequelize').Op;
 
@@ -44,6 +44,62 @@ const selectPath = (cookie, req, res, cookieValid) =>
 	else if(req.params.type === "my_watched_list" && cookieValid)
 	{
 		getWatchedList(cookie, req, res);
+	}
+	else if(req.params.type === "add_to_watchlist" && cookieValid)
+	{
+		if(cookieValid)
+		{
+			addToWatchList(cookie, req, res);
+		}
+		else
+		{
+			res.status(401).send({
+				message: "No cookie or cookie invalid",
+				requester: ""
+			});
+		}
+	}
+	else if(req.params.type === "remove_from_watchlist" && cookieValid)
+	{
+		if(cookieValid)
+		{
+			removeFromWatchList(cookie, req, res);
+		}
+		else
+		{
+			res.status(401).send({
+				message: "No cookie or cookie invalid",
+				requester: ""
+			});
+		}
+	}
+	else if(req.params.type === "add_to_watched")
+	{
+		if(cookieValid)
+		{
+			addToWatched(cookie, req, res);
+		}
+		else
+		{
+			res.status(401).send({
+				message: "No cookie or cookie invalid",
+				requester: ""
+			});
+		}
+	}
+	else if(req.params.type === "remove_from_watched")
+	{
+		if(cookieValid)
+		{
+			removeFromWatched(cookie, req, res);
+		}
+		else
+		{
+			res.status(401).send({
+				message: "No cookie or cookie invalid",
+				requester: ""
+			});
+		}
 	}
 	else if((req.params.type === "my_watched_list" || req.params.type === "my_watch_list") && !cookieValid)
 	{
@@ -93,56 +149,33 @@ const getMovieTitles = async (cookie, req, res, cookieValid) =>
 
 const getMovieInfo = async(cookie, req, res, cookieValid) =>
 {
-		let username = "";
-		if(cookieValid)
-		{
-			username = cookie.name;
-		}
-		// prevent the id being sent in from being too long
-		if(req.params.id.length > 10)
-		{
-			res.status(404).send(["Movie ID formatted incorrectly", username]);
-		}
-		let id = req.params.id;
-		// strings length
-		let idLength = id.length;
-		// convert the string to a integer
-		let idInt = parseInt(id);
-		// if the value is a string or begins with a string
-		// such as a123
-		if(isNaN(idInt))
-		{
-			console.log("Did not find a movie ID");
-			res.status(404).send(["Did nto find a movie ID in the request", username]);
-			return;
-		}
-		let convertedLength = idInt.toString().length;
-		// if the value can be converted to a number but ends with a string
-		// such as 123a
-		if(idLength !== convertedLength)
-		{
-			console.log("Movie ID formatted incorrectly");
-			res.status(404).send(["Movie ID formatted incorrectly", username]);
-			return;
-		}
+		let username = (cookieValid) ? cookie.name : "";
+		let movieId = req.params.id;
+		let valid = validateIntegerParameter(res, movieId, username, "The movie ID is invalid");
+		if(!valid) return;
 		let movie;
 		if(cookieValid)
 		{
-			movie = await models.Movies.getMovieInfo(id, models, cookie.name);
+			movie = await models.Movies.getMovieInfo(movieId, models, cookie.name);
 		}
 		else
 		{
-			movie = await models.Movies.getMovieInfo(id, models, undefined);
+			movie = await models.Movies.getMovieInfo(movieId, models, undefined);
 		}
-		console.log("MOVIE");
-		console.log(movie);
 		if(movie === undefined)
 		{
-			res.status(404).send(["Unable to find the information for the requested movie", username]);
+			res.status(404).send({
+				message: "Unable to find the information for the requested movie",
+				requester:  username
+			});
 		}
 		else
 		{
-			res.status(200).send([movie, username]);
+			res.status(200).send({
+				status: "Movie info successfully found",
+				requester: username,
+				movie: movie
+			});
 		}
 
 };
@@ -186,6 +219,187 @@ const getWatchedList = async(cookie, req, res) =>
 			movies: movies
 		});
 	}
+};
+
+const addToWatchList = async (cookie, req, res) =>
+{
+    let username = cookie.name;
+    let movieId = req.body.movieId;
+    let valid = validateIntegerParameter(res, movieId, username, "The movie ID is invalid");
+    if(!valid) return;
+    // get the movie along with the user if they alraedy have it on their watch list
+    let movie = await models.Movies.getMovieWithUserWatchList(movieId, cookie.id, models);
+    if(movie === null || movie === undefined)
+    {
+        res.status(404).send({
+            message: "Could not find the movie to add to the users watch list",
+            requester: username
+        });
+        return;
+    }
+    if(movie.dataValues.UserWatchLists.length < 1)
+    {
+        //let result = await user.addWatchList(movie.id);
+        let result = await movie.addUserWatchLists(cookie.id);
+        if(result === undefined)
+        {
+            // if undefined, usually means the association already exists..
+            res.status(500).send({
+                message: "A error occurred trying to add the movie to the users watch list",
+                requester: username
+            });
+        }
+        else
+        {
+            res.status(200).send({
+                message: "Movie added to watch list",
+                requester: username
+            });
+        }
+    }
+    else
+    {
+        res.status(400).send({
+            message: "The movie is already on the users watch list",
+            requester: username
+        });
+    }
+};
+
+const removeFromWatchList = async (cookie, req, res) =>
+{
+    let username = cookie.name;
+    let movieId = req.body.movieId;
+    let valid = validateIntegerParameter(res, movieId, username, "The movie ID is invalid");
+    if(!valid) return;
+    // get the movie along with the user if they alraedy have it on their watch list
+    let movie = await models.Movies.getMovieWithUserWatchList(movieId, cookie.id, models);
+    if(movie === null || movie === undefined)
+    {
+        res.status(404).send({
+            message: "Could not find the movie to remove the movie from the users watch list",
+            requester: username
+        });
+        return;
+    }
+    if(movie.dataValues.UserWatchLists.length > 0)
+    {
+        //let result = await user.addWatchList(movie.id);
+        let result = await movie.removeUserWatchLists(cookie.id);
+        if(result === undefined)
+        {
+            // if undefined, usually means the association already exists..
+            res.status(500).send({
+                message: "A error occurred trying to remove the movie from the users watch list",
+                requester: username
+            });
+        }
+        else
+        {
+            res.status(200).send({
+                message: "Movie removed from watch list",
+                requester: username
+            });
+        }
+    }
+    else
+    {
+        res.status(400).send({
+            message: "The movie is already not on the users watch list",
+            requester: username
+        });
+    }
+};
+
+
+const addToWatched = async (cookie, req, res) =>
+{
+    let username = cookie.name;
+    let movieId = req.body.movieId;
+    let valid = validateIntegerParameter(res, movieId, username, "The movie ID is invalid");
+    if(!valid) return;
+    // get the movie along with the user if they alraedy have it on their watch list
+    let movie = await models.Movies.getMovieWtithUserWatched(movieId, cookie.id, models);
+    if(movie === null || movie === undefined)
+    {
+        res.status(404).send({
+            message: "Could not find the movie to add to the users watched list",
+            requester: username
+        });
+        return;
+    }
+    if(movie.dataValues.UsersWhoWatched.length < 1)
+    {
+        //let result = await user.addWatchList(movie.id);
+        let result = await movie.addUsersWhoWatched(cookie.id);
+        if(result === undefined)
+        {
+            // if undefined, usually means the association already exists..
+            res.status(500).send({
+                message: "A error occurred trying to add the movie to the users watched list",
+                requester: username
+            });
+        }
+        else
+        {
+            res.status(200).send({
+                message: "Movie added to watched list",
+                requester: username
+            });
+        }
+    }
+    else
+    {
+        res.status(400).send({
+            message: "The movie is already on the users watched list",
+            requester: username
+        });
+    }
+};
+
+const removeFromWatched = async (cookie, req, res) =>
+{
+    let username = cookie.name;
+    let movieId = req.body.movieId;
+    let valid = validateIntegerParameter(res, movieId, username, "The movie ID is invalid");
+    if(!valid) return;
+    // get the movie along with the user if they alraedy have it on their watch list
+    let movie = await models.Movies.getMovieWtithUserWatched(movieId, cookie.id, models);
+    if(movie === null || movie === undefined)
+    {
+        res.status(404).send({
+            message: "Could not find the movie to remove from the users watched list",
+            requester: username
+        });
+        return;
+    }
+    if(movie.dataValues.UsersWhoWatched.length > 0)
+    {
+        //let result = await user.addWatchList(movie.id);
+        let result = await movie.removeUsersWhoWatched(cookie.id);
+        if(result === undefined)
+        {
+            // if undefined, usually means the association already exists..
+            res.status(500).send({
+                message: "A error occurred trying to remove the movie to the users watched list",
+                requester: username
+            });
+        }
+        else
+        {
+            res.status(200).send({
+                message: "Movie removed from watched list",
+                requester: username
+            });
+        }
+    }
+    else
+    {
+        res.status(400).send({
+            message: "The movie is already not on the users watched list",
+            requester: username
+        });
+    }
 };
 
 

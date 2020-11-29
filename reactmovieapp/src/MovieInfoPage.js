@@ -3,730 +3,267 @@ import {Link, Redirect, withRouter} from 'react-router-dom';
 import MoviePosterPopUp from './MoviePosterPopUp.js';
 import queryString from "query-string";
 import style from './css/Movies/movieinfo.module.css';
-import SignInPopup from './SignIn.js';
+import {generateWatchListButton, generateWatchedListButton, generateMovieTrailer, generateMovieRuntime,
+generateMovieInfo, generateOverview, generateDirector, generateGenres, generateRatingStars} from './StaticFunctions/MovieHtmlFunctions.js';
+import {apiPostJsonRequest, apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
+    addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
+     from './StaticFunctions/UserResultsHandlers.js';
 
 
 class MovieInfoPage extends React.Component {
-  constructor(props){
-      super(props);
-      let movieQuery = this.props.match.params.id;
-      let queryElements = movieQuery.split("-", 1);
-      let id = null;
-      if(queryElements.length > 0)
-      {
-          id = parseInt(queryElements[0]);
-          if(isNaN(id))
+      constructor(props){
+          super(props);
+          let movieQuery = this.props.match.params.id;
+          let queryElements = movieQuery.split("-", 1);
+          let id = null;
+          if(queryElements.length > 0)
           {
-              id = null;
-              alert("Invalid movie id provided");
-          }
-      }
-      console.log(queryElements);
-      this.state = {
-          id: id,
-          rating: 4.5,
-          poster: null,
-          headerImage: null,
-          trailer: null,
-          movie: null,
-          url: this.props.match.params.id,
-          posterPopup: false,
-          movieInfoString: "",
-          loggedIn: false,
-          username: "",
-          watchList: false,
-          watched: false,
-          displaySignIn: false
-      }
-      this.generateRatingStars = this.generateRatingStars.bind(this);
-      this.generateMoviePoster = this.generateMoviePoster.bind(this);
-      this.generateMovieTrailer = this.generateMovieTrailer.bind(this);
-      this.posterClickHandler = this.posterClickHandler.bind(this);
-      this.generateMovieInfo = this.generateMovieInfo.bind(this);
-      this.generateMovieRuntime = this.generateMovieRuntime.bind(this);
-      this.generateOverview = this.generateOverview.bind(this);
-      this.generateDirector = this.generateDirector.bind(this);
-      this.generateGenres = this.generateGenres.bind(this);
-      this.getMovieInfo = this.getMovieInfo.bind(this);
-      this.updateMovieInfo = this.updateMovieInfo.bind(this);
-      this.buttonHandler = this.buttonHandler.bind(this);
-      this.movieWatchedResultsHandler = this.movieWatchedResultsHandler.bind(this);
-      this.movieWatchListResultsHandler = this.movieWatchListResultsHandler.bind(this);
-      this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
-	}
-
-  // called when the component is receiving new props
-  // handles issue where receiving props from another movies page and does not update
-  componentWillReceiveProps(nextProps) {
-      let id = null;
-      let movieQuery = nextProps.match.params.id;
-      let queryElements = movieQuery.split("-", 1);
-      if(queryElements.length > 0)
-      {
-          // get the movie id
-          id = parseInt(queryElements[0]);
-          if(isNaN(id))
-          {
-              id = null;
-              alert("Invalid movie id provided");
-          }
-      }
-      if(this.props.id !== id)
-      {
-          this.updateMovieInfo(id);
-      }
-  }
-
-  posterClickHandler()
-  {
-      // do not expand the poster if one does not exist
-      if(this.state.poster === null)
-      {
-          return;
-      }
-      let opened = this.state.posterPopup;
-      this.setState({
-          posterPopup: !opened
-      });
-  }
-
-  // function to get the movie title suggestions based off of a
-  // substring that the user has already entered
-
-  getMovieInfo(id)
-  {
-      // Simple POST request with a JSON body using fetch
-      const requestOptions = {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-      };
-
-      let status = 0;
-      let url = "http://localhost:9000/movie/" + id;
-      return fetch(url, requestOptions)
-          .then(res => {
-              status = res.status;
-              return res.json();
-          }).then(result=> {
-              return [status, result];
-          });
-  }
-
-  // function to handle call to api and result
-  async updateMovieInfo(value)
-  {
-      let movieData = await this.getMovieInfo(value);
-      let status = movieData[0];
-      if(status === 200)
-      {
-          let movieInfo = this.generateMovieInfo(movieData[1][0]);
-          let movie = movieData[1][0];
-          let username = movieData[1][1];
-          let signedIn = false;
-          if(username !== "")
-          {
-              signedIn = true;
-          }
-          let watchList = false;
-          let watched = false;
-          if(signedIn)
-          {
-              if(movie.UserWatchLists !== undefined)
+              id = parseInt(queryElements[0]);
+              if(isNaN(id))
               {
-                  if(movie.UserWatchLists.length > 0)
+                  id = null;
+                  alert("Invalid movie id provided");
+              }
+          }
+          console.log(queryElements);
+          this.state = {
+              id: id,
+              rating: 4.5,
+              poster: null,
+              headerImage: null,
+              trailer: null,
+              movie: null,
+              url: this.props.match.params.id,
+              posterPopup: false,
+              movieInfoString: "",
+              currentUser: this.props.currentUser,
+              watchList: false,
+              watched: false
+          }
+
+          this.generateMoviePoster = this.generateMoviePoster.bind(this);
+          this.posterClickHandler = this.posterClickHandler.bind(this);
+          this.getMovieInfo = this.getMovieInfo.bind(this);
+          this.updateMovieInfo = this.updateMovieInfo.bind(this);
+          this.buttonHandler = this.buttonHandler.bind(this);
+         // this.movieWatchedResultsHandler = this.movieWatchedResultsHandler.bind(this);
+         // this.movieWatchListResultsHandler = this.movieWatchListResultsHandler.bind(this);
+    	}
+
+      // called when the component is receiving new props
+      // handles issue where receiving props from another movies page and does not update
+      componentWillReceiveProps(nextProps) {
+          let id = null;
+          let movieQuery = nextProps.match.params.id;
+          let queryElements = movieQuery.split("-", 1);
+          if(queryElements.length > 0)
+          {
+              // get the movie id
+              id = parseInt(queryElements[0]);
+              if(isNaN(id))
+              {
+                  id = null;
+                  alert("Invalid movie id provided");
+              }
+          }
+          if(this.props.id !== id)
+          {
+              this.updateMovieInfo(id);
+          }
+      }
+
+      posterClickHandler()
+      {
+          // do not expand the poster if one does not exist
+          if(this.state.poster === null)
+          {
+              return;
+          }
+          let opened = this.state.posterPopup;
+          this.setState({
+              posterPopup: !opened
+          });
+      }
+
+      // function to get the movie title suggestions based off of a
+      // substring that the user has already entered
+      getMovieInfo(id)
+      {
+          let url = "http://localhost:9000/movie/" + id;
+          return apiGetJsonRequest(url);
+      }
+
+      // function to handle call to api and result
+      async updateMovieInfo(value)
+      {
+          let movieData = await this.getMovieInfo(value);
+          let status = movieData[0];
+          let requester = movieData[1].requester;
+          let message = movieData[1].message;
+          if(status === 200)
+          {
+              let movie = movieData[1].movie;
+              let movieInfo = generateMovieInfo(movie);
+              let watchList = false;
+              let watched = false;
+              if(requester !== "")
+              {
+                  // make these two if's reusable functions...
+                  if(movie.UserWatchLists !== undefined)
                   {
-                      if(movie.UserWatchLists[0].username === username)
+                      if(movie.UserWatchLists.length > 0)
                       {
-                          watchList = true;
+                          if(movie.UserWatchLists[0].username === requester)
+                          {
+                              watchList = true;
+                          }
+                      }
+                  }
+                  if(movie.UsersWhoWatched !== undefined)
+                  {
+                      if(movie.UsersWhoWatched.length > 0)
+                      {
+                          if(movie.UsersWhoWatched[0].username === requester)
+                          {
+                              watched = true;
+                          }
                       }
                   }
               }
-              if(movie.UsersWhoWatched !== undefined)
+              let title = movie.title.replaceAll(" ", "_");
+              let newUrl = movie.id + "-" + title;
+              // fix the url to the appropriate value if title incorrect
+              if(newUrl !== this.state.url)
               {
-                  if(movie.UsersWhoWatched.length > 0)
-                  {
-                      if(movie.UsersWhoWatched[0].username === username)
-                      {
-                          watched = true;
-                      }
-                  }
+                  window.history.replaceState(null, movie.title, newUrl);
               }
-          }
-          let title = movie.title.replaceAll(" ", "_");
-          let newUrl = movie.id + "-" + title;
-          // fix the url to the appropriate value if title incorrect
-          if(newUrl !== this.state.url)
-          {
-              window.history.replaceState(null, movieData[1].title, newUrl);
-          }
-          this.setState({
-            id: movie.id,
-            rating: 4.5,
-            poster: movie.poster,
-            headerImage: movie.backgroundImage,
-            trailer: movie.trailer,
-            posterPopup: false,
-            movie: movie,
-            movieInfoString: movieInfo,
-            loggedIn: signedIn,
-            username: username,
-            watchList: watchList,
-            watched: watched,
-            displaySignIn: false,
-            url: newUrl,
-          });
-          this.props.updateLoggedIn(username, signedIn);
-      }
-      else
-      {
-          alert("Movie request failed");
-      }
-  }
-
-  async componentDidMount()
-  {
-      this.updateMovieInfo(this.state.id);
-  }
-
-  // function to handle buttons that let user set the movie to their watch list,
-  // or add the movie to the movies that they have watched
-  buttonHandler(event, type)
-  {
-      event.preventDefault();
-      event.stopPropagation();
-      if(!this.state.loggedIn)
-      {
-          this.setState({
-              displaySignIn: true
-          });
-          return;
-      }
-
-      const requestOptions = {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json'},
-          body: JSON.stringify({
-              movieId: this.state.id
-          })
-      };
-
-      let status = 0;
-      let url = "";
-      if(type === "watched")
-      {
-          url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watched";
-          if(this.state.watched)
-          {
-              url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watched";
-          }
-      }
-      else if(type === "watchlist")
-      {
-          url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watchlist";
-          if(this.state.watchList)
-          {
-              url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
-          }
-      }
-      else
-      {
-          return;
-      }
-      fetch(url, requestOptions)
-          .then(res => {
-              status = res.status;
-              if(status !== 401)
-              {
-                  return res.json();
-              }
-              else
-              {
-                  return res.text();
-              }
-          }).then(result =>{
-              if(type === "watched")
-              {
-                  this.movieWatchedResultsHandler(status, result);
-              }
-              else
-              {
-                  this.movieWatchListResultsHandler(status, result);
-              }
-          });
-  }
-
-    movieWatchListResultsHandler(status, result)
-    {
-        // not logged in/cookie not found
-        if(status === 401)
-        {
-            this.props.updateLoggedIn("", false);
-            if(this.state.loggedIn)
-            {
-                this.setState({
-                    loggedIn: false,
-                    username: ""
-                })
-            }
-        }
-        else
-        {
-            let username = result[1];
-            let message = result[0];
-            if(status === 200 && message === "Movie added to watch list")
-            {
-                this.setState({
-                    watchList: true,
-                    loggedIn: true,
-                    username: username
-                });
-            }
-            else if(status === 200 && message === "Movie removed from watch list")
-            {
-                this.setState({
-                    watchList: false,
-                    loggedIn: true,
-                    username: username
-                });
-            }
-            else if(status === 200 && message === "Movie already on watch list")
-            {
-                alert(message);
-                this.setState({
-                    watchList: true,
-                    loggedIn: true,
-                    username: username
-                });
-            }
-            else if(status === 200 && message === "Movie already not on watch list")
-            {
-                alert(message);
-                this.setState({
-                    watchList: false,
-                    loggedIn: true,
-                    username: username
-                });
-            }
-            else
-            {
-                alert(result[0]);
-            }
-        }
-    }
-
-  movieWatchedResultsHandler(status, result)
-  {
-      // not logged in/cookie not found
-      if(status === 401)
-      {
-          // update logged in to indicate not logged in
-          this.props.updateLoggedIn("", false);
-          if(this.state.loggedIn)
-          {
               this.setState({
-                  loggedIn: false,
-                  username: ""
-              })
-          }
-      }
-      else
-      {
-          let username = result[1];
-          let message = result[0];
-          if(status === 200 && message === "Movie added to movies watched list")
-          {
-              this.setState({
-                  watched: true,
-                  loggedIn: true,
-                  username: username
+                id: movie.id,
+                rating: 4.5,
+                poster: movie.poster,
+                headerImage: movie.backgroundImage,
+                trailer: movie.trailer,
+                posterPopup: false,
+                movie: movie,
+                movieInfoString: movieInfo,
+                currentUser: requester,
+                watchList: watchList,
+                watched: watched,
+                url: newUrl,
               });
-          }
-          else if(status === 200 && message === "Movie removed from watched movies list")
-          {
-              this.setState({
-                  watched: false,
-                  loggedIn: true,
-                  username: username
-              });
-          }
-          else if(status === 200 && message === "Movie already on movies watched list")
-          {
-              alert(message);
-              this.setState({
-                  watched: true,
-                  loggedIn: true,
-                  username: username
-              });
-          }
-          else if(status === 200 && message === "Movie already not on watched movies list")
-          {
-              alert(message);
-              this.setState({
-                  watched: false,
-                  loggedIn: true,
-                  username: username
-              });
+              this.props.updateLoggedIn(requester);
           }
           else
           {
               alert(message);
           }
       }
-  }
 
-  buttonHandler(event, type)
-  {
-      event.preventDefault();
-      event.stopPropagation();
-      if(!this.state.loggedIn)
+      async componentDidMount()
       {
-          this.setState({
-              displaySignIn: true
-          });
-          return;
+          this.updateMovieInfo(this.state.id);
       }
 
-      const requestOptions = {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json'},
-          body: JSON.stringify({
-              movieId: this.state.id
-          })
-      };
-
-      let status = 0;
-      let url = "";
-      if(type === "watched")
+      async buttonHandler(event, type)
       {
-          url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watched";
-          if(this.state.watched)
+          event.preventDefault();
+          event.stopPropagation();
+
+          if(!this.state.currentUser)
           {
-              url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watched";
+              // will be dependent on the page..
+              this.props.showLoginPopUp(false);
+              return;
           }
-      }
-      else if(type === "watchlist")
-      {
-          url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watchlist";
-          if(this.state.watchList)
+
+          let url = "";
+          let params = {movieId: this.state.id};
+          if(type === "watched")
           {
-              url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
-          }
-      }
-      else
-      {
-          return;
-      }
-      fetch(url, requestOptions)
-          .then(res => {
-              status = res.status;
-              if(status !== 401)
+              url = "http://localhost:9000/movies/add_to_watched";
+              if(this.state.watched)
               {
-                  return res.json();
+                  url = "http://localhost:9000/movies/remove_from_watched";
+              }
+          }
+          else if(type === "watchlist")
+          {
+              url = "http://localhost:9000/movies/add_to_watchlist";
+              if(this.state.watchList)
+              {
+                  url = "http://localhost:9000/movies/remove_from_watchlist";
+              }
+          }
+          // send the request
+          let apiResult = await apiPostJsonRequest(url, params);
+          let status = apiResult[0];
+          let message = apiResult[1].message;
+          let requester = apiResult[1].requester;
+          let result;
+          if(type === "watched")
+          {
+              if(!this.state.watched)
+              {
+                  result = addMovieToWatchedListResultsHandler(status, message, requester);
               }
               else
               {
-                  return res.text();
+                  result = removeWatchedListMovieResultsHandler(status, message, requester, "Movie page");
               }
-          }).then(result =>{
-              if(type === "watched")
+          }
+          else
+          {
+              if(!this.state.watchList)
               {
-                  this.movieWatchedResultsHandler(status, result);
+                  result = addMovieToWatchListResultsHandler(status, message, requester);
               }
               else
               {
-                  this.movieWatchListResultsHandler(status, result);
+                  result = removeWatchListMovieResultsHandler(status, message, requester, "Movie Page");
               }
-          });
-  }
+          }
 
+          if(result.movieNotFound)
+          {
+              //this.props.removeMovieDisplay(this.state.index);
+              // will need to redirect to 404 page
+              this.props.updateLoggedIn(requester);
+          }
+          else
+          {
+              if(result.showLoginPopUp)
+              {
+                  // this will also update who is logged in
+                  this.props.showLoginPopUp(true);
+              }
+              else
+              {
+                  this.setState(result.state);
+                  this.props.updateLoggedIn(requester);
+              }
+          }
+      }
 
-  /*
-      This function is used to generate the stars and set the appropriate ones to being colored or not
-      based off of the rating passed in by the props to the state
-  */
-  generateRatingStars()
-  {
-      let stars = [];
-      let tempId = "star5" + this.state.id;
-      if(this.state.rating == 5.0)
+      generateMoviePoster()
       {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={"moviepage"} checked={true}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={"moviepage"}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
-      }
-      tempId = "star4half" + this.state.id;
-      if(this.state.rating == 4.50)
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
-      }
-      tempId = "star4" + this.state.id;
-      if(this.state.rating == 4.00)
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={"moviepage"} checked={true}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={"moviepage"}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
-      }
-      tempId = "star3half" + this.state.id;
-      if(this.state.rating == 3.50)
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
-      }
-      tempId = "star3" + this.state.id;
-      if(this.state.rating == 3.00)
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={"moviepage"} checked={true}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={"moviepage"}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
-      }
-      tempId = "star2half" + this.state.id;
-      if(this.state.rating == 2.50)
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
-      }
-      tempId = "star2" + this.state.id;
-      if(this.state.rating == 2.00)
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={"moviepage"} checked={true}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={"moviepage"}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
-      }
-      tempId = "star1half" + this.state.id;
-      if(this.state.rating == 1.50)
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
-      }
-      tempId = "star1half" + this.state.id;
-      if(this.state.rating == 1.00)
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={"moviepage"} checked={true}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={"moviepage"}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
-      }
-      tempId = "starhalf" + this.state.id;
-      if(this.state.rating == 0.50)
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
-      }
-      else
-      {
-          stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
-      }
-      return stars;
-  }
-
-    // function to generate the movies runtime as a string
-    generateMovieRuntime(value)
-    {
-        let runTime = "";
-        if(value > 0)
-        {
-            let hours = Math.floor(value / 60);
-            let minutes = value % 60;
-            let hourType = "Hours";
-            if(hours < 2)
-            {
-                hourType = "Hour";
-            }
-            if(minutes > 0)
-            {
-                if(minutes > 1)
-                {
-                    runTime = hours + " " + hourType + " " + minutes + " Minutes";
-                }
-                else
-                {
-                    runTime = hours + " " + hourType + " " + minutes + " Minute";
-                }
-            }
-            else
-            {
-                runTime = hours + " Hours";
-            }
-        }
-        return runTime;
-    }
-
-    // called whenever the data is recieved from the server
-    generateMovieInfo(movie)
-    {
-        let valuesArray = [];
-        let runTime = this.generateMovieRuntime(movie.runTime);
-        if(movie.rating !== null)
-        {
-            valuesArray.push(movie.rating);
-        }
-        if(runTime.length > 0)
-        {
-            valuesArray.push(runTime);
-        }
-        if(movie.releaseDate !== null)
-        {
-            valuesArray.push(movie.releaseDate);
-        }
-
-        let counter = 0;
-        let movieInfo = "";
-        while(counter < valuesArray.length)
-        {
-            if((counter + 1) < valuesArray.length)
-            {
-                movieInfo = movieInfo + valuesArray[counter] + "    |    ";
-
-            }
-            else
-            {
-                movieInfo = movieInfo + valuesArray[counter];
-            }
-            counter = counter + 1;
-        }
-        return movieInfo;
-    }
-
-    generateMoviePoster()
-    {
-        let posterPath = "";
-        if(this.state.poster !== null)
-        {
-            posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
-        }
-        return (
-          <div className={style.movieImageContainer}>
-              <img className={style.moviePoster} src={posterPath} onClick={this.posterClickHandler}/>
-          </div>
-        );
-    }
-
-    generateMovieTrailer()
-    {
-        let trailerPath = "";
-        let trailerElem = "";
-        if(this.state.trailer !== null)
-        {
-            trailerPath = "https://www.youtube.com/embed/" + this.state.trailer;
-            trailerElem = <iframe className={style.movieTrailer} src={trailerPath}></iframe>;
-        }
-        return (
-            <div className={style.movieTrailerContainer}>
-                {trailerElem}
+          let posterPath = "";
+          if(this.state.poster !== null)
+          {
+              posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
+          }
+          return (
+            <div className={style.movieImageContainer}>
+                <img className={style.moviePoster} src={posterPath} onClick={this.posterClickHandler}/>
             </div>
-        );
-    }
-
-    generateOverview()
-    {
-        if(this.state.movie.overview !== null)
-        {
-            return (
-                <div className={style.overviewContainer}>
-                    <div className={style.overviewHeader}>
-                        Overview
-                    </div>
-                    {this.state.movie.overview}
-                </div>
-            );
-        }
-        return "";
-    }
-
-    generateDirector()
-    {
-        if(this.state.movie.director !== null)
-        {
-            return (
-              <div className={style.overviewContainer}>
-                  <div className={style.overviewHeader}>
-                      Director
-                  </div>
-                  {this.state.movie.director}
-              </div>
-            );
-        }
-        return "";
-    }
-
-    generateGenres()
-    {
-        if(this.state.movie.Genres.length > 0)
-        {
-            let genres = "";
-            let counter = 0;
-            while(counter < this.state.movie.Genres.length)
-            {
-                if((counter + 1) < this.state.movie.Genres.length)
-                {
-                    genres = genres + this.state.movie.Genres[counter].value + ", ";
-                }
-                else
-                {
-                    genres = genres + this.state.movie.Genres[counter].value;
-                }
-                counter = counter + 1;
-            }
-            return (
-              <div className={style.overviewContainer}>
-                  <div className={style.overviewHeader}>
-                      Genre
-                  </div>
-                  {genres}
-              </div>
-            );
-        }
-        return "";
-    }
-
-    signInRemoveFunction(username)
-    {
-        if(username !== undefined)
-        {
-            this.props.updateLoggedIn(username, true);
-        }
-        this.setState({
-            displaySignIn: false,
-            loggedIn: true,
-            username: username
-        });
-    }
+          );
+      }
 
 
   	render() {
         if(this.state.movie === null)
         {
             return null;
-        }
-
-        let signInPopup = "";
-        if(this.state.displaySignIn)
-        {
-            signInPopup = <SignInPopup removeFunction={this.signInRemoveFunction} redirectOnLogin={false}/>;
         }
 
         let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
@@ -740,49 +277,13 @@ class MovieInfoPage extends React.Component {
             headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.poster};
         }
         let poster = this.generateMoviePoster();
-        let trailer = this.generateMovieTrailer();
-        let stars = this.generateRatingStars();
-        let director = this.generateDirector();
-        let overview = this.generateOverview();
-        let genres = this.generateGenres();
-
-        let watchListIcon = (
-            <div className={`${style.watchListIconContainer}`}>
-                <i class={`fas fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
-                    <span class={style.tooltiptext}>Add to watch list</span>
-                </i>
-            </div>
-        );
-        if(this.state.watchList)
-        {
-            watchListIcon = (
-                <div className={`${style.watchListIconContainer}`}>
-                    <i class={`fas fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
-                        <span class={style.tooltiptext}>Remove from watch list</span>
-                    </i>
-                </div>
-            )
-        }
-        let watchedIcon = (
-            <div className={`${style.watchedIconContainer}`} >
-                <i className={`fas fa-ticket-alt ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
-                    <span class={style.tooltiptext}>Add to watched movies</span>
-                </i>
-            </div>
-        );
-
-        //<h1> TEST </h1>
-        if(this.state.watched)
-        {
-            watchedIcon = (
-                <div className={`${style.watchedIconContainer}`}>
-                    <i className={`fas fa-ticket-alt ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
-                        <span class={style.tooltiptext}>Remove movie from watched</span>
-                    </i>
-                </div>
-            );
-        }
-
+        let trailer = generateMovieTrailer(style, this.state.trailer);
+        let stars = generateRatingStars(style, this.state.id, this.state.rating);
+        let director = generateDirector(style, this.state.movie.director);
+        let overview = generateOverview(style, this.state.movie.overview);
+        let genres = generateGenres(style, this.state.movie.Genres);
+        let watchListIcon = generateWatchListButton(style, this.buttonHandler, this.state.watchList);
+        let watchedIcon = generateWatchedListButton(style, this.buttonHandler, this.state.watched);
         // if the poster was clicked, show it larger
         let posterPopup = "";
         if(this.state.posterPopup)
@@ -824,7 +325,6 @@ class MovieInfoPage extends React.Component {
               </div>
               {trailer}
               {posterPopup}
-              {signInPopup}
           </div>
     		);
   	}

@@ -108,18 +108,18 @@ class MovieDisplay extends React.Component {
         let params = {movieId: this.state.id};
         if(type === "watched")
         {
-            url = "http://localhost:9000/profile/" + this.state.currentUser + "/add_to_watched";
+            url = "http://localhost:9000/movies/add_to_watched";
             if(this.state.watched)
             {
-                url = "http://localhost:9000/profile/" + this.state.currentUser + "/remove_from_watched";
+                url = "http://localhost:9000/movies/remove_from_watched";
             }
         }
         else if(type === "watchlist")
         {
-            url = "http://localhost:9000/profile/" + this.state.currentUser + "/add_to_watchlist";
+            url = "http://localhost:9000/movies/add_to_watchlist";
             if(this.state.watchList)
             {
-                url = "http://localhost:9000/profile/" + this.state.currentUser + "/remove_from_watchlist";
+                url = "http://localhost:9000/movies/remove_from_watchlist";
             }
         }
         // send the request
