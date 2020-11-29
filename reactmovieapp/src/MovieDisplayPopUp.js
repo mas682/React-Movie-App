@@ -8,31 +8,57 @@ import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
     addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
      from './StaticFunctions/UserResultsHandlers.js';
+import SignInPopup from './SignIn.js';
 
 // component to display the movie poster large on screen when clicked on
 // the movies page
 class MovieDisplayPopUp extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {
-			open: true,
-			movie: this.props.movie,
-            poster: this.props.movie.poster,
-            headerImage: this.props.movie.backgroundImage,
-            trailer: this.props.movie.trailer,
-			currentUser: this.props.currentUser,
-			movieInfoString: generateMovieInfo(this.props.movie),
-			watched: this.props.watched,
-			watchList: this.props.watchList,
-			// index into array of movies if on one of the movie filter pages
-			index: this.props.index,
-			// the type of page the pop up is called from
-			type: this.props.type
-		};
+		this.state = MovieDisplayPopUp.generateState(this.props);
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
 		this.changeHandler = this.changeHandler.bind(this);
 		this.buttonHandler = this.buttonHandler.bind(this);
+		this.showSignInForm = this.showSignInForm.bind(this);
+		this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
+	}
+
+	static getDerivedStateFromProps(nextProps, prevState)
+	{
+		if(prevState.movie.id !== nextProps.movie.id)
+		{
+			return MovieDisplayPopUp.generateState(nextProps);
+		}
+		else if(prevState.currentUser !== nextProps.currentUser)
+		{
+			return MovieDisplayPopUp.generateState(nextProps);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	static generateState(props)
+	{
+		return {
+			open: true,
+			movie: props.movie,
+			poster: props.movie.poster,
+			headerImage: props.movie.backgroundImage,
+			trailer: props.movie.trailer,
+			currentUser: props.currentUser,
+			movieInfoString: generateMovieInfo(props.movie),
+			watched: props.watched,
+			watchList: props.watchList,
+			// index into array of movies if on one of the movie filter pages
+			index: props.index,
+			// the type of page the pop up is called from
+			type: props.type,
+			// show the sign in pop up
+			displaySignIn: false
+		};
 	}
 
 	openModal() {
@@ -46,6 +72,23 @@ class MovieDisplayPopUp extends React.Component {
 		this.props.removeFunction();
     }
 
+	showSignInForm()
+	{
+		this.setState({displaySignIn: true});
+	}
+
+	signInRemoveFunction = (username) =>
+	{
+		let user = "";
+		if(username !== undefined)
+		{
+			user = username;
+		}
+		this.props.updateLoggedIn(user);
+		this.setState({displaySignIn: false});
+	}
+
+
 	changeHandler(event) {
         let name = event.target.name;
         let value = event.target.value;
@@ -57,15 +100,11 @@ class MovieDisplayPopUp extends React.Component {
 		event.preventDefault();
         event.stopPropagation();
 
-		/*
-		may or may not need??
         if(!this.state.currentUser)
         {
-            // will be dependent on the page..
-            this.props.showLoginPopUp(false);
+			this.showSignInForm();
             return;
         }
-		*/
 
         let url = "";
         let params = {movieId: this.state.movie.id};
@@ -139,6 +178,7 @@ class MovieDisplayPopUp extends React.Component {
             {
                 // this will also update who is logged in
                 this.props.showLoginPopUp(true);
+				this.closeModal();
             }
             else
             {
@@ -172,6 +212,12 @@ class MovieDisplayPopUp extends React.Component {
 				headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.poster};
 
 			}
+
+			let signInForm = "";
+			if(this.state.displaySignIn)
+			{
+				signInForm = <SignInPopup removeFunction={this.signInRemoveFunction} redirectOnLogin={false}/>
+			}
     		return (
         			<div>
                         <Popup
@@ -179,6 +225,7 @@ class MovieDisplayPopUp extends React.Component {
                             closeOnDocumentClick
                             onClose={this.closeModal}
                             contentStyle={{ width: "50%", border: "0px", padding: "0px"}}
+							//overlayStyle={{"z-index": "2"}}
                         >
                             <div className={style.modal}>
                                 <div className={style.content} style={headerBackgroundCss}>
@@ -206,6 +253,7 @@ class MovieDisplayPopUp extends React.Component {
                                 </div>
                             </div>
                         </Popup>
+						{signInForm}
         			</div>
     		);
     }

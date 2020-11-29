@@ -6,14 +6,14 @@ import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
     addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
      from './StaticFunctions/UserResultsHandlers.js';
+import {generateWatchListButton, generateWatchedListButton} from './StaticFunctions/MovieHtmlFunctions.js';
 
 class MovieDisplay extends React.Component {
     constructor(props){
         super(props);
-
+        //alert("HERE");
         let state = MovieDisplay.generateDisplayState(this.props);
         this.state = state;
-        console.log(state);
 
         this.posterClickHandler = this.posterClickHandler.bind(this);
         this.buttonHandler = this.buttonHandler.bind(this);
@@ -25,11 +25,18 @@ class MovieDisplay extends React.Component {
     {
         if(prevState.id !== nextProps.movie.id)
         {
-            return MovieDisplay.generateDisplayState(nextProps);
+            // do not display the popup as there was a change in the movie id
+            return MovieDisplay.generateDisplayState(nextProps, false);
         }
         else if(prevState.currentUser !== nextProps.currentUser)
         {
-            return MovieDisplay.generateDisplayState(nextProps);
+            let moviePopup = false;
+            if(prevState.moviePopup)
+            {
+                moviePopup = true;
+            }
+            // if the popup was open, leave it open
+            return MovieDisplay.generateDisplayState(nextProps, moviePopup);
         }
         else
         {
@@ -39,7 +46,7 @@ class MovieDisplay extends React.Component {
 
     // function to set the state for the movie display
     // called on initialization and whenever new props come in
-    static generateDisplayState(props)
+    static generateDisplayState(props, moviePopup)
     {
         let watchList = false;
         if(props.movie.UserWatchLists !== undefined)
@@ -67,7 +74,8 @@ class MovieDisplay extends React.Component {
             id: props.movie.id,
             poster: props.movie.poster,
             movie: props.movie,
-            moviePopup: false,
+            // show the movie display popup
+            moviePopup: moviePopup,
             currentUser: props.currentUser,
             watchList: watchList,
             watched: watched,
@@ -183,50 +191,6 @@ class MovieDisplay extends React.Component {
         this.setState(newState);
     }
 
-    generateWatchListButton()
-    {
-        let watchListIcon = (
-            <div className={`${style.watchListIconContainer}`}>
-                <i class={`fas fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
-                    <span class={style.tooltiptext}>Add to watch list</span>
-                </i>
-            </div>
-        );
-        if(this.state.watchList)
-        {
-            watchListIcon = (
-                <div className={`${style.watchListIconContainer}`}>
-                    <i class={`fas fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
-                        <span class={style.tooltiptext}>Remove from watch list</span>
-                    </i>
-                </div>
-            )
-        }
-        return watchListIcon;
-    }
-
-    generateWatchedListButton()
-    {
-        let watchedIcon = (
-            <div className={`${style.watchedIconContainer}`} >
-                <i class={`fas fa-ticket-alt ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
-                    <span class={style.tooltiptext}>Add to movies watched</span>
-                </i>
-            </div>
-        );
-        if(this.state.watched)
-        {
-            watchedIcon = (
-                <div className={`${style.watchedIconContainer}`}>
-                    <i class={`fas fa-ticket-alt ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
-                        <span class={style.tooltiptext}>Remove movie from watched</span>
-                    </i>
-                </div>
-            );
-        }
-        return watchedIcon;
-    }
-
     render()
     {
         let posterPath = "";
@@ -251,8 +215,8 @@ class MovieDisplay extends React.Component {
                             updateParentState = {this.updateState}
                         />;
         }
-        let watchListIcon = this.generateWatchListButton();
-        let watchedIcon = this.generateWatchedListButton();
+        let watchListIcon = generateWatchListButton(style, this.buttonHandler, this.state.watchList);
+        let watchedIcon = generateWatchedListButton(style, this.buttonHandler, this.state.watched);
 
         return (
             <div className={style.main}>

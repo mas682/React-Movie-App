@@ -10,13 +10,12 @@ const moment = require('moment');
 class MovieFilterPage extends React.Component {
     constructor(props){
         super(props);
-
         // the function returns the query string and the start date
         // made this function as these steps are also done when
         // recieving new props
-        let values = this.updateMovieFilter(false, this.props);
-        let query = values[0];
-        let startDate = values[1];
+        let values = MovieFilterPage.updateMovieFilter(this.props);
+        let query = values.query;
+        let startDate = values.startDate;
         this.state = {
             header: this.props.type,
             movies: [],
@@ -25,13 +24,21 @@ class MovieFilterPage extends React.Component {
             queryString: query,
             currentUser: this.props.currentUser
         };
+        // if the query parameters were updated
+        if(values.updated)
+        {
+            this.props.history.replace({
+                pathname: this.props.location.pathname,
+                search: query
+            });
+        }
         this.getMovies = this.getMovies.bind(this);
         this.apiCall = this.apiCall.bind(this);
         this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
-        this.updateMovieFilter = this.updateMovieFilter.bind(this);
         this.removeMovieDisplay = this.removeMovieDisplay.bind(this);
         this.usersMoviesResultsHandler = this.usersMoviesResultsHandler.bind(this);
         this.apiMovieResultsHandler = this.apiMovieResultsHandler.bind(this);
+        this.generateNewState = this.generateNewState.bind(this);
     }
 
     componentDidUpdate(prevProps, prevState)
@@ -39,28 +46,52 @@ class MovieFilterPage extends React.Component {
         // if the user changed
         if(!prevState.loading && (this.props.currentUser !== prevProps.currentUser))
         {
-            console.log("new user");
-            let query = this.updateMovieFilter(true, this.props);
-            this.getMovies(query, this.props.type);
+            console.log("new user found in movie filter page");
+            this.generateNewState(this.props);
         }
         // if the page type changed
         else if(!prevState.loading && (this.props.type !== prevProps.type))
         {
-            console.log("new type");
-            let query = this.updateMovieFilter(true, this.props);
-            this.getMovies(query, this.props.type);
+            console.log("new type found in movie filter page");
+            this.generateNewState(this.props);
         }
         // if the query parameters changed
-        // need to be carful with this one
-        else if(!prevState.loading && (this.props.location.search !== this.state.queryString))
+        // checking the previous type as when going from one page to another, this will get hit if the type just changed
+        else if(!prevState.loading && (this.props.location.search !== this.state.queryString) && (prevState.header === this.props.type))
         {
-            console.log("new parameters");
-            let query = this.updateMovieFilter(true, this.props);
-            this.getMovies(query, this.props.type);
+            console.log("new parameters found in movie filter page");
+            this.generateNewState(this.props);
         }
     }
 
-    updateMovieFilter(newProps, props) {
+    // called by componentDidUpdate when a change in the props is found
+    async generateNewState(props)
+    {
+        let queryResult = MovieFilterPage.updateMovieFilter(props);
+        let query = queryResult.query;
+        let startDate = queryResult.startDate;
+        let result = await this.getMovies(query, props.type);
+        let movies = (result.movies === undefined) ? [] : result.movies;
+        let currentUser = result.currentUser;
+        this.setState({
+            header: this.props.type,
+            movies: movies,
+            loading: false,
+            startDate: startDate,
+            queryString: query,
+            currentUser: currentUser
+        });
+        // if the query parameters changed
+        if(queryResult.updated)
+        {
+            props.history.replace({
+                pathname: this.props.location.pathname,
+                search: query
+            });
+        }
+    }
+
+    static updateMovieFilter(props) {
         let queryParams = queryString.parse(props.location.search);
         let startDateResult = MovieFilterPage.generateStartDate(props.type, queryParams["release_date_gte"], props.location.search);
         let endDateResult = MovieFilterPage.generateEndDate(props.type, queryParams["release_date_lte"], startDateResult.query);
@@ -69,26 +100,17 @@ class MovieFilterPage extends React.Component {
         let endDate = endDateResult.endDate;
         let sorting = sortResult.sort;
         let query = sortResult.query;
-        props.history.push({
-            pathname: props.location.pathname,
-            search: query
-        });
-        if(newProps)
+        let updated = false;
+        // if any of these are true, the query string was updated
+        if(startDateResult.changed || endDateResult.changed || sortResult.changed)
         {
-            this.setState({
-                header: props.type,
-                movies: [],
-                loading: true,
-                startDate: startDate,
-                queryString: query,
-                currentUser: props.currentUser
-            });
-            return query;
+            updated = true;
         }
-        else
-        {
-            return [query, startDate];
-        }
+        return {
+            query: query,
+            startDate: startDate,
+            updated: updated
+        };;
     }
 
     // function to generate the start date for the query string if not defined
@@ -97,8 +119,10 @@ class MovieFilterPage extends React.Component {
     // queryString is the queryString to append the parameter value to
     static generateStartDate(type, startDate, queryString)
     {
+        let changed = false;
         if(startDate === undefined)
         {
+            changed = true;
             let date = new Date();
             if(type === "Upcoming Movies")
             {
@@ -128,6 +152,7 @@ class MovieFilterPage extends React.Component {
             }
         }
         return {
+            changed: changed,
             query: queryString.toString(),
             startDate: startDate
         };
@@ -140,8 +165,10 @@ class MovieFilterPage extends React.Component {
     // queryString is the queryString to append the parameter value to
     static generateEndDate(type, endDate, queryString)
     {
+        let changed = false;
         if(endDate === undefined && type === "New Releases")
         {
+            changed = true;
             let date = new Date();
             endDate = moment(date).format('YYYY-MM-DD');
             if(queryString.length > 0)
@@ -154,6 +181,7 @@ class MovieFilterPage extends React.Component {
             }
         }
         return {
+            changed: changed,
             query: queryString.toString(),
             endDate: endDate
         };
@@ -165,9 +193,11 @@ class MovieFilterPage extends React.Component {
     // queryString is the queryString to append the parameter value to
     static generateSorting(type, sorting, queryString)
     {
+        let changed = false;
         let sortOrder = sorting;
         if(sorting === undefined)
         {
+            changed = true;
             sortOrder = "release_date_asc";
             if(type === "New Releases")
             {
@@ -183,6 +213,7 @@ class MovieFilterPage extends React.Component {
             }
         }
         return {
+            chnaged: changed,
             sort: sortOrder,
             query: queryString.toString()
         };
@@ -190,7 +221,8 @@ class MovieFilterPage extends React.Component {
 
     async componentDidMount()
     {
-        this.getMovies(undefined, this.state.header);
+        let result = await this.getMovies(undefined, this.state.header);
+        this.setState(result);
     }
 
     // function to handle call to api and result
@@ -203,11 +235,11 @@ class MovieFilterPage extends React.Component {
         let result = movieData[1];
         if(type === "My Watch List" || type === "My Watched Movies")
         {
-            this.usersMoviesResultsHandler(status, message, username, result);
+            return await this.usersMoviesResultsHandler(status, message, username, result);
         }
         else
         {
-            this.apiMovieResultsHandler(status, message, username, result);
+            return await this.apiMovieResultsHandler(status, message, username, result);
         }
     }
 
@@ -284,11 +316,11 @@ class MovieFilterPage extends React.Component {
         if(status === 200)
         {
             this.props.updateLoggedIn(requester);
-            this.setState({
+            return {
               movies: result.movies,
               currentUser: requester,
               loading: false
-            });
+            };
         }
         else
         {
@@ -300,16 +332,17 @@ class MovieFilterPage extends React.Component {
                 // if this occurs, some query parameter was invalid,
                 // or too may query parameters provided
                 // should redirect to 404 page
-                this.setState({
+                return {
                     currentUser: requester,
                     loading: false
-                });
+                };
             }
             else
             {
-                this.setState({
-                    loading: false,
-                });
+                return {
+                    currentUser: requester,
+                    loading: false
+                };
             }
         }
     }
@@ -339,6 +372,7 @@ class MovieFilterPage extends React.Component {
                         updateLoggedIn={this.props.updateLoggedIn}
                         showLoginPopUp={this.props.showLoginPopUp}
                         currentUser={this.state.currentUser}
+                        key={index}
                     />
                 </div>
             );
