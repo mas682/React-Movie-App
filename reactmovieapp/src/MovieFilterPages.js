@@ -92,19 +92,29 @@ class MovieFilterPage extends React.Component {
     }
 
     static updateMovieFilter(props) {
-        let queryParams = queryString.parse(props.location.search);
-        let startDateResult = MovieFilterPage.generateStartDate(props.type, queryParams["release_date_gte"], props.location.search);
-        let endDateResult = MovieFilterPage.generateEndDate(props.type, queryParams["release_date_lte"], startDateResult.query);
-        let sortResult = MovieFilterPage.generateSorting(props.type, queryParams["sort"], endDateResult.query);
-        let startDate = startDateResult.startDate;
-        let endDate = endDateResult.endDate;
-        let sorting = sortResult.sort;
-        let query = sortResult.query;
+        let  queryParams = queryString.parse(props.location.search);
+        let startDate = queryParams["release_date_gte"];
+        let endDate = queryParams["release_date_lte"];
+        let sorting = queryParams["sort"];
+        let query = props.location.search;
         let updated = false;
-        // if any of these are true, the query string was updated
-        if(startDateResult.changed || endDateResult.changed || sortResult.changed)
+
+        // if the watchlist/watched pages, no parameters are required at this time
+        if(props.type === "Upcoming" || props.type === "New Releases")
         {
-            updated = true;
+            let startDateResult = MovieFilterPage.generateStartDate(props.type, queryParams["release_date_gte"], props.location.search);
+            let endDateResult = MovieFilterPage.generateEndDate(props.type, queryParams["release_date_lte"], startDateResult.query);
+            let sortResult = MovieFilterPage.generateSorting(props.type, queryParams["sort"], endDateResult.query);
+            startDate = startDateResult.startDate;
+            endDate = endDateResult.endDate;
+            sorting = sortResult.sort;
+            query = sortResult.query;
+            updated = false;
+            // if any of these are true, the query string was updated
+            if(startDateResult.changed || endDateResult.changed || sortResult.changed)
+            {
+                updated = true;
+            }
         }
         return {
             query: query,
@@ -273,11 +283,11 @@ class MovieFilterPage extends React.Component {
         if(status === 200)
         {
             this.props.updateLoggedIn(requester);
-            this.setState({
+            return {
               movies: result.movies,
               currentUser: requester,
               loading: false
-            });
+            };
         }
         else
         {
@@ -294,16 +304,16 @@ class MovieFilterPage extends React.Component {
                 alert(message);
                 // if this occurs, the user was not found but this should never
                 // really occur as a 401 should come instead I think
-                this.setState({
+                return {
                     currentUser: requester,
                     loading: false
-                });
+                };
             }
             else
             {
-                this.setState({
+                return {
                     loading: false,
-                });
+                };
             }
         }
     }

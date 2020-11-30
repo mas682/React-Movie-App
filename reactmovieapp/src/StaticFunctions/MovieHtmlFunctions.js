@@ -331,5 +331,43 @@ const generateMovieRuntime = (value) =>
     return runTime;
 }
 
+// function to check if a movie is on a users watchlist
+const checkMovieOnWatchList = (movie, username) =>
+{
+    if(username === "") return false;
+    let watchList = false;
+    // make these two if's reusable functions...
+    if(movie.UserWatchLists !== undefined)
+    {
+        if(movie.UserWatchLists.length > 0)
+        {
+            if(movie.UserWatchLists[0].username === username)
+            {
+                watchList = true;
+            }
+        }
+    }
+    return watchList;
+}
+
+// function to check if a movie has been watched by a user
+const checkMovieOnWatchedList = (movie, username) =>
+{
+    if(username === "") return false;
+    let watched = false;
+    if(movie.UsersWhoWatched !== undefined)
+    {
+        if(movie.UsersWhoWatched.length > 0)
+        {
+            if(movie.UsersWhoWatched[0].username === username)
+            {
+                watched = true;
+            }
+        }
+    }
+    return watched;
+}
+
 export {generateWatchListButton, generateWatchedListButton, generateMovieTrailer, generateOverview, generateDirector,
-        generateGenres, generateMovieInfo, generateMovieRuntime, generateMoviePoster, generateRatingStars};
+        generateGenres, generateMovieInfo, generateMovieRuntime, generateMoviePoster, generateRatingStars,
+        checkMovieOnWatchList, checkMovieOnWatchedList};

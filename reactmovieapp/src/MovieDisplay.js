@@ -6,7 +6,8 @@ import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
     addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
      from './StaticFunctions/UserResultsHandlers.js';
-import {generateWatchListButton, generateWatchedListButton} from './StaticFunctions/MovieHtmlFunctions.js';
+import {generateWatchListButton, generateWatchedListButton, checkMovieOnWatchList,
+        checkMovieOnWatchedList} from './StaticFunctions/MovieHtmlFunctions.js';
 
 class MovieDisplay extends React.Component {
     constructor(props){
@@ -48,28 +49,8 @@ class MovieDisplay extends React.Component {
     // called on initialization and whenever new props come in
     static generateDisplayState(props, moviePopup)
     {
-        let watchList = false;
-        if(props.movie.UserWatchLists !== undefined)
-        {
-            if(props.movie.UserWatchLists.length > 0)
-            {
-                if(props.movie.UserWatchLists[0].username === props.currentUser)
-                {
-                    watchList = true;
-                }
-            }
-        }
-        let watched = false;
-        if(props.movie.UsersWhoWatched !== undefined)
-        {
-            if(props.movie.UsersWhoWatched.length > 0)
-            {
-                if(props.movie.UsersWhoWatched[0].username === props.currentUser)
-                {
-                    watched = true;
-                }
-            }
-        }
+        let watchList = checkMovieOnWatchList(props.movie, props.currentUser);
+        let watched = checkMovieOnWatchedList(props.movie, props.currentUser);
         return {
             id: props.movie.id,
             poster: props.movie.poster,

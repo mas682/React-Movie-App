@@ -162,7 +162,7 @@ const getMovieInfo = async(cookie, req, res, cookieValid) =>
 		{
 			movie = await models.Movies.getMovieInfo(movieId, models, undefined);
 		}
-		if(movie === undefined)
+		if(movie === null)
 		{
 			res.status(404).send({
 				message: "Unable to find the information for the requested movie",
@@ -185,6 +185,7 @@ const getWatchList = async(cookie, req, res) =>
 	let username = cookie.name;
 	// may need an await here..
 	let movies = await models.User.getWatchList(cookie.id, models);
+	console.log(movies);
 	if(movies === null)
 	{
 		res.status(404).send({
