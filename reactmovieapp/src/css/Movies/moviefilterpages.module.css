@@ -6,7 +6,7 @@
     margin-left: 15%;
     margin-right: 15%;
     margin-top: 20px;
-    position: absolute;
+    position: static;
     display: flex;
     flex-flow: row wrap;
     align-content: flex-start;

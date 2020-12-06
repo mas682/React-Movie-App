@@ -45,10 +45,11 @@ const selectPath = (cookie, req, res, cookieValid) =>
 	{
 		getWatchedList(cookie, req, res);
 	}
-	else if(req.params.type === "add_to_watchlist" && cookieValid)
+	else if(req.params.type === "add_to_watchlist")
 	{
 		if(cookieValid)
 		{
+			console.log(cookieValid);
 			addToWatchList(cookie, req, res);
 		}
 		else
@@ -59,7 +60,7 @@ const selectPath = (cookie, req, res, cookieValid) =>
 			});
 		}
 	}
-	else if(req.params.type === "remove_from_watchlist" && cookieValid)
+	else if(req.params.type === "remove_from_watchlist")
 	{
 		if(cookieValid)
 		{
@@ -172,7 +173,7 @@ const getMovieInfo = async(cookie, req, res, cookieValid) =>
 		else
 		{
 			res.status(200).send({
-				status: "Movie info successfully found",
+				message: "Movie info successfully found",
 				requester: username,
 				movie: movie
 			});

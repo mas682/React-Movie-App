@@ -1,0 +1,85 @@
+.messagesContainer {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+/* for testing */
+.messagesInnerContainer
+{
+    position: sticky;
+    top: 0; /* required */
+    width: 100%;
+    z-index: 1;
+    padding-top: 15px;
+    /*border-top: 20px solid transparent;*/
+}
+
+.messageBox {
+    position: sticky;
+    margin-bottom: 10px;
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+    border-radius: 10px;
+    font-size: 1.25em;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.success {
+    background: #b3ffb3;
+    color: #004d00;
+    border: 1px #004d00 solid;
+}
+
+.warning {
+    background: #ffff99;
+    color: #b37700;
+    border: 1px #b37700 solid;
+}
+
+.info {
+    background: #4db8ff;
+    color: #003d66;
+    border: 1px #003d66 solid;
+}
+
+.failure {
+    background: #ffb3b3;
+    color: #b30000;
+    border: 1px #b30000 solid;
+}
+
+.unknown {
+    background: #ffbf80;
+    color: #b35900;
+    border: 1px #b35900 solid;
+}
+
+.attention {
+    background: #d9d9d9;
+    color: #0039e6;
+    border: 1px #0039e6 solid;
+}
+
+.symbol {
+    margin-left: 1%;
+    margin-right: 1%;
+    width: 2.5%;
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
+}
+
+.message {
+    width: 91%;
+}
+
+.closeButton {
+    width: 2.5%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 5px;
+    margin-left: 1%;
+    margin-right: 1%;
+}

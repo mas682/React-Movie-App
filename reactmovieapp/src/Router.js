@@ -1,5 +1,5 @@
 import React from 'react';
-import {BrowserRouter as Router, Route, Redirect, Switch, useParams} from 'react-router-dom';
+import {BrowserRouter as Router, Route, Redirect, Switch, history} from 'react-router-dom';
 import Movie from './MovieReview.js';
 import MovieInfo from './MovieInfo.js';
 import Landing from './LandingPage.js';
@@ -8,7 +8,6 @@ import UserProfile from './userProfile.js';
 import UserFeed from './userFeed.js';
 import UserSettings from'./UserSettings.js';
 import MovieInfoPage from'./MovieInfoPage.js';
-import history from './History';
 import Header from './Header.js';
 import MovieFilterPage from './MovieFilterPages.js';
 
@@ -112,7 +111,7 @@ class Routes extends React.Component
         console.log("username in router " + this.state.currentUser);
         //alert("Router: " + this.state.currentUser);
         return (<React.Fragment>
-            <Router history={history}>
+            <Router>
                 <Header currentUser={this.state.currentUser} loggedIn={this.state.loggedIn} updateLoggedIn={this.updateLoggedIn} redirectOnLogin={this.state.redirect} showLoginPopUp={this.state.displayLogin} removeLoginPopUp={this.removeLoginPopUp}/>
                 <main>
                     <Switch>

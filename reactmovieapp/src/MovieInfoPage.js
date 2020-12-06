@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import {Link, Redirect, withRouter} from 'react-router-dom';
 import MoviePosterPopUp from './MoviePosterPopUp.js';
+import Alert from './Alert.js';
 import queryString from "query-string";
 import style from './css/Movies/movieinfo.module.css';
+import {getErrorDisplay} from './StaticFunctions/ErrorHtmlFunctions.js';
 import {generateWatchListButton, generateWatchedListButton, generateMovieTrailer, generateMovieRuntime,
 generateMovieInfo, generateOverview, generateDirector, generateGenres, generateRatingStars,
 checkMovieOnWatchList, checkMovieOnWatchedList} from './StaticFunctions/MovieHtmlFunctions.js';
@@ -41,7 +43,9 @@ class MovieInfoPage extends React.Component {
               currentUser: this.props.currentUser,
               watchList: false,
               watched: false,
-              redirect404: false
+              message: "",
+              messageId: -1,
+              messageType: ""
           }
 
           this.generateMoviePoster = this.generateMoviePoster.bind(this);
@@ -50,8 +54,6 @@ class MovieInfoPage extends React.Component {
           this.updateMovieInfo = this.updateMovieInfo.bind(this);
           this.buttonHandler = this.buttonHandler.bind(this);
           this.movieInfoResultsHandler = this.movieInfoResultsHandler.bind(this);
-         // this.movieWatchedResultsHandler = this.movieWatchedResultsHandler.bind(this);
-         // this.movieWatchListResultsHandler = this.movieWatchListResultsHandler.bind(this);
     	}
 
       // called when the component is receiving new props
@@ -72,7 +74,8 @@ class MovieInfoPage extends React.Component {
           }
           if(this.props.id !== id)
           {
-              this.updateMovieInfo(id);
+              //alert("Will receive");
+             // this.updateMovieInfo(id);
           }
       }
 
@@ -104,11 +107,13 @@ class MovieInfoPage extends React.Component {
           let status = movieData[0];
           let requester = movieData[1].requester;
           let message = movieData[1].message;
-          this.movieInfoResultsHandler(status, requester, message, movieData[1]);
+          console.log(movieData[1]);
+          this.movieInfoResultsHandler(status, message, requester, movieData[1]);
       }
 
       movieInfoResultsHandler(status, message, requester, result)
       {
+          //alert(status);
           if(status === 200)
           {
               let movie = result.movie;
@@ -140,29 +145,30 @@ class MovieInfoPage extends React.Component {
           }
           else
           {
-              alert(message);
               this.props.updateLoggedIn(requester);
               // movie id invalid format
               if(status === 400)
               {
                   // redirect to 400 page?
                   this.setState({
-                      movie: undefined
+                      movie: undefined,
+                      message: message
                   });
               }
               else if(status === 404)
               {
                   // movie could not be found
-                  // redirect to 404 page
+                  // show error message
                   this.setState({
                       movie: undefined,
-                      redirect404: true
+                      message: message
                   });
               }
               else
               {
                   this.setState({
-                      movie: undefined
+                      movie: undefined,
+                      message: message
                   });
               }
           }
@@ -234,9 +240,13 @@ class MovieInfoPage extends React.Component {
 
           if(result.movieNotFound)
           {
-              //this.props.removeMovieDisplay(this.state.index);
               // will need to redirect to 404 page
               this.props.updateLoggedIn(requester);
+              this.setState({
+                  movie: undefined,
+                  // set the message to display on the 404 page
+                  message: message
+              });
           }
           else
           {
@@ -247,7 +257,14 @@ class MovieInfoPage extends React.Component {
               }
               else
               {
-                  this.setState(result.state);
+                  let state = result.state;
+                  if(result.messageState !== undefined)
+                  {
+                      state = {...result.state, ...result.messageState};
+                      let messageCount = this.state.messageId + 1;
+                      state["messageId"] = messageCount;
+                  }
+                  this.setState(state);
                   this.props.updateLoggedIn(requester);
               }
           }
@@ -272,6 +289,11 @@ class MovieInfoPage extends React.Component {
         if(this.state.movie === null)
         {
             return null;
+        }
+        // if the movie is undefined, some error occurred trying to retrieve it
+        if(this.state.movie === undefined)
+        {
+            return getErrorDisplay(this.state.message);
         }
         if(this.state.redirect404)
         {
@@ -307,6 +329,8 @@ class MovieInfoPage extends React.Component {
             }
         }
     	return (
+          <React.Fragment>
+          <Alert message={this.state.message} messageId={this.state.messageId} type={this.state.messageType}/>
           <div className={style.mainBodyContainer}>
               <div className={style.headerContainer} style={headerBackgroundCss}>
                   {poster}
@@ -338,6 +362,7 @@ class MovieInfoPage extends React.Component {
               {trailer}
               {posterPopup}
           </div>
+          </React.Fragment>
     		);
   	}
 }

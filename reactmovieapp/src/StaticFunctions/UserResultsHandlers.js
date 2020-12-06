@@ -6,11 +6,16 @@ const addMovieToWatchListResultsHandler = (status, message, requester) =>
 {
     let movieNotFound = false;
     let showLoginPopUp = false;
-    let state;
+    let state = {};
+    let messageState;
     if(status === 200)
     {
         state = {
             watchList: true
+        };
+        messageState = {
+            message: message,
+            messageType: "success"
         };
     }
     else
@@ -21,28 +26,38 @@ const addMovieToWatchListResultsHandler = (status, message, requester) =>
             // not logged in
             showLoginPopUp = true;
             state = {
-                watchList: false
+                watchList: false,
             };
         }
         else if(status === 400)
         {
             // request not understood as movie id in incorrect format
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
         else if(status === 404)
         {
             // movie not found
             movieNotFound = true;
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
         else
         {
             // some unknown/unexpected error occurred
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
     }
     return {
         state: state,
+        messageState: messageState,
         movieNotFound: movieNotFound,
         showLoginPopUp: showLoginPopUp
     };
@@ -54,12 +69,17 @@ const removeWatchListMovieResultsHandler = (status, message, requester, type) =>
     let showLoginPopUp = false;
     let removeFromDisplay = false;
     let state;
+    let messageState;
     if(status === 200)
     {
         state = {
             watchList: false
         };
         removeFromDisplay = (type === "My Watch List") ? true : false;
+        messageState = {
+            message: message,
+            messageType: "success"
+        }
     }
     else
     {
@@ -75,22 +95,32 @@ const removeWatchListMovieResultsHandler = (status, message, requester, type) =>
         else if(status === 400)
         {
             // request not understood as movie id in incorrect format
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
         else if(status === 404)
         {
             // movie not found
             movieNotFound = true;
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
         else
         {
             // some unknown/unexpected error occurred
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
     }
     return {
         state: state,
+        messageState: messageState,
         movieNotFound: movieNotFound,
         showLoginPopUp: showLoginPopUp,
         removeFromDiplay: removeFromDisplay
@@ -101,12 +131,17 @@ const addMovieToWatchedListResultsHandler = (status, message, requester) =>
 {
     let movieNotFound = false;
     let showLoginPopUp = false;
-    let state;
+    let state = {};
+    let messageState;
     if(status === 200)
     {
         state = {
             watched: true,
             currentUser: requester
+        };
+        messageState = {
+            message: message,
+            messageType: "success"
         };
     }
     else
@@ -123,22 +158,32 @@ const addMovieToWatchedListResultsHandler = (status, message, requester) =>
         else if(status === 400)
         {
             // request not understood as movie id in incorrect format
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
         else if(status === 404)
         {
             // movie not found
             movieNotFound = true;
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
         else
         {
             // some unknown/unexpected error occurred
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
     }
     return {
         state: state,
+        messageState: messageState,
         movieNotFound: movieNotFound,
         showLoginPopUp: showLoginPopUp
     };
@@ -149,13 +194,18 @@ const removeWatchedListMovieResultsHandler = (status, message, requester, type) 
     let movieNotFound = false;
     let showLoginPopUp = false;
     let removeFromDisplay = false;
-    let state;
+    let state = {};
+    let messageState;
     if(status === 200)
     {
         state = {
             watched: false
         };
         removeFromDisplay = (type === "My Watched Movies") ? true : false;
+        messageState = {
+            message: message,
+            messageType: "success"
+        };
     }
     else
     {
@@ -171,22 +221,32 @@ const removeWatchedListMovieResultsHandler = (status, message, requester, type) 
         else if(status === 400)
         {
             // request not understood as movie id in incorrect format
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
         else if(status === 404)
         {
             // movie not found
             movieNotFound = true;
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
         else
         {
             // some unknown/unexpected error occurred
-            state = {};
+            messageState = {
+                message: message,
+                messageType: "failure"
+            };
         }
     }
     return {
         state: state,
+        messageState: messageState,
         movieNotFound: movieNotFound,
         showLoginPopUp: showLoginPopUp,
         removeFromDiplay: removeFromDisplay

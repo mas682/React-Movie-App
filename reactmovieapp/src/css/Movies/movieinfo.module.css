@@ -1,17 +1,16 @@
 
-
 .mainBodyContainer {
     width: 70%;
     height: auto;
     margin-left: 15%;
     margin-right: 15%;
-    margin-top: 20px;
-    position: absolute;
+    position: static;
     display: flex;
     flex-flow: row wrap;
     align-content: flex-start;
     margin-bottom: 20px;
     background: white;
+    overflow: visible;
 }
 
 .headerContainer {
@@ -22,10 +21,6 @@
   position: relative;
   background-repeat: no-repeat;
   background-size: cover;
-}
-
-#moviePageHeader {
-
 }
 
 .movieImageContainer {
@@ -187,7 +182,7 @@
 
   /* Position the tooltip */
   position: absolute;
-  z-index: 1;
+  z-index: 0;
   margin-left: 10px;
   margin-top: 5px;
 }

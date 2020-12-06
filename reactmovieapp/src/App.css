@@ -11,6 +11,14 @@
   */
 }
 
+main{
+    height: auto;
+    margin-top: 20px;
+    /* needs to be absolute for Alert component */
+    position: absolute;
+    width: 100%;
+}
+
 .mainBodyContainer {
     width: 70%;
     /*height: 1000px;*/
@@ -18,7 +26,7 @@
     margin-left: 15%;
     margin-right: 15%;
     margin-top: 20px;
-    position: absolute;
+    position: static;
     display: flex;
     flex-flow: row wrap;
     align-content: flex-start;

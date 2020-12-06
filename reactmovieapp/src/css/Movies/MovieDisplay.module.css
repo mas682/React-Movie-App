@@ -25,6 +25,7 @@
 }
 
 .movieDetailsContainer {
+    position: static;
     color: #093145;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 10px;
@@ -51,8 +52,8 @@
 }
 
 .icons {
-    width: 27.7%;
-    position: absolute;
+    width: 14.7%;
+    position: static;
     margin-right: 0.3%;
 }
 

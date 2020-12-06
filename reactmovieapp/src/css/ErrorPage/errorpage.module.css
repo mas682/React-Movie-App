@@ -1,0 +1,34 @@
+
+/* css to be used for error handling */
+
+.mainBodyContainer {
+    width: 70%;
+    height: 600px;
+    margin-left: 15%;
+    margin-right: 15%;
+    margin-top: 20px;
+    position: static;
+    display: flex;
+    flex-flow: row wrap;
+    align-content: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    background: white;
+}
+
+
+.header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    font-size: 3em;
+    font-weight: bold;
+}
+
+.errorMessage {
+    margin-top: 10px;
+    width: 80%;
+    display: flex;
+    justify-content: center;
+    font-size: 1.5em;
+}
