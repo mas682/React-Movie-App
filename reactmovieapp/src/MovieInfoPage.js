@@ -308,38 +308,38 @@ class MovieInfoPage extends React.Component {
         }
     	return (
           <React.Fragment>
-          <Alert message={this.state.message} messageId={this.state.messageId} type={this.state.messageType}/>
-          <div className={style.mainBodyContainer}>
-              <div className={style.headerContainer} style={headerBackgroundCss}>
-                  {poster}
-                  <div className={style.movieDetailsOutterContainer}>
-                      <div className={style.movieDetailsContainer}>
-                          <div className={style.movieTitle}>
-                              {this.state.movie.title}
+              <Alert message={this.state.message} messageId={this.state.messageId} type={this.state.messageType}/>
+              <div className={style.mainBodyContainer}>
+                  <div className={style.headerContainer} style={headerBackgroundCss}>
+                      {poster}
+                      <div className={style.movieDetailsOutterContainer}>
+                          <div className={style.movieDetailsContainer}>
+                              <div className={style.movieTitle}>
+                                  {this.state.movie.title}
+                              </div>
+                              <div className={style.infoContainer}>
+                                  {this.state.movieInfoString}
+                              </div>
+                              <div className={style.ratingContainer}>
+                                  <fieldset className={style.rating}>
+                                      {stars}
+                                  </fieldset>
+                              </div>
+                              <div className={style.icons}>
+                                    {watchedIcon}
+                                    {watchListIcon}
+                              </div>
+                              <div className={style.ratingContainer}>
+                              </div>
+                              {overview}
+                              {genres}
+                              {director}
                           </div>
-                          <div className={style.infoContainer}>
-                              {this.state.movieInfoString}
-                          </div>
-                          <div className={style.ratingContainer}>
-                              <fieldset className={style.rating}>
-                                  {stars}
-                              </fieldset>
-                          </div>
-                          <div className={style.icons}>
-                                {watchedIcon}
-                                {watchListIcon}
-                          </div>
-                          <div className={style.ratingContainer}>
-                          </div>
-                          {overview}
-                          {genres}
-                          {director}
                       </div>
                   </div>
+                  {trailer}
+                  {posterPopup}
               </div>
-              {trailer}
-              {posterPopup}
-          </div>
           </React.Fragment>
     		);
   	}

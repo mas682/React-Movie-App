@@ -83,7 +83,6 @@ const removeWatchListMovieResultsHandler = (status, message, requester, type) =>
     }
     else
     {
-        alert(message);
         if(status === 401)
         {
             // not logged in
@@ -146,7 +145,6 @@ const addMovieToWatchedListResultsHandler = (status, message, requester) =>
     }
     else
     {
-        alert(message);
         if(status === 401)
         {
             // not logged in
@@ -209,7 +207,6 @@ const removeWatchedListMovieResultsHandler = (status, message, requester, type) 
     }
     else
     {
-        alert(message);
         if(status === 401)
         {
             // not logged in

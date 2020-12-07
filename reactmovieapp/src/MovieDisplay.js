@@ -26,11 +26,13 @@ class MovieDisplay extends React.Component {
     {
         if(prevState.id !== nextProps.movie.id)
         {
+            console.log("False");
             // do not display the popup as there was a change in the movie id
             return MovieDisplay.generateDisplayState(nextProps, false);
         }
         else if(prevState.currentUser !== nextProps.currentUser)
         {
+            console.log("False2");
             let moviePopup = false;
             if(prevState.moviePopup)
             {
@@ -41,6 +43,7 @@ class MovieDisplay extends React.Component {
         }
         else
         {
+            console.log("Null");
             return null;
         }
     }
@@ -123,6 +126,7 @@ class MovieDisplay extends React.Component {
                 {
                     this.props.removeMovieDisplay(this.state.index);
                     this.props.updateLoggedIn(requester);
+                    this.props.setMessage(result.messageState);
                     return;
                 }
             }
@@ -141,6 +145,7 @@ class MovieDisplay extends React.Component {
                 {
                     this.props.removeMovieDisplay(this.state.index);
                     this.props.updateLoggedIn(requester);
+                    this.props.setMessage(result.messageState);
                     return;
                 }
             }
@@ -150,6 +155,7 @@ class MovieDisplay extends React.Component {
         {
             this.props.removeMovieDisplay(this.state.index);
             this.props.updateLoggedIn(requester);
+            this.props.setMessage(result.messageState);
         }
         else
         {
@@ -160,6 +166,11 @@ class MovieDisplay extends React.Component {
             }
             else
             {
+                if(result.messageState !== undefined)
+                {
+                    console.log("Set message");
+                    this.props.setMessage(result.messageState)
+                }
                 this.setState(result.state);
                 this.props.updateLoggedIn(requester);
             }
