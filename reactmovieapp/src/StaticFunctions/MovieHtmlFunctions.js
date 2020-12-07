@@ -260,6 +260,22 @@ const generateMoviePoster = (style, poster, movieId) =>
     );
 }
 
+// function to generate the background image for a movie's page or popup
+const generateMovieBackground = (style, headerImage, poster) =>
+{
+    let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
+    if(headerImage !== null)
+    {
+        headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + headerImage};
+    }
+    // if there is no background image, try to use the poster itself
+    else if(poster !== null)
+    {
+        headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + poster};
+    }
+    return headerBackgroundCss;
+}
+
 
 // called whenever the data is recieved from the server
 // function to generate a string of the movie info
@@ -370,4 +386,4 @@ const checkMovieOnWatchedList = (movie, username) =>
 
 export {generateWatchListButton, generateWatchedListButton, generateMovieTrailer, generateOverview, generateDirector,
         generateGenres, generateMovieInfo, generateMovieRuntime, generateMoviePoster, generateRatingStars,
-        checkMovieOnWatchList, checkMovieOnWatchedList};
+        checkMovieOnWatchList, checkMovieOnWatchedList, generateMovieBackground};

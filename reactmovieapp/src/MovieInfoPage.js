@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
-import {Link, Redirect, withRouter} from 'react-router-dom';
+import {Redirect, withRouter} from 'react-router-dom';
 import MoviePosterPopUp from './MoviePosterPopUp.js';
 import Alert from './Alert.js';
-import queryString from "query-string";
 import style from './css/Movies/movieinfo.module.css';
 import {getErrorDisplay} from './StaticFunctions/ErrorHtmlFunctions.js';
-import {generateWatchListButton, generateWatchedListButton, generateMovieTrailer, generateMovieRuntime,
+import {generateWatchListButton, generateWatchedListButton, generateMovieTrailer,
 generateMovieInfo, generateOverview, generateDirector, generateGenres, generateRatingStars,
-checkMovieOnWatchList, checkMovieOnWatchedList} from './StaticFunctions/MovieHtmlFunctions.js';
+checkMovieOnWatchList, checkMovieOnWatchedList, generateMovieBackground} from './StaticFunctions/MovieHtmlFunctions.js';
 import {apiPostJsonRequest, apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
     addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
@@ -29,7 +28,6 @@ class MovieInfoPage extends React.Component {
                   alert("Invalid movie id provided");
               }
           }
-          console.log(queryElements);
           this.state = {
               id: id,
               rating: 4.5,
@@ -47,35 +45,32 @@ class MovieInfoPage extends React.Component {
               messageId: -1,
               messageType: ""
           }
-
           this.generateMoviePoster = this.generateMoviePoster.bind(this);
           this.posterClickHandler = this.posterClickHandler.bind(this);
-          this.getMovieInfo = this.getMovieInfo.bind(this);
           this.updateMovieInfo = this.updateMovieInfo.bind(this);
           this.buttonHandler = this.buttonHandler.bind(this);
           this.movieInfoResultsHandler = this.movieInfoResultsHandler.bind(this);
     	}
 
-      // called when the component is receiving new props
-      // handles issue where receiving props from another movies page and does not update
-      componentWillReceiveProps(nextProps) {
+      componentDidUpdate(prevProps, prevState)
+      {
           let id = null;
-          let movieQuery = nextProps.match.params.id;
+          let movieQuery = this.props.match.params.id;
           let queryElements = movieQuery.split("-", 1);
           if(queryElements.length > 0)
           {
-              // get the movie id
               id = parseInt(queryElements[0]);
-              if(isNaN(id))
-              {
-                  id = null;
-                  alert("Invalid movie id provided");
-              }
+              if(isNaN(id)) return;
           }
-          if(this.props.id !== id)
+          // if the movie id changed
+          if(this.state.id !== id)
           {
-              //alert("Will receive");
-             // this.updateMovieInfo(id);
+              this.updateMovieInfo(id);
+          }
+          // if the logged in user changed
+          else if(this.props.currentUser !== this.state.currentUser)
+          {
+              this.updateMovieInfo(id);
           }
       }
 
@@ -92,18 +87,11 @@ class MovieInfoPage extends React.Component {
           });
       }
 
-      // function to get the movie title suggestions based off of a
-      // substring that the user has already entered
-      getMovieInfo(id)
-      {
-          let url = "http://localhost:9000/movie/" + id;
-          return apiGetJsonRequest(url);
-      }
-
       // function to handle call to api and result
       async updateMovieInfo(value)
       {
-          let movieData = await this.getMovieInfo(value);
+          let url = "http://localhost:9000/movie/" + value;
+          let movieData = await apiGetJsonRequest(url)
           let status = movieData[0];
           let requester = movieData[1].requester;
           let message = movieData[1].message;
@@ -113,7 +101,6 @@ class MovieInfoPage extends React.Component {
 
       movieInfoResultsHandler(status, message, requester, result)
       {
-          //alert(status);
           if(status === 200)
           {
               let movie = result.movie;
@@ -300,16 +287,7 @@ class MovieInfoPage extends React.Component {
             return <Redirect to={"/"} />;
         }
 
-        let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
-        if(this.state.headerImage !== null)
-        {
-            headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.headerImage};
-        }
-        // if there is no background image, try to use the poster itself
-        else if(this.state.poster !== null)
-        {
-            headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + this.state.poster};
-        }
+        let headerBackgroundCss = generateMovieBackground(style, this.state.headerImage, this.state.poster);
         let poster = this.generateMoviePoster();
         let trailer = generateMovieTrailer(style, this.state.trailer);
         let stars = generateRatingStars(style, this.state.id, this.state.rating);
