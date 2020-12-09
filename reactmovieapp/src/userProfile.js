@@ -6,6 +6,8 @@ import style5 from './css/userProfile.module.css';
 import './css/forms.css'
 import ProfileHeader from './ProfileHeader.js';
 import MoviePostDisplay from './MoviePostDisplay.js';
+import Alert from './Alert.js';
+import {getErrorDisplay} from './StaticFunctions/ErrorHtmlFunctions.js';
 
 
 class UserProfile extends React.Component {
@@ -21,12 +23,19 @@ class UserProfile extends React.Component {
             followingCountChange: 0,
             followerCountChange: 0,
             currentUser: this.props.currentUser,
-            redirect: false
+            redirect: false,
+            message: "",
+            messageId: -1,
+            messageType: "",
+            showErrorPage: false,
+            errorMessage: ""
         }
         this.setPostCount = this.setPostCount.bind(this);
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
         this.updateFollowerCount = this.updateFollowerCount.bind(this);
         this.redirectToHome = this.redirectToHome.bind(this);
+        this.setMessage = this.setMessage.bind(this);
+        this.showErrorPage = this.showErrorPage.bind(this);
     }
 
     // update the state if new props came in with a different profile
@@ -74,7 +83,10 @@ class UserProfile extends React.Component {
              || nextState.username !== this.state.username
              || nextState.currentUser !== this.state.currentUser
              || nextState.postCount !== this.state.postCount
-             || nextState.redirect === true);
+             || nextState.redirect === true
+             || nextState.messageId !== this.state.messageId
+             || nextState.showErrorPage !== this.state.showErrorPage
+         );
     }
 
     redirectToHome()
@@ -111,8 +123,30 @@ class UserProfile extends React.Component {
     static setProfileUser = (param, currentUser) => {
         return {
             username: param,
-            currentUser: currentUser
+            currentUser: currentUser,
+            message: "",
+            messageId: -1,
+            messageType: ""
         };
+    }
+
+    setMessage(messageState)
+    {
+        console.log(this.state.messageId);
+        let messageCount = this.state.messageId + 1;
+        messageState["messageId"] = messageCount;
+        this.setState(messageState);
+    }
+
+    showErrorPage(message)
+    {
+        if(!this.state.showErrorPage)
+        {
+            this.setState({
+                showErrorPage: true,
+                errorMessage: message
+            });
+        }
     }
 
     render()
@@ -121,31 +155,44 @@ class UserProfile extends React.Component {
         {
             return <Redirect to={"/"} />;
         }
-        //alert("PROFILE: " + this.state.currentUser);
-        return (
+        else if(this.state.showErrorPage)
+        {
+            return getErrorDisplay(this.state.errorMessage);
+        }
 
-            <div className={style5.mainBodyContainer}>
-                <ProfileHeader
-                    username={this.state.username}
-                    postCount={this.state.postCount}
-                    updateFollowingCount={this.state.followingCountChange}
-                    updateFollowerCount={this.state.followerCountChange}
-                    updateLoggedIn={this.props.updateLoggedIn}
-                    showLoginPopUp={this.props.showLoginPopUp}
-                    currentUser={this.state.currentUser}
-                    redirectToHome={this.redirectToHome}
+        return (
+            <React.Fragment>
+                <Alert
+                    message={this.state.message}
+                    messageId={this.state.messageId}
+                    type={this.state.messageType}
                 />
-                <MoviePostDisplay
-                    username={this.state.username}
-                    setPostCount={this.setPostCount}
-                    updateFunction={this.updateFollowingCount}
-                    updateFollowersFunction={this.updateFollowerCount}
-                    updateLoggedIn={this.props.updateLoggedIn}
-                    showLoginPopUp={this.props.showLoginPopUp}
-                    currentUser={this.state.currentUser}
-                    redirectToHome={this.redirectToHome}
-                />
-            </div>
+                <div className={style5.mainBodyContainer}>
+                    <ProfileHeader
+                        username={this.state.username}
+                        postCount={this.state.postCount}
+                        updateFollowingCount={this.state.followingCountChange}
+                        updateFollowerCount={this.state.followerCountChange}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
+                        currentUser={this.state.currentUser}
+                        redirectToHome={this.redirectToHome}
+                        setMessage={this.setMessage}
+                        showErrorPage={this.showErrorPage}
+                    />
+                    <MoviePostDisplay
+                        username={this.state.username}
+                        setPostCount={this.setPostCount}
+                        updateFunction={this.updateFollowingCount}
+                        updateFollowersFunction={this.updateFollowerCount}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
+                        currentUser={this.state.currentUser}
+                        redirectToHome={this.redirectToHome}
+                        setMessage={this.setMessage}
+                    />
+                </div>
+            </React.Fragment>
         );
     }
 }

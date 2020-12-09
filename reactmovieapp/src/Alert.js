@@ -13,8 +13,6 @@ class Alert extends React.Component
         super(props);
         this.state = {
             messages: {},
-            // count of messages received
-            // needs to be 0 for first message
             messageCount: 0
         };
         this.generateMessages = this.generateMessages.bind(this);
@@ -36,18 +34,18 @@ class Alert extends React.Component
         }
     }
 
-    componentDidUpdate(prevProps, prevState)
+    async componentDidUpdate(prevProps, prevState)
     {
         // if the props received indicate to reset the component
         if(this.props.messageId === -1)
         {
-            if(this.state.messageCount !== 0)
+            // if there are active messages
+            if(Object.keys(this.state.messages).length > 0)
             {
+                await this.clearAllMessages(this.state.messages);
                 this.setState({
-                    messages: {},
-                    messageCount: 0
+                    messages: {}
                 });
-                return;
             }
         }
         // if there is a message
@@ -57,7 +55,7 @@ class Alert extends React.Component
             if(this.props.message !== "")
             {
                 // new message received
-                if(prevProps.message !== this.props.message || prevProps.messageId !== this.props.messageId || this.state.messageCount === 0)
+                if(prevProps.message !== this.props.message || prevProps.messageId !== this.props.messageId)
                 {
                     this.setState(this.addNewMessage(this.props, this.state));
                 }
@@ -65,14 +63,25 @@ class Alert extends React.Component
         }
     }
 
+    componentWillUnmount()
+    {
+        // remove all timers before closing the component
+        this.clearAllMessages({...this.state.messages});
+    }
+
     // function to recieve a new message and update the state appropriately
     addNewMessage(props, state)
     {
         console.log("New alert message found");
-        // if the messageId is less than 1, reset the messages to none
-        let messages = (props.messageId > 0) ? {...state.messages} : this.clearAllMessages();
-        // if th emessage Id is less than 1, reset the message count
-        let messageKey =  (props.messageId > 0) ? state.messageCount + 1 : 1;
+        let messages = {...state.messages};
+        // if the messageId is 0, reset the messages to none
+        if(props.messageId === 0)
+        {
+            this.clearAllMessages(state.messages);
+            messages = {};
+        }
+        // key is the total message counter
+        let messageKey = state.messageCount + 1;
         let type = (props.type === undefined) ? "success" : props.type;
         let messageStyle = (props.style === undefined) ? {} : props.style;
         let timeout = (props.timeout === undefined) ? 5000 : props.timeout;
@@ -89,16 +98,17 @@ class Alert extends React.Component
         };
     }
 
-    clearAllMessages()
+    async clearAllMessages(messages)
     {
-        let keys = Object.keys(this.state.messages);
-        keys.forEach((key) => {
-            if(this.state.messages[key] !== undefined)
+        let keys = Object.keys(messages);
+        //await keys.forEach((key) => {
+        await keys.forEach((key) => {
+            if(messages[key] !== undefined)
             {
-                clearTimeout(this.state.messages[key].timer);
+                console.log("Removing: " + messages[key].timer);
+                clearTimeout(messages[key].timer);
             }
         });
-        return {};
     }
 
     timerHandler(id)

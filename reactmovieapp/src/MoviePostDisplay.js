@@ -28,11 +28,11 @@ class MoviePostDisplay extends React.Component {
 
     // when the component receives new props, update the state here
     componentDidUpdate(prevProps, prevState) {
-        if(prevProps.username !== this.props.username)
+        if(!this.state.loading && (prevProps.username !== this.props.username))
         {
             this.getData(this.props.username);
         }
-        else if(prevProps.currentUser !== this.props.currentUser)
+        else if(!this.state.loading && (this.props.currentUser !== prevProps.currentUser))
         {
             this.getData(this.props.username);
         }
@@ -41,6 +41,7 @@ class MoviePostDisplay extends React.Component {
     // handles calling api for componentDidMount and componentDidUpdate
     getData(username)
     {
+        console.log("get data movie post display");
         let url = "http://localhost:9000/profile/" + username;
         apiGetJsonRequest(url).then(result =>{
             let status = result[0];
@@ -63,11 +64,14 @@ class MoviePostDisplay extends React.Component {
                 currentUser: user,
                 loading: false
             });
+            this.props.setMessage({
+                message: message,
+                messageType: "success"
+            });
         }
         else
         {
             this.props.updateLoggedIn(user);
-            alert(message);
             if(status === 401)
             {
                 // not an issue right now as all reviews are public
@@ -81,6 +85,10 @@ class MoviePostDisplay extends React.Component {
                     currentUser: user,
                     loading: false
                 });
+                this.props.setMessage({
+                    message: message,
+                    messageType: "failure"
+                });
                 this.props.setPostCount(0);
             }
             else if(status === 404)
@@ -93,13 +101,15 @@ class MoviePostDisplay extends React.Component {
                     loading: false
                 });
                 this.props.setPostCount(0);
-                this.props.redirectToHome();
+                // should redirect to 404 page..
+                //this.props.redirectToHome();
             }
             else
             {
                 alert("request for users posts failed");
                 this.setState({
-                    loading: false
+                    loading: false,
+                    currentUser: user
                 });
             }
         }

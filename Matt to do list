@@ -152,13 +152,6 @@ To do list:
               - redirect to user/movie page on suggestion click
               - full on search page
               - ability to search just off text, ignore suggestions
-          - then add functionality to have a watch list
-              - let users add movies to watch list from movie page
-              - let users add movies to watch list from movie posts
-              - view all movies on watch list
-              - try to make it reusable for favorites
-          - then add functionality for favorites
-              - similar to steps above for watch list
           - create search page to search by genre, movie, user, etc.
               - leave functionality general enough to add directors, actors, etc. to it
           - fix upcoming, top rated, in theaters pages
@@ -176,7 +169,7 @@ To do list:
                 - redirect not called for review form
 
 
-      Search bar
+    Search bar
         - steal idea form imdb in which they let you choose a drop down of what to search from
         - issue where you hit enter on a value, go to that page, and the value is still there
             - when you press enter with the value still there, issue at line 304..
@@ -186,25 +179,96 @@ To do list:
         - need to try to prevent bad requests on client side
         - also need to fix component will receive props when going from one filter page to another
         - add filter, sort options to the page somewhere
+        - eventually add a button for favorite movies pages
+        - may want a button on movie info page to write review?
+    Movie posts
+        - may want to have button click show movie pop up like watch list, watched list do
+        - need to add a way to easily add the movie to watch list/watched list
+        - may want to put a hint on poster in pop up to let users know click to go to movie page
+    Watched list
+        - may want to add movies you've reviewed to your watched list
+    movie display pop up
+        - may want to put a hint on poster in pop up to let users know click to go to movie page
+        - going to not add movie watch list buttons to the movie post pop up as do not want this to be
+        too big, also can be found by clicking off of post
 
-        left off working on movieDisplayPopup for upcoming movies pages
-            - make sure scrollable
-                - done
-            - link poster to movies page
-                - done
-            - fix everything on the dipslay
-                - done
-            - next:
-                - create api call to get all movies
-                    - want a universal one with various parameters, ex. release date, starts with, genres, etc.
-                    - in progress
-                    - need to clean up a lot of the code
-                    - prevent bad requests
-                    - prevent values that have arrays such as 2 dates lte
-                    - also want to add option to include or not include movies I've watched
-            - do not worry about doing genre does not equal...
-                - only worried about movies that CONTAIN that genre
+    movie api
+        - want a universal one with various parameters, ex. release date, starts with, genres, etc.
+        - done for now but may need to change in future
+        - also want to add option to include or not include movies I've watched
 
-            - after you clean up movie page api
-                - start making user watch list page
-                - also make a page for movies I've watched
+    header
+        - add a button for users
+        - combine profile and settings into one buttons group
+
+    - login pop up
+        - on movie filter pages, made it so that this does not cause a full page rerender
+        - also does not reroute to a different page on login, but causes rerender
+        - may want to do this on other pages instead of doing it thorugh the header
+            - on login click from header, pass a prop to child to indicate to show the pop up
+        - fix css so that text aligned to left for content field...
+            - specifically for movie post that causes it to show
+    - movie post:
+        - fix sign in pop up from header
+            - issue: not getting the username passed to the child components so they don't update
+            - as they don't see the change...
+
+
+    - need to fix ALL componentWillReceiveProps!
+    - also make static functions that can be reusable where applicable such as api calls..
+    - fix feed page to use MoviePostDisplay
+
+
+    api fixed to json:
+        - follow/unfollow user
+        - get followers/following
+        - get profile header
+        - movie post display
+        - add like/remove like done api side, client side somewhat done but
+          need to fix the popup
+        - movie filter pages done for new releases, upcoming, watch list, watched list
+        - MovieDisplay page done, move on to MovieDisplayPopUp
+            - MovieDisplay...for api, consider changing route to movies page..
+        - remove post mostly handled, api done, client side done but may need work?
+        - for all of the above, need to consider if you update the currentUser in the component or let it come
+        back down from the parent?
+
+        - left off:
+            - working on movie info pages
+                - done
+            - build alert component like https://material-ui.com/components/alert/
+                - done may want to change colors like the link above?
+            - need to fix movie filter pages to utilize the Alert component
+            issue: css causing issues so that when one message is up, cannot show any others as it prevents buttons
+            from gaining focus
+            - working on Profileheader and MoviePostDisplay
+            - fix bug for clearing messages when going from one users page to another
+                - if messages still up on first page, and then go to another, messages come up but clear quickly?
+                    - done but make sure working on all pages..
+            - need to fix login
+                - when doing this, also make it so that router calls login on mount so that it knows who is logged in before
+                it event renders the components...
+                - done but needs cleaned up
+
+            - on all pages, need to update loggedInUser as it comes in so that when the props come down again,
+            you do not update if you already have the right user
+            - especially a issue when first loading site
+
+
+                - will need to have one inside outter class, and one inside of movie post displays
+                - remove success message in UserResultsHandlers after doing this as you know it
+                succeeded if the icon color changed
+
+        - something to consider: when a user adds a movie to their watch list through their friends posts,
+        if another one of their friends also reviewed the movie down the line, it will not show up immediately..
+            - may want to remove this option'
+            - new plan: make the movie pop up like on movie pages and show the buttons from there, remove
+            them from the post itself as difficult to handle
+            - will need to remove watchlist stuff from api side query too..
+            - remove css too..
+        - when posting a review and on a users page, should update their page..
+
+        - Profile header 100% done for now..
+        - movie post works, need to change what you listed above..
+        - next: work on movie pages, make functions reusable on client and api where possible
+        - profile/:id done for now, need to fix movie posts returned as stated above

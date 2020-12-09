@@ -21,6 +21,10 @@ router.post('/login', function(req, res, next) {
     login(req, res, next);
 });
 
+router.get('/login/:type', function(req, res, next) {
+    login(req, res, next);
+})
+
 // post a review
 router.post('/review', function(req, res, next) {
     review(req, res, next);

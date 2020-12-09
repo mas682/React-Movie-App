@@ -8,12 +8,29 @@ const login = (req, res, next) => {
     // get the signed cookies in the request if there are any
     let cookie = req.signedCookies.MovieAppCookie;
     // if there is a signed cookie in the request
-    if(cookie != undefined)
+    if(cookie !== undefined)
     {
         // see if the cookie has a valid user
         verifyLogin(cookie).then((cookieValid) =>
         {
-            if(cookieValid)
+            if(req.params.type === "authenticate")
+            {
+                if(cookieValid)
+                {
+                    res.status(200).send({
+                        message: "User logged in",
+                        requester: JSON.parse(cookie).name
+                    });
+                }
+                else
+                {
+                    req.status(200).send({
+                        message: "User not logged in",
+                        requester: ""
+                    });
+                }
+            }
+            else if(cookieValid)
             {
 				res.send('You are already logged in.' + cookie)
                 res.send(['{\"result\":\"You are already logged in\"}', '{\"user\":\"undefined\"}'])
@@ -28,7 +45,17 @@ const login = (req, res, next) => {
     // if no cookie was found
     else
     {
-        checkLogin(req, res);
+        if(req.params.type === "authenticate")
+        {
+            req.status(200).send({
+                message: "User not logged in",
+                requester: ""
+            });
+        }
+        else
+        {
+            checkLogin(req, res);
+        }
         // should redirect to home page at this point if login worked
         // or let client side handle the reroute?
     }

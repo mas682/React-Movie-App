@@ -10,7 +10,7 @@ const movieHandler = (req, res, next) => {
 		// variable to indicate if user logged in
 		let valid = false;
 		// if there is a signed cookie in the request
-		if(cookie != undefined)
+		if(cookie !== undefined)
 		{
 				// see if the cookie has a valid user
 				verifyLogin(cookie).then((cookieValid) =>

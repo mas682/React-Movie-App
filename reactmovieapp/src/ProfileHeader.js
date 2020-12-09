@@ -114,6 +114,11 @@ class ProfileHeader extends React.Component {
 
     // function to handle getting data from api
     getData = async (username) => {
+        //alert("Get data header");
+        // note: this will get called twice if going from address bar as this the first props
+        // will come in saying the logged in user is "" even if you are logged in
+        // second time around have the correct username and send the request again
+        // possible solution: have router send out a request when it first mounts?
         let url = "http://localhost:9000/profile/" + username + "/user_info";
         await apiGetJsonRequest(url).then(result =>{
             // set status to result[0]
@@ -123,6 +128,7 @@ class ProfileHeader extends React.Component {
             // see if request succeeded
             if(status === 200)
             {
+                console.log("profile header data received");
                 this.setState({
                     username: username,
                     // get the users id from the response
@@ -135,30 +141,39 @@ class ProfileHeader extends React.Component {
                     loading: false,
                     loggedInUser: loggedInUser
                 });
+                this.props.updateLoggedIn(loggedInUser);
+                this.props.setMessage({
+                    message: message,
+                    messageType: "success"
+                });
             }
             else
             {
-                alert(message);
+                this.props.updateLoggedIn(loggedInUser);
                 if(status === 404)
                 {
                     this.setState({
-                        loading: false
+                        loading: false,
+                        loggedInUser: loggedInUser
                     });
-                    // user not found
-                    this.props.redirectToHome();
+                    this.props.showErrorPage(message);
                 }
                 else if(status === 400)
                 {
                     // request not understood due to invalid username format
                     this.setState({
-                        loading: false
+                        loading: false,
+                        loggedInUser: loggedInUser
                     });
+                    this.props.showErrorPage(message);
                 }
                 else
                 {
                     this.setState({
-                        loading: false
+                        loading: false,
+                        loggedInUser: loggedInUser
                     });
+                    this.props.showErrorPage(message);
                 }
             }
         });
@@ -221,45 +236,61 @@ class ProfileHeader extends React.Component {
                 followerCount: value,
                 loggedInUser: loggedInUser
             });
+            this.props.setMessage({
+                message: message,
+                messageType: "success"
+            });
         }
         else if(status === 401)
         {
-            alert(message);
             this.setState({
                 loggedInUser: ""
             });
-            // will probably need to reload whole page in this case to determine if
-            // reroute or not..
             this.props.showLoginPopUp(false);
         }
         else if(status === 404 && message === "Unable to find user to follow")
         {
-            alert(message);
             this.setState({
                 loggedInUser: loggedInUser,
                 redirect: true
             });
-            // cause a page reload and then force to home/404 page
-            // redirect to home or 404 page
+            // for now, just show error message
+            // want to cause a full page rerender somehow..
+            this.props.setMessage({
+                message: message,
+                messageType: "failure"
+            });
         }
         else if(status === 400 && message === "User cannot follow themself")
         {
-            alert(message);
             this.setState({
                 loggedInUser: loggedInUser
+            });
+            this.props.setMessage({
+                message: message,
+                messageType: "warning"
             });
         }
         else if(status === 400 && message === "You already follow the user")
         {
-            alert(message);
             this.setState({
                 following: true,
                 loggedInUser: loggedInUser
             });
+            this.props.setMessage({
+                message: message,
+                messageType: "info"
+            });
         }
         else
         {
-            alert("Some unknown error occurred when trying to follow the user");
+            this.setState({
+                loggedInUser: loggedInUser
+            });
+            this.props.setMessage({
+                message: "Some unknown error occurred when trying to follow the user",
+                messageType: "failure"
+            });
         }
     }
 
@@ -275,43 +306,59 @@ class ProfileHeader extends React.Component {
                 followerCount: value,
                 loggedInUser: loggedInUser
             });
+            this.props.setMessage({
+                message: message,
+                messageType: "success"
+            });
         }
         else if(status === 401)
         {
-            alert("You must login to follow this user");
             this.setState({
                 loggedInUser: loggedInUser
             });
-            // will probably need to reload whole page in this case to determine if
-            // reroute or not..
             this.props.showLoginPopUp(false);
         }
         else if(status === 404 && message === "Unable to find user to unfollow")
         {
-            alert(message);
             this.setState({
                 loggedInUser: loggedInUser,
                 redirect: true
             });
+            this.props.setMessage({
+                message: message,
+                messageType: "failure"
+            });
         }
         else if(status === 400 && message === "User cannot unfollow themself")
         {
-            alert(message);
             this.setState({
                 loggedInUser: loggedInUser
+            });
+            this.props.setMessage({
+                message: message,
+                messageType: "warning"
             });
         }
         else if(status === 400 && message === "You already do not follow the user")
         {
-            alert(message);
             this.setState({
                 following: false,
                 loggedInUser: loggedInUser
             });
+            this.props.setMessage({
+                message: message,
+                messageType: "info"
+            });
         }
         else
         {
-            alert("Some unknown error occurred when trying to unfollow the user");
+            this.setState({
+                loggedInUser: loggedInUser
+            });
+            this.props.setMessage({
+                message: "Some unknown error occurred when trying to unfollow the user",
+                messageType: "failure"
+            });
         }
     }
 
@@ -411,7 +458,7 @@ class ProfileHeader extends React.Component {
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";
         // if this header is for the logged in users page
-        if(this.state.username === this.state.loggedInUser)
+        if(this.state.username !== this.state.loggedInUser)
         {
             followButton = "";
         }
