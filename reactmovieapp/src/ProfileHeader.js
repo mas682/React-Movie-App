@@ -440,6 +440,8 @@ class ProfileHeader extends React.Component {
                         loggedInUser={this.state.loggedInUser}
                         updateLoggedIn={this.props.updateLoggedIn}
                         showLoginPopUp={this.props.showLoginPopUp}
+                        setMessage={this.props.setMessage}
+                        showErrorPage={this.props.showErrorPage}
                     />;
         }
         if(this.state.displayFollowed)
@@ -453,12 +455,14 @@ class ProfileHeader extends React.Component {
                         loggedInUser={this.state.loggedInUser}
                         updateLoggedIn={this.props.updateLoggedIn}
                         showLoginPopUp={this.props.showLoginPopUp}
+                        setMessage={this.props.setMessage}
+                        showErrorPage={this.props.showErrorPage}
                     />;
         }
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";
         // if this header is for the logged in users page
-        if(this.state.username !== this.state.loggedInUser)
+        if(this.state.username === this.state.loggedInUser)
         {
             followButton = "";
         }

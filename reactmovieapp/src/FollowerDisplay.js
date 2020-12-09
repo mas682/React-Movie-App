@@ -91,10 +91,6 @@ class FollowerDisplay extends React.Component {
         }
         else if(status === 401)
         {
-            alert(message);
-            this.setState({
-                loggedInUser: ""
-            });
             // will probably need to reload whole page in this case to determine if
             // reroute or not..
             this.props.showLoginPopUp(false);
@@ -111,18 +107,18 @@ class FollowerDisplay extends React.Component {
         }
         else if(status === 400 && message === "User cannot follow themself")
         {
-            alert(message);
             this.setState({
                 loggedInUser: loggedInUser
             });
+            this.props.showMessage({message: message, messageType: "warning"});
         }
         else if(status === 400 && message === "You already follow the user")
         {
-            alert(message);
             this.setState({
                 following: true,
                 loggedInUser: loggedInUser
             });
+            this.props.showMessage({message: message, messageType: "info"});
         }
         else
         {
@@ -193,7 +189,7 @@ class FollowerDisplay extends React.Component {
 
     generateFollowButton()
     {
-        if(this.state.loggedInUser === this.state.user.username)
+        if(this.state.loggedInUser !== this.state.user.username)
         {
             return "";
         }

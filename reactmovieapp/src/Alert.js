@@ -84,13 +84,19 @@ class Alert extends React.Component
         let messageKey = state.messageCount + 1;
         let type = (props.type === undefined) ? "success" : props.type;
         let messageStyle = (props.style === undefined) ? {} : props.style;
+        let symbolStyle = (props.symbolStyle === undefined) ? {} : props.symbolStyle;
+        let messageBoxStyle = (props.messageBoxStyle === undefined) ? {} : props.messageBoxStyle;
+        let closeButtonStyle = (props.closeButtonStyle === undefined) ? {} : props.closeButtonStyle;
         let timeout = (props.timeout === undefined) ? 5000 : props.timeout;
         let interval = (timeout === 0) ? undefined : setTimeout(() =>{this.timerHandler(messageKey)}, timeout);
         messages[messageKey] = {
             message: props.message,
             type: type,
             timer: interval,
-            style: messageStyle
+            style: messageStyle,
+            symbolStyle: symbolStyle,
+            messageBoxStyle: messageBoxStyle,
+            closeButtonStyle: closeButtonStyle
         };
         return {
             messages: messages,
@@ -133,17 +139,20 @@ class Alert extends React.Component
             let message = "";
             let type = this.state.messages[key].type;
             let messageStyle = this.state.messages[key].style;
+            let symbolStyle = this.state.messages[key].symbolStyle;
+            let messageStyle2 = this.state.messages[key].messageBoxStyle;
+            let closeButtonStyle = this.state.messages[key].closeButtonStyle;
             if(type === "success")
             {
                 message = (
                     <div className={`${style.messageBox} ${style.success}`} style={messageStyle} onClick={() => {this.timerHandler(key)}}>
-                        <div className={style.symbol}>
+                        <div className={style.symbol} style={symbolStyle}>
                             <i class="fas fa-check"/>
                         </div>
-                        <div className={style.message}>
+                        <div className={style.message} style={messageStyle2}>
                             {this.state.messages[key].message}
                         </div>
-                        <div className={style.closeButton}>
+                        <div className={style.closeButton} style={closeButtonStyle}>
                             <i class="fas fa-times"/>
                         </div>
                     </div>);
@@ -152,13 +161,13 @@ class Alert extends React.Component
             {
                 message = (
                     <div className={`${style.messageBox} ${style.warning}`} style={messageStyle} onClick={() => {this.timerHandler(key)}}>
-                        <div className={style.symbol}>
+                        <div className={style.symbol} style={symbolStyle}>
                             <i class="fas fa-exclamation-triangle"/>
                         </div>
-                        <div className={style.message}>
+                        <div className={style.message} style={messageStyle2}>
                             {this.state.messages[key].message}
                         </div>
-                        <div className={style.closeButton}>
+                        <div className={style.closeButton} style={closeButtonStyle}>
                             <i class="fas fa-times"/>
                         </div>
                     </div>);
@@ -167,13 +176,13 @@ class Alert extends React.Component
             {
                 message = (
                     <div className={`${style.messageBox} ${style.info}`} style={messageStyle} onClick={() => {this.timerHandler(key)}}>
-                        <div className={style.symbol}>
+                        <div className={style.symbol} style={symbolStyle}>
                             <i class="fas fa-info"/>
                         </div>
-                        <div className={style.message}>
+                        <div className={style.message} style={messageStyle2}>
                             {this.state.messages[key].message}
                         </div>
-                        <div className={style.closeButton}>
+                        <div className={style.closeButton} style={closeButtonStyle}>
                             <i class="fas fa-times"/>
                         </div>
                     </div>);
@@ -182,13 +191,13 @@ class Alert extends React.Component
             {
                 message = (
                     <div className={`${style.messageBox} ${style.failure}`} style={messageStyle} onClick={() => {this.timerHandler(key)}}>
-                        <div className={style.symbol}>
+                        <div className={style.symbol} style={symbolStyle}>
                             <i class="fas fa-ban"/>
                         </div>
-                        <div className={style.message}>
+                        <div className={style.message} style={messageStyle2}>
                             {this.state.messages[key].message}
                         </div>
-                        <div className={style.closeButton}>
+                        <div className={style.closeButton} style={closeButtonStyle}>
                             <i class="fas fa-times"/>
                         </div>
                     </div>);
@@ -197,13 +206,13 @@ class Alert extends React.Component
             {
                 message = (
                     <div className={`${style.messageBox} ${style.unknown}`} style={messageStyle} onClick={() => {this.timerHandler(key)}}>
-                        <div className={style.symbol}>
+                        <div className={style.symbol} style={symbolStyle}>
                             <i class="fas fa-question"/>
                         </div>
-                        <div className={style.message}>
+                        <div className={style.message} style={messageStyle2}>
                             {this.state.messages[key].message}
                         </div>
-                        <div className={style.closeButton}>
+                        <div className={style.closeButton} style={closeButtonStyle}>
                             <i class="fas fa-times"/>
                         </div>
                     </div>);
@@ -212,13 +221,13 @@ class Alert extends React.Component
             {
                 message = (
                     <div className={`${style.messageBox} ${style.attention}`} style={messageStyle} onClick={() => {this.timerHandler(key)}}>
-                        <div className={style.symbol}>
+                        <div className={style.symbol} style={symbolStyle}>
                             <i class="fas fa-exclamation"/>
                         </div>
-                        <div className={style.message}>
+                        <div className={style.message} style={messageStyle2}>
                             {this.state.messages[key].message}
                         </div>
-                        <div className={style.closeButton}>
+                        <div className={style.closeButton} style={closeButtonStyle}>
                             <i class="fas fa-times" onClick={() => {this.timerHandler(key)}}/>
                         </div>
                     </div>);

@@ -190,6 +190,7 @@ class UserProfile extends React.Component {
                         currentUser={this.state.currentUser}
                         redirectToHome={this.redirectToHome}
                         setMessage={this.setMessage}
+                        showErrorPage={this.showErrorPage}
                     />
                 </div>
             </React.Fragment>

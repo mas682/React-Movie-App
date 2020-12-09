@@ -5,6 +5,7 @@ import {Redirect, withRouter} from 'react-router-dom';
 import './css/forms.css';
 import style from './css/UserListPopUp.module.css';
 import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import Alert from './Alert.js';
 
 class UserListPopUp extends React.Component {
     constructor(props) {
@@ -22,7 +23,10 @@ class UserListPopUp extends React.Component {
                 // the pop up can either be for Followers or Following
                 type: this.props.type,
                 loading: true,
-                redirectToHome: false
+                redirectToHome: false,
+                message: "",
+                messageId: 0,
+                messageType: ""
             };
         }
         else
@@ -38,7 +42,10 @@ class UserListPopUp extends React.Component {
                 type: this.props.type,
                 reviewId: this.props.reviewId,
                 loading: true,
-                redirectToHome: false
+                redirectToHome: false,
+                message: "",
+                messageId: 0,
+                messageType: ""
             };
         }
         this.closeModal = this.closeModal.bind(this);
@@ -46,6 +53,7 @@ class UserListPopUp extends React.Component {
         this.generateUserDisplay = this.generateUserDisplay.bind(this);
         this.getUsers = this.getUsers.bind(this);
         this.getLikesResultsHandler = this.getLikesResultsHandler.bind(this);
+        this.showMessage = this.showMessage.bind(this);
     }
 
     // load the data in here
@@ -104,10 +112,14 @@ class UserListPopUp extends React.Component {
     {
         if(status === 200)
         {
+            let messageId = this.state.messageId + 1;
             this.setState({
                 users: result[1].users,
                 loggedInUser: user,
-                loading: false
+                loading: false,
+                message: message,
+                messageId: messageId,
+                messageType: "success"
             });
             this.props.updateLoggedIn(user);
             // this will update the profile header if the count of following
@@ -118,7 +130,6 @@ class UserListPopUp extends React.Component {
         }
         else
         {
-            alert(message);
             this.props.updateLoggedIn(user);
             if(status === 401)
             {
@@ -129,28 +140,20 @@ class UserListPopUp extends React.Component {
             else if(status === 400)
             {
                 // username not in correct format
-                // redirect to home?..or just say request failed
-                this.setState({
-                    redirectToHome: true,
-                    loading: false
-                });
+                this.props.showErrorPage(message);
+                this.closeModal();
             }
             else if(status === 404)
             {
                 // user could not be found for followers could not be found
                 // redirect to home or 404 page?
-                this.setState({
-                    redirectToHome: true,
-                    loading: false
-                });
+                this.props.showErrorPage(message);
+                this.closeModal();
             }
             else
             {
-                this.setState({
-                    loading: false
-                })
-                alert(message);
-                alert("Failed to get users for the popup");
+                this.props.showErrorPage(message);
+                this.closeModal();
             }
         }
     }
@@ -217,6 +220,13 @@ class UserListPopUp extends React.Component {
         this.setState({[name]: value});
     }
 
+    showMessage(messageState)
+    {
+        let messageCount = this.state.messageId + 1;
+        messageState["messageId"] = messageCount;
+        this.setState(messageState);
+    }
+
     // function called when closing the popup
     // the props.removeFunction is a function passed in by the calling component that
     // is used to remove the popup from the calling components display
@@ -254,6 +264,7 @@ class UserListPopUp extends React.Component {
                                 showLoginPopUp={this.props.showLoginPopUp}
                                 closeModal={this.closeModal}
                                 type={this.state.type}
+                                showMessage={this.showMessage}
                             />);
                 followedUsers.push(userHtml);
             }
@@ -270,6 +281,7 @@ class UserListPopUp extends React.Component {
                                 updateLoggedIn={this.props.updateLoggedIn}
                                 closeModal={this.closeModal}
                                 type={this.state.type}
+                                showMessage={this.showMessage}
                             />);
                 notFollowedUsers.push(userHtml);
             }
@@ -303,6 +315,15 @@ class UserListPopUp extends React.Component {
                     <button className={style.close} onClick={this.closeModal}>
                     &times;
                     </button>
+                    <Alert
+                        message={this.state.message}
+                        messageId={this.state.messageId}
+                        type={this.state.messageType}
+                        timeout={0}
+                        symbolStyle={{"width": "5%", "margin-top": "0px"}}
+                        messageBoxStyle={{width: "86%"}}
+                        closeButtonStyle={{width: "5%", "margin-top": "0px"}}
+                    />
                     <div className={style.header}>
                         <h3 className="inlineH3"> {this.state.type} </h3>
                     </div>

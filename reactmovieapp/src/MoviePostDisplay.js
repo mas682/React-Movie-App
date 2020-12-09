@@ -41,7 +41,6 @@ class MoviePostDisplay extends React.Component {
     // handles calling api for componentDidMount and componentDidUpdate
     getData(username)
     {
-        console.log("get data movie post display");
         let url = "http://localhost:9000/profile/" + username;
         apiGetJsonRequest(url).then(result =>{
             let status = result[0];
@@ -85,11 +84,7 @@ class MoviePostDisplay extends React.Component {
                     currentUser: user,
                     loading: false
                 });
-                this.props.setMessage({
-                    message: message,
-                    messageType: "failure"
-                });
-                this.props.setPostCount(0);
+                this.props.showErrorPage(message);
             }
             else if(status === 404)
             {
@@ -100,17 +95,15 @@ class MoviePostDisplay extends React.Component {
                     currentUser: user,
                     loading: false
                 });
-                this.props.setPostCount(0);
-                // should redirect to 404 page..
-                //this.props.redirectToHome();
+                this.props.showErrorPage(message);
             }
             else
             {
-                alert("request for users posts failed");
                 this.setState({
                     loading: false,
                     currentUser: user
                 });
+                this.props.showErrorPage(message);
             }
         }
     }
