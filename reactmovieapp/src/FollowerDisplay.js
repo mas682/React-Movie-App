@@ -88,22 +88,21 @@ class FollowerDisplay extends React.Component {
                     this.props.updateFollowersFunction(1);
                 }
             }
+            this.props.showMessage({message: message, messageType: "success"});
         }
         else if(status === 401)
         {
-            // will probably need to reload whole page in this case to determine if
-            // reroute or not..
             this.props.showLoginPopUp(false);
             this.props.closeModal();
         }
         else if(status === 404 && message === "Unable to find user to follow")
         {
-            alert(message);
+            // set the user to null as they were not found
             this.setState({
                 loggedInUser: loggedInUser,
                 user: null
             });
-            // want to either reload the userlist or just return null
+            this.props.showMessage({message: message, messageType: "failure"});
         }
         else if(status === 400 && message === "User cannot follow themself")
         {
@@ -120,9 +119,19 @@ class FollowerDisplay extends React.Component {
             });
             this.props.showMessage({message: message, messageType: "info"});
         }
+        else if(status === 400 && message === "Username to follow is invalid")
+        {
+            this.setState({
+                loggedInUser: loggedInUser
+            });
+            this.props.showMessage({message: message, messageType: "failure"});
+        }
         else
         {
-            alert("Some unknown error occurred when trying to follow the user");
+            this.setState({
+                loggedInUser: loggedInUser
+            });
+            this.props.showMessage({message: message, messageType: "failure"});
         }
     }
 
@@ -145,51 +154,57 @@ class FollowerDisplay extends React.Component {
             {
                 this.props.updateFollowersFunction(-1);
             }
+            this.props.showMessage({message: message, messageType: "success"});
         }
         else if(status === 401)
         {
-            alert("You must login to follow this user");
-            this.setState({
-                loggedInUser: loggedInUser
-            });
-            // will probably need to reload whole page in this case to determine if
-            // reroute or not..
             this.props.showLoginPopUp(false);
             this.props.closeModal();
         }
         else if(status === 404 && message === "Unable to find user to unfollow")
         {
-            alert(message);
+            // set the user to null as they were not found
             this.setState({
                 loggedInUser: loggedInUser,
                 user: null
             });
+            this.props.showMessage({message: message, messageType: "failure"});
             // just setting user to null so no long displayed
         }
         else if(status === 400 && message === "User cannot unfollow themself")
         {
-            alert(message);
             this.setState({
                 loggedInUser: loggedInUser
             });
+            this.props.showMessage({message: message, messageType: "warning"});
         }
         else if(status === 400 && message === "You already do not follow the user")
         {
-            alert(message);
             this.setState({
                 following: false,
                 loggedInUser: loggedInUser
             });
+            this.props.showMessage({message: message, messageType: "info"});
+        }
+        else if(status === 400 && message === "Username to unfollow is invalid")
+        {
+            this.setState({
+                loggedInUser: loggedInUser
+            });
+            this.props.showMessage({message: message, messageType: "failure"});
         }
         else
         {
-            alert("Some unknown error occurred when trying to unfollow the user");
+            this.setState({
+                loggedInUser: loggedInUser
+            });
+            this.props.showMessage({message: message, messageType: "failure"});
         }
     }
 
     generateFollowButton()
     {
-        if(this.state.loggedInUser !== this.state.user.username)
+        if(this.state.loggedInUser === this.state.user.username)
         {
             return "";
         }

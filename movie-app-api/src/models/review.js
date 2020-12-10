@@ -215,6 +215,18 @@ const review = (sequelize, DataTypes) => {
         });
     };
 
+    // function to get a review to add/update a comment to it
+    // for now, simply returns a review
+    // eventually, if the user who posted the reviews profile is not public,
+    // check to see if the userId follows them when getting the review
+    Review.getReviewForComment = async(reviewId, userId, commentId, models) =>
+    {
+        return models.Review.findOne({
+            where: {id: reviewId},
+            include: []
+        });
+    }
+
     // function to return a review and the user who created it
     Review.getReviewWithCreator = async(reviewId, models) =>
     {

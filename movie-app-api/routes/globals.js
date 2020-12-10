@@ -87,4 +87,38 @@ const validateUsernameParameter = (res, username, requester, message) => {
     return true;
 };
 
-export {router, verifyLogin, validateIntegerParameter, validateUsernameParameter};
+// function to validate that a variable is in fact a string and is not empty
+// if maxLength is undefined it will be skipped
+const validateStringParameter = (res, param, maxLength, requester, message) => {
+    if(param === undefined)
+    {
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+    let paramLength = param.length;
+    if(paramLength < 1)
+    {
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+    else if((maxLength !== undefined) && (paramLength < maxLength))
+    {
+        if(paramLength < 1)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+            return false;
+        }
+    }
+    return true;
+};
+
+export {router, verifyLogin, validateIntegerParameter, validateUsernameParameter, validateStringParameter};

@@ -126,7 +126,7 @@ class MoviePostDisplay extends React.Component {
                             updateFollowersFunction={this.props.updateFollowersFunction}
                             showLoginPopUp={this.props.showLoginPopUp}
                             updateLoggedIn={this.props.updateLoggedIn}
-                            redirectToHome={this.props.redirectToHome}
+                            setMessage={this.props.setMessage}
                         />);
         });
         return (<React.Fragment>{posts}</React.Fragment>);

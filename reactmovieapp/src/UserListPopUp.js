@@ -6,6 +6,7 @@ import './css/forms.css';
 import style from './css/UserListPopUp.module.css';
 import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
+import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
 
 class UserListPopUp extends React.Component {
     constructor(props) {
@@ -116,10 +117,7 @@ class UserListPopUp extends React.Component {
             this.setState({
                 users: result[1].users,
                 loggedInUser: user,
-                loading: false,
-                message: message,
-                messageId: messageId,
-                messageType: "success"
+                loading: false
             });
             this.props.updateLoggedIn(user);
             // this will update the profile header if the count of following
@@ -146,7 +144,6 @@ class UserListPopUp extends React.Component {
             else if(status === 404)
             {
                 // user could not be found for followers could not be found
-                // redirect to home or 404 page?
                 this.props.showErrorPage(message);
                 this.closeModal();
             }
@@ -171,10 +168,10 @@ class UserListPopUp extends React.Component {
             // if this is for Likes on a post, this will update the like count
             // if it has changed since the page loaded
             this.props.changeFunction(result[1].users.length);
+            this.props.setMessage({message: message, messageType: "success"});
         }
         else
         {
-            alert(message);
             this.props.updateLoggedIn(user);
             if(status === 401)
             {
@@ -190,6 +187,7 @@ class UserListPopUp extends React.Component {
                     loading: false,
                     loggedInUser: user
                 });
+                this.props.setMessage({message: message, messageType: "failure"});
                 this.closeModal();
             }
             else if(status === 404)
@@ -199,14 +197,17 @@ class UserListPopUp extends React.Component {
                     loading: false,
                     loggedInUser: user
                 });
+                this.props.removePost({message: message, messageType: "failure"});
+                //this.props.setMessage({message: message, messageType: "failure"});
+                this.closeModal();
             }
             else
             {
                 this.setState({
                     loading: false
                 });
-                alert(message);
-                alert("Failed to get users for the popup");
+                this.props.setMessage({message: message, messageType: "failure"});
+                this.closeModal();
             }
         }
     }
@@ -222,9 +223,7 @@ class UserListPopUp extends React.Component {
 
     showMessage(messageState)
     {
-        let messageCount = this.state.messageId + 1;
-        messageState["messageId"] = messageCount;
-        this.setState(messageState);
+        this.setState(generateMessageState(messageState, this.state.messageId));
     }
 
     // function called when closing the popup
@@ -319,7 +318,6 @@ class UserListPopUp extends React.Component {
                         message={this.state.message}
                         messageId={this.state.messageId}
                         type={this.state.messageType}
-                        timeout={0}
                         symbolStyle={{"width": "5%", "margin-top": "0px"}}
                         messageBoxStyle={{width: "86%"}}
                         closeButtonStyle={{width: "5%", "margin-top": "0px"}}

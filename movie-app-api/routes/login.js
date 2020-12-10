@@ -24,7 +24,7 @@ const login = (req, res, next) => {
                 }
                 else
                 {
-                    req.status(200).send({
+                    res.status(200).send({
                         message: "User not logged in",
                         requester: ""
                     });
@@ -47,10 +47,11 @@ const login = (req, res, next) => {
     {
         if(req.params.type === "authenticate")
         {
-            req.status(200).send({
+            res.status(200).send({
                 message: "User not logged in",
                 requester: ""
             });
+            return;
         }
         else
         {
@@ -63,6 +64,7 @@ const login = (req, res, next) => {
 
 const checkLogin = (req, res) =>
 {
+    console.log("In check login");
     // check login and generate cookie if login allowed
     // for testing
     let pass = req.body.password;

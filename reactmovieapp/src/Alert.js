@@ -73,6 +73,7 @@ class Alert extends React.Component
     addNewMessage(props, state)
     {
         console.log("New alert message found");
+        console.log(props);
         let messages = {...state.messages};
         // if the messageId is 0, reset the messages to none
         if(props.messageId === 0)

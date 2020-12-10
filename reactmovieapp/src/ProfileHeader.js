@@ -32,7 +32,6 @@ class ProfileHeader extends React.Component {
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
         this.changeFollowedCount = this.changeFollowedCount.bind(this);
         this.changeFollowingCount = this.changeFollowingCount.bind(this);
-        //this.updatePostCount = this.updatePostCount.bind(this);
         this.followHandler = this.followHandler.bind(this);
         this.unfollowResultsHandler = this.unfollowResultsHandler.bind(this);
         this.followResultsHandler = this.followResultsHandler.bind(this);
@@ -142,10 +141,6 @@ class ProfileHeader extends React.Component {
                     loggedInUser: loggedInUser
                 });
                 this.props.updateLoggedIn(loggedInUser);
-                this.props.setMessage({
-                    message: message,
-                    messageType: "success"
-                });
             }
             else
             {
@@ -440,7 +435,6 @@ class ProfileHeader extends React.Component {
                         loggedInUser={this.state.loggedInUser}
                         updateLoggedIn={this.props.updateLoggedIn}
                         showLoginPopUp={this.props.showLoginPopUp}
-                        setMessage={this.props.setMessage}
                         showErrorPage={this.props.showErrorPage}
                     />;
         }
@@ -455,7 +449,6 @@ class ProfileHeader extends React.Component {
                         loggedInUser={this.state.loggedInUser}
                         updateLoggedIn={this.props.updateLoggedIn}
                         showLoginPopUp={this.props.showLoginPopUp}
-                        setMessage={this.props.setMessage}
                         showErrorPage={this.props.showErrorPage}
                     />;
         }

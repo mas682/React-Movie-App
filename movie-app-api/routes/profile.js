@@ -1,4 +1,4 @@
-import {verifyLogin, validateIntegerParameter, validateUsernameParameter} from './globals.js';
+import {verifyLogin, validateUsernameParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 
 // function to get the reviews associated with a users profile

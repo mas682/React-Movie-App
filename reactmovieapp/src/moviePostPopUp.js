@@ -5,7 +5,10 @@ import CommentController from './CommentController.js';
 import CommentBox from './CommentBox.js';
 import MoviePost from './moviePost.js';
 import {Link} from 'react-router-dom';
-import style2 from './css/MoviePost/moviePostPopUp.module.css'
+import style2 from './css/MoviePost/moviePostPopUp.module.css';
+import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
+// only used by popup
+import Alert from './Alert.js';
 
 
 
@@ -30,12 +33,16 @@ class MoviePostPopUp extends React.Component {
             // boolean to tell commentController to update if new comment was just posted
             // by the current user
             newComment: false,
-            removePost: false
+            removePost: false,
+            message: "",
+            messageId: -1,
+            messageType: ""
         };
 
         this.closeModal = this.closeModal.bind(this);
         this.changeState = this.changeState.bind(this);
         this.updateComments = this.updateComments.bind(this);
+        this.setMessage = this.setMessage.bind(this);
     }
 
     // called after component was updated
@@ -80,19 +87,44 @@ class MoviePostPopUp extends React.Component {
     }
 
     // function called when closing the popup
-    closeModal() {
+    closeModal(messageState) {
         this.setState({
             open: false,
         });
+        // optional message to display in parent
+        if(messageState !== undefined)
+        {
+            this.props.setMessage(messageState);
+        }
         this.props.removeFunction("openPopUp", false);
     }
 
-
+    setMessage(messageState)
+    {
+        this.setState(generateMessageState(messageState, this.state.messageId));
+    }
 
 	render() {
-        let commentArray = <CommentController currentUser={this.state.currentUser} reviewUser={this.state.username} reviewId={this.state.id} update={this.state.newComment} comments={this.state.comments}/>;
+        let commentArray = <CommentController
+            currentUser={this.state.currentUser}
+            reviewUser={this.state.username}
+            reviewId={this.state.id}
+            update={this.state.newComment}
+            comments={this.state.comments}
+            />;
         let commentBox = <CommentBox reviewId={this.state.id} form={this.state.form} updateCommentsFunction={this.updateComments}/>;
-        let moviePost = <MoviePost data={this.state.data} type={"popup"} updateLiked={this.props.updateLiked} closeFunction={this.closeModal} updatePost={this.props.updatePost} updatePopUpState={this.changeState} removePost={this.props.removePost}/>;
+        let moviePost = <MoviePost
+            data={this.state.data}
+            type={"popup"}
+            updateLiked={this.props.updateLiked}
+            closeFunction={this.closeModal}
+            updatePost={this.props.updatePost}
+            updatePopUpState={this.changeState}
+            removePost={this.props.removePost}
+            showLoginPopUp={this.props.showLoginPopUp}
+            updateLoggedIn={this.props.updateLoggedIn}
+            setMessage={this.setMessage}
+        />;
         if(this.state.removePost)
         {
             commentBox = "";
@@ -112,6 +144,13 @@ class MoviePostPopUp extends React.Component {
                     &times;
                     </a>
                     <div className={style2.content}>
+                    <Alert
+                        message={this.state.message}
+                        messageId={this.state.messageId}
+                        type={this.state.messageType}
+                        style={{"text-align": "left"}}
+                        timeout={0}
+                    />
                         <div className={`${style.post} ${style2.postWidth}`}>
                             {moviePost}
                             {commentBox}

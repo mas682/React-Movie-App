@@ -1,5 +1,5 @@
 import models, { sequelize } from '../src/models';
-import {verifyLogin} from './globals.js';
+import {verifyLogin, validateIntegerParameter, validateStringParameter} from './globals.js';
 
 
 // function to post a reviews
@@ -255,22 +255,8 @@ const removePost = async (req, res, cookie) =>
 {
     // also need to verify this is the user that posted the comment...
     let reviewId = req.body.reviewId;
-    if(reviewId === undefined)
-    {
-        res.status(400).send({
-            message: "The review ID is invalid",
-            requester: cookie.name
-        });
-        return;
-    }
-    else if(isNaN(reviewId) || reviewId.toString().length > 15)
-    {
-        res.status(400).send({
-            message:"Review ID is invalid",
-            requester: cookie.name
-        });
-        return;
-    }
+    let valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID is invalid");
+    if(!valid) return;
 
     // try to get the review
     let review = await models.Review.getReviewWithCreator(reviewId, models);
@@ -322,29 +308,11 @@ const addLike = (cookie, req, res) =>
     // get the requesters id
     let userId = cookie.id;
     let reviewId = req.body.reviewId;
-    if(reviewId === undefined)
-    {
-        console.log("Review id 1: " + reviewId);
-        res.status(400).send({
-            message: "The review ID is invalid",
-            requester: cookie.name
-        });
-        return;
-    }
-    else if(isNaN(reviewId) || reviewId.toString().length > 15)
-    {
-        console.log("Review ID 2: " + reviewId);
-        res.status(400).send({
-            message:"Review ID is invalid",
-            requester: cookie.name
-        });
-        return;
-    }
+    let valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID is invalid");
+    if(!valid) return;
     // get the review
     models.Review.getReviewWithLikedUser(reviewId, userId, models)
     .then((review) => {
-        console.log("Movie review");
-        console.log(review);
         if(review === null)
         {
             res.status(404).send({
@@ -395,24 +363,8 @@ const removeLike = (cookie, req, res) =>
     // the id of the requester
     let userId = cookie.id;
     let reviewId = req.body.reviewId;
-    if(reviewId === undefined)
-    {
-        console.log("Review id 1: " + reviewId);
-        res.status(400).send({
-            message: "The review ID is invalid",
-            requester: cookie.name
-        });
-        return;
-    }
-    else if(isNaN(reviewId) || reviewId.toString().length > 15)
-    {
-        console.log("Review ID 2: " + reviewId);
-        res.status(400).send({
-            message:"Review ID is invalid",
-            requester: cookie.name
-        });
-        return;
-    }
+    let valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID is invalid");
+    if(!valid) return;
     // get the review
     models.Review.getReviewWithLikedUser(reviewId, userId, models)
     .then((review) => {
@@ -505,22 +457,8 @@ const addBadTags = (badString, review, userId) => {
 const getLikes = async (cookie, req, res) =>
 {
     let reviewId = req.body.reviewId;
-    if(reviewId === undefined)
-    {
-        res.status(400).send({
-            message:"Review ID is invalid",
-            requester: cookie.id
-        });
-        return;
-    }
-    else if(isNaN(reviewId) || reviewId.toString().length > 15)
-    {
-        res.status(400).send({
-            message:"Review ID is invalid",
-            requester: cookie.id
-        });
-        return;
-    }
+    let valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID is invalid");
+    if(!valid) return;
     // test to make sure valid number as well
     // holds the ids of the users who are already followed
     let usersWhoLiked = await models.Review.getLikes(reviewId, cookie.id, models);
@@ -534,7 +472,7 @@ const getLikes = async (cookie, req, res) =>
     else
     {
         res.status(200).send({
-            message: "Reviews likes found",
+            message: "Review likes found",
             requester: cookie.name,
             users: usersWhoLiked
          });
@@ -549,33 +487,54 @@ const getLikes = async (cookie, req, res) =>
 // comment - the comment to add to the post
 const postComment = async (req, res, cookie) =>
 {
+    let comment = req.body.comment;
+    let requester = cookie.name;
+    // for now, comments can be as long as possible but should limit in future..
+    let valid = validateStringParameter(res, comment, undefined, requester, "You cannot post a empty comment");
+    if(!valid) return;
+    let reviewId = req.body.reviewId;
+    valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID for the comment is invalid");
+    if(!valid) return;
     // may need to also add error checking to make sure review actually exists
     // or that the user can add a comment to this users post
-    // may want to add a function in the comment.js database file
-    if(req.body.comment.length === 0)
+    // but since all posts are public for now, this is fine
+
+    let review = await models.Review.getReviewForComment(reviewId, cookie.id, undefined, models);
+    console.log("New comment for the review: ");
+    console.log(review);
+    if(review === null)
     {
-        res.status(400).send(["You cannot post a empty comment"]);
+        res.status(404).send({
+            message: "The review could not be found",
+            requester: cookie.name
+        });
+        return;
     }
-    else if(isNaN(req.body.reviewId))
+    else
     {
-        res.status(400).send(["Valid review id not provided"]);
+        //left off here...fix creating the comment and response sent back 
+        // need to just go the create comment router and go from there...
+        //let result = await review.addComment({value: comment, userId: cookie.id});
+        console.log("Comment added result");
+        console.log(result);
+        //res.status(201).send();
+        models.Comment.create({
+            value: comment,
+            userId: cookie.id,
+            reviewId: reviewId,
+        }).then(async (result) => {
+            if(result !== undefined)
+            {
+                let comments = await models.Comment.findByReview(models, req.body.reviewId);
+                res.status(201).send([comments, cookie.name]);
+                // eventually want to send the comments back to the client along with cookie.name
+            }
+            else
+            {
+                res.status(404).send(["Review could not be found"]);
+            }
+        });
     }
-    models.Comment.create({
-        value: req.body.comment,
-        userId: cookie.id,
-        reviewId: req.body.reviewId,
-    }).then(async (result) => {
-        if(result !== undefined)
-        {
-            let comments = await models.Comment.findByReview(models, req.body.reviewId);
-            res.status(201).send([comments, cookie.name]);
-            // eventually want to send the comments back to the client along with cookie.name
-        }
-        else
-        {
-            res.status(404).send(["Review could not be found"]);
-        }
-    });
 };
 
 // function to update an existing comment on a review post

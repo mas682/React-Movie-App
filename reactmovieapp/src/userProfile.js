@@ -8,6 +8,7 @@ import ProfileHeader from './ProfileHeader.js';
 import MoviePostDisplay from './MoviePostDisplay.js';
 import Alert from './Alert.js';
 import {getErrorDisplay} from './StaticFunctions/ErrorHtmlFunctions.js';
+import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
 
 
 class UserProfile extends React.Component {
@@ -132,10 +133,7 @@ class UserProfile extends React.Component {
 
     setMessage(messageState)
     {
-        console.log(this.state.messageId);
-        let messageCount = this.state.messageId + 1;
-        messageState["messageId"] = messageCount;
-        this.setState(messageState);
+        this.setState(generateMessageState(messageState, this.state.messageId));
     }
 
     showErrorPage(message)

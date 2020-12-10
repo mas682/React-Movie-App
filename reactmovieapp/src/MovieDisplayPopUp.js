@@ -27,11 +27,11 @@ class MovieDisplayPopUp extends React.Component {
 
 	static getDerivedStateFromProps(nextProps, prevState)
 	{
-		if(prevState.movie.id !== nextProps.movie.id)
+		if(prevState.props.movie.id !== nextProps.movie.id)
 		{
 			return MovieDisplayPopUp.generateState(nextProps);
 		}
-		else if(prevState.currentUser !== nextProps.currentUser)
+		else if(prevState.props.currentUser !== nextProps.currentUser)
 		{
 			return MovieDisplayPopUp.generateState(nextProps);
 		}
@@ -61,7 +61,8 @@ class MovieDisplayPopUp extends React.Component {
 			displaySignIn: false,
             message: "",
             messageId: -1,
-            messageType: ""
+            messageType: "",
+            props: props
 		};
 	}
 

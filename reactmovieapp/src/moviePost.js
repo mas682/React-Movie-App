@@ -8,12 +8,13 @@ import './css/MoviePost/moviePost.css';
 import ReviewForm from './ReviewForm.js';
 import Dropdown from 'react-bootstrap/Dropdown';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
-
+import {generateRatingStars} from './StaticFunctions/MovieHtmlFunctions.js';
 
 
 class MoviePost extends React.Component {
     constructor(props) {
         super(props);
+        console.log(this.props);
         if(this.props.type === "popup")
         {
             this.state = {
@@ -48,13 +49,12 @@ class MoviePost extends React.Component {
                 removePost: false,
                 type: "popup",
                 // path to movies page
-                moviePath: this.props.data.moviePath
+                moviePath: this.props.data.moviePath,
+                props: this.props
             };
         }
         else
         {
-            let watched = false;
-            let watchList = false;
             let moviePath = this.props.data.review.movie.title.replace(" ", "-");
             moviePath = "/movie/" + this.props.data.review.movie.id + "-" + moviePath;
             this.state = {
@@ -90,10 +90,6 @@ class MoviePost extends React.Component {
                 removePost: false,
                 type: "non-popup",
                 moviePath: moviePath,
-                // has the user watched the movie?
-                watched: watched,
-                // is the movie on he users watchlist
-                watchList: watchList,
                 props: this.props
             };
         }
@@ -114,10 +110,6 @@ class MoviePost extends React.Component {
         this.generatePostPopUpButton = this.generatePostPopUpButton.bind(this);
         this.updateLiked = this.updateLiked.bind(this);
         this.removeFunction = this.removeFunction.bind(this);
-        this.generateMovieButtons = this.generateMovieButtons.bind(this);
-        this.buttonHandler = this.buttonHandler.bind(this);
-        this.movieWatchedResultsHandler = this.movieWatchedResultsHandler.bind(this);
-        this.movieWatchListResultsHandler = this.movieWatchListResultsHandler.bind(this);
         this.removePostResultsHandler = this.removePostResultsHandler.bind(this);
     }
 
@@ -142,12 +134,30 @@ class MoviePost extends React.Component {
         // using props for id because if you set the state to null to remove the post
         // it will not work correctly
         // may need to use props for currentUser too?
-        if(prevState.props.data.review.id !== nextProps.data.review.id || prevState.currentUser !== nextProps.currentUser)
+        if(prevState.type !== "popup")
         {
-            return MoviePost.newPropState(nextProps);
+            if((prevState.props.data.review.id !== nextProps.data.review.id) || (prevState.props.currentUser !== nextProps.currentUser))
+            {
+                console.log(prevState.props);
+                console.log(nextProps);
+                alert("New props received movie post");
+                return MoviePost.newPropState(nextProps);
+            }
+            else
+            {
+                return null;
+            }
         }
         else
         {
+            console.log(prevState.props);
+            if((prevState.props.data.id !== nextProps.data.id) || (prevState.props.currentUser !== nextProps.currentUser))
+            {
+                // need to fix newPropState..
+                console.log(prevState.props);
+                console.log(nextProps);
+                alert("New props received pop up");
+            }
             return null;
         }
     }
@@ -182,8 +192,6 @@ class MoviePost extends React.Component {
             // id of the review post
             id: props.data.review.id,
             rating: props.data.review.rating,
-            /* no longer needed */
-            //comments: props.data.review.comments,
             usedGoodButtons: MoviePost.getGoodButtons(props.data.review.goodTags),
             usedBadButtons: MoviePost.getBadButtons(props.data.review.badTags),
             review: props.data.review.review,
@@ -217,106 +225,6 @@ class MoviePost extends React.Component {
             // should also remove button from unused array if the post belongs to the current user
         });
         return tempArr;
-    }
-
-    /*
-        This function is used to generate the stars and set the appropriate ones to being colored or not
-        based off of the rating passed in by the props to the state
-    */
-    generateRatingStars()
-    {
-        let stars = [];
-        let tempId = "star5" + this.state.id;
-        if(this.state.rating === 5.0)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={this.state.form} checked={true}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={this.state.form}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
-        }
-        tempId = "star4half" + this.state.id;
-        if(this.state.rating === 4.50)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={this.state.form}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
-        }
-        tempId = "star4" + this.state.id;
-        if(this.state.rating === 4.00)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={this.state.form} checked={true}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={this.state.form}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
-        }
-        tempId = "star3half" + this.state.id;
-        if(this.state.rating === 3.50)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={this.state.form}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
-        }
-        tempId = "star3" + this.state.id;
-        if(this.state.rating === 3.00)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={this.state.form} checked={true}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={this.state.form}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
-        }
-        tempId = "star2half" + this.state.id;
-        if(this.state.rating === 2.50)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={this.state.form}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
-        }
-        tempId = "star2" + this.state.id;
-        if(this.state.rating === 2.00)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={this.state.form} checked={true}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={this.state.form}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
-        }
-        tempId = "star1half" + this.state.id;
-        if(this.state.rating === 1.50)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={this.state.form}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
-        }
-        tempId = "star1half" + this.state.id;
-        if(this.state.rating === 1.00)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={this.state.form} checked={true}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={this.state.form}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
-        }
-        tempId = "starhalf" + this.state.id;
-        if(this.state.rating === 0.50)
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={this.state.form} checked={true}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
-        }
-        else
-        {
-            stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={this.state.form}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
-        }
-        return stars;
     }
 
 
@@ -406,14 +314,13 @@ class MoviePost extends React.Component {
                 this.props.updateLiked(1, true);
             }
             this.props.updateLoggedIn(user);
+            this.props.setMessage({message: message, messageType: "success"});
         }
         else
         {
-            alert(message);
+            this.props.updateLoggedIn(user);
             if(status === 400)
             {
-                // review id invalid such as not provided, or invalid format
-                this.props.updateLoggedIn(user);
                 // review id invalid such as not provided, or invalid format
                 // or you already liked the post
                 if(message === "Post already liked")
@@ -424,6 +331,7 @@ class MoviePost extends React.Component {
                         liked: true,
                         likeCount: newCount
                     });
+                    this.props.setMessage({message: message, messageType: "info"});
                     if(this.state.type === "popup")
                     {
                         this.props.updateLiked(-1, false);
@@ -434,14 +342,12 @@ class MoviePost extends React.Component {
                     this.setState({
                         currentUser: user,
                     });
+                    this.props.setMessage({message: message, messageType: "failure"});
                 }
             }
             else if(status === 401)
             {
                 // not logged in
-                this.setState({
-                    currentUser: user,
-                });
                 this.props.showLoginPopUp(false);
                 //if not logged in, this shouldn't have been visible..so remove it
                 if(this.state.type === "popup")
@@ -452,15 +358,14 @@ class MoviePost extends React.Component {
             else if(status === 404)
             {
                 // review not found on server
-                // will need to remove the post somehow?
-                // may have to pass this to popup as props
-                this.removeFunction();
+                this.removeFunction({message: message, messageType: "failure"});
             }
             else
             {
                 this.setState({
                     currentUser: user,
                 });
+                this.props.setMessage({message: message, messageType: "failure"});
             }
         }
     }
@@ -481,10 +386,11 @@ class MoviePost extends React.Component {
                 this.props.updateLiked(-1, false);
             }
             this.props.updateLoggedIn(user);
+            this.props.setMessage({message: message, messageType: "success"});
         }
         else
         {
-            alert(message);
+            this.props.updateLoggedIn(user);
             if(status === 400)
             {
                 // review id invalid such as not provided, or invalid format
@@ -497,6 +403,7 @@ class MoviePost extends React.Component {
                         liked: false,
                         likeCount: newCount
                     });
+                    this.props.setMessage({message: message, messageType: "info"});
                     if(this.state.type === "popup")
                     {
                         this.props.updateLiked(-1, false);
@@ -507,17 +414,14 @@ class MoviePost extends React.Component {
                     this.setState({
                         currentUser: user
                     });
+                    this.props.setMessage({message: message, messageType: "warning"});
+
                 }
                 this.props.updateLoggedIn(user);
             }
             else if(status === 401)
             {
                 // not logged in
-                // don't think this is needed here as props will send it down anyways..
-                /*this.setState({
-                    currentUser: user
-                });
-                */
                 this.props.showLoginPopUp(false);
                 // if not logged in, this should not be up so remove it
                 if(this.state.type === "popup")
@@ -528,12 +432,11 @@ class MoviePost extends React.Component {
             else if(status === 404)
             {
                 // review could not be found
-                // will have to remove reveiw somehow..
-                // may have to pass this as props to popup..
-                this.removeFunction();
+                this.removeFunction({message: message, messageType: "failure"});
             }
             else
             {
+                this.props.setMessage({message: message, messageType: "failure"});
                 this.setState({
                     currentUser: user
                 });
@@ -566,7 +469,12 @@ class MoviePost extends React.Component {
         {
             this.props.closeFunction();
         }
-        if(key === "displayLikes" && !this.state.currentUser)
+        if(key === "displayLikes" && this.state.currentUser === "")
+        {
+            this.props.showLoginPopUp(false);
+            return;
+        }
+        if(key === "openPopUp" && this.state.currentUser === "")
         {
             this.props.showLoginPopUp(false);
             return;
@@ -589,7 +497,7 @@ class MoviePost extends React.Component {
 
     // function to remove the post when remove clicked by user
     // will also be called by popup when necessary
-    removeFunction()
+    removeFunction(messageState)
     {
         this.setState({
             // set the id of the post to null
@@ -597,14 +505,29 @@ class MoviePost extends React.Component {
             // used as boolean as to whether or not to show remove post buttons when clicked
             removePost: false
         });
+        if(this.state.type === "popup")
+        {
+            // cause the parent to remove the post
+            this.props.removePost();
+            // close the popup, passing the message along
+            this.props.closeFunction(messageState);
+        }
+        else
+        {
+            // if there is a message
+            if(messageState !== undefined)
+            {
+                this.props.setMessage(messageState);
+            }
+        }
     }
-
 
     // function to handle deleting a post
     async removePost()
     {
         let url = "http://localhost:9000/review/removepost";
         let params = {reviewId: this.state.id};
+        params = {reviewId: "abc"};
         let result = await apiPostJsonRequest(url, params);
         let status = result[0];
         let message = result[1].message;
@@ -616,28 +539,21 @@ class MoviePost extends React.Component {
     {
         if(status === 200)
         {
-            this.removeFunction();
+            this.removeFunction({message: message, messageType: "success"});
             this.props.updateLoggedIn(user);
-            if(this.state.type === "popup")
-            {
-                // cause the parent to remove the post
-                this.props.removePost();
-                // close the popup
-                this.props.closeFunction();
-            }
         }
         else
         {
-            alert(message);
             if(status === 400)
             {
                 // bad format to movie id
                 this.props.updateLoggedIn(user);
+                this.props.setMessage({message: message, messageType: "failure"});
             }
             else if(status === 404)
             {
                 // review not found so remove it
-                this.removeFunction();
+                this.removeFunction({message: message, messageType: "info"});
                 this.props.updateLoggedIn(user);
                 if(this.state.type === "popup")
                 {
@@ -652,6 +568,7 @@ class MoviePost extends React.Component {
                 if(message === "You cannot remove another users post")
                 {
                     this.props.updateLoggedIn(user);
+                    this.props.setMessage({message: message, messageType: "failure"});
                     // may want to use the remove post handler instead..?
                     this.setState({
                         removePost: false
@@ -671,188 +588,8 @@ class MoviePost extends React.Component {
             }
             else
             {
+                this.props.setMessage({message: message, messageType: "failure"});
                 this.props.updateLoggedIn(user);
-            }
-        }
-    }
-
-    // function to handle user adding a movie to their watchlist
-    // or to their movies watched list
-    async buttonHandler(event, type)
-    {
-        event.preventDefault();
-        event.stopPropagation();
-
-        if(!this.state.currentUser)
-        {
-            this.props.showLoginPopUp(false);
-            return;
-        }
-
-        let params = {movieId: this.state.movie.id};
-        let url = "";
-        if(type === "watched")
-        {
-            url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watched";
-            if(this.state.watched)
-            {
-                url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watched";
-            }
-        }
-        else if(type === "watchlist")
-        {
-            url = "http://localhost:9000/profile/" + this.state.username + "/add_to_watchlist";
-            if(this.state.watchList)
-            {
-                url = "http://localhost:9000/profile/" + this.state.username + "/remove_from_watchlist";
-            }
-        }
-        let result = await apiPostJsonRequest(url, params);
-        let status = result[0];
-        let message = result[1].message;
-        let user = result[1].requester;
-        if(type === "watched")
-        {
-            this.movieWatchedResultsHandler(status, message, user);
-        }
-        else
-        {
-            this.movieWatchListResultsHandler(status, message, user);
-        }
-    }
-
-
-    movieWatchListResultsHandler(status, message, username)
-    {
-        if(status === 200 && message === "Movie added to watch list")
-        {
-            this.setState({
-                watchList: true,
-                currentUser: username
-            });
-            this.props.updateLoggedIn(username);
-        }
-        else if(status === 200 && message === "Movie removed from watch list")
-        {
-            this.setState({
-                watchList: false,
-                currentUser: username
-            });
-            this.props.updateLoggedIn(username);
-        }
-        else
-        {
-            alert(message);
-            // not logged in/cookie not found
-            if(status === 401)
-            {
-                this.props.updateLoggedIn("");
-                this.setState({
-                    currentUser: "",
-                    displaySignIn: true
-                });
-                this.props.showLoginPopUp(false);
-                // if this is the pop up, will have to close it out
-            }
-            else if(status === 400)
-            {
-                if(message === "The movie is already on the users watch list")
-                {
-                    this.setState({
-                        watchList: true,
-                        currentUser: username
-                    });
-                    this.props.updateLoggedIn(username);
-                }
-                else if(message === "The movie is already not on the users watch list")
-                {
-                    this.setState({
-                        watchList: false,
-                        currentUser: username
-                    });
-                    this.props.updateLoggedIn(username);
-                }
-                else
-                {
-                    // movie ID in a invalid format
-                    this.setState({
-                        currentUser: username
-                    });
-                    this.props.updateLoggedIn(username);
-                }
-            }
-            else if(status === 404)
-            {
-                // the movie could not be found to add to the user watch list
-                // or the movie could not be found to remove from the users watch list
-                // if the movie is not found, should the movie post be removed?
-                this.setState({
-                    currentUser: username,
-                    watchList: false
-                });
-                this.props.updateLoggedIn(username);
-            }
-            else
-            {
-                // some other error occurred
-                this.setState({
-                    currentUser: username
-                });
-                this.props.updateLoggedIn(username);
-            }
-        }
-    }
-
-    movieWatchedResultsHandler(status, result)
-    {
-        // not logged in/cookie not found
-        if(status === 401)
-        {
-            this.props.updateLoggedIn("");
-            if(this.state.currentUser)
-            {
-                this.setState({
-                    currentUser: ""
-                })
-            }
-        }
-        else
-        {
-            let username = result[1];
-            let message = result[0];
-            if(status === 200 && message === "Movie added to movies watched list")
-            {
-                this.setState({
-                    watched: true,
-                    currentUser: username
-                });
-            }
-            else if(status === 200 && message === "Movie removed from watched movies list")
-            {
-                this.setState({
-                    watched: false,
-                    currentUser: username
-                });
-            }
-            else if(status === 200 && message === "Movie already on movies watched list")
-            {
-                alert(message);
-                this.setState({
-                    watched: true,
-                    currentUser: username
-                });
-            }
-            else if(status === 200 && message === "Movie already not on watched movies list")
-            {
-                alert(message);
-                this.setState({
-                    watched: false,
-                    currentUser: username
-                });
-            }
-            else
-            {
-                alert(message);
             }
         }
     }
@@ -970,6 +707,8 @@ class MoviePost extends React.Component {
                             changeFunction={this.changeLikes}
                             updateLoggedIn={this.props.updateLoggedIn}
                             showLoginPopUp={this.props.showLoginPopUp}
+                            setMessage={this.props.setMessage}
+                            removePost={this.removeFunction}
                         />;
         }
         return likesPopUp;
@@ -981,7 +720,16 @@ class MoviePost extends React.Component {
         let postPopUp = "";
         if(this.state.openPopUp && this.state.type !== "popup")
         {
-            postPopUp = <MoviePostPopUp data={this.state} removeFunction={this.changeState} updateLiked={this.updateLiked} updatePost={this.updateState} removePost={this.removeFunction}/>;
+            postPopUp = <MoviePostPopUp
+                            data={this.state}
+                            removeFunction={this.changeState}
+                            updateLiked={this.updateLiked}
+                            updatePost={this.updateState}
+                            removePost={this.removeFunction}
+                            updateLoggedIn={this.props.updateLoggedIn}
+                            showLoginPopUp={this.props.showLoginPopUp}
+                            setMessage={this.props.setMessage}
+                        />;
         }
         return postPopUp;
     }
@@ -999,46 +747,11 @@ class MoviePost extends React.Component {
         }
     }
 
-    generateMovieButtons()
-    {
-        let watchedButton = (
-            <i class={`fas fa-ticket-alt ${style.watchedIcon} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
-                <span class={style.tooltiptext}>Add to movies watched</span>
-            </i>);
-        if(this.state.watched)
-        {
-            watchedButton = (
-                <i class={`fas fa-ticket-alt ${style.watchedIconSelected} ${style.tooltip}`} onClick={(event) => this.buttonHandler(event, "watched")}>
-                    <span class={style.tooltiptext}>Remove movie from watched</span>
-                </i>
-            );
-        }
-        let watchlistButton = (
-            <i class={`fas fa-eye ${style.watchListIcon} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
-                <span class={style.tooltiptext}>Add to watch list</span>
-            </i>);
-        if(this.state.watchList)
-        {
-            watchlistButton = (
-                <i class={`fas fa-eye ${style.watchListIconSelected} ${style.tooltip}`} onClick={(event) =>this.buttonHandler(event, "watchlist")}>
-                    <span class={style.tooltiptext}>Remove from watch list</span>
-                </i>
-            );
-        }
-
-        return (
-            <div className={style.iconContainer}>
-                {watchedButton}
-                {watchlistButton}
-            </div>
-        );
-    }
-
 
     generateHTML()
     {
         let editButtons = this.generateEditButtons();
-        let stars = this.generateRatingStars();
+        let stars = generateRatingStars(style, this.state.id, this.state.rating);
         let likedButton = this.generateLikedButton();
         let editPopup = this.generateEditPopUp();
         let goodButtonArray = this.generateGoodButtons();
@@ -1047,7 +760,6 @@ class MoviePost extends React.Component {
         let likesPopUp = this.generateLikesPopUp();
         let postPopUp = this.generatePostPopUp();
         let popUpButton = this.generatePostPopUpButton();
-        let movieButtons = this.generateMovieButtons();
         let profilePath = "/profile/" + this.state.username;
         return(<React.Fragment>
             <div className={style.postHeader}>
@@ -1109,7 +821,6 @@ class MoviePost extends React.Component {
                     {likeCount}
                     {likesPopUp}
                 </div>
-                {movieButtons}
             </div>
             <div className="socialButtonContainer">
                 <div className="socialButtons">
