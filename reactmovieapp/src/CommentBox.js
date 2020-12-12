@@ -1,7 +1,8 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 import style from './css/MoviePost/moviePost.module.css';
-import style2 from './css/MoviePost/moviePostPopUp.module.css'
+import style2 from './css/MoviePost/moviePostPopUp.module.css';
+import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 
 class CommentBox extends React.Component {
@@ -16,6 +17,7 @@ class CommentBox extends React.Component {
         this.changeHandler = this.changeHandler.bind(this);
         this.postComment = this.postComment.bind(this);
         this.generateCommentBox = this.generateCommentBox.bind(this);
+        this.commentResultHandler = this.commentResultHandler.bind(this);
     }
 
     // used to update the state for the title, review, and the rating
@@ -28,7 +30,7 @@ class CommentBox extends React.Component {
     /*
         Used to post comments to the server for a review
     */
-    postComment()
+    async postComment()
     {
         if(this.state.comment.length === 0)
         {
@@ -37,45 +39,68 @@ class CommentBox extends React.Component {
             });
             return;
         }
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                comment: this.state.comment,
-                reviewId: this.state.reviewId,
-            })
+        let url = "http://localhost:9000/review/postcomment";
+        let params = {
+            comment: this.state.comment,
+            reviewId: this.state.reviewId,
         };
-        let status = 0;
-        fetch("http://localhost:9000/review/postcomment", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result => {
-                if(status == 201)
-                {
-                    this.setState({
-                        comment: "",
-                        commentError: ""
-                    });
-                    // return the all the comments for the post and the user who posted it
-                    // to the pop up
-                    this.props.updateCommentsFunction(result[0], result[1]);
-                }
-                else
-                {
-                    if(result[0] === "You cannot post a empty comment")
-                    {
-                        this.setState({
-                            commentError: "You cannot post a empty comment"
-                        });
-                    }
-                    else
-                    {
-                        alert(result[0]);
-                    }
-                }
+        let result = await apiPostJsonRequest(url, params);
+        let status = result[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        this.commentResultHandler(status, message, requester);
+    }
+
+    commentResultHandler(status, message, requester)
+    {
+        if(status === 201)
+        {
+            this.setState({
+                comment: "",
+                commentError: ""
             });
+            this.props.updateLoggedIn(requester);
+            // return the all the comments for the post and the user who posted it
+            // to the pop up
+            // this is what I used to do...may do this again or set a switch to
+            // update the comment box
+            //this.props.updateCommentsFunction(result[0], result[1]);
+        }
+        else
+        {
+            this.props.updateLoggedIn(requester);
+            if(status === 401)
+            {
+                // either not logged in or user could not be found
+                // since posts are public for now, do not reroute
+                this.props.showLoginPopUp(false);
+            }
+            else if(status === 400)
+            {
+                // comment in bad format or review id in bad format
+                this.setState({
+                    commentError: message
+                });
+            }
+            else if(status === 404)
+            {
+                // review could not be found
+                // remove the post from the moviePost component
+                this.props.removePost();
+                // close the popup and display the message on the screen
+                this.props.closeFunction({message: message, messageType: "failure"});
+
+            }
+            else
+            {
+                // currently, only 500 option
+                // server error
+                this.setState({
+                    commentError: message
+                });
+            }
+        }
+
     }
 
     generateCommentBox()
@@ -119,7 +144,10 @@ class CommentBox extends React.Component {
                     {commentBox}
                 </div>
                 <div className="commentSubmitContainer">
-                    <button className={`${style.postButton} ${style2.commentButton}`} onClick={this.postComment}>Post Comment</button>
+                    <button
+                        className={`${style.postButton} ${style2.commentButton}`}
+                        onClick={this.postComment}>Post Comment
+                    </button>
                 </div>
             </React.Fragment>
         );

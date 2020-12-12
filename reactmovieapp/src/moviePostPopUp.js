@@ -112,7 +112,15 @@ class MoviePostPopUp extends React.Component {
             update={this.state.newComment}
             comments={this.state.comments}
             />;
-        let commentBox = <CommentBox reviewId={this.state.id} form={this.state.form} updateCommentsFunction={this.updateComments}/>;
+        let commentBox = <CommentBox
+                            reviewId={this.state.id}
+                            form={this.state.form}
+                            updateCommentsFunction={this.updateComments}
+                            updateLoggedIn={this.props.updateLoggedIn}
+                            showLoginPopUp={this.props.showLoginPopUp}
+                            removePost={this.props.removePost}
+                            closeFunction={this.closeModal}
+                        />;
         let moviePost = <MoviePost
             data={this.state.data}
             type={"popup"}

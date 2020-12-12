@@ -495,13 +495,7 @@ const postComment = async (req, res, cookie) =>
     let reviewId = req.body.reviewId;
     valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID for the comment is invalid");
     if(!valid) return;
-    // may need to also add error checking to make sure review actually exists
-    // or that the user can add a comment to this users post
-    // but since all posts are public for now, this is fine
-
     let review = await models.Review.getReviewForComment(reviewId, cookie.id, undefined, models);
-    console.log("New comment for the review: ");
-    console.log(review);
     if(review === null)
     {
         res.status(404).send({
@@ -512,27 +506,56 @@ const postComment = async (req, res, cookie) =>
     }
     else
     {
-        //left off here...fix creating the comment and response sent back 
-        // need to just go the create comment router and go from there...
-        //let result = await review.addComment({value: comment, userId: cookie.id});
-        console.log("Comment added result");
-        console.log(result);
-        //res.status(201).send();
-        models.Comment.create({
-            value: comment,
-            userId: cookie.id,
-            reviewId: reviewId,
-        }).then(async (result) => {
-            if(result !== undefined)
+        let newComment;
+        try
+        {
+            newComment = await models.Comment.create({
+                value: comment,
+                userId: cookie.id,
+                reviewId: reviewId,
+            });
+        }
+        catch(err) {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            // may want to make this a reusable error function?
+            if(errorObject.name === "SequelizeForeignKeyConstraintError")
             {
-                let comments = await models.Comment.findByReview(models, req.body.reviewId);
-                res.status(201).send([comments, cookie.name]);
-                // eventually want to send the comments back to the client along with cookie.name
+                if(errorObject.original.constraint === "comments_userId_fkey")
+                {
+                    res.status(401).send({
+                        message: "User could not be found",
+                        requester: cookie.name
+                    });
+                }
+                else if(errorObject.original.constraint === "comments_reviewId_fkey")
+                {
+                    res.status(404).send({
+                        message: "The review could not be found",
+                        requester: cookie.name
+                    });
+                }
+                else
+                {
+                    res.status(500).send({
+                        message: "A unknown error occurred trying to post a comment to the review",
+                        requester: cookie.name
+                    });
+                    console.log("Some unknown constraint error occurred: " + errorObject.original.constraint);
+                }
             }
             else
             {
-                res.status(404).send(["Review could not be found"]);
+                console.log("Some unknown error occurred during posting a comment: " + errorObject.name);
+                res.status(500).send({
+                    message: "A unknown error occurred trying to post a comment to the review",
+                    requester: cookie.name
+                });
             }
+            return;
+        }
+        res.status(201).send({
+            message: "Comment successfully posted",
+            requester: cookie.name
         });
     }
 };
