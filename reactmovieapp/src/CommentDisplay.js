@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import Dropdown from 'react-bootstrap/Dropdown'
 import style2 from './css/MoviePost/moviePostPopUp.module.css'
 import style from './css/MoviePost/moviePost.module.css';
+import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 
 class CommentDisplay extends React.Component {
@@ -17,7 +18,8 @@ class CommentDisplay extends React.Component {
             reviewUser: this.props.reviewUser,
             updateError: "",
             editComment: false,
-            removeComment: false
+            removeComment: false,
+            props: this.props
         }
         this.buttonHandler = this.buttonHandler.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
@@ -25,8 +27,10 @@ class CommentDisplay extends React.Component {
         this.updateComment = this.updateComment.bind(this);
         this.generateRemoveButton = this.generateRemoveButton.bind(this);
         this.removeComment = this.removeComment.bind(this);
-        this.updateNewState = this.updateNewState.bind(this);
+        this.cancelRemoval = this.cancelRemoval.bind(this);
         this.generateEditButtons = this.generateEditButtons.bind(this);
+        this.commentUpdateResultHandler = this.commentUpdateResultHandler.bind(this);
+        this.commentRemovalResultHandler = this.commentRemovalResultHandler.bind(this);
     }
 
     changeHandler(event)
@@ -54,19 +58,26 @@ class CommentDisplay extends React.Component {
         }
     }
 
-
-    // used when receiving a update from the CommentController
-    componentWillReceiveProps(nextProps) {
-        // if the props received are different than the curren state
-       if(nextProps.comment.id !== this.state.commentId) {
-          this.updateNewState(nextProps);
-       }
+    static getDerivedStateFromProps(nextProps, prevState)
+    {
+        if(nextProps.comment.id !== prevState.commentId)
+        {
+            return CommentDisplay.updateNewState(nextProps);
+        }
+        else if(nextProps.comment.value !== prevState.props.comment.value)
+        {
+            return CommentDisplay.updateNewState(nextProps);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /* this function should be called when a comment was removed to update an existing
     component to hold new data whenever the api call to get the comments is done */
-    updateNewState(nextProps) {
-        this.setState({
+    static updateNewState(nextProps) {
+        return {
             commentData: nextProps.comment,
             currentUser: nextProps.currentUser,
             commentId: nextProps.comment.id,
@@ -75,14 +86,15 @@ class CommentDisplay extends React.Component {
             reviewUser: nextProps.reviewUser,
             updateError: "",
             editComment: false,
-            removeComment: false
-        })
+            removeComment: false,
+            props: nextProps
+        };
     }
 
     /*
         Used to send updated comments to the server for a review
     */
-    updateComment()
+    async updateComment()
     {
         if(this.state.comment.length === 0)
         {
@@ -91,90 +103,155 @@ class CommentDisplay extends React.Component {
             });
             return;
         }
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                comment: this.state.comment,
-                commentId: this.state.commentId,
-            })
+        let url = "http://localhost:9000/review/updatecomment";
+        let params = {
+            comment: this.state.comment,
+            commentId: this.state.commentId
         };
-        let status = 0;
-        fetch("http://localhost:9000/review/updatecomment", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result => {
-                if(status == 200)
+        let result = await apiPostJsonRequest(url, params);
+        let status = result[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        this.commentUpdateResultHandler(status, message, requester);
+    }
+
+    commentUpdateResultHandler(status, message, requester)
+    {
+        if(status == 200)
+        {
+            this.setState({
+                editComment: false,
+                updateError: ""
+            });
+            this.props.updateLoggedIn(requester);
+            // get the parent component to reload the comments
+            this.props.updateComments();
+            this.props.setMessage({message: message, messageType: "success"});
+        }
+        else
+        {
+            this.props.updateLoggedIn(requester);
+            if(status === 401)
+            {
+                if(message === "You cannot update another users comment")
                 {
                     this.setState({
-                        commentData: result[0],
-                        comment: result[0].value,
                         editComment: false,
+                        comment: this.props.comment.value,
                         updateError: ""
                     });
+                    this.props.setMessage({message: message, messageType: "failure"});
                 }
                 else
                 {
-                    alert(result[0]);
-                    if(result[0] === "You cannot update another users comment")
-                    {
-                        this.setState({
-                            editComment: false,
-                            comment: this.props.comment.value,
-                            updateError: ""
-                        });
-                    }
-                    else if(result[0] === "Cannot post a empty comment")
-                    {
-                        this.setState({
-                            updateError: "You cannot post a empty comment"
-                        });
-                    }
+                    // not logged in
+                    this.props.showLoginPopUp(false);
                 }
-            });
+            }
+            else if(status === 400)
+            {
+                this.setState({
+                    updateError: message
+                });
+            }
+            else if(status === 404)
+            {
+                // comment could not be found
+                // cause comment reload
+                this.props.updateComments();
+                this.props.setMessage({message: message, messageType: "failure"});
+            }
+            else
+            {
+                // update failed for some unknown reason
+                this.setState({
+                    updateError: message
+                });
+            }
+        }
+    }
+
+    cancelRemoval()
+    {
+        this.setState({
+            removeComment: false
+        });
     }
 
     /*
         Used to remove comments from a review
     */
-    removeComment()
+    async removeComment()
     {
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                commentId: this.state.commentId,
-            })
+        let url = "http://localhost:9000/review/removecomment";
+        let params = {
+            comment: this.state.comment,
+            commentId: this.state.commentId
         };
-        let status = 0;
-        fetch("http://localhost:9000/review/removecomment", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.text();
-            }).then(result => {
-                if(status == 200)
+        let result = await apiPostJsonRequest(url, params);
+        let status = result[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        this.commentRemovalResultHandler(status, message, requester);
+    }
+
+    commentRemovalResultHandler(status, message, requester)
+    {
+        //need to fix this api side so that if this is the user who posted
+        //the review, they can delete the comment
+        if(status == 200)
+        {
+            this.setState({
+                commentData: null,
+                comment: "",
+                removeComment: false,
+                updateError: ""
+            });
+            this.props.updateLoggedIn(requester);
+            // get the parent component to reload the comments
+            this.props.updateComments();
+            this.props.setMessage({message: message, messageType: "success"});
+        }
+        else
+        {
+            this.props.updateLoggedIn(requester);
+            if(status === 401)
+            {
+                if(message === "You cannot remove another users comment")
                 {
                     this.setState({
-                        commentData: null,
-                        comment: "",
                         removeComment: false,
-                        updateError: ""
                     });
+                    this.props.setMessage({message: message, messageType: "failure"});
                 }
                 else
                 {
-                    alert(result);
-                    if(result === "You cannot remove another users comment")
-                    {
-                        this.setState({
-                            removeComment: false
-                        })
-                    }
+                    // not logged in
+                    this.props.showLoginPopUp(false);
                 }
-            });
+            }
+            else if(status === 400)
+            {
+                // error with comment ID format
+                this.props.setMessage({message: message, messageType: "failure"});
+            }
+            else if(status === 404)
+            {
+                // comment could not be found
+                // cause comment reload
+                this.props.updateComments();
+                // if the comment was not found may not care as it means it already
+                // does not exist?
+                this.props.setMessage({message: message, messageType: "warning"});
+            }
+            else
+            {
+                // update failed for some unknown reason
+                this.setState({
+                    updateError: message
+                });
+            }
+        }
     }
 
     // used to generate the edit comment box
@@ -228,7 +305,7 @@ class CommentDisplay extends React.Component {
                 Are you sure you want to remove the comment?
             </div>
             <div className={style2.removeContainer}>
-                <button value="removeComment" className={`${style.postButton}`} onClick={this.removeButton}>Cancel</button>
+                <button value="removeComment" className={`${style.postButton}`} onClick={this.cancelRemoval}>Cancel</button>
                 <button className={`${style.postButton} ${style2.cancelButton}`} onClick={this.removeComment}>Remove</button>
             </div>
         </React.Fragment>);

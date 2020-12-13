@@ -23,7 +23,6 @@ const review = (req, res, next) =>
             // cookie not valid
             else
             {
-                console.log("HERE1");
                 res.status(401).send({
                     message:"You are not logged in",
                     requester: ""});
@@ -33,7 +32,6 @@ const review = (req, res, next) =>
     // if no cookie was found
     else
     {
-        console.log("HERE2");
         res.status(401).send({
             message: "You are not logged in",
             requester: ""});
@@ -43,60 +41,67 @@ const review = (req, res, next) =>
 
 const selectPath = (cookie, req, res) =>
 {
-    // if here, the path is /review
-    if(Object.keys(req.params).length == 0)
+    if(req.method === "GET")
     {
-        createReview(cookie, req, res);
+        if(req.params.reviewId !== undefined)
+        {
+            if(req.params.type === "getcomments")
+            {
+                getComments(req, res, cookie);
+            }
+        }
     }
-    // if the path is /review/update
-    else if(Object.keys(req.params).length == 1 && req.params.type === "update")
+    else if(req.method === "POST")
     {
-        updateReview(cookie, req, res);
-    }
-    // if the path is /review/delete
-    else if(Object.keys(req.params).length == 1 && req.params.type === "delete")
-    {
-        deleteReview(cookie, req, res);
-    }
-    // if the path is /review/add_like
-    else if(Object.keys(req.params).length == 1 && req.params.type === "addlike")
-    {
-        addLike(cookie, req, res);
-    }
-    // if the path is /review/removelike
-    else if(Object.keys(req.params).length == 1 && req.params.type === "removelike")
-    {
-        removeLike(cookie, req, res);
-    }
-    // if the path is /review/getlikes
-    else if(Object.keys(req.params).length == 1 && req.params.type === "getlikes")
-    {
-        getLikes(cookie, req, res);
-    }
-    // if the path is /review/postcomment
-    else if(Object.keys(req.params).length == 1 && req.params.type === "postcomment")
-    {
-        postComment(req, res, cookie);
-    }
-    // if the path is /review/getcomments
-    else if(Object.keys(req.params).length == 1 && req.params.type === "getcomments")
-    {
-        getComments(req, res, cookie);
-    }
-    // if the path is /review/updatecomment
-    else if(Object.keys(req.params).length == 1 && req.params.type === "updatecomment")
-    {
-        updateComment(req, res, cookie);
-    }
-    // if the path is /review/removecomment
-    else if(Object.keys(req.params).length == 1 && req.params.type === "removecomment")
-    {
-        removeComment(req, res, cookie);
-    }
-    // if the path is /review/removepost
-    else if(Object.keys(req.params).length == 1 && req.params.type === "removepost")
-    {
-        removePost(req, res, cookie);
+        if(Object.keys(req.params).length == 0)
+        {
+            createReview(cookie, req, res);
+        }
+        // if the path is /review/update
+        else if(req.params.type === "update")
+        {
+            updateReview(cookie, req, res);
+        }
+        // if the path is /review/delete
+        else if(req.params.type === "delete")
+        {
+            deleteReview(cookie, req, res);
+        }
+        // if the path is /review/add_like
+        else if(req.params.type === "addlike")
+        {
+            addLike(cookie, req, res);
+        }
+        // if the path is /review/removelike
+        else if(req.params.type === "removelike")
+        {
+            removeLike(cookie, req, res);
+        }
+        // if the path is /review/getlikes
+        else if(req.params.type === "getlikes")
+        {
+            getLikes(cookie, req, res);
+        }
+        // if the path is /review/postcomment
+        else if(req.params.type === "postcomment")
+        {
+            postComment(req, res, cookie);
+        }
+        // if the path is /review/updatecomment
+        else if(req.params.type === "updatecomment")
+        {
+            updateComment(req, res, cookie);
+        }
+        // if the path is /review/removecomment
+        else if(req.params.type === "removecomment")
+        {
+            removeComment(req, res, cookie);
+        }
+        // if the path is /review/removepost
+        else if(req.params.type === "removepost")
+        {
+            removePost(req, res, cookie);
+        }
     }
     // some unknow path given
     else
@@ -493,14 +498,14 @@ const postComment = async (req, res, cookie) =>
     let valid = validateStringParameter(res, comment, undefined, requester, "You cannot post a empty comment");
     if(!valid) return;
     let reviewId = req.body.reviewId;
-    valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID for the comment is invalid");
+    valid = validateIntegerParameter(res, reviewId, requester, "The review ID for the comment is invalid");
     if(!valid) return;
     let review = await models.Review.getReviewForComment(reviewId, cookie.id, undefined, models);
     if(review === null)
     {
         res.status(404).send({
             message: "The review could not be found",
-            requester: cookie.name
+            requester: requester
         });
         return;
     }
@@ -524,21 +529,21 @@ const postComment = async (req, res, cookie) =>
                 {
                     res.status(401).send({
                         message: "User could not be found",
-                        requester: cookie.name
+                        requester: requester
                     });
                 }
                 else if(errorObject.original.constraint === "comments_reviewId_fkey")
                 {
                     res.status(404).send({
                         message: "The review could not be found",
-                        requester: cookie.name
+                        requester: requester
                     });
                 }
                 else
                 {
                     res.status(500).send({
                         message: "A unknown error occurred trying to post a comment to the review",
-                        requester: cookie.name
+                        requester: requester
                     });
                     console.log("Some unknown constraint error occurred: " + errorObject.original.constraint);
                 }
@@ -548,14 +553,14 @@ const postComment = async (req, res, cookie) =>
                 console.log("Some unknown error occurred during posting a comment: " + errorObject.name);
                 res.status(500).send({
                     message: "A unknown error occurred trying to post a comment to the review",
-                    requester: cookie.name
+                    requester: requester
                 });
             }
             return;
         }
         res.status(201).send({
             message: "Comment successfully posted",
-            requester: cookie.name
+            requester: requester
         });
     }
 };
@@ -568,53 +573,61 @@ const updateComment = async (req, res, cookie) =>
 {
     let commentId = req.body.commentId;
     let updatedComment = req.body.comment;
-    if(isNaN(commentId))
+    let requester = cookie.name;
+    let valid = validateStringParameter(res, updatedComment, undefined, requester, "You cannot post a empty comment");
+    if(!valid) return;
+    valid = validateIntegerParameter(res, commentId, requester, "The comment ID to update is invalid");
+    if(!valid) return;
+    // try to get the comment
+    let comment = await models.Comment.findById(models, commentId);
+    if(comment === null)
     {
-        res.status(400).send(["Valid comment id not provided"]);
-    }
-    else if(updatedComment.length === 0)
-    {
-        res.status(400).send(["Cannot post a empty comment"]);
+        res.status(404).send({
+            message: "Comment could not be found",
+            requester: requester
+        });
     }
     else
     {
-        // try to get the comment
-        let comment = await models.Comment.findOne(
-            {
-                where: {id: commentId},
-                attributes:["id", "value", "createdAt"],
-                order: [["createdAt", 'ASC']],
-                include:[
-                    {
-                        model: models.User,
-                        attributes: ["username"]
-                    }
-                ]
-            }
-        );
-        if(comment === undefined)
+        // if you are not the user that posted the comment
+        if(cookie.name !== comment.user.username)
         {
-            res.status(404).send(["Comment could not be found"]);
+            res.status(401).send({
+                message: "You cannot update another users comment",
+                requester: requester
+            });
         }
         else
         {
-            // if you are not the user that posted the comment
-            if(cookie.name !== comment.user.username)
+            let result;
+            try
             {
-                res.status(401).send(["You cannot update another users comment"]);
+                result = await comment.update({value: updatedComment});
+            }
+            catch(err)
+            {
+                res.status(500).send({
+                    message: "Comment update failed due to a server issue",
+                    requester: requester
+                });
+                return;
+            }
+            if(result === undefined || result === null)
+            {
+                // update returns a updated instance of the comment
+                // if undefined, comment cannot be found
+                res.status(404).send({
+                    message: "Comment could not be found",
+                    requester: requester
+                });
             }
             else
             {
-                comment.value = updatedComment;
-                let result = await comment.save();
-                if(result === undefined)
-                {
-                    res.status(404).send(["Server failed to update comment for some unkown reason"]);
-                }
-                else
-                {
-                    res.status(200).send([result, cookie.name]);
-                }
+                // could also return the comment which is the result
+                res.status(200).send({
+                    message: "Comment successfully updated",
+                    requester: requester
+                });
             }
         }
     }
@@ -626,56 +639,60 @@ const updateComment = async (req, res, cookie) =>
 // commentId - the id the comment
 const removeComment = async (req, res, cookie) =>
 {
-    // also need to verify this is the user that posted the comment...
     let commentId = req.body.commentId;
-    if(isNaN(commentId))
+    let requester = cookie.name;
+    let valid = validateIntegerParameter(res, commentId, requester, "The comment ID to remove is invalid");
+    if(!valid) return;
+    // try to get the comment
+    let comment = await models.Comment.findById(models, commentId);
+    if(comment === null)
     {
-        res.status(400).send("Valid comment id not provided");
+        res.status(404).send({
+            message: "Comment could not be found",
+            requester: requester
+        });
     }
     else
     {
-        // try to get the comment
-        let comment = await models.Comment.findOne(
-            {
-                where: {id: commentId},
-                attributes:["id", "value", "createdAt"],
-                order: [["createdAt", 'ASC']],
-                include:[
-                    {
-                        model: models.User,
-                        attributes: ["username"]
-                    },
-                    {
-                        model: models.Review,
-                        attributes: ["userId"]
-                    }
-                ]
-            }
-        );
-        if(comment === undefined)
+        // if you are not the user that posted the comment
+        if(cookie.name !== comment.user.username)
         {
-            res.status(404).send("Comment could not be found");
+            res.status(401).send({
+                message: "You cannot remove another users comment",
+                requester: requester
+            });
         }
         else
         {
-            // if you are not the user who posted the comment or you are not the user who posted the
-            // review, you cannot remove a users comment
-            if(cookie.name !== comment.user.username && comment.review.userId !== cookie.id)
+            let result;
+            try
             {
-                res.status(401).send("You cannot remove another users comment");
+                result = await comment.destroy();
+            }
+            catch(err)
+            {
+                res.status(500).send({
+                    message: "Comment removal failed due to a server issue",
+                    requester: requester
+                });
+                return;
+            }
+            if(result === undefined || result === null)
+            {
+                // update returns a updated instance of the comment
+                // if undefined, comment cannot be found
+                res.status(404).send({
+                    message: "Comment could not be found",
+                    requester: requester
+                });
             }
             else
             {
-                let result = await comment.destroy();
-                if(result === undefined)
-                {
-                    res.status(404).send("Server failed to delete comment for some unkown reason");
-                }
-                else
-                {
-                    // returns a empty array on success
-                    res.status(200).send("Comment successfully removed");
-                }
+                // could also return the comment which is the result
+                res.status(200).send({
+                    message: "Comment successfully removed",
+                    requester: requester
+                });
             }
         }
     }
@@ -687,21 +704,25 @@ const removeComment = async (req, res, cookie) =>
 // reviewId - the id of the review to get its comments
 const getComments = async(req, res, cookie) =>
 {
-    if(isNaN(req.body.reviewId))
+    let requester = cookie.name;
+    let reviewId = req.params.reviewId;
+    let valid = validateIntegerParameter(res, reviewId, requester, "The review ID to get the comments is invalid");
+    if(!valid) return;
+    let comments = await models.Review.getReviewComments(reviewId, cookie.id, models);
+    if(comments === null)
     {
-        res.status(400).send(["Valid review id not provided"]);
+        res.status(404).send({
+            message: "Review could not be found",
+            requester: requester
+        });
     }
     else
     {
-        let comments = await models.Comment.findByReview(models, req.body.reviewId);
-        if(comments === undefined)
-        {
-            res.status(404).send(["Review could not be found"]);
-        }
-        else
-        {
-            res.status(200).send([comments, cookie.name]);
-        }
+        res.status(200).send({
+            message: "Comments successfully found",
+            requester: requester,
+            comments: comments
+        });
     }
 };
 

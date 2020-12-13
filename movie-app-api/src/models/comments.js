@@ -55,7 +55,7 @@ const comment = (sequelize, DataTypes) => {
     Comment.findByReview = async (models, id) =>
     {
         let comments = await Comment.findAll({
-            where: {reviewId: id},
+            where: {id: id},
             attributes:["id", "value", "createdAt"],
             order: [["createdAt", 'ASC']],
             include:[
@@ -66,7 +66,23 @@ const comment = (sequelize, DataTypes) => {
             ]
         });
         return comments;
-    }
+    };
+
+    // function to get a comment and the user that created it
+    Comment.findById = async (models, id) =>
+    {
+        let comment = await models.Comment.findOne({
+            where: {id: id},
+            attributes:["id", "value", "createdAt"],
+            include:[
+                {
+                    model: models.User,
+                    attributes: ["username"]
+                }
+            ]
+        });
+        return comment;
+    };
 
     return Comment;
 };

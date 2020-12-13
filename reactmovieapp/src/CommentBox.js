@@ -60,11 +60,8 @@ class CommentBox extends React.Component {
                 commentError: ""
             });
             this.props.updateLoggedIn(requester);
-            // return the all the comments for the post and the user who posted it
-            // to the pop up
-            // this is what I used to do...may do this again or set a switch to
-            // update the comment box
-            //this.props.updateCommentsFunction(result[0], result[1]);
+            // update the popups state to get the commentController to reload the comments
+            this.props.updateCommentsFunction();
         }
         else
         {
@@ -140,10 +137,10 @@ class CommentBox extends React.Component {
         let commentBox = this.generateCommentBox();
         return (
             <React.Fragment>
-                <div>
+                <div className={style2.commentBoxContainer}>
                     {commentBox}
                 </div>
-                <div className="commentSubmitContainer">
+                <div className={style2.commentSubmitContainer}>
                     <button
                         className={`${style.postButton} ${style2.commentButton}`}
                         onClick={this.postComment}>Post Comment

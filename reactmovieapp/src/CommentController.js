@@ -2,6 +2,7 @@ import React from 'react';
 import CommentDisplay from './CommentDisplay.js';
 import {Link} from 'react-router-dom';
 import style2 from './css/MoviePost/moviePostPopUp.module.css'
+import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 
 class CommentController extends React.Component {
@@ -18,44 +19,84 @@ class CommentController extends React.Component {
             intervalId: ""
         }
         this.getComments = this.getComments.bind(this);
+        this.receiveCommentsResultHandler = this.receiveCommentsResultHandler.bind(this);
         this.generateComments = this.generateComments.bind(this);
-        this.sendCommentCall = this.sendCommentCall.bind(this);
         this.updateComments = this.updateComments.bind(this);
     }
 
-    componentWillReceiveProps(nextProps) {
-        // if the props were received due to the user posting a new comment
-       if(nextProps.update) {
-          this.updateComments([nextProps.comments, nextProps.currentUser]);
-       }
+    componentDidUpdate(prevProps, prevState)
+    {
+        // if there was a new comment posted by the user
+        if(this.props.update)
+        {
+            this.getComments();
+        }
     }
 
     async componentDidMount()
     {
         // update comments every 15 seconds
         let apiInterval = setInterval(()=> {
-            this.sendCommentCall();
+            this.getComments();
         }, 15000);
         this.setState({intervalId: apiInterval});
-        this.sendCommentCall();
+        this.getComments();
     }
 
     // function used to send api call to the server to get the comments
-    async sendCommentCall()
+    async getComments()
     {
-        let result = await this.getComments();
+        let url = "http://localhost:9000/review/" + this.state.reviewId + "/getcomments";
+        let result = await apiGetJsonRequest(url);
         let status = result[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        this.receiveCommentsResultHandler(status, message, requester, result);
+    }
+
+    receiveCommentsResultHandler(status, message, requester, result)
+    {
         if(status === 200)
         {
+            let comments = result[1].comments;
             this.setState({
-                comments: result[1][0],
-                currentUser: result[1][1]
+                comments: comments,
+                currentUser: requester
             });
+            this.props.updateLoggedIn(requester);
+            //this.props.setMessage({message: message, messageType: "success"});
         }
         else
         {
-            alert("Failed to get the comments for the post");
-            alert(result);
+            this.props.updateLoggedIn(requester);
+            if(status === 401)
+            {
+                this.props.showLoginPopUp(false);
+            }
+            else if(status === 400)
+            {
+                // reviewId invalid due to format
+                this.props.setMessage({message: message, messageType: "failure"});
+                // stop the component from querying for data
+                clearInterval(this.state.intervalId);
+                this.setState({
+                    comments: []
+                });
+            }
+            else if(status === 404)
+            {
+                // review could not be found
+                // remove the post from the moviePost component
+                this.props.removePost();
+                // close the popup and display the message on the screen
+                this.props.closeFunction({message: message, messageType: "failure"});
+            }
+            else
+            {
+                // stop the component from querying for data
+                clearInterval(this.state.intervalId);
+                this.props.setMessage({message: message, messageType: "failure"});
+            }
         }
     }
 
@@ -74,34 +115,22 @@ class CommentController extends React.Component {
         clearInterval(this.state.intervalId);
     }
 
-    // function to receive the comments from the api
-    getComments()
-    {
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                reviewId: this.state.reviewId
-            })
-        };
-
-        let status = 0;
-        return fetch("http://localhost:9000/review/getcomments", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result =>{
-                return [status, result];
-            });
-    }
-
     // function to generate the html for each individual comment
     generateComments()
     {
         let commentsArray = [];
         this.state.comments.forEach((comment) => {
-            let commentHtml = (<CommentDisplay comment={comment} reviewUser={this.state.reviewUser} currentUser={this.state.currentUser}/>);
+            let commentHtml = (
+                    <CommentDisplay
+                        comment={comment}
+                        reviewUser={this.state.reviewUser}
+                        currentUser={this.state.currentUser}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
+                        closeFunction={this.props.closeModal}
+                        setMessage={this.props.setMessage}
+                        updateComments={this.getComments}
+                    />);
             commentsArray.push(commentHtml);
         });
         return commentsArray;

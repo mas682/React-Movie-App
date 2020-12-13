@@ -33,6 +33,10 @@ router.post('/review', function(req, res, next) {
 //update or delete a review
 router.post('/review/:type/', function(req, res, next) {
     review(req, res, next);
+});
+
+router.get('/review/:reviewId/:type', function(req, res, next) {
+    review(req, res, next);
 })
 
 // used to create a account

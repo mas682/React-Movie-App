@@ -74,6 +74,16 @@
 	width: 100%;
 }
 
+.commentBoxContainer
+{
+    position: relative;
+}
+
+.commentSubmitContainer
+{
+    position: relative;
+}
+
 /* used for the post comment button */
 .commentButton
 {
@@ -84,6 +94,7 @@
 /* this is the container for ALL comments */
 .commentsContainer {
     margin-top: 2%;
+    position: relative;
 }
 
 /* used for each individual comment */

@@ -27,7 +27,6 @@ class MoviePostPopUp extends React.Component {
             username: this.props.data.username,
             // id of the review post
             id: this.props.data.id,
-            comments: "",
             // the logged in users username
             currentUser: this.props.data.currentUser,
             // boolean to tell commentController to update if new comment was just posted
@@ -49,34 +48,28 @@ class MoviePostPopUp extends React.Component {
     componentDidUpdate()
     {
         // if there was a new comment on the last render, reset the boolean to false
-        // this will cause shouldComponentUpdate to be called which will return false
+        // so that the CommentController does not continuously try to get new comments
         if(this.state.newComment !== false)
         {
             // set the newComment boolean to false
-            this.changeState("newComment", false);
+            this.setState({
+                newComment: false,
+            });
         }
     }
 
     // called whenever the state is changed for optimization
     shouldComponentUpdate(nextProps, nextState){
-        // if the state change was the newComment being switched from true to false,
-        // do not rerender
-        if(this.state.newComment === true && nextState.newComment === false)
-        {
-            return false;
-        }
         return true;
     }
 
     // called by the CommentBox component when a comment is posted
     // this will cause the component to rerender and update the props sent to
     // the CommentController component
-    updateComments(newComments, user)
+    updateComments()
     {
         this.setState({
-            currentUser: user,
             newComment: true,
-            comments: newComments
         });
     }
 
@@ -106,12 +99,16 @@ class MoviePostPopUp extends React.Component {
 
 	render() {
         let commentArray = <CommentController
-            currentUser={this.state.currentUser}
-            reviewUser={this.state.username}
-            reviewId={this.state.id}
-            update={this.state.newComment}
-            comments={this.state.comments}
-            />;
+                                currentUser={this.state.currentUser}
+                                reviewUser={this.state.username}
+                                reviewId={this.state.id}
+                                update={this.state.newComment}
+                                updateLoggedIn={this.props.updateLoggedIn}
+                                showLoginPopUp={this.props.showLoginPopUp}
+                                removePost={this.props.removePost}
+                                closeFunction={this.closeModal}
+                                setMessage={this.setMessage}
+                            />;
         let commentBox = <CommentBox
                             reviewId={this.state.id}
                             form={this.state.form}
@@ -152,14 +149,14 @@ class MoviePostPopUp extends React.Component {
                     &times;
                     </a>
                     <div className={style2.content}>
-                    <Alert
-                        message={this.state.message}
-                        messageId={this.state.messageId}
-                        type={this.state.messageType}
-                        style={{"text-align": "left"}}
-                        timeout={0}
-                    />
                         <div className={`${style.post} ${style2.postWidth}`}>
+                            <Alert
+                                message={this.state.message}
+                                messageId={this.state.messageId}
+                                type={this.state.messageType}
+                                style={{"text-align": "left"}}
+                                timeout={0}
+                            />
                             {moviePost}
                             {commentBox}
                             {commentArray}

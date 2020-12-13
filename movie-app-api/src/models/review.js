@@ -227,6 +227,35 @@ const review = (sequelize, DataTypes) => {
         });
     }
 
+    // function to get a reviews comments
+    // eventually, if the user who posted the reviews profile is not public,
+    // will check to see if the userId follows them when getting the review/comments
+    Review.getReviewComments = async(reviewId, userId, models) =>
+    {
+        let review = await Review.findOne({
+            where: {id: reviewId},
+            include: [{
+                model: models.Comment,
+                attributes:["id", "value", "createdAt"],
+                order: [["createdAt", 'ASC']],
+                include:[
+                    {
+                        model: models.User,
+                        attributes: ["username"]
+                    }]
+            }]
+        });
+        // review could not be found
+        if(review === null)
+        {
+            return null;
+        }
+        else
+        {
+            return review.comments;
+        }
+    }
+
     // function to return a review and the user who created it
     Review.getReviewWithCreator = async(reviewId, models) =>
     {
