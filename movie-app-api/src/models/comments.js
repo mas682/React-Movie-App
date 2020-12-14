@@ -73,7 +73,7 @@ const comment = (sequelize, DataTypes) => {
     {
         let comment = await models.Comment.findOne({
             where: {id: id},
-            attributes:["id", "value", "createdAt"],
+            attributes:["id", "value", "createdAt", "reviewId"],
             include:[
                 {
                     model: models.User,

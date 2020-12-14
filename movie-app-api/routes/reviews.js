@@ -43,12 +43,22 @@ const selectPath = (cookie, req, res) =>
 {
     if(req.method === "GET")
     {
+        let routeFound = false;
         if(req.params.reviewId !== undefined)
         {
             if(req.params.type === "getcomments")
             {
+                routeFound = true;
                 getComments(req, res, cookie);
             }
+        }
+        // if the route was invalid for the GET request
+        if(!routeFound)
+        {
+            res.status(404).send({
+                message:"The review path sent to the server does not exist",
+                requester: cookie.name
+            });
         }
     }
     else if(req.method === "POST")
@@ -102,8 +112,16 @@ const selectPath = (cookie, req, res) =>
         {
             removePost(req, res, cookie);
         }
+        else
+        {
+            // if the route was invalid for the POST request
+            res.status(404).send({
+                message:"The review path sent to the server does not exist",
+                requester: cookie.name
+            });
+        }
     }
-    // some unknow path given
+    // some unknow path given that was not a get or post request
     else
     {
         res.status(404).send({
@@ -253,7 +271,7 @@ const createReview = async (cookie, req, res) =>
     // review created
 };
 
-// function to remove an existing comment from a review post
+// function to remove a review
 // the body of the request must include:
 // reviewId - the id the post
 const removePost = async (req, res, cookie) =>
@@ -657,44 +675,69 @@ const removeComment = async (req, res, cookie) =>
         // if you are not the user that posted the comment
         if(cookie.name !== comment.user.username)
         {
-            res.status(401).send({
-                message: "You cannot remove another users comment",
-                requester: requester
+            // get the review to see who posted it
+            let review = await models.Review.findOne({
+                where: {id: comment.reviewId},
+                attributes: ["userId"]
             });
-        }
-        else
-        {
-            let result;
-            try
+            if(review === null)
             {
-                result = await comment.destroy();
-            }
-            catch(err)
-            {
-                res.status(500).send({
-                    message: "Comment removal failed due to a server issue",
-                    requester: requester
-                });
-                return;
-            }
-            if(result === undefined || result === null)
-            {
-                // update returns a updated instance of the comment
-                // if undefined, comment cannot be found
+                // review could not be found...
                 res.status(404).send({
-                    message: "Comment could not be found",
+                    message: "The review the comment was associated with could not be found",
                     requester: requester
                 });
+            }
+            else if(review.userId === cookie.id)
+            {
+                commentRemoval(res, comment, requester);
             }
             else
             {
-                // could also return the comment which is the result
-                res.status(200).send({
-                    message: "Comment successfully removed",
+                res.status(401).send({
+                    message: "You cannot remove another users comment",
                     requester: requester
                 });
             }
         }
+        else
+        {
+            commentRemoval(res, comment, requester);
+        }
+    }
+};
+
+const commentRemoval = async (res, comment, requester) =>
+{
+    let result;
+    try
+    {
+        result = await comment.destroy();
+    }
+    catch(err)
+    {
+        res.status(500).send({
+            message: "Comment removal failed due to a server issue",
+            requester: requester
+        });
+        return;
+    }
+    if(result === undefined || result === null)
+    {
+        // update returns a updated instance of the comment
+        // if undefined, comment cannot be found
+        res.status(404).send({
+            message: "Comment could not be found",
+            requester: requester
+        });
+    }
+    else
+    {
+        // could also return the comment which is the result
+        res.status(200).send({
+            message: "Comment successfully removed",
+            requester: requester
+        });
     }
 };
 

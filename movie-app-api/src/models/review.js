@@ -237,13 +237,13 @@ const review = (sequelize, DataTypes) => {
             include: [{
                 model: models.Comment,
                 attributes:["id", "value", "createdAt"],
-                order: [["createdAt", 'ASC']],
                 include:[
                     {
                         model: models.User,
                         attributes: ["username"]
                     }]
-            }]
+            }],
+            order: [[models.Comment, 'createdAt', 'ASC']]
         });
         // review could not be found
         if(review === null)

@@ -127,7 +127,8 @@ class CommentController extends React.Component {
                         currentUser={this.state.currentUser}
                         updateLoggedIn={this.props.updateLoggedIn}
                         showLoginPopUp={this.props.showLoginPopUp}
-                        closeFunction={this.props.closeModal}
+                        removePost={this.props.removePost}
+                        closeFunction={this.props.closeFunction}
                         setMessage={this.props.setMessage}
                         updateComments={this.getComments}
                     />);

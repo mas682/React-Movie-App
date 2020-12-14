@@ -197,8 +197,6 @@ class CommentDisplay extends React.Component {
 
     commentRemovalResultHandler(status, message, requester)
     {
-        //need to fix this api side so that if this is the user who posted
-        //the review, they can delete the comment
         if(status == 200)
         {
             this.setState({
@@ -237,12 +235,21 @@ class CommentDisplay extends React.Component {
             }
             else if(status === 404)
             {
-                // comment could not be found
-                // cause comment reload
-                this.props.updateComments();
-                // if the comment was not found may not care as it means it already
-                // does not exist?
-                this.props.setMessage({message: message, messageType: "warning"});
+                // this is only true if trying to remove the comment as the user who posted the review
+                if(message === "The review the comment was associated with could not be found")
+                {
+                    this.props.removePost();
+                    this.props.closeFunction({message: message, messageType: "failure"});
+                }
+                else
+                {
+                    // comment could not be found
+                    // cause comment reload
+                    this.props.updateComments();
+                    // if the comment was not found may not care as it means it already
+                    // does not exist?
+                    this.props.setMessage({message: message, messageType: "warning"});
+                }
             }
             else
             {
