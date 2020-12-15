@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import style from './css/reviewform.module.css';
 import SearchDropDown from './SearchDropDown.js';
+import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 
 class ReviewPopUp extends React.Component {
@@ -64,6 +65,7 @@ class ReviewPopUp extends React.Component {
         this.setMovie = this.setMovie.bind(this);
         this.generateMovieImage = this.generateMovieImage.bind(this);
         //this.generateTagString = this.generateTagString.bind(this);
+        this.getTagSuggestions = this.getTagSuggestions.bind(this);
     }
 
     componentDidMount()
@@ -561,6 +563,54 @@ class ReviewPopUp extends React.Component {
           });
     }
 
+    // function to get a tag suggesion based off the substring that the user has entered
+    async getTagSuggestions(value)
+    {
+        let url = "http://localhost:9000/movie/get_movie_tags/?tag=" + value;
+        let result = await apiGetJsonRequest(url);
+        console.log(result);
+        if(result[0] === 200)
+        {
+            console.log(result[1].tags);
+            return {tags: result[1].tags};
+        }
+        else
+        {
+            return {};
+        }
+    }
+
+    // called by SearchDropDown to set the bad tag that was selected
+    setBadTags(value)
+    {
+        this.setState({
+          movie: value
+        });
+    }
+
+    setGoodTags(value)
+    {
+        alert("Set good tags: " + value);
+        /*
+        // called by SearchDropDown to set the good tag that was selected
+        this.setState({
+            movie: value
+        });
+        */
+    }
+
+    generateBadTagSearchBar()
+    {
+        return <SearchDropDown
+                    getSuggestions={this.getTagSuggestions}
+                    valueKeys={{tags:"value"}}
+                    updateFunction={this.setGoodTags}
+                    updateOnChange={false}
+                    allowNoSuggestion={true}
+                    value={value}
+                />
+    }
+
     generateTitleInput()
     {
         if(this.state.edit)
@@ -576,7 +626,13 @@ class ReviewPopUp extends React.Component {
                         <label>
                             <h4 className={style.h4NoMargin}>Movie Title</h4>
                         </label>
-                        <SearchDropDown getSuggestions={this.getTitleSuggestions} valueKeys={{Movies:"title"}} updateFunction={this.setMovie} value={value}/>
+                        <SearchDropDown
+                            getSuggestions={this.getTitleSuggestions}
+                            valueKeys={{Movies:"title"}}
+                            updateFunction={this.setMovie}
+                            value={value}
+                            updateOnChange={true}
+                        />
                     </div>
                 </React.Fragment>
             );
@@ -586,7 +642,12 @@ class ReviewPopUp extends React.Component {
                 <label>
                     <h4 className={style.h4NoMargin}>Movie Title</h4>
                 </label>
-                <SearchDropDown getSuggestions={this.getTitleSuggestions} valueKeys={{Movies:"title"}} updateFunction={this.setMovie} />
+                <SearchDropDown
+                    getSuggestions={this.getTitleSuggestions}
+                    valueKeys={{Movies:"title"}}
+                    updateFunction={this.setMovie}
+                    updateOnChange={true}
+                />
             </React.Fragment>
         );
     }
@@ -784,6 +845,7 @@ class ReviewPopUp extends React.Component {
                                     <div className={style.selectedDivider}></div>
                                     <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.marginTopBottom20}`}>
                                         {unusedBadButtonArr}
+                                        <SearchDropDown getSuggestions={this.getTagSuggestions} valueKeys={{tags:"value"}} updateFunction={this.setGoodTags} updateOnChange={false} allowNoSuggestion={true} value={""}/>
                                     </div>
                                 </div>
                                 <div className = "inputFieldContainer">

@@ -1,4 +1,4 @@
-import {verifyLogin, validateIntegerParameter, validateUsernameParameter} from './globals.js';
+import {verifyLogin, validateIntegerParameter, validateUsernameParameter, validateStringParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 const Op = require('Sequelize').Op;
 
@@ -33,6 +33,15 @@ const selectPath = (cookie, req, res, cookieValid) =>
     {
         getMovieTitles(cookie, req, res, cookieValid);
     }
+	// this is temporary
+	else if(req.params.type === "create_tag")
+	{
+		createTag(cookie, req, res);
+	}
+	else if(req.params.type === "get_movie_tags")
+	{
+		getMovieTagSuggestions(cookie, req, res, cookieValid);
+	}
 	else if(req.params.id !== undefined)
 	{
 		getMovieInfo(cookie, req, res, cookieValid);
@@ -146,6 +155,58 @@ const getMovieTitles = async (cookie, req, res, cookieValid) =>
 					res.status(200).send({Movies: movies});
 				}
 		}
+};
+
+// temp function to creat tags
+const createTag = async (cookie, req, res) =>
+{
+	let value = req.query.tag;
+	let tag = await models.MovieTag.create({
+		value: value
+	});
+	res.status(200).send({
+		tag: tag
+	});
+}
+
+// this function will return a list of tag suggestions based off the value passed in
+const getMovieTagSuggestions = async (cookie, req, res, cookieValid) =>
+{
+	let value = req.query.tag;
+	let requester = (cookieValid) ? cookie.name : "";
+	// limit tag length to 20 characters
+	let valid = validateStringParameter(res, value, 1, 20, requester, "The tag to search for is invalid");
+	if(!valid) return;
+	// going to need a tag table
+	// then add tags to good/bad table like the likes table
+	let tags = await models.MovieTag.findByValue(models, value, 10);
+	if(tags === undefined)
+	{
+		res.status(404).send({
+			message: "Unable to find any tags matching that value",
+			requester: requester
+		});
+	}
+	else
+	{
+		console.log(tags);
+		// not sure if this will be needed?
+		if(tags.length < 1)
+		{
+			res.status(404).send({
+				message: "Unable to find any tags matching that value",
+				requester: requester
+			});
+		}
+		else
+		{
+			res.status(200).send({
+				message: "Tags successfully found",
+				requester: requester,
+				tags: tags
+			});
+		}
+	}
 };
 
 const getMovieInfo = async(cookie, req, res, cookieValid) =>

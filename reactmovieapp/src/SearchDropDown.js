@@ -6,6 +6,16 @@ class SearchDropDown extends React.Component {
     constructor(props)
     {
         super(props);
+        // props:
+        // updateOnChange - boolean value to indicate if the updateFunction
+        // should be called on every change; not applicable if updateFunction not defined
+        // updateFunction - function to call to return either the object associated with the
+        // selected value or a string
+        // allowNoSuggestion - boolean value to indicate if the user can select values that
+        // are not from the suggestion box
+        //fix this so that it does not hover on a entry automatically if you pass a certain
+        //prop....see googles search bar
+
         let valueKeys = undefined;
         // used if the array has objects that have keys, ex. movie.title
         if(this.props.valueKeys !== undefined)
@@ -44,6 +54,7 @@ class SearchDropDown extends React.Component {
         {
             useSuggestionValue = true;
         }
+        let suggestionIndex = (this.props.allowNoSuggestion) ? -1 : 0;
         this.state = {
             // current value in search box
             value: value,
@@ -52,10 +63,10 @@ class SearchDropDown extends React.Component {
             // does the search bar have focus?
             focused: false,
             // index of the currently selected/highlighted suggestion
-            suggestionIndex: 0,
+            suggestionIndex: suggestionIndex,
             // key of hashtable to use to get value to display for each suggestion
             // ex. {Movies:"title", Users:"username"}
-            // if not multiple types, use a single string such as "titie"
+            // if not multiple types, use a single string such as "title"
             valueKeys: valueKeys,
             // true or false depending on if the search will have multiple types
             multipleTypes: multipleTypes,
@@ -112,12 +123,19 @@ class SearchDropDown extends React.Component {
             // needed so that this does not cause the event to close the movie form
             event.preventDefault();
         }
-        if(this.state.suggestions === undefined)
+        if(this.state.suggestions === undefined || (Object.keys(this.state.suggestions)).length < 1)
         {
-            return;
-        }
-        if((Object.keys(this.state.suggestions)).length < 1)
-        {
+            // if the enter key was pressed
+            if(event.keyCode === 13)
+            {
+                // if the field value is accepted
+                if(this.props.allowNoSuggestion)
+                {
+                    // remove focus from the input field
+                    event.target.blur();
+                    this.props.updateFunction(this.state.value);
+                }
+            }
             return;
         }
         let currentKey = this.state.currentHashKey;
@@ -130,7 +148,7 @@ class SearchDropDown extends React.Component {
             if(currentIndex + 1 === arrayLength)
             {
                 // need to go to next array if possible
-                // if not multiple types do nothing
+                // if not multiple types do nothing as at end of array
                 if(this.state.multipleTypes)
                 {
                     // get the keys from the suggestions
@@ -160,7 +178,8 @@ class SearchDropDown extends React.Component {
                                 currentHashKey: currentKey,
                                 currentHashKeyIndex: keyIndex
                             });
-                            if(this.props.updateFunction !== undefined)
+                            // if the parents update function exists and on focus change it wants to be called
+                            if(this.props.updateFunction !== undefined && this.props.updateOnChange)
                             {
                                 this.props.updateFunction(this.state.suggestions[currentKey][0]);
                             }
@@ -171,8 +190,10 @@ class SearchDropDown extends React.Component {
             else
             {
                 currentIndex = currentIndex + 1;
+                console.log(currentIndex);
                 this.setState({suggestionIndex: currentIndex});
-                if(this.props.updateFunction !== undefined)
+                // if the parents update function exists and on focus change it wants to be called
+                if(this.props.updateFunction !== undefined && this.props.updateOnChange)
                 {
                     this.props.updateFunction(this.state.suggestions[currentKey][currentIndex]);
                 }
@@ -183,6 +204,7 @@ class SearchDropDown extends React.Component {
         {
             let currentArray = this.state.suggestions[currentKey];
             let arrayLength = currentArray.length;
+            console.log(currentIndex -1);
             if(currentIndex - 1 <= -1)
             {
                 // need to go to next array if possible
@@ -219,11 +241,23 @@ class SearchDropDown extends React.Component {
                                 currentHashKey: currentKey,
                                 currentHashKeyIndex: keyIndex
                             });
-                            if(this.props.updateFunction !== undefined)
+                            // if the parents update function exists and on focus change it wants to be called
+                            if(this.props.updateFunction !== undefined && this.props.updateOnChange)
                             {
                                 this.props.updateFunction(this.state.suggestions[currentKey][suggestionIndex]);
                             }
                         }
+                    }
+                }
+                else
+                {
+                    // if the user can selet the value in the text box
+                    if(this.props.allowNoSuggestion)
+                    {
+                        // set the index to a index outside of the array
+                        this.setState({
+                            suggestionIndex: -1
+                        });
                     }
                 }
             }
@@ -231,7 +265,8 @@ class SearchDropDown extends React.Component {
             {
                 currentIndex = currentIndex - 1;
                 this.setState({suggestionIndex: currentIndex});
-                if(this.props.updateFunction !== undefined)
+                // if the parents update function exists and on focus change it wants to be called
+                if(this.props.updateFunction !== undefined && this.props.updateOnChange)
                 {
                     this.props.updateFunction(this.state.suggestions[this.state.currentHashKey][currentIndex]);
                 }
@@ -277,7 +312,7 @@ class SearchDropDown extends React.Component {
                 currentHashKey: key,
                 currentHashKeyIndex: keyIndex
             });
-            if(this.props.updateFunction !== undefined)
+            if(this.props.updateFunction !== undefined && this.props.updateOnChange)
             {
                 this.props.updateFunction(this.state.suggestions[key][index]);
             }
@@ -294,8 +329,9 @@ class SearchDropDown extends React.Component {
         {
             tempSuggestions = await this.props.getSuggestions(this.state.value);
         }
+        let suggestionIndex = (this.props.allowNoSuggestion) ? -1 : 0;
         this.setState({
-            suggestionIndex: 0,
+            suggestionIndex: suggestionIndex,
             suggestions: tempSuggestions,
             currentHashKey: "",
             currentHashKeyIndex: 0,
@@ -308,7 +344,7 @@ class SearchDropDown extends React.Component {
     {
         this.setState({focused: false});
         // if no highlighted options to be selected, return undefined
-        if(Object.keys(this.state.suggestions).length < 1 && this.props.updateFunction !== undefined)
+        if(Object.keys(this.state.suggestions).length < 1 && this.props.updateFunction !== undefined && this.props.updateOnChange)
         {
             this.props.updateFunction(undefined);
         }
@@ -345,10 +381,13 @@ class SearchDropDown extends React.Component {
         let name = event.target.name;
         let value = event.target.value;
         let tempSuggestions = {};
+        // if the value entered is not a empty string
         if(value.length > 0)
         {
             tempSuggestions = await this.props.getSuggestions(value);
-            if(this.props.updateFunction !== undefined)
+            // if the updateFunction exists and the selected value is supposed to be cleared
+            // every time
+            if(this.props.updateFunction !== undefined && this.props.updateOnChange)
             {
                 if(Object.keys(tempSuggestions).length < 1)
                 {
@@ -358,7 +397,9 @@ class SearchDropDown extends React.Component {
         }
         else
         {
-            if(this.props.updateFunction !== undefined)
+            // if the updateFunction exists and the selected value is supposed to be cleared
+            // every time
+            if(this.props.updateFunction !== undefined && this.props.updateOnChange)
             {
                 this.props.updateFunction(undefined);
             }
@@ -368,35 +409,64 @@ class SearchDropDown extends React.Component {
         let index = 0;
         if(tempSuggestions !== undefined)
         {
-            // get the keys from the suggestions
-            let keys = Object.keys(tempSuggestions);
-            if(keys.length > 0)
+            let newValues = this.getCurrentKeyAndIndex(tempSuggestions, index, true);
+            currentKey = newValues.currentKey;
+            index = newValues.index;
+        }
+        let suggestionIndex = (this.props.allowNoSuggestion) ? -1 : 0;
+        this.setState({
+            [name]: value,
+            suggestionIndex: suggestionIndex,
+            currentHashKey: currentKey,
+            currentHashKeyIndex: index,
+            suggestions: tempSuggestions
+        });
+    }
+
+
+    // note: if you want to start from the beginning, pass 0 as the index
+    // may not need to pass in currentKey...
+    // increment is a boolean indicating if to add or subtract from index in
+    // the suggestions keys
+    getCurrentKeyAndIndex(suggestions, index, increment)
+    {
+        let currentKey = "";
+        // get the keys from the suggestions
+        let keys = Object.keys(suggestions);
+        if(keys.length > 0)
+        {
+            // key into tempSuggestions
+            currentKey = keys[index];
+            // array of values from tempSuggestions
+            let tempArray = suggestions[currentKey];
+            // if going from bottom to top of suggestions
+            if(increment)
             {
-                // key into tempSuggestions
-                currentKey = keys[index];
-                // array of values from tempSuggestions
-                let tempArray = tempSuggestions[currentKey];
                 // if the array has no entries, try the next key
                 while(tempArray.length < 1 && index < keys.length -1)
                 {
                     index = index + 1;
                     currentKey = keys[index];
-                    tempArray = tempSuggestions[currentKey];;
-                }
-                // update the movie selected at every change...
-                if(this.props.updateFunction !== undefined)
-                {
-                    this.props.updateFunction((tempSuggestions[currentKey][0]));
+                    tempArray = suggestions[currentKey];
                 }
             }
+            else
+            {
+                while(tempArray.length < 1 && index > -1)
+                {
+                    index = index - 1;
+                    currentKey = keys[index];
+                    tempArray = suggestions[currentKey];
+                }
+            }
+            // this should be taken out..
+            // update the selected value if true
+            if(this.props.updateFunction !== undefined && this.props.updateOnChange)
+            {
+                this.props.updateFunction((suggestions[currentKey][0]));
+            }
         }
-        this.setState({
-            [name]: value,
-            suggestionIndex: 0,
-            currentHashKey: currentKey,
-            currentHashKeyIndex: index,
-            suggestions: tempSuggestions
-        });
+        return {currentKey: currentKey, index: index};
     }
 
     generateInputBox()
@@ -426,6 +496,7 @@ class SearchDropDown extends React.Component {
 
     generateSuggestionBox()
     {
+        console.log(this.state.suggestions);
         if(this.state.focused && this.state.value.length > 0 && (Object.keys(this.state.suggestions)).length > 0)
         {
             let keys = Object.keys(this.state.suggestions);

@@ -89,7 +89,7 @@ const validateUsernameParameter = (res, username, requester, message) => {
 
 // function to validate that a variable is in fact a string and is not empty
 // if maxLength is undefined it will be skipped
-const validateStringParameter = (res, param, maxLength, requester, message) => {
+const validateStringParameter = (res, param, minLength, maxLength, requester, message) => {
     if(param === undefined)
     {
         res.status(400).send({
@@ -98,8 +98,12 @@ const validateStringParameter = (res, param, maxLength, requester, message) => {
         });
         return false;
     }
+    if(minLength === undefined)
+    {
+        minLength = 0;
+    }
     let paramLength = param.length;
-    if(paramLength < 1)
+    if(paramLength < minLength)
     {
         res.status(400).send({
             message: message,

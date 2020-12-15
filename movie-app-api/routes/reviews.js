@@ -141,6 +141,7 @@ const selectPath = (cookie, req, res) =>
 // bad - a comma seperated string of bad tags
 const updateReview = (cookie, req, res) =>
 {
+
     // get the review
     models.Review.findOne({
         where: {id: req.body.reviewId}
@@ -233,7 +234,6 @@ const getTagIds = async (tagString, type) =>{
 
 // function to create a review
 // the body of the request should include:
-// title - the title of the movie
 // rating - the rating for the movie
 // review - the review for the movie
 // good - a comma seperated string of good tags
@@ -241,10 +241,57 @@ const getTagIds = async (tagString, type) =>{
 const createReview = async (cookie, req, res) =>
 {
     let userId = cookie.id;
-    // need to verify this exists
+    let requester = cookie.name;
+    let rating = req.body.rating;
+    let reviewText = req.body.review;
+    let goodTags = req.body.goodTags;
+    let badTags = req.body.badTags;
     let movieId = req.body.movie;
+    // check to make sure the rating is a actual number
+    let valid = validateIntegerParameter(res, rating, requester, "The rating for the review is invalid");
+    if(!valid) return;
+    // check the review itself
+    valid = validateStringParameter(res, reviewText, 0, 2500, requester, "The review field is invalid");
+    if(!valid) return;
+    // need to change the good/bad tags to arrays with the tag ID's
+    // check the movie id
+    valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
+    if(!valid) return;
 
-    console.log(userId);
+    let review;
+    try {
+        review = await models.Review.create({
+            rating: rating,
+            userId: userId,
+            review: reviewText,
+            movieId: movieId
+        });
+    } catch(err)
+    {
+        console.log(err);
+        // try to catch user does not exists
+        // movie does not exist
+    }
+    if(review === null)
+    {
+        // review creation failed
+    }
+    else
+    {
+        // associate the tags with the review
+        // the way it is currently set up will not work long term...
+        // new idea...
+        // let users have a bar to type tags in on good and bad side
+        // when doing this, do a autocomplete to suggest already used tags
+        // limit tag length to so many characters
+        // then when creating the review, pass two arrays, one with tag Id's
+        // another with newly created tags?
+        // will have to check again to see if they exist when the review comes in?
+        // can set the value as the key to prevent duplicates
+        // can still use the bubble buttons to display selected ones
+    }
+
+    // old:
     models.Review.create({
             rating: req.body.rating,
             userId: userId,
@@ -513,7 +560,7 @@ const postComment = async (req, res, cookie) =>
     let comment = req.body.comment;
     let requester = cookie.name;
     // for now, comments can be as long as possible but should limit in future..
-    let valid = validateStringParameter(res, comment, undefined, requester, "You cannot post a empty comment");
+    let valid = validateStringParameter(res, comment, 1, undefined, requester, "You cannot post a empty comment");
     if(!valid) return;
     let reviewId = req.body.reviewId;
     valid = validateIntegerParameter(res, reviewId, requester, "The review ID for the comment is invalid");
@@ -592,7 +639,7 @@ const updateComment = async (req, res, cookie) =>
     let commentId = req.body.commentId;
     let updatedComment = req.body.comment;
     let requester = cookie.name;
-    let valid = validateStringParameter(res, updatedComment, undefined, requester, "You cannot post a empty comment");
+    let valid = validateStringParameter(res, updatedComment, 1, undefined, requester, "You cannot post a empty comment");
     if(!valid) return;
     valid = validateIntegerParameter(res, commentId, requester, "The comment ID to update is invalid");
     if(!valid) return;

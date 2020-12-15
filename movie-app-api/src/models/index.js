@@ -21,7 +21,8 @@ const models = {
     Genre: sequelize.import('./genres'),
     Movies: sequelize.import('./movies'),
     UserWatchList: sequelize.import('./UserWatchList'),
-    UsersWhoWatched: sequelize.import('./UsersWhoWatched')
+    UsersWhoWatched: sequelize.import('./UsersWhoWatched'),
+    MovieTag: sequelize.import('./movieTags')
 };
 
 Object.keys(models).forEach(key => {

@@ -155,6 +155,9 @@ class MoviePostPopUp extends React.Component {
                                 messageId={this.state.messageId}
                                 type={this.state.messageType}
                                 style={{"text-align": "left"}}
+                                symbolStyle={{"width": "5%", "margin-top": "0px"}}
+                                messageBoxStyle={{width: "86%"}}
+                                closeButtonStyle={{width: "5%", "margin-top": "0px"}}
                                 timeout={0}
                             />
                             {moviePost}
