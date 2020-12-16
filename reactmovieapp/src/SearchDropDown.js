@@ -116,13 +116,13 @@ class SearchDropDown extends React.Component {
 
     keyPressedHandler(event)
     {
-        // if no suggestions, ignore the key push
-        // need to be careful if enter pressed..
         if(event.keyCode === 13)
         {
             // needed so that this does not cause the event to close the movie form
             event.preventDefault();
         }
+        //event.preventDefault();
+        // if there are no suggestions or the suggestions was a empty {} object
         if(this.state.suggestions === undefined || (Object.keys(this.state.suggestions)).length < 1)
         {
             // if the enter key was pressed
@@ -140,64 +140,25 @@ class SearchDropDown extends React.Component {
         }
         let currentKey = this.state.currentHashKey;
         let currentIndex = this.state.suggestionIndex;
+        let currentKeyIndex = this.state.currentKeyIndex;
         // if the key pushed is down, increment index by 1 if not at end
         if(event.keyCode === 40)
         {
-            let currentArray = this.state.suggestions[currentKey];
-            let arrayLength = currentArray.length;
-            if(currentIndex + 1 === arrayLength)
+            let result = this.downKeyHandler(currentKey, currentIndex, currentKeyIndex, this.state.suggestions, this.props.allowNoSuggestion, this.state.multipleTypes);
+            if(result.newState)
             {
-                // need to go to next array if possible
-                // if not multiple types do nothing as at end of array
-                if(this.state.multipleTypes)
-                {
-                    // get the keys from the suggestions
-                    let keys = Object.keys(this.state.suggestions);
-                    if(keys.length > 0)
-                    {
-                        let found = false;
-                        // increment the hash key index to get the next avaiable key
-                        let keyIndex = this.state.currentHashKeyIndex + 1;
-                        // if there are more keys and one that has suggestions is not found
-                        while(!found && keyIndex < keys.length)
-                        {
-                            currentKey = keys[keyIndex];
-                            if(this.state.suggestions[currentKey].length > 0)
-                            {
-                                found = true;
-                            }
-                            else
-                            {
-                                keyIndex = keyIndex + 1;
-                            }
-                        }
-                        if(found)
-                        {
-                            this.setState({
-                                suggestionIndex: 0,
-                                currentHashKey: currentKey,
-                                currentHashKeyIndex: keyIndex
-                            });
-                            // if the parents update function exists and on focus change it wants to be called
-                            if(this.props.updateFunction !== undefined && this.props.updateOnChange)
-                            {
-                                this.props.updateFunction(this.state.suggestions[currentKey][0]);
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                currentIndex = currentIndex + 1;
-                console.log(currentIndex);
-                this.setState({suggestionIndex: currentIndex});
+                currentKey = result.state.currentHashKey;
+                currentIndex = result.state.suggestionIndex;
+                this.setState(result.state);
                 // if the parents update function exists and on focus change it wants to be called
                 if(this.props.updateFunction !== undefined && this.props.updateOnChange)
                 {
-                    this.props.updateFunction(this.state.suggestions[currentKey][currentIndex]);
+                    // if allowNoSuggestion is true, current index can be -1
+                    let newValue = (currentIndex === -1) ? undefined : this.state.suggestions[currentKey][currentIndex];
+                    this.props.updateFunction(newValue);
                 }
             }
+            
         }
         // if the key pushed is up, decrement index by 1 if not at beginning
         else if(event.keyCode === 38)
@@ -211,6 +172,13 @@ class SearchDropDown extends React.Component {
                 // if not multiple types do nothing
                 if(this.state.multipleTypes)
                 {
+                    let result = this.getCurrentKeyAndIndex(this.state.suggestions, this.state.currentHashKeyIndex - 1, false);
+                    let found = result.nextKeyFound;
+                    currentKey = result.currentKey;
+                    let keyIndex = result.index;
+                    // only set this if new key found
+                    let suggestionIndex = (found) ? this.state.suggestions[currentKey].length - 1 : 0;
+                    /*
                     // get the keys from the suggestions
                     let keys = Object.keys(this.state.suggestions);
                     let suggestionIndex = 0;
@@ -234,6 +202,7 @@ class SearchDropDown extends React.Component {
                                 keyIndex = keyIndex - 1;
                             }
                         }
+                        */
                         if(found)
                         {
                             this.setState({
@@ -247,7 +216,7 @@ class SearchDropDown extends React.Component {
                                 this.props.updateFunction(this.state.suggestions[currentKey][suggestionIndex]);
                             }
                         }
-                    }
+                    //}
                 }
                 else
                 {
@@ -299,6 +268,48 @@ class SearchDropDown extends React.Component {
         }
     }
 
+    // currentKey is the key into the object holding the suggestions
+    // ex. {movies: [], users: [], genres: []}...the key could be movies
+    // currentIndex is the index into whatever array is currently being used, ex. movies[1]
+    // keyIndex is the index of the key in the object
+    downKeyHandler(currentKey, currentIndex, keyIndex, suggestions, allowNoSuggestion, multipleTypes)
+    {
+        let currentArray = suggestions[currentKey];
+        let arrayLength = currentArray.length;
+        // if at the end of the current suggestion array
+        if(currentIndex + 1 === arrayLength)
+        {
+            // need to go to next array if multiple types
+            if(multipleTypes)
+            {
+                let result = this.getCurrentKeyAndIndex(suggestions, keyIndex + 1, true);
+                // if there was another array in the suggestion object to go to
+                if(result.nextKeyFound)
+                {
+                    // new key into suggestions object
+                    currentKey = result.currentKey;
+                    currentIndex = (allowNoSuggestion) ? -1 : 0;
+                    keyIndex = result.index;
+                }
+            }
+            return {newState: false};
+        }
+        // if not at the end of the currently used array, just increase index
+        else
+        {
+            currentIndex = currentIndex + 1;
+        }
+        let newState = {
+            suggestionIndex: currentIndex,
+            currentHashKey: currentKey,
+            currentHashKeyIndex: keyIndex
+        };
+        return {
+            newState: true,
+            state: newState
+        };
+    }
+
     // this is used if there are multiple types of suggsestions
     mouseHoverHashHandler(index, key, keyIndex, event)
     {
@@ -330,10 +341,11 @@ class SearchDropDown extends React.Component {
             tempSuggestions = await this.props.getSuggestions(this.state.value);
         }
         let suggestionIndex = (this.props.allowNoSuggestion) ? -1 : 0;
+        let result = this.getCurrentKeyAndIndex(tempSuggestions, 0, true);
         this.setState({
             suggestionIndex: suggestionIndex,
             suggestions: tempSuggestions,
-            currentHashKey: "",
+            currentHashKey: result.currentKey,
             currentHashKeyIndex: 0,
             focused: true
         });
@@ -425,12 +437,12 @@ class SearchDropDown extends React.Component {
 
 
     // note: if you want to start from the beginning, pass 0 as the index
-    // may not need to pass in currentKey...
     // increment is a boolean indicating if to add or subtract from index in
     // the suggestions keys
     getCurrentKeyAndIndex(suggestions, index, increment)
     {
         let currentKey = "";
+        let found = false;
         // get the keys from the suggestions
         let keys = Object.keys(suggestions);
         if(keys.length > 0)
@@ -448,6 +460,7 @@ class SearchDropDown extends React.Component {
                     index = index + 1;
                     currentKey = keys[index];
                     tempArray = suggestions[currentKey];
+                    found = (tempArray.length > 0) ? true : false;
                 }
             }
             else
@@ -457,16 +470,20 @@ class SearchDropDown extends React.Component {
                     index = index - 1;
                     currentKey = keys[index];
                     tempArray = suggestions[currentKey];
+                    found = (tempArray.length > 0) ? true : false;
                 }
             }
-            // this should be taken out..
+            //this should be taken out of here
+            //left off here, trying to make functions in this component reusable
             // update the selected value if true
+            /*
             if(this.props.updateFunction !== undefined && this.props.updateOnChange)
             {
                 this.props.updateFunction((suggestions[currentKey][0]));
             }
+            */
         }
-        return {currentKey: currentKey, index: index};
+        return {currentKey: currentKey, index: index, nextKeyFound: found};
     }
 
     generateInputBox()

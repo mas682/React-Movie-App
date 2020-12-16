@@ -845,7 +845,14 @@ class ReviewPopUp extends React.Component {
                                     <div className={style.selectedDivider}></div>
                                     <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.marginTopBottom20}`}>
                                         {unusedBadButtonArr}
-                                        <SearchDropDown getSuggestions={this.getTagSuggestions} valueKeys={{tags:"value"}} updateFunction={this.setGoodTags} updateOnChange={false} allowNoSuggestion={true} value={""}/>
+                                        <SearchDropDown
+                                            getSuggestions={this.getTagSuggestions}
+                                            valueKeys={{tags:"value"}}
+                                            updateFunction={this.setGoodTags}
+                                            updateOnChange={false}
+                                            allowNoSuggestion={true}
+                                            value={""}
+                                        />
                                     </div>
                                 </div>
                                 <div className = "inputFieldContainer">
