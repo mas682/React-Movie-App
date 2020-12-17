@@ -49,6 +49,8 @@ class ReviewPopUp extends React.Component {
                 unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
                 unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
                 review: "",
+                goodTags: {},
+                badTags: {}
 
             };
         }
@@ -66,6 +68,7 @@ class ReviewPopUp extends React.Component {
         this.generateMovieImage = this.generateMovieImage.bind(this);
         //this.generateTagString = this.generateTagString.bind(this);
         this.getTagSuggestions = this.getTagSuggestions.bind(this);
+        this.setTags = this.setTags.bind(this);
     }
 
     componentDidMount()
@@ -520,6 +523,7 @@ class ReviewPopUp extends React.Component {
     // called by SearchDropDown to set the movie that was selected
     setMovie(value)
     {
+        console.log(value);
         this.setState({
           movie: value
         });
@@ -588,15 +592,62 @@ class ReviewPopUp extends React.Component {
         });
     }
 
-    setGoodTags(value)
+    // function to pass to SerachDropDown as the updateFunction that recieves the value
+    // the user selected as a tag
+    // the value is either a object which is the tag itself, or a string which is the
+    // value for the tag
+    // the type is passed by this component
+    setTags(type, value)
     {
-        alert("Set good tags: " + value);
-        /*
-        // called by SearchDropDown to set the good tag that was selected
-        this.setState({
-            movie: value
-        });
-        */
+        let tempObj = (type === "good") ? {...this.state.goodTags} : {...this.state.badTags};
+        console.log(tempObj);
+        let tagCount = Object.keys(tempObj).length;
+        let newCount;
+        if(typeof(value) === "string")
+        {
+            // only doing this to prevent string from replacing object id
+            if(!tempObj.hasOwnProperty(value))
+            {
+                tempObj[value] = value;
+            }
+            // will need to be careful in the case that the key is already in there
+            // as not a error really but don't want to add again
+            newCount = Object.keys(tempObj).length;
+        }
+        else
+        {
+            console.log(value);
+            tempObj[value.value] = value.id;
+            newCount = Object.keys(tempObj).length;
+            console.log(tagCount);
+            console.log(newCount);
+        }
+        if(tagCount === newCount)
+        {
+            // tag either updated existing tag
+            // or tag did nothing as it already exists
+            // so new tag not added..
+            // probably want to update still as the value could of changed but
+            // display a warning/error message
+        }
+        if(type === "good")
+        {
+            // this will be removed eventually...
+            let usedGoodButtons = Object.keys(tempObj);
+            this.setState({
+                goodTags: tempObj,
+                usedGoodButtons: usedGoodButtons
+            });
+        }
+        else
+        {
+            // this will be removed eventually..
+            let usedGoodButtons = Object.keys(tempObj);
+            this.setState({
+                badTags: tempObj,
+                usedBadButtons: usedGoodButtons
+            });
+        }
     }
 
     generateBadTagSearchBar()
@@ -632,6 +683,7 @@ class ReviewPopUp extends React.Component {
                             updateFunction={this.setMovie}
                             value={value}
                             updateOnChange={true}
+                            allowNoSuggestion={false}
                         />
                     </div>
                 </React.Fragment>
@@ -647,6 +699,7 @@ class ReviewPopUp extends React.Component {
                     valueKeys={{Movies:"title"}}
                     updateFunction={this.setMovie}
                     updateOnChange={true}
+                    allowNoSuggestion={false}
                 />
             </React.Fragment>
         );
@@ -848,10 +901,11 @@ class ReviewPopUp extends React.Component {
                                         <SearchDropDown
                                             getSuggestions={this.getTagSuggestions}
                                             valueKeys={{tags:"value"}}
-                                            updateFunction={this.setGoodTags}
+                                            updateFunction={(value) => {this.setTags("bad", value)}}
                                             updateOnChange={false}
                                             allowNoSuggestion={true}
                                             value={""}
+                                            maxLength={20}
                                         />
                                     </div>
                                 </div>

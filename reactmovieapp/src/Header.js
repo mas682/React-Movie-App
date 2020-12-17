@@ -208,7 +208,12 @@ class Header extends React.Component {
         				</div>
         				<div className="searchBar">
                             <div className="searchInputBox">
-        					    <SearchDropDown getSuggestions={this.getSearchSuggestions} multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}} redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}/>
+        					    <SearchDropDown
+                                    allowNoSuggestion={true}
+                                    getSuggestions={this.getSearchSuggestions}
+                                    multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
+                                    redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
+                                />
                             </div>
                             <div className="searchIconBox">
                                 <i class="fas fa-search searchIcon" />
@@ -272,7 +277,12 @@ class Header extends React.Component {
                     </div>
                     <div className="searchBar">
                         <div className="searchInputBox">
-                            <SearchDropDown getSuggestions={this.getSearchSuggestions} multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}} redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}/>
+                            <SearchDropDown
+                                allowNoSuggestion={true}
+                                getSuggestions={this.getSearchSuggestions}
+                                multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
+                                redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
+                            />
                         </div>
                         <div className="searchIconBox">
                             <i class="fas fa-search searchIcon" />
