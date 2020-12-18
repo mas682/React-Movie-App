@@ -30,6 +30,10 @@ class SearchDropDown extends React.Component {
         let updateOnChange = (this.props.updateOnChange !== undefined) ? this.props.updateOnChange : false;
         // max number of characters allowed in input box
         let maxLength = (this.props.maxLength !== undefined) ? this.props.maxLength : -1;
+        // value to display in input box when empty
+        let placeHolder = (this.props.placeHolder !== undefined) ? this.props.placeHolder : "";
+        // clear the input box on enter/click
+        let clearOnSubmit = (this.props.clearOnSubmit !== undefined) ? this.props.clearOnSubmit : false;
         this.state = {
             // current value in search box
             value: value,
@@ -59,6 +63,8 @@ class SearchDropDown extends React.Component {
             updateOnChange: updateOnChange,
             maxLength: maxLength,
             redirect: false,
+            placeHolder: placeHolder,
+            clearOnSubmit: clearOnSubmit,
             // hash table holding path, and key to use to generate path
             // ex. {Movies: {Path:"/movie/", key:"id"}, Users: {Path:"/profile/",key:"username"}}
             redirectPaths: this.props.redirectPaths
@@ -117,6 +123,10 @@ class SearchDropDown extends React.Component {
                     if(this.props.updateFunction !== undefined)
                     {
                         this.props.updateFunction(this.state.value);
+                        if(this.state.clearOnSubmit)
+                        {
+                            this.setState({value: ""});
+                        }
                     }
                 }
             }
@@ -366,17 +376,10 @@ class SearchDropDown extends React.Component {
             // if there is a update function, call it with the value in the input
             if(this.props.updateFunction !== undefined)
             {
-                // send the object
-                /*
-                left off here...
-                next steps are in reviewform to determine the type of the value,
-                store it, and display
-                then update sending to api
-                will have to verify each tag exists?
-                consider find or create?
-                */
                 this.props.updateFunction(value2);
-                // clear the input box and let the parent component deal with error handling
+            }
+            if(this.state.clearOnSubmit)
+            {
                 this.setState({value: ""});
             }
             else
@@ -390,6 +393,14 @@ class SearchDropDown extends React.Component {
             if(this.props.updateFunction !== undefined && this.state.allowNoSuggestion)
             {
                 this.props.updateFunction(this.state.value);
+            }
+            if(this.state.clearOnSubmit)
+            {
+                this.setState({value: ""});
+            }
+            else
+            {
+                this.setState({value: this.state.value});
             }
         }
         else
@@ -532,6 +543,7 @@ class SearchDropDown extends React.Component {
                           onChange={this.changeHandler}
                           onFocus={this.onFocusHandler}
                           maxlength={this.state.maxLength}
+                          placeholder={this.state.placeHolder}
                           // when the input is no longer focused
                           onBlur={this.offFocusHandler}
                           value={this.state.value}
@@ -553,6 +565,7 @@ class SearchDropDown extends React.Component {
                       className="inputFieldBoxLong validInputBox"
                       onChange={this.changeHandler}
                       onFocus={this.onFocusHandler}
+                      placeholder={this.state.placeHolder}
                       // when the input is no longer focused
                       onBlur={this.offFocusHandler}
                       value={this.state.value}

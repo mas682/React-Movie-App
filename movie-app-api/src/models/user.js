@@ -55,6 +55,8 @@ const user = (sequelize, DataTypes) => {
         // messages associated with the user
         User.hasMany(models.Review, { onDelete: 'CASCADE' });
         User.hasMany(models.Comment,{ onDelete: 'CASCADE' });
+        User.hasMany(models.ReviewGoodTags, { foreignKey: { allowNull: false}, onDelete: 'CASCADE'});
+        User.hasMany(models.ReviewBadTags, { foreignKey: { allowNull: false}, onDelete: 'CASCADE'});
         User.belongsToMany(models.Review, { as: "LikedPosts", through: models.Like, onDelete: 'CASCADE' });
         User.belongsToMany(models.Movies, {as: "WatchList", through: models.UserWatchList, onDelete: 'CASCADE'});
         User.belongsToMany(models.Movies, {as: "WatchedMovie", through: models.UsersWhoWatched, onDelete: 'CASCADE'});

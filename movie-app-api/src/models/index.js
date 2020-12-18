@@ -9,10 +9,6 @@ const sequelize = new Sequelize('postgres://postgres:password@localhost:5432/mov
 // get the models
 const models = {
     User: sequelize.import('./user'),
-    ReviewGoodTags: sequelize.import('./reviewGoodTags'),
-    ReviewBadTags: sequelize.import('./reviewBadTags'),
-    GoodTag: sequelize.import('./goodTag'),
-    BadTag: sequelize.import('./badTag'),
     Review: sequelize.import('./review'),
     Comment: sequelize.import('./comments'),
     Like: sequelize.import('./likes'),
@@ -22,7 +18,9 @@ const models = {
     Movies: sequelize.import('./movies'),
     UserWatchList: sequelize.import('./UserWatchList'),
     UsersWhoWatched: sequelize.import('./UsersWhoWatched'),
-    MovieTag: sequelize.import('./movieTags')
+    MovieTag: sequelize.import('./movieTags'),
+    ReviewGoodTags: sequelize.import('./reviewGoodTags'),
+    ReviewBadTags: sequelize.import('./reviewBadTags'),
 };
 
 Object.keys(models).forEach(key => {

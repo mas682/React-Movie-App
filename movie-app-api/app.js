@@ -23,8 +23,8 @@ const eraseDatabaseOnSync = false;
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     if (eraseDatabaseOnSync) {
         createUsers();
-        createGoodTags();
-        createBadTags();
+        //createGoodTags();
+        //createBadTags();
         //sampleReview2();
         //addComment();
         //addComment2();
@@ -138,7 +138,7 @@ const getMovies = async () => {
                     });
                    if(movie.id === 577922)
                    {
-                     sampleReview();
+                     //sampleReview();
                    }
 
                 });

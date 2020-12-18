@@ -45,7 +45,7 @@
   font-size: 12px;
   flex-flow: row wrap;
   align-content: flex-start;
-  height: 600px;
+  height: 700px;
   position: relative;
 }
 
@@ -96,10 +96,10 @@
 }
 
 /* used to create a container that takes up half the screen */
-.proConContainter {
+.proConContainer {
     width: 45%;
     margin-bottom: 10px;
-    display: flex;
+    /*display: flex; */
     flex-flow: row wrap;
     justify-content: center;
     margin-right: 2.5%;
@@ -148,15 +148,18 @@
     align-content: center;
 }
 
+.tagInputContainer {
+    width: 80%;
+}
+
 /* this is used for buttons that were selected */
 .usedButtonContainerHeight {
-    height: 120px;
 }
 
 /* this is used for the container around buttons that were not selected */
-.marginTopBottom20 {
-    margin-bottom: 20px;
-    margin-top: 20px;
+.marginTopBottom10 {
+    margin-bottom: 10px;
+    margin-top: 0px;
 }
 
 /* this is used for the text when a button is not yet selected */
@@ -180,24 +183,9 @@
     background-color: red;
 }
 
-/* sets the opacity for a unused button */
-.unusedButtonOpacity {
-    opacity: 50%;
-}
-
-/* makes the button unclickable for a unused button */
-.unclickableButton {
-    pointer-events: none;
-}
-
 /* used to keep outline from button when clicked */
 .formButton:focus {
     outline:0;
-}
-
-/* changes a unused buttons opacity on hover */
-.unusedButtonOpacity:hover {
-    opacity: 100%;
 }
 
 /* Serach drop down */

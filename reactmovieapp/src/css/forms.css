@@ -111,7 +111,9 @@
 
 /* create a full size input box */
 .inputFieldBoxLong {
-    width: 95%;
+    /* 99% to account for border */
+    width: 99%;
+    padding: 0px;
     margin-top: 5px;
     font-size: 1.7em;
     border-radius: 6px;
@@ -119,9 +121,10 @@
 
 /* container for a full sized input box */
 .inputFieldContainer {
-    width: 97.5%;
+    width: 95%;
     margin-bottom: 10px;
     margin-left: 2.5%;
+    margin-right: 2.5%;
 }
 
 /* Below is for the star ratings */

@@ -119,6 +119,7 @@ class MoviePost extends React.Component {
     */
     static getGoodButtons(buttonArray)
     {
+        if(buttonArray === undefined) return;
         let tempArr = [];
         buttonArray.forEach((tag) => {
             tempArr.push(tag.value);
@@ -126,6 +127,22 @@ class MoviePost extends React.Component {
         });
         return tempArr;
     }
+
+    /*
+        this function is used to extract the bad tags out of the props that are passed
+        into the component and create an array with the values to put into the state
+    */
+    static getBadButtons(buttonArray)
+    {
+        if(buttonArray === undefined) return;
+        let tempArr = [];
+        buttonArray.forEach((tag) => {
+            tempArr.push(tag.value);
+            // should also remove button from unused array if the post belongs to the current user
+        });
+        return tempArr;
+    }
+
 
     static getDerivedStateFromProps(nextProps, prevState)
     {
@@ -212,21 +229,6 @@ class MoviePost extends React.Component {
             props: props
         };
     }
-
-    /*
-        this function is used to extract the bad tags out of the props that are passed
-        into the component and create an array with the values to put into the state
-    */
-    static getBadButtons(buttonArray)
-    {
-        let tempArr = [];
-        buttonArray.forEach((tag) => {
-            tempArr.push(tag.value);
-            // should also remove button from unused array if the post belongs to the current user
-        });
-        return tempArr;
-    }
-
 
     // function to update the liked count and sets liked to true/false
     // based on the value of value
@@ -655,7 +657,7 @@ class MoviePost extends React.Component {
     {
         let goodButtonArray = [];
         let counter = 0;
-
+        if(this.state.usedGoodButtons === undefined) return;
         // generate the used good buttons
         while(counter < this.state.usedGoodButtons.length)
         {
@@ -670,6 +672,7 @@ class MoviePost extends React.Component {
     {
         let badButtonArray = [];
         let counter = 0;
+        if(this.state.usedGoodButtons === undefined) return;
 
         while(counter < this.state.usedBadButtons.length)
         {

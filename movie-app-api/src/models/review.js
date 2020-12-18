@@ -47,16 +47,13 @@ const review = (sequelize, DataTypes) => {
         Review.belongsTo(models.Movies, {as: "movie"});
         // each review is associated with a user
         Review.belongsTo(models.User, {as: "user"});
-        // each review can have many good tags
-        Review.belongsToMany(models.GoodTag, {through: models.ReviewGoodTags});
-        // each review can have many bad tags
-        Review.belongsToMany(models.BadTag, {through: models.ReviewBadTags});
         // each review can have many comments
         Review.hasMany(models.Comment);
         // each review can have many likes
         Review.belongsToMany(models.User, {as:"likes", through: models.Like});
-        // each review beelongs to a movie
-        // Review.belongsTo(models.Movie, {as: "movie"});
+        // each review can have many good tags
+        Review.belongsToMany(models.MovieTag, {as: "goodTags", through: models.ReviewGoodTags});
+        Review.belongsToMany(models.MovieTag, {as: "badTags", through: models.ReviewBadTags});
     };
 
     // function to get reviews for a set of users
@@ -71,6 +68,7 @@ const review = (sequelize, DataTypes) => {
                 as: "user",
                 attributes: ["username", "id"]
             },
+            /*
             {
                 model: models.GoodTag,
                 // included the id to make one less query needed to find tag
@@ -84,6 +82,7 @@ const review = (sequelize, DataTypes) => {
                 attributes: ["id", "value"],
                 through: {attributes: []}
             },
+            */
             {
 
                 model: models.User,
@@ -104,8 +103,8 @@ const review = (sequelize, DataTypes) => {
             }
 
         ];
-        let groupByArray = ["review.id", "user.username", "user.id", "goodTags.id",
-            "badTags.id", "likes.id", "movie.title", "movie.id", "movie.poster"];
+        let groupByArray = ["review.id", "user.username", "user.id",// "goodTags.id","badTags.id",
+         "likes.id", "movie.title", "movie.id", "movie.poster"];
         // may need to eventually sort by time stamps if not doing it already
         let reviews = await Review.findAll({
             where: {
@@ -168,6 +167,7 @@ const review = (sequelize, DataTypes) => {
                     as: "movie",
                     //attributes: ["title", "id", "poster"]
                 },
+                /*
                 {
                     model: models.GoodTag,
                     // included the id to make one less query needed to find tag
@@ -181,6 +181,7 @@ const review = (sequelize, DataTypes) => {
                     attributes: ["id", "value"],
                     through: {attributes: []}
                 },
+                */
                 {
                     model: models.Comment,
                     attributes: ["id", "value", "updatedAt"],

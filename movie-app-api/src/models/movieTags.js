@@ -21,14 +21,47 @@ const movieTag = (sequelize, DataTypes) => {
         // have this tag?
     });
 
-    /*
     // this will probably be changed to good/bad tags
     // associate bad tags with reviews
     // each tag can belong to many reviews
-    BadTag.associate = models => {
-        BadTag.belongsToMany(models.Review, { through: models.ReviewBadTags});
+    MovieTag.associate = models => {
+        //MovieTag.belongsToMany(models.Review, { as: "goodTags", through: models.ReviewGoodTags, onDelete: 'CASCADE' });
+    //    MovieTag.hasMany(models.ReviewGoodTags, { foreignKey: { allowNull: false}, onDelete: 'CASCADE'});
+        MovieTag.belongsToMany(models.Review, {as: "goodReviews", through: models.ReviewGoodTags});
+        MovieTag.belongsToMany(models.Review, {as: "badReviews", through: models.ReviewBadTags});
     };
-    */
+
+    // function to find a tag or create one and include a review with it
+    MovieTag.findOrCreateByValue = async (models, tag, reviewId, type) =>
+    {
+        let result;
+        if(type === "good")
+        {
+            result = await MovieTag.findOrCreate({
+                where: {value: tag},
+                include: {
+                    model: models.Review,
+                    as: "goodReviews",
+                    where: {id: reviewId},
+                    required: false
+                }
+            })
+        }
+        else
+        {
+            console.log("Bad reviews");
+            result = await MovieTag.findOrCreate({
+                where: {value: tag},
+                include: {
+                    model: models.Review,
+                    as: "badReviews",
+                    where: {id: reviewId},
+                    required: false
+                }
+            });
+        }
+        return result;
+    };
 
     MovieTag.findByValue = async (models, value, count) =>
     {

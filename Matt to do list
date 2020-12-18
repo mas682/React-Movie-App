@@ -238,13 +238,19 @@ To do list:
                 - done
             - build alert component like https://material-ui.com/components/alert/
                 - done may want to change colors like the link above?
-            - need to fix movie filter pages to utilize the Alert component
-            issue: css causing issues so that when one message is up, cannot show any others as it prevents buttons
-            from gaining focus
             - working on Profileheader and MoviePostDisplay
             - fix bug for clearing messages when going from one users page to another
                 - if messages still up on first page, and then go to another, messages come up but clear quickly?
                     - done but make sure working on all pages..
+
+            - left off 12/13:
+                - work on fixing posting review client side and api side..
+                - going to need to rework the whole tag set up...see reviews.js line 281
+
+            - improvement to do way down the road:
+                - make tag input field on review form have little boxes that you hit a plus on to fill?
+
+
             - need to fix login
                 - when doing this, also make it so that router calls login on mount so that it knows who is logged in before
                 it event renders the components...

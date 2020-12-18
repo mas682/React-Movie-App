@@ -15,7 +15,6 @@ class ReviewPopUp extends React.Component {
         // anoter for if the user is creating a new post
         if(this.props.edit)
         {
-            this.ununsedButtonInitializer = this.ununsedButtonInitializer.bind(this);
             this.state = {
                 // only true if editing the post
                 edit: this.props.edit,
@@ -29,8 +28,6 @@ class ReviewPopUp extends React.Component {
                 rating: this.props.data.rating,
                 usedGoodButtons: this.props.data.usedGoodButtons,
                 usedBadButtons: this.props.data.usedBadButtons,
-                unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-                unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
                 review: this.props.data.review,
                 editUpdate: false
             };
@@ -46,8 +43,6 @@ class ReviewPopUp extends React.Component {
                 rating: "",
                 usedGoodButtons: [],
                 usedBadButtons: [],
-                unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-                unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
                 review: "",
                 goodTags: {},
                 badTags: {}
@@ -56,8 +51,7 @@ class ReviewPopUp extends React.Component {
         }
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
-        this.generateButtons = this.generateButtons.bind(this);
-        this.usedButtonHandler = this.usedButtonHandler.bind(this);
+        this.removeButtonHandler = this.removeButtonHandler.bind(this);
         this.validateForm = this.validateForm.bind(this);
         this.callApi = this.callApi.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
@@ -66,9 +60,9 @@ class ReviewPopUp extends React.Component {
         this.getTitleSuggestions = this.getTitleSuggestions.bind(this);
         this.setMovie = this.setMovie.bind(this);
         this.generateMovieImage = this.generateMovieImage.bind(this);
-        //this.generateTagString = this.generateTagString.bind(this);
         this.getTagSuggestions = this.getTagSuggestions.bind(this);
         this.setTags = this.setTags.bind(this);
+        this.generateTagButtons = this.generateTagButtons.bind(this);
     }
 
     componentDidMount()
@@ -80,48 +74,31 @@ class ReviewPopUp extends React.Component {
         }
     }
 
-    // this function is called the pop-up first opens when editing a post
-    // to set the appropriate unused buttons
-    ununsedButtonInitializer()
+    // function to generate the arrays of tags to send to the server
+    // generates 2 arrays, 1 for the tags that have ID's
+    // another for the tags that are just string values
+    getTagsForApi(tags)
     {
-        let usedGoodArr = this.state.usedGoodButtons;
-        let usedBadArr = this.state.usedBadButtons;
-        let unusedArr = ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'];
-        usedGoodArr.forEach((button) => {
-            unusedArr = this.removeButtonFromArray(unusedArr, button);
-        });
-        usedBadArr.forEach((button) => {
-            unusedArr = this.removeButtonFromArray(unusedArr, button);
-        });
-        this.setState({
-            unusedGoodButtons: unusedArr,
-            unusedBadButtons: unusedArr
-        })
-    }
-
-
-    // function to generate the tags as a string to pass to the serever
-    generateTagString(tags)
-    {
-        // Simple POST request with a JSON body using fetch
-        let tagString = "";
-        let counter = 0;
-        // get the number of buttons minus 1
-        let tagCount = tags.length - 1;
-        // while still buttons to get values for
-        while(counter < tags.length)
-        {
-            if(counter == tagCount)
+        console.log(tags);
+        let values = Object.keys(tags);
+        let tagIds = [];
+        let tagStrings = [];
+        values.forEach((key) => {
+            let tag = tags[key];
+            console.log(key);
+            console.log(tag);
+            console.log(typeof(tag));
+            if(typeof(tag) === "string")
             {
-                tagString = tagString + tags[counter];
+                tagStrings.push(tag);
             }
+            // the type is a int as it is the id
             else
             {
-                tagString = tagString + tags[counter] + ",";
+                tagIds.push(tag);
             }
-            counter = counter + 1;
-        }
-        return tagString;
+        });
+        return {ids: tagIds, strings: tagStrings}
     }
 
     // function to generate star ratings when editing a post
@@ -237,11 +214,9 @@ class ReviewPopUp extends React.Component {
                 open: false,
                 title: "",
                 rating: "",
-                usedGoodButtons: [],
-                usedBadButtons: [],
-                unusedGoodButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
-                unusedBadButtons: ['Acting', 'Jokes', 'Too short', 'Too long', 'Story', 'Theme'],
                 review: "",
+                goodTags: {},
+                badTags: {}
             });
         }
     }
@@ -249,9 +224,10 @@ class ReviewPopUp extends React.Component {
     // api call when first creating a review
     callApi()
     {
+        console.log(this.state);
         // Simple POST request with a JSON body using fetch
-        let goodString = this.generateTagString(this.state.usedGoodButtons);
-        let badString = this.generateTagString(this.state.usedBadButtons);
+        let goodTags = this.getTagsForApi(this.state.goodTags);
+        let badTags = this.getTagsForApi(this.state.badTags);
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -259,8 +235,10 @@ class ReviewPopUp extends React.Component {
             body: JSON.stringify({
                 movie: this.state.movie.id,
                 rating: this.state.rating,
-                good: goodString,
-                bad: badString,
+                goodTags: goodTags.ids,
+                goodTagStrings: goodTags.strings,
+                badTags: badTags.ids,
+                badTagStrings: badTags.strings,
                 review: this.state.review
             })
         };
@@ -269,8 +247,9 @@ class ReviewPopUp extends React.Component {
         return fetch("http://localhost:9000/review", requestOptions)
             .then(res => {
                 status = res.status;
-                return res.text();
+                return res.json();
             }).then(result=> {
+                console.log(result);
                 return [status, result];
             });
     }
@@ -279,8 +258,8 @@ class ReviewPopUp extends React.Component {
     updateReviewApi()
     {
         // Simple POST request with a JSON body using fetch
-        let goodString = this.generateTagString(this.state.usedGoodButtons);
-        let badString = this.generateTagString(this.state.usedBadButtons);
+        let goodTags = this.getTagsForApi(this.state.goodTags);
+        let badTags = this.getTagsForApi(this.state.badTags);
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -375,137 +354,25 @@ class ReviewPopUp extends React.Component {
         this.setState({[name]: value});
     }
 
-    usedButtonHandler(event)
+    // function to remove the tag buttons on click
+    removeButtonHandler(event)
     {
-        // holds the new array to set the state to for the unused good buttons
-        let unusedGoodArr = this.addButtonToArray(this.state.unusedGoodButtons, event.target.value);
-        // holds the new array to set the state to for the unused bad buttons
-        let unusedBadArr = this.addButtonToArray(this.state.unusedBadButtons, event.target.value);
-
         // if the button clicked was a good button
         if(event.target.id == "goodButton")
         {
-            // remove the button from the used good buttons
-            let usedGoodArr = this.removeButtonFromArray(this.state.usedGoodButtons, event.target.value);
-            // update the state
-            this.setState({usedGoodButtons: usedGoodArr, unusedGoodButtons: unusedGoodArr,
-                unusedBadButtons: unusedBadArr});
+            let goodTags = {...this.state.goodTags};
+            delete goodTags[event.target.value];
+            this.setState({
+                goodTags: goodTags
+            });
         }
         else
         {
-            // remove the button from the used bad buttons
-            let usedBadArr = this.removeButtonFromArray(this.state.usedBadButtons, event.target.value);
-            // update the state
-            this.setState({usedBadButtons: usedBadArr, unusedGoodButtons: unusedGoodArr,
-                unusedBadButtons: unusedBadArr});
-        }
-    }
-
-    // function to add a new value to the buttons arrays
-    addButtonToArray(oldArray, value)
-    {
-        // initialize loop counter
-        let counter = 0;
-        let newArray = [];
-        let arrayLength = oldArray.length + 1;
-        while(counter < arrayLength)
-        {
-            // if counter is less than the old array length, simply copy the value
-            if(counter < oldArray.length)
-            {
-                newArray.push(oldArray[counter]);
-            }
-            else
-            {
-                // add the new value
-                newArray.push(value);
-            }
-            counter = counter + 1;
-        }
-        return newArray;
-    }
-
-    // function to remove a old value from the buttons arrays
-    removeButtonFromArray(oldArray, value)
-    {
-        let counter = 0;
-        let newArray = [];
-        let arrayValue = "";
-
-        while(counter < oldArray.length)
-        {
-            arrayValue = oldArray[counter];
-            // skip the value if this is the value to remove
-            if(arrayValue == value)
-            {
-                counter = counter + 1;
-                continue;
-            }
-            newArray.push(arrayValue);
-            counter = counter + 1;
-        }
-        return newArray;
-    }
-
-    unusedButtonHandler(event)
-    {
-        // remove the button from the unused buttons
-        let unusedGoodArr = this.removeButtonFromArray(this.state.unusedGoodButtons, event.target.value);
-        let unusedBadArr = this.removeButtonFromArray(this.state.unusedBadButtons, event.target.value);
-
-        // if the button clicked was a good button
-        if(event.target.id == "goodButton")
-        {
-            // add the button to the used good buttons array
-            let usedGoodArr = this.addButtonToArray(this.state.usedGoodButtons, event.target.value);
-            // update the state
-            this.setState({usedGoodButtons: usedGoodArr, unusedGoodButtons: unusedGoodArr,
-                unusedBadButtons: unusedBadArr});
-        }
-        else
-        {
-            // add the button to the used bad buttons
-            let usedBadArr = this.addButtonToArray(this.state.usedBadButtons, event.target.value);
-            // update the state
-            this.setState({usedBadButtons: usedBadArr, unusedGoodButtons: unusedGoodArr,
-                unusedBadButtons: unusedBadArr});
-        }
-    }
-
-    // value is the value of the button
-    // type is either good or bad
-    // used is true or false
-    generateButtons(value, type, used, selectedButtonLength)
-    {
-        if(type == "good" && used)
-        {
-            return <button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton}`} id="goodButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
-        }
-        else if(type == "good" && !used)
-        {
-            if(selectedButtonLength < 5)
-            {
-                return <button value={value} title = "Click to select" className={`${style.formButton} ${style.unusedButtonOpacity} ${style.goodButton}`} id="goodButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
-            }
-            else
-            {
-                return <div title="Remove one of the choices above to select this one"><button value={value} className={`${style.formButton} ${style.unusedButtonOpacity} ${style.unclickableButton} ${style.goodButton}`} id="goodButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button></div>;
-            }
-        }
-        else if(type == "bad" && used)
-        {
-            return <button value={value} className={`${style.formButton} ${style.badButton}`} title = "Click to remove" id="badButton" onClick={(e)=> this.usedButtonHandler(e)}>{value}</button>;
-        }
-        else
-        {
-            if(selectedButtonLength < 5)
-            {
-                return <button value={value} className={`${style.formButton} ${style.unusedButtonOpacity} ${style.badButton}`} id="badButton" title = "Click to select" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button>;
-            }
-            else
-            {
-                return <div title="Remove one of the choices above to select this one" ><button value={value} className={`${style.formButton} ${style.unusedButtonOpacity} ${style.unclickableButton} ${style.badButton}`} id="badButton" onClick={(e)=> this.unusedButtonHandler(e)}>{value}</button></div>;
-            }
+            let badTags = {...this.state.badTags};
+            delete badTags[event.target.value];
+            this.setState({
+                badTags: badTags
+            });
         }
     }
 
@@ -516,7 +383,6 @@ class ReviewPopUp extends React.Component {
         // already in use
         if(this.state.edit)
         {
-            this.ununsedButtonInitializer();
         }
     }
 
@@ -531,7 +397,6 @@ class ReviewPopUp extends React.Component {
 
     // function to get the movie title suggestions based off of a
     // substring that the user has already entered
-
     getTitleSuggestions(value)
     {
       // Simple POST request with a JSON body using fetch
@@ -584,14 +449,6 @@ class ReviewPopUp extends React.Component {
         }
     }
 
-    // called by SearchDropDown to set the bad tag that was selected
-    setBadTags(value)
-    {
-        this.setState({
-          movie: value
-        });
-    }
-
     // function to pass to SerachDropDown as the updateFunction that recieves the value
     // the user selected as a tag
     // the value is either a object which is the tag itself, or a string which is the
@@ -600,7 +457,6 @@ class ReviewPopUp extends React.Component {
     setTags(type, value)
     {
         let tempObj = (type === "good") ? {...this.state.goodTags} : {...this.state.badTags};
-        console.log(tempObj);
         let tagCount = Object.keys(tempObj).length;
         let newCount;
         if(typeof(value) === "string")
@@ -617,7 +473,7 @@ class ReviewPopUp extends React.Component {
         else
         {
             console.log(value);
-            tempObj[value.value] = value.id;
+            tempObj[value.value] = { id: value.id, value: value.value };
             newCount = Object.keys(tempObj).length;
             console.log(tagCount);
             console.log(newCount);
@@ -634,9 +490,9 @@ class ReviewPopUp extends React.Component {
         {
             // this will be removed eventually...
             let usedGoodButtons = Object.keys(tempObj);
+            console.log(tempObj);
             this.setState({
-                goodTags: tempObj,
-                usedGoodButtons: usedGoodButtons
+                goodTags: tempObj
             });
         }
         else
@@ -644,10 +500,20 @@ class ReviewPopUp extends React.Component {
             // this will be removed eventually..
             let usedGoodButtons = Object.keys(tempObj);
             this.setState({
-                badTags: tempObj,
-                usedBadButtons: usedGoodButtons
+                badTags: tempObj
             });
         }
+        /*
+        left off working here....
+        next steps:
+            - need to create two arrays for each type of tag to pass to api
+            - one being any id's
+            - the other being any strings
+            - also the look on the client side and fix going through goodTags
+            and badTags to dipslay
+            - after all of this, set up api
+            - then come back here and finish fixing review form
+        */
     }
 
     generateBadTagSearchBar()
@@ -684,6 +550,7 @@ class ReviewPopUp extends React.Component {
                             value={value}
                             updateOnChange={true}
                             allowNoSuggestion={false}
+                            clearOnSubmit={false}
                         />
                     </div>
                 </React.Fragment>
@@ -700,6 +567,7 @@ class ReviewPopUp extends React.Component {
                     updateFunction={this.setMovie}
                     updateOnChange={true}
                     allowNoSuggestion={false}
+                    clearOnSubmit={false}
                 />
             </React.Fragment>
         );
@@ -739,77 +607,29 @@ class ReviewPopUp extends React.Component {
         return reviewInput;
     }
 
-    generateInstructionTextGood()
-    {
-        let instructionTextGood = (
-            <React.Fragment>
-                    <div className={style.instructionText}>Select up to 5 of the options below</div>
-            </React.Fragment>);
-        if(this.state.usedGoodButtons.length > 0)
-        {
-            instructionTextGood = "";
-        }
-        return instructionTextGood;
-    }
-
-    generateInstructionTextBad()
-    {
-        let instructionTextBad = (
-            <React.Fragment>
-                <div className={style.halfTextContainer}>
-                    <div className={style.instructionText}>Select up to 5 of the options below</div>
-                </div>
-            </React.Fragment>);
-        if(this.state.usedBadButtons.length > 0)
-        {
-            instructionTextBad = "";
-        }
-        return instructionTextBad;
-    }
-
-    generateGoodButtons()
-    {
-        let unusedGoodButtonArr = [];
-        let usedGoodButtonArr = [];
-        let counter = 0;
-        // generate the unused good buttons
-        while(counter < this.state.unusedGoodButtons.length)
-        {
-            unusedGoodButtonArr.push(this.generateButtons(this.state.unusedGoodButtons[counter], "good", false, this.state.usedGoodButtons.length));
-            counter = counter + 1;
-        }
-        // reset the counter
-        counter = 0;
-        // generate the used good buttons
-        while(counter < this.state.usedGoodButtons.length)
-        {
-            usedGoodButtonArr.push(this.generateButtons(this.state.usedGoodButtons[counter], "good", true, 0));
-            counter = counter + 1;
-        }
-        return [unusedGoodButtonArr, usedGoodButtonArr];
-    }
-
-    generateBadButtons()
+    generateTagButtons(type)
     {
         let counter = 0;
-        let unusedBadButtonArr = [];
-        let usedBadButtonArr = [];
+        let buttonArray = [];
+        let values = (type === "good") ? Object.keys(this.state.goodTags) : Object.keys(this.state.badTags);
 
-        // generate the unused bad buttons
-        while(counter < this.state.unusedBadButtons.length)
+        // generate the tag buttons
+        while(counter < values.length)
         {
-            unusedBadButtonArr.push(this.generateButtons(this.state.unusedBadButtons[counter], "bad", false, this.state.usedBadButtons.length));
+            let button;
+            let value = values[counter];
+            if(type == "good")
+            {
+                button = (<button value={value} title = "Click to remove" className={`${style.formButton} ${style.goodButton}`} id="goodButton" onClick={(e)=> this.removeButtonHandler(e)}>{value}</button>);
+            }
+            else
+            {
+                button = <button value={value} className={`${style.formButton} ${style.badButton}`} title = "Click to remove" id="badButton" onClick={(e)=> this.removeButtonHandler(e)}>{value}</button>;
+            }
+            buttonArray.push(button);
             counter = counter + 1;
         }
-        // reset the counter
-        counter = 0;
-        // generate the unused bad buttons
-        while(counter < this.state.usedBadButtons.length)
-        {
-            usedBadButtonArr.push(this.generateButtons(this.state.usedBadButtons[counter], "bad", true, 0));
-            counter = counter + 1;
-        }
-        return [unusedBadButtonArr, usedBadButtonArr];
+        return buttonArray;
     }
 
     generateSubmitButton()
@@ -843,7 +663,7 @@ class ReviewPopUp extends React.Component {
     }
 
     // function to generate all the html needed to render the popup
-    generateHTML(titleInput, reviewInput, instructionTextGood, instructionTextBad, unusedGoodButtonArr, usedGoodButtonArr, unusedBadButtonArr, usedBadButtonArr, ratingStars, submitButton, moviePoster)
+    generateHTML(titleInput, reviewInput, usedGoodButtonArr, usedBadButtonArr, ratingStars, submitButton, moviePoster)
     {
         let html = (
                 <React.Fragment>
@@ -874,39 +694,50 @@ class ReviewPopUp extends React.Component {
                                         {ratingStars}
                                     </fieldset>
                                 </div>
-                                <div className={style.proConContainter}>
+                                <div className={style.proConContainer}>
                                     <div className={style.centeredMaxWidthContainer}>
                                         <h4 className={style.h4NoMargin}>The Good</h4>
                                     </div>
+                                    <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.marginTopBottom10}`}>
+                                        <div className={style.tagInputContainer}>
+                                            <SearchDropDown
+                                                getSuggestions={this.getTagSuggestions}
+                                                valueKeys={{tags:"value"}}
+                                                updateFunction={(value) => {this.setTags("good", value)}}
+                                                updateOnChange={false}
+                                                allowNoSuggestion={true}
+                                                value={""}
+                                                maxLength={20}
+                                                placeHolder={"Enter up to 5 tags"}
+                                                clearOnSubmit={true}
+                                            />
+                                        </div>
+                                    </div>
                                     <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
                                         {usedGoodButtonArr}
-                                        {instructionTextGood}
-                                    </div>
-                                    <div className={style.selectedDivider}></div>
-                                    <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.marginTopBottom20}`}>
-                                        {unusedGoodButtonArr}
                                     </div>
                                 </div>
-                                <div className={style.proConContainter}>
+                                <div className={style.proConContainer}>
                                     <div className={style.centeredMaxWidthContainer}>
                                         <h4 className={style.h4NoMargin}>The Bad</h4>
                                     </div>
+                                    <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.marginTopBottom10}`}>
+                                        <div className={style.tagInputContainer}>
+                                            <SearchDropDown
+                                                getSuggestions={this.getTagSuggestions}
+                                                valueKeys={{tags:"value"}}
+                                                updateFunction={(value) => {this.setTags("bad", value)}}
+                                                updateOnChange={false}
+                                                allowNoSuggestion={true}
+                                                value={""}
+                                                maxLength={20}
+                                                placeHolder={"Enter up to 5 tags"}
+                                                clearOnSubmit={true}
+                                            />
+                                        </div>
+                                    </div>
                                     <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.usedButtonContainerHeight}`}>
                                         {usedBadButtonArr}
-                                        {instructionTextBad}
-                                    </div>
-                                    <div className={style.selectedDivider}></div>
-                                    <div className={`${style.centeredMaxWidthContainer} ${style.buttonContainer} ${style.marginTopBottom20}`}>
-                                        {unusedBadButtonArr}
-                                        <SearchDropDown
-                                            getSuggestions={this.getTagSuggestions}
-                                            valueKeys={{tags:"value"}}
-                                            updateFunction={(value) => {this.setTags("bad", value)}}
-                                            updateOnChange={false}
-                                            allowNoSuggestion={true}
-                                            value={""}
-                                            maxLength={20}
-                                        />
                                     </div>
                                 </div>
                                 <div className = "inputFieldContainer">
@@ -926,17 +757,11 @@ class ReviewPopUp extends React.Component {
         let titleInput = this.generateTitleInput();
         let moviePoster = this.generateMovieImage();
         let reviewInput = this.generateReviewInput();
-        let instructionTextGood = this.generateInstructionTextGood();
-        let instructionTextBad = this.generateInstructionTextBad();
-        let goodButtonArrays = this.generateGoodButtons();
-        let unusedGoodButtonArr = goodButtonArrays[0];
-        let usedGoodButtonArr = goodButtonArrays[1];
-        let badButtonArrays = this.generateBadButtons();
-        let unusedBadButtonArr = badButtonArrays[0];
-        let usedBadButtonArr = badButtonArrays[1];
+        let usedGoodButtonArr = this.generateTagButtons("good");
+        let usedBadButtonArr = this.generateTagButtons("bad");
         let ratingStars = this.generateRatingStars();
         let submitButton = this.generateSubmitButton();
-        let html = this.generateHTML(titleInput, reviewInput, instructionTextGood, instructionTextBad, unusedGoodButtonArr, usedGoodButtonArr, unusedBadButtonArr, usedBadButtonArr, ratingStars, submitButton, moviePoster);
+        let html = this.generateHTML(titleInput, reviewInput, usedGoodButtonArr, usedBadButtonArr, ratingStars, submitButton, moviePoster);
 
         if(this.state.edit)
         {
