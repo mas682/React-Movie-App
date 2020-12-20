@@ -49,9 +49,41 @@ const movieTag = (sequelize, DataTypes) => {
         }
         else
         {
-            console.log("Bad reviews");
             result = await MovieTag.findOrCreate({
                 where: {value: tag},
+                include: {
+                    model: models.Review,
+                    as: "badReviews",
+                    where: {id: reviewId},
+                    required: false
+                }
+            });
+        }
+        return result;
+    };
+
+    // function to find a tag or create one and include a review with it
+    MovieTag.findOrCreateById = async (models, tag, reviewId, type) =>
+    {
+        let result;
+        if(type === "good")
+        {
+            result = await MovieTag.findOrCreate({
+                where: {id: tag.id},
+                defaults: {value: tag.value},
+                include: {
+                    model: models.Review,
+                    as: "goodReviews",
+                    where: {id: reviewId},
+                    required: false
+                }
+            })
+        }
+        else
+        {
+            result = await MovieTag.findOrCreate({
+                where: {id: tag.id},
+                defaults: {value: tag.value},
                 include: {
                     model: models.Review,
                     as: "badReviews",

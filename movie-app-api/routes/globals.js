@@ -103,11 +103,8 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
         minLength = 0;
     }
     let paramLength = param.length;
-    console.log(paramLength);
-    console.log(minLength);
     if(paramLength < minLength)
     {
-        console.log(paramLength < minLength);
         res.status(400).send({
             message: message,
             requester: requester
