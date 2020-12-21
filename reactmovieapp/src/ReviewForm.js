@@ -48,7 +48,9 @@ class ReviewPopUp extends React.Component {
                 badTags: {},
                 reviewRowCountMin: 6,
                 reviewRowCount: 6,
-                reviewMaxCharacters: 6000
+                reviewMaxCharacters: 6000,
+                lockGoodTags: false,
+                lockBadTags: false
 
             };
         }
@@ -88,9 +90,6 @@ class ReviewPopUp extends React.Component {
         let tagStrings = [];
         values.forEach((key) => {
             let tag = tags[key];
-            console.log(key);
-            console.log(tag);
-            console.log(typeof(tag));
             if(typeof(tag) === "string")
             {
                 tagStrings.push(tag);
@@ -392,16 +391,20 @@ class ReviewPopUp extends React.Component {
         {
             let goodTags = {...this.state.goodTags};
             delete goodTags[event.target.value];
+            let locked = (goodTags.length === 5) ? true : false;
             this.setState({
-                goodTags: goodTags
+                goodTags: goodTags,
+                lockGoodTags: locked
             });
         }
         else
         {
             let badTags = {...this.state.badTags};
             delete badTags[event.target.value];
+            let locked = (badTags.length === 5) ? true : false;
             this.setState({
-                badTags: badTags
+                badTags: badTags,
+                lockBadTags: locked
             });
         }
     }
@@ -489,6 +492,12 @@ class ReviewPopUp extends React.Component {
         let tempObj = (type === "good") ? {...this.state.goodTags} : {...this.state.badTags};
         let tagCount = Object.keys(tempObj).length;
         let newCount;
+        if(tagCount === 5)
+        {
+            // this should never occur but a safeguard
+            alert("At max number of tags...remove one");
+            return;
+        }
         if(typeof(value) === "string")
         {
             // only doing this to prevent string from replacing object id
@@ -502,11 +511,8 @@ class ReviewPopUp extends React.Component {
         }
         else
         {
-            console.log(value);
             tempObj[value.value] = { id: value.id, value: value.value };
             newCount = Object.keys(tempObj).length;
-            console.log(tagCount);
-            console.log(newCount);
         }
         if(tagCount === newCount)
         {
@@ -533,18 +539,18 @@ class ReviewPopUp extends React.Component {
                 badTags: tempObj
             });
         }
-    }
-
-    generateBadTagSearchBar()
-    {
-        return <SearchDropDown
-                    getSuggestions={this.getTagSuggestions}
-                    valueKeys={{tags:"value"}}
-                    updateFunction={this.setGoodTags}
-                    updateOnChange={false}
-                    allowNoSuggestion={true}
-                    value={value}
-                />
+        console.log(newCount);
+        if(newCount === 5)
+        {
+            if(type === "good")
+            {
+                this.setState({lockGoodTags: true});
+            }
+            else
+            {
+                this.setState({lockBadTags: true});
+            }
+        }
     }
 
     generateTitleInput()
@@ -609,6 +615,11 @@ class ReviewPopUp extends React.Component {
     generateReviewInput()
     {
         console.log("Rows in input generator: " + this.state.numberRows);
+        let infoMessage = "";
+        if(this.state.review.length === this.state.reviewMaxCharacters)
+        {
+            infoMessage = "* Review at maximum allowed length";
+        }
         let reviewInput = (
             <React.Fragment>
                 <label>
@@ -625,6 +636,7 @@ class ReviewPopUp extends React.Component {
                     maxLength={this.state.reviewMaxCharacters}
                     value={this.state.review}
                 />
+                {infoMessage}
             </React.Fragment>);
         return reviewInput;
     }
@@ -732,6 +744,8 @@ class ReviewPopUp extends React.Component {
                                                 maxLength={20}
                                                 placeHolder={"Enter up to 5 tags"}
                                                 clearOnSubmit={true}
+                                                locked={this.state.lockGoodTags}
+                                                lockedMessage={"5 tags are selected"}
                                             />
                                         </div>
                                     </div>
@@ -754,6 +768,8 @@ class ReviewPopUp extends React.Component {
                                                 value={""}
                                                 maxLength={20}
                                                 placeHolder={"Enter up to 5 tags"}
+                                                locked = {this.state.lockBadTags}
+                                                lockedMessage = {"5 tags are selected"}
                                                 clearOnSubmit={true}
                                             />
                                         </div>

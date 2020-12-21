@@ -34,6 +34,10 @@ class SearchDropDown extends React.Component {
         let placeHolder = (this.props.placeHolder !== undefined) ? this.props.placeHolder : "";
         // clear the input box on enter/click
         let clearOnSubmit = (this.props.clearOnSubmit !== undefined) ? this.props.clearOnSubmit : false;
+        // prevent input on search bar
+        let locked = (this.props.locked !== undefined) ? this.props.locked : false;
+        // message to display in the search bar if locked
+        let lockedMessage = (this.props.lockedMessage !== undefined) ? this.props.lockedMessage : "";
         this.state = {
             // current value in search box
             value: value,
@@ -65,6 +69,8 @@ class SearchDropDown extends React.Component {
             redirect: false,
             placeHolder: placeHolder,
             clearOnSubmit: clearOnSubmit,
+            locked: locked,
+            lockedMessage: lockedMessage,
             // hash table holding path, and key to use to generate path
             // ex. {Movies: {Path:"/movie/", key:"id"}, Users: {Path:"/profile/",key:"username"}}
             redirectPaths: this.props.redirectPaths
@@ -86,6 +92,19 @@ class SearchDropDown extends React.Component {
             this.setState({redirect: false});
         }
     }
+    // update the state if new props came in with a different profile
+    // or a different user logged in
+    static getDerivedStateFromProps(nextProps, prevState)
+    {
+        if(prevState.locked !== nextProps.locked)
+        {
+            return {locked: nextProps.locked, lockedMessage: nextProps.lockedMessage};
+        }
+        else
+        {
+            return null;
+        }
+    }
 
     // optimization to keep component from rerendering
     shouldComponentUpdate(nextProps, nextState){
@@ -94,7 +113,6 @@ class SearchDropDown extends React.Component {
         let render = true;
         if(this.state.redirect === true && nextState.redirect === false)
         {
-
             render = false;
         }
         return render;
@@ -528,7 +546,32 @@ class SearchDropDown extends React.Component {
 
     generateInputBox()
     {
+        if(this.state.locked)
+        {
+            return (
+              <React.Fragment>
+                  <div className={style.dropdown}>
+                      <input
+                          autocomplete="off"
+                          type="text"
+                          name="value"
+                          form = "form2"
+                          className="inputFieldBoxLong validInputBox"
+                          onChange={this.changeHandler}
+                          onFocus={this.onFocusHandler}
+                          placeholder={this.state.lockedMessage}
+                          // when the input is no longer focused
+                          onBlur={this.offFocusHandler}
+                          value={this.state.value}
+                          onKeyDown={this.keyPressedHandler}
+                          disabled
+                      />
+                  </div>
+                </React.Fragment>
+            );
+        }
         let suggestions = this.generateSuggestionBox();
+        // if there is a maxlength
         if(this.state.maxLength > -1)
         {
             return (
