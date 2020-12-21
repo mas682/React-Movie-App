@@ -23,7 +23,7 @@ const createReview = async (cookie, req, res) =>
     let valid = validateIntegerParameter(res, rating, requester, "The rating for the review is invalid");
     if(!valid) return;
     // check the review itself
-    valid = validateStringParameter(res, reviewText, 0, 2500, requester, "The review field is invalid");
+    valid = validateStringParameter(res, reviewText, 0, 6000, requester, "The review field is invalid");
     if(!valid) return;
     // check the movie id
     valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");

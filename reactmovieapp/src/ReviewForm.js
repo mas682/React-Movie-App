@@ -40,12 +40,15 @@ class ReviewPopUp extends React.Component {
                 // can remove this after search drop down implemented..
                 title: "",
                 movie: undefined,
-                rating: "",
+                rating: "0",
                 usedGoodButtons: [],
                 usedBadButtons: [],
                 review: "",
                 goodTags: {},
-                badTags: {}
+                badTags: {},
+                reviewRowCountMin: 6,
+                reviewRowCount: 6,
+                reviewMaxCharacters: 6000
 
             };
         }
@@ -53,7 +56,7 @@ class ReviewPopUp extends React.Component {
         this.closeModal = this.closeModal.bind(this);
         this.removeButtonHandler = this.removeButtonHandler.bind(this);
         this.validateForm = this.validateForm.bind(this);
-        this.callApi = this.callApi.bind(this);
+        this.sendReviewToServer = this.sendReviewToServer.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.updateReviewApi = this.updateReviewApi.bind(this);
         this.validateUpdate = this.validateUpdate.bind(this);
@@ -63,6 +66,7 @@ class ReviewPopUp extends React.Component {
         this.getTagSuggestions = this.getTagSuggestions.bind(this);
         this.setTags = this.setTags.bind(this);
         this.generateTagButtons = this.generateTagButtons.bind(this);
+        this.reviewInputHandler = this.reviewInputHandler.bind(this);
     }
 
     componentDidMount()
@@ -79,7 +83,6 @@ class ReviewPopUp extends React.Component {
     // another for the tags that are just string values
     getTagsForApi(tags)
     {
-        console.log(tags);
         let values = Object.keys(tags);
         let tagIds = [];
         let tagStrings = [];
@@ -222,7 +225,7 @@ class ReviewPopUp extends React.Component {
     }
 
     // api call when first creating a review
-    callApi()
+    sendReviewToServer()
     {
         console.log(this.state);
         // Simple POST request with a JSON body using fetch
@@ -326,7 +329,16 @@ class ReviewPopUp extends React.Component {
     async validateForm(event) {
         event.preventDefault();
         console.log(event);
-        this.callApi().then(result => {
+        // limit review inptu field to so many characters
+        // check to see if a movie is selected
+        if(this.state.movie === undefined)
+        {
+            alert("No movie provided");
+            return;
+        }
+
+
+        this.sendReviewToServer().then(result => {
             let status = result[0];
             let response = result[1];
             if(status === 201 && response === "Review successfully created!")
@@ -352,6 +364,24 @@ class ReviewPopUp extends React.Component {
         let name = event.target.name;
         let value = event.target.value;
         this.setState({[name]: value});
+    }
+
+    // function to handle the review input field when it changes
+    reviewInputHandler(event) {
+        // get current row count
+        let rowCount = event.target.rows;
+        // reset rows to default value
+        event.target.rows = this.state.reviewRowCountMin;
+        // get row height
+        let rowHeight = ((event.target.clientHeight) / this.state.reviewRowCountMin);
+        // scrollHeight is the total height
+        let numberRows = (event.target.scrollHeight / rowHeight);
+        let value = event.target.value;
+        this.setState({
+            review: value,
+            reviewRowCount: Math.ceil(numberRows)
+        });
+        event.target.rows = Math.ceil(numberRows);
     }
 
     // function to remove the tag buttons on click
@@ -503,17 +533,6 @@ class ReviewPopUp extends React.Component {
                 badTags: tempObj
             });
         }
-        /*
-        left off working here....
-        next steps:
-            - need to create two arrays for each type of tag to pass to api
-            - one being any id's
-            - the other being any strings
-            - also the look on the client side and fix going through goodTags
-            and badTags to dipslay
-            - after all of this, set up api
-            - then come back here and finish fixing review form
-        */
     }
 
     generateBadTagSearchBar()
@@ -589,18 +608,21 @@ class ReviewPopUp extends React.Component {
 
     generateReviewInput()
     {
+        console.log("Rows in input generator: " + this.state.numberRows);
         let reviewInput = (
             <React.Fragment>
                 <label>
                     <h4 className={style.h4NoMargin}>Optional Review</h4>
                 </label>
                 <textarea
+                    id="reviewInput"
                     type="text"
                     name="review"
                     form = "form2"
+                    rows={this.state.reviewRowCount}
                     className={`inputFieldBoxLong ${style.reviewInputField}`}
-                    onChange={this.changeHandler}
-                    rows="10"
+                    onChange={this.reviewInputHandler}
+                    maxLength={this.state.reviewMaxCharacters}
                     value={this.state.review}
                 />
             </React.Fragment>);

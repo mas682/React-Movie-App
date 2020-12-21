@@ -7,23 +7,27 @@
 }
 /* below is for the scroll bar on the pop up */
 /* width */
+.reviewInputField::-webkit-scrollbar,
 .modal::-webkit-scrollbar {
   width: 10px;
 }
 
 /* Track */
+.reviewInputField::-webkit-scrollbar-track,
 .modal::-webkit-scrollbar-track {
   box-shadow: inset 0 0 5px grey;
   border-radius: 10px;
 }
 
 /* Handle */
+.reviewInputField::-webkit-scrollbar-thumb,
 .modal::-webkit-scrollbar-thumb {
   background: DarkGray;
   border-radius: 10px;
 }
 
 /* Handle on hover */
+.reviewInputField::-webkit-scrollbar-thumb:hover,
 .modal::-webkit-scrollbar-thumb:hover {
   background: #b30000;
 }
@@ -45,7 +49,8 @@
   font-size: 12px;
   flex-flow: row wrap;
   align-content: flex-start;
-  height: 700px;
+  min-height: 450px;
+  max-height: 700px;
   position: relative;
 }
 
@@ -170,7 +175,17 @@
 /* this sets the height for the textbox for the optional review */
 /* need to combine some of this stuff */
 .reviewInputField {
-    height: 100px;
+    width: auto;
+    resize: none;
+    line-height: 18px;
+    max-height: 700px;
+    font-size: 1.3em !important;
+    font-weight: none;
+    /*
+    height: auto;
+    min-height: 100px;
+    max-height: 400px;
+    /*resize: vertical;*/
 }
 
 /* set the color for good buttons */

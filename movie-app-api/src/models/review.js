@@ -68,21 +68,21 @@ const review = (sequelize, DataTypes) => {
                 as: "user",
                 attributes: ["username", "id"]
             },
-            /*
             {
-                model: models.GoodTag,
+                model: models.MovieTag,
+                as: "goodTags",
                 // included the id to make one less query needed to find tag
                 attributes:["id", "value"],
                 // do not include the association table
                 through: {attributes: []}
             },
             {
-                model: models.BadTag,
+                model: models.MovieTag,
+                as: "badTags",
                 // included the id to make one less query needed to find tag
                 attributes: ["id", "value"],
                 through: {attributes: []}
             },
-            */
             {
 
                 model: models.User,
@@ -103,7 +103,7 @@ const review = (sequelize, DataTypes) => {
             }
 
         ];
-        let groupByArray = ["review.id", "user.username", "user.id",// "goodTags.id","badTags.id",
+        let groupByArray = ["review.id", "user.username", "user.id", "goodTags.id","badTags.id",
          "likes.id", "movie.title", "movie.id", "movie.poster"];
         // may need to eventually sort by time stamps if not doing it already
         let reviews = await Review.findAll({
@@ -167,21 +167,21 @@ const review = (sequelize, DataTypes) => {
                     as: "movie",
                     //attributes: ["title", "id", "poster"]
                 },
-                /*
                 {
-                    model: models.GoodTag,
+                    model: models.MovieTag,
+                    as: "goodTags",
                     // included the id to make one less query needed to find tag
                     attributes:["id", "value"],
                     // do not include the association table
                     through: {attributes: []}
                 },
                 {
-                    model: models.BadTag,
+                    model: models.MovieTag,
+                    as: "badTags",
                     // included the id to make one less query needed to find tag
                     attributes: ["id", "value"],
                     through: {attributes: []}
                 },
-                */
                 {
                     model: models.Comment,
                     attributes: ["id", "value", "updatedAt"],
