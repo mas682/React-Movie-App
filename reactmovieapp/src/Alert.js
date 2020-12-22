@@ -26,18 +26,46 @@ class Alert extends React.Component
     componentDidMount()
     {
         // if there is a message
+        /*
         if(this.props.message !== undefined)
         {
             // if the message is not a empty string
             if(this.props.message !== "")
             {
-                this.setState(this.addNewMessage(this.props, this.state));
+                this.setState(this.addNewMessage(this.props, this.state, this.props.message, this.props.type));
+            }
+        }
+        else if(this.props.multipleMessages !== undefined && this.props.messages !== undefined)
+        {
+            // if there are multiple values in the array
+            if(this.props.messages.length > 0 && this.props.multipleMessages)
+            {
+                let state = this.state;
+                for(let message of this.props.messages)
+                {
+                    state = this.addNewMessage(this.props, state, message.message, message.type);
+                }
+                this.setState(state);
+            }
+        }
+        */
+        if(this.props.messages !== undefined)
+        {
+            if(this.props.messages.length > 0)
+            {
+                let state = this.state;
+                for(let message of this.props.messages)
+                {
+                    state = this.addNewMessage(this.props, state, message.message, message.type);
+                }
+                this.setState(state);
             }
         }
     }
 
     async componentDidUpdate(prevProps, prevState)
     {
+        console.log(this.props);
         // if the props received indicate to reset the component
         if(this.props.messageId === -1)
         {
@@ -51,6 +79,7 @@ class Alert extends React.Component
             }
         }
         // if there is a message
+        /* old
         else if(this.props.message !== undefined)
         {
             // if the message is not a empty string
@@ -59,7 +88,48 @@ class Alert extends React.Component
                 // new message received
                 if(prevProps.message !== this.props.message || prevProps.messageId !== this.props.messageId)
                 {
-                    this.setState(this.addNewMessage(this.props, this.state));
+                    this.setState(this.addNewMessage(this.props, this.state, this.props.message, this.props.type));
+                }
+            }
+        }
+        else if(this.props.multipleMessages !== undefined && this.props.messages !== undefined)
+        {
+            console.log("HERE1");
+            // if there are multiple values in the array
+            if(Object.keys(this.props.messages).length > 0 && this.props.multipleMessages)
+            {
+                console.log("HERE2");
+                //
+                if(prevProps.messageId !== this.props.messageId)
+                {
+                    console.log("HERE3");
+                    let state = this.state;
+                    for(let message of this.props.messages)
+                    {
+                        state = this.addNewMessage(this.props, state, message.message, message.type);
+                    }
+                    this.setState(state);
+                }
+            }
+        }
+        */
+        else if(this.props.messages !== undefined)
+        {
+            console.log("messages not undefined")
+            // if there are multiple values in the array
+            if(this.props.messages.length > 0)
+            {
+                console.log("1 or more messages found");
+                // if new message(s) were received
+                if(prevProps.messageId !== this.props.messageId)
+                {
+                    console.log("message id does not match previous id");
+                    let state = this.state;
+                    for(let message of this.props.messages)
+                    {
+                        state = this.addNewMessage(this.props, state, message.message, message.type);
+                    }
+                    this.setState(state);
                 }
             }
         }
@@ -72,9 +142,10 @@ class Alert extends React.Component
     }
 
     // function to recieve a new message and update the state appropriately
-    addNewMessage(props, state)
+    addNewMessage(props, state, message, messageType)
     {
         console.log("New alert message found");
+        console.log(state);
         console.log(props);
         let messages = {...state.messages};
         // if the messageId is 0, reset the messages to none
@@ -85,7 +156,7 @@ class Alert extends React.Component
         }
         // key is the total message counter
         let messageKey = state.messageCount + 1;
-        let type = (props.type === undefined) ? "success" : props.type;
+        let type = (messageType === undefined) ? "success" : messageType;
         let messageStyle = (props.style === undefined) ? {} : props.style;
         let symbolStyle = (props.symbolStyle === undefined) ? {} : props.symbolStyle;
         let messageBoxStyle = (props.messageBoxStyle === undefined) ? {} : props.messageBoxStyle;
@@ -94,7 +165,7 @@ class Alert extends React.Component
         let timeout = (props.timeout === undefined) ? 5000 : props.timeout;
         let interval = (timeout === 0) ? undefined : setTimeout(() =>{this.timerHandler(messageKey)}, timeout);
         messages[messageKey] = {
-            message: props.message,
+            message: message,
             type: type,
             timer: interval,
             style: messageStyle,

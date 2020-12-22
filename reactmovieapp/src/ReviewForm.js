@@ -53,7 +53,12 @@ class ReviewPopUp extends React.Component {
                 reviewMaxCharacters: 6000,
                 lockGoodTags: false,
                 lockBadTags: false,
+                // set to undefined if passing multiple messages
                 message: "",
+                // if multiple messages to display at once, set this to an array of them
+                messages: undefined,
+                // if passing multiple messages set to true
+                multipleMessages: undefined,
                 messageId: -1,
                 messageType: ""
 
@@ -231,6 +236,22 @@ class ReviewPopUp extends React.Component {
     async sendReviewToServer()
     {
         event.preventDefault();
+        if(this.state.messageId === -1 || this.state.messageId === 5)
+        {
+            this.setState({
+                message: undefined,
+                messageId: 2,
+                messages: [{type: "success", message: "Success 1"}, {type: "warning", message: "warning1"}, {type: "failure", message: "failure1"}, {type: "warning", message: "warning2"}]
+            });
+        }
+        else
+        {
+            this.setState({
+                messageId: this.state.messageId + 1,
+                messages: [{type: "success", message: "Single message"}]
+            });
+        }
+        return;
         if(this.state.movie === undefined)
         {
             this.setState({
@@ -750,6 +771,7 @@ class ReviewPopUp extends React.Component {
     // function to generate all the html needed to render the popup
     generateHTML(titleInput, reviewInput, usedGoodButtonArr, usedBadButtonArr, ratingStars, submitButton, moviePoster)
     {
+        console.log(this.state);
         let html = (
                 <React.Fragment>
                     <Popup
@@ -767,8 +789,10 @@ class ReviewPopUp extends React.Component {
                             <div className={style.content}>
                                 <Alert
                                     message={this.state.message}
-                                    messageId={this.state.messageId}
                                     type={this.state.messageType}
+                                    messageId={this.state.messageId}
+                                    multipleMessages={true}
+                                    messages={this.state.messages}
                                     timeout={0}
                                     innerContainerStyle={{"z-index": "2"}}
                                     symbolStyle={{"width": "5%", "margin-top": "3px"}}
