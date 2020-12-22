@@ -33,9 +33,8 @@ class MoviePostPopUp extends React.Component {
             // by the current user
             newComment: false,
             removePost: false,
-            message: "",
-            messageId: -1,
-            messageType: ""
+            messages: "",
+            messageId: -1
         };
 
         this.closeModal = this.closeModal.bind(this);
@@ -87,6 +86,7 @@ class MoviePostPopUp extends React.Component {
         // optional message to display in parent
         if(messageState !== undefined)
         {
+            console.log(messageState);
             this.props.setMessage(messageState);
         }
         this.props.removeFunction("openPopUp", false);
@@ -140,7 +140,7 @@ class MoviePostPopUp extends React.Component {
             <Popup
                 open={this.state.open}
                 closeOnDocumentClick
-                onClose={this.closeModal}
+                onClose={() => {this.closeModal(undefined)}}
                 contentStyle={{ width: "45%"}}
             >
                 <div className={style2.modal}>
@@ -151,9 +151,8 @@ class MoviePostPopUp extends React.Component {
                     <div className={style2.content}>
                         <div className={`${style.post} ${style2.postWidth}`}>
                             <Alert
-                                message={this.state.message}
+                                messages={this.state.messages}
                                 messageId={this.state.messageId}
-                                type={this.state.messageType}
                                 style={{"text-align": "left"}}
                                 symbolStyle={{"width": "5%", "margin-top": "0px"}}
                                 messageBoxStyle={{width: "86%"}}

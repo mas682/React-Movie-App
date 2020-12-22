@@ -126,7 +126,8 @@ class CommentDisplay extends React.Component {
             this.props.updateLoggedIn(requester);
             // get the parent component to reload the comments
             this.props.updateComments();
-            this.props.setMessage({message: message, messageType: "success"});
+            this.props.setMessage({messages: [{message: message, type: "success"}]});
+
         }
         else
         {
@@ -140,7 +141,8 @@ class CommentDisplay extends React.Component {
                         comment: this.props.comment.value,
                         updateError: ""
                     });
-                    this.props.setMessage({message: message, messageType: "failure"});
+                    this.props.setMessage({messages: [{message: message, type: "failure"}]});
+
                 }
                 else
                 {
@@ -159,7 +161,7 @@ class CommentDisplay extends React.Component {
                 // comment could not be found
                 // cause comment reload
                 this.props.updateComments();
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
             }
             else
             {
@@ -208,7 +210,7 @@ class CommentDisplay extends React.Component {
             this.props.updateLoggedIn(requester);
             // get the parent component to reload the comments
             this.props.updateComments();
-            this.props.setMessage({message: message, messageType: "success"});
+            this.props.setMessage({messages: [{message: message, type: "success"}]});
         }
         else
         {
@@ -220,7 +222,8 @@ class CommentDisplay extends React.Component {
                     this.setState({
                         removeComment: false,
                     });
-                    this.props.setMessage({message: message, messageType: "failure"});
+                    this.props.setMessage({messages: [{message: message, type: "failure"}]});
+
                 }
                 else
                 {
@@ -231,7 +234,7 @@ class CommentDisplay extends React.Component {
             else if(status === 400)
             {
                 // error with comment ID format
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
             }
             else if(status === 404)
             {
@@ -239,7 +242,8 @@ class CommentDisplay extends React.Component {
                 if(message === "The review the comment was associated with could not be found")
                 {
                     this.props.removePost();
-                    this.props.closeFunction({message: message, messageType: "failure"});
+                    this.props.closeFunction({messages: [{message: message, type: "failure"}]});
+
                 }
                 else
                 {
@@ -248,7 +252,8 @@ class CommentDisplay extends React.Component {
                     this.props.updateComments();
                     // if the comment was not found may not care as it means it already
                     // does not exist?
-                    this.props.setMessage({message: message, messageType: "warning"});
+                    this.props.setMessage({messages: [{message: message, type: "warning"}]});
+
                 }
             }
             else

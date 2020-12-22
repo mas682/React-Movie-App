@@ -316,7 +316,7 @@ class MoviePost extends React.Component {
                 this.props.updateLiked(1, true);
             }
             this.props.updateLoggedIn(user);
-            this.props.setMessage({message: message, messageType: "success"});
+            this.props.setMessage({messages: [{message: message, type: "success"}]});
         }
         else
         {
@@ -333,7 +333,7 @@ class MoviePost extends React.Component {
                         liked: true,
                         likeCount: newCount
                     });
-                    this.props.setMessage({message: message, messageType: "info"});
+                    this.props.setMessage({messages: [{message: message, type: "info"}]});
                     if(this.state.type === "popup")
                     {
                         this.props.updateLiked(-1, false);
@@ -344,7 +344,7 @@ class MoviePost extends React.Component {
                     this.setState({
                         currentUser: user,
                     });
-                    this.props.setMessage({message: message, messageType: "failure"});
+                    this.props.setMessage({messages: [{message: message, type: "failure"}]});
                 }
             }
             else if(status === 401)
@@ -360,14 +360,14 @@ class MoviePost extends React.Component {
             else if(status === 404)
             {
                 // review not found on server
-                this.removeFunction({message: message, messageType: "failure"});
+                this.removeFunction({messages: [{message: message, type: "failure"}]});
             }
             else
             {
                 this.setState({
                     currentUser: user,
                 });
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
             }
         }
     }
@@ -388,7 +388,7 @@ class MoviePost extends React.Component {
                 this.props.updateLiked(-1, false);
             }
             this.props.updateLoggedIn(user);
-            this.props.setMessage({message: message, messageType: "success"});
+            this.props.setMessage({messages: [{message: message, type: "success"}]});
         }
         else
         {
@@ -405,7 +405,7 @@ class MoviePost extends React.Component {
                         liked: false,
                         likeCount: newCount
                     });
-                    this.props.setMessage({message: message, messageType: "info"});
+                    this.props.setMessage({messages: [{message: message, type: "info"}]});
                     if(this.state.type === "popup")
                     {
                         this.props.updateLiked(-1, false);
@@ -416,7 +416,7 @@ class MoviePost extends React.Component {
                     this.setState({
                         currentUser: user
                     });
-                    this.props.setMessage({message: message, messageType: "warning"});
+                    this.props.setMessage({messages: [{message: message, type: "warning"}]});
 
                 }
                 this.props.updateLoggedIn(user);
@@ -434,11 +434,11 @@ class MoviePost extends React.Component {
             else if(status === 404)
             {
                 // review could not be found
-                this.removeFunction({message: message, messageType: "failure"});
+                this.removeFunction({messages: [{message: message, type: "failure"}]});
             }
             else
             {
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
                 this.setState({
                     currentUser: user
                 });
@@ -541,7 +541,7 @@ class MoviePost extends React.Component {
     {
         if(status === 200)
         {
-            this.removeFunction({message: message, messageType: "success"});
+            this.removeFunction({messages: [{message: message, type: "success"}]});
             this.props.updateLoggedIn(user);
         }
         else
@@ -550,12 +550,12 @@ class MoviePost extends React.Component {
             {
                 // bad format to movie id
                 this.props.updateLoggedIn(user);
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
             }
             else if(status === 404)
             {
                 // review not found so remove it
-                this.removeFunction({message: message, messageType: "info"});
+                this.removeFunction({messages: [{message: message, type: "info"}]});
                 this.props.updateLoggedIn(user);
                 if(this.state.type === "popup")
                 {
@@ -570,7 +570,7 @@ class MoviePost extends React.Component {
                 if(message === "You cannot remove another users post")
                 {
                     this.props.updateLoggedIn(user);
-                    this.props.setMessage({message: message, messageType: "failure"});
+                    this.props.setMessage({messages: [{message: message, type: "failure"}]});
                     // may want to use the remove post handler instead..?
                     this.setState({
                         removePost: false
@@ -590,7 +590,7 @@ class MoviePost extends React.Component {
             }
             else
             {
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
                 this.props.updateLoggedIn(user);
             }
         }

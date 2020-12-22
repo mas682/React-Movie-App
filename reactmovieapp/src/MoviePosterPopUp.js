@@ -9,7 +9,7 @@ class MoviePosterPopUp extends React.Component {
 		super(props);
 		this.state = {
 			open: true,
-      posterPath: this.props.posterPath
+      		posterPath: this.props.posterPath
 		};
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);

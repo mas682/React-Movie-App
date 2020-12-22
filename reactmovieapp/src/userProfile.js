@@ -25,9 +25,8 @@ class UserProfile extends React.Component {
             followerCountChange: 0,
             currentUser: this.props.currentUser,
             redirect: false,
-            message: "",
+            messages: "",
             messageId: -1,
-            messageType: "",
             showErrorPage: false,
             errorMessage: ""
         }
@@ -125,14 +124,15 @@ class UserProfile extends React.Component {
         return {
             username: param,
             currentUser: currentUser,
-            message: "",
-            messageId: -1,
-            messageType: ""
+            messages: undefined,
+            messageId: -1
         };
     }
 
     setMessage(messageState)
     {
+        console.log(messageState);
+        console.log(generateMessageState(messageState, this.state.messageId));
         this.setState(generateMessageState(messageState, this.state.messageId));
     }
 
@@ -161,9 +161,8 @@ class UserProfile extends React.Component {
         return (
             <React.Fragment>
                 <Alert
-                    message={this.state.message}
+                    messages={this.state.messages}
                     messageId={this.state.messageId}
-                    type={this.state.messageType}
                 />
                 <div className={style5.mainBodyContainer}>
                     <ProfileHeader

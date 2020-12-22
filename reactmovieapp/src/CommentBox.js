@@ -85,7 +85,7 @@ class CommentBox extends React.Component {
                 // remove the post from the moviePost component
                 this.props.removePost();
                 // close the popup and display the message on the screen
-                this.props.closeFunction({message: message, messageType: "failure"});
+                this.props.closeFunction({messages: [{message: message, type: "failure"}]});
 
             }
             else

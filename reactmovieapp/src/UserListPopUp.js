@@ -25,9 +25,8 @@ class UserListPopUp extends React.Component {
                 type: this.props.type,
                 loading: true,
                 redirectToHome: false,
-                message: "",
-                messageId: 0,
-                messageType: ""
+                messages: "",
+                messageId: 0
             };
         }
         else
@@ -44,9 +43,8 @@ class UserListPopUp extends React.Component {
                 reviewId: this.props.reviewId,
                 loading: true,
                 redirectToHome: false,
-                message: "",
-                messageId: 0,
-                messageType: ""
+                messages: "",
+                messageId: 0
             };
         }
         this.closeModal = this.closeModal.bind(this);
@@ -168,7 +166,7 @@ class UserListPopUp extends React.Component {
             // if this is for Likes on a post, this will update the like count
             // if it has changed since the page loaded
             this.props.changeFunction(result[1].users.length);
-            this.props.setMessage({message: message, messageType: "success"});
+            this.props.setMessage({messages: [{message: message, type: "success"}]});
         }
         else
         {
@@ -187,7 +185,7 @@ class UserListPopUp extends React.Component {
                     loading: false,
                     loggedInUser: user
                 });
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
                 this.closeModal();
             }
             else if(status === 404)
@@ -197,8 +195,7 @@ class UserListPopUp extends React.Component {
                     loading: false,
                     loggedInUser: user
                 });
-                this.props.removePost({message: message, messageType: "failure"});
-                //this.props.setMessage({message: message, messageType: "failure"});
+                this.props.removePost({messages: [{message: message, type: "failure"}]});
                 this.closeModal();
             }
             else
@@ -206,7 +203,7 @@ class UserListPopUp extends React.Component {
                 this.setState({
                     loading: false
                 });
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
                 this.closeModal();
             }
         }
@@ -315,9 +312,8 @@ class UserListPopUp extends React.Component {
                     &times;
                     </button>
                     <Alert
-                        message={this.state.message}
+                        messages={this.state.messages}
                         messageId={this.state.messageId}
-                        type={this.state.messageType}
                         symbolStyle={{"width": "5%", "margin-top": "0px"}}
                         messageBoxStyle={{width: "86%"}}
                         closeButtonStyle={{width: "5%", "margin-top": "0px"}}

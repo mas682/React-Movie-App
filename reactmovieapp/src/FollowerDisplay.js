@@ -88,7 +88,7 @@ class FollowerDisplay extends React.Component {
                     this.props.updateFollowersFunction(1);
                 }
             }
-            this.props.showMessage({message: message, messageType: "success"});
+            this.props.showMessage({messages: [{message: message, type: "success"}]});
         }
         else if(status === 401)
         {
@@ -102,14 +102,16 @@ class FollowerDisplay extends React.Component {
                 loggedInUser: loggedInUser,
                 user: null
             });
-            this.props.showMessage({message: message, messageType: "failure"});
+            this.props.showMessage({messages: [{message: message, type: "failure"}]});
+
         }
         else if(status === 400 && message === "User cannot follow themself")
         {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.showMessage({message: message, messageType: "warning"});
+            this.props.showMessage({messages: [{message: message, type: "warning"}]});
+
         }
         else if(status === 400 && message === "You already follow the user")
         {
@@ -117,21 +119,23 @@ class FollowerDisplay extends React.Component {
                 following: true,
                 loggedInUser: loggedInUser
             });
-            this.props.showMessage({message: message, messageType: "info"});
+            this.props.showMessage({messages: [{message: message, type: "info"}]});
+
         }
         else if(status === 400 && message === "Username to follow is invalid")
         {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.showMessage({message: message, messageType: "failure"});
+            this.props.showMessage({messages: [{message: message, type: "failure"}]});
         }
         else
         {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.showMessage({message: message, messageType: "failure"});
+            this.props.showMessage({messages: [{message: message, type: "failure"}]});
+
         }
     }
 
@@ -154,7 +158,8 @@ class FollowerDisplay extends React.Component {
             {
                 this.props.updateFollowersFunction(-1);
             }
-            this.props.showMessage({message: message, messageType: "success"});
+            this.props.showMessage({messages: [{message: message, type: "success"}]});
+
         }
         else if(status === 401)
         {
@@ -168,7 +173,7 @@ class FollowerDisplay extends React.Component {
                 loggedInUser: loggedInUser,
                 user: null
             });
-            this.props.showMessage({message: message, messageType: "failure"});
+            this.props.showMessage({messages: [{message: message, type: "failure"}]});
             // just setting user to null so no long displayed
         }
         else if(status === 400 && message === "User cannot unfollow themself")
@@ -176,7 +181,8 @@ class FollowerDisplay extends React.Component {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.showMessage({message: message, messageType: "warning"});
+            this.props.showMessage({messages: [{message: message, type: "warning"}]});
+
         }
         else if(status === 400 && message === "You already do not follow the user")
         {
@@ -184,21 +190,23 @@ class FollowerDisplay extends React.Component {
                 following: false,
                 loggedInUser: loggedInUser
             });
-            this.props.showMessage({message: message, messageType: "info"});
+            this.props.showMessage({messages: [{message: message, type: "info"}]});
+
         }
         else if(status === 400 && message === "Username to unfollow is invalid")
         {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.showMessage({message: message, messageType: "failure"});
+            this.props.showMessage({messages: [{message: message, type: "failure"}]});
+
         }
         else
         {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.showMessage({message: message, messageType: "failure"});
+            this.props.showMessage({messages: [{message: message, type: "failure"}]});
         }
     }
 

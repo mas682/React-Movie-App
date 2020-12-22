@@ -64,8 +64,7 @@ class MoviePostDisplay extends React.Component {
                 loading: false
             });
             this.props.setMessage({
-                message: message,
-                messageType: "success"
+                messages: [{type: "success", message: message}],
             });
         }
         else

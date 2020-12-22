@@ -64,7 +64,8 @@ class CommentController extends React.Component {
                 currentUser: requester
             });
             this.props.updateLoggedIn(requester);
-            //this.props.setMessage({message: message, messageType: "success"});
+            this.props.setMessage({messages: [{message: message, type: "success"}]});
+
         }
         else
         {
@@ -76,7 +77,7 @@ class CommentController extends React.Component {
             else if(status === 400)
             {
                 // reviewId invalid due to format
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
                 // stop the component from querying for data
                 clearInterval(this.state.intervalId);
                 this.setState({
@@ -89,13 +90,14 @@ class CommentController extends React.Component {
                 // remove the post from the moviePost component
                 this.props.removePost();
                 // close the popup and display the message on the screen
-                this.props.closeFunction({message: message, messageType: "failure"});
+                this.props.closeFunction({messages: [{message: message, type: "failure"}]});
+
             }
             else
             {
                 // stop the component from querying for data
                 clearInterval(this.state.intervalId);
-                this.props.setMessage({message: message, messageType: "failure"});
+                this.props.setMessage({messages: [{message: message, type: "failure"}]});
             }
         }
     }

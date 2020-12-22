@@ -232,8 +232,7 @@ class ProfileHeader extends React.Component {
                 loggedInUser: loggedInUser
             });
             this.props.setMessage({
-                message: message,
-                messageType: "success"
+                messages: [{type: "success", message: message}]
             });
         }
         else if(status === 401)
@@ -252,8 +251,7 @@ class ProfileHeader extends React.Component {
             // for now, just show error message
             // want to cause a full page rerender somehow..
             this.props.setMessage({
-                message: message,
-                messageType: "failure"
+                messages: [{type: "failure", message: message}],
             });
         }
         else if(status === 400 && message === "User cannot follow themself")
@@ -262,8 +260,7 @@ class ProfileHeader extends React.Component {
                 loggedInUser: loggedInUser
             });
             this.props.setMessage({
-                message: message,
-                messageType: "warning"
+                messages: [{type: "warning", message: message}]
             });
         }
         else if(status === 400 && message === "You already follow the user")
@@ -273,8 +270,7 @@ class ProfileHeader extends React.Component {
                 loggedInUser: loggedInUser
             });
             this.props.setMessage({
-                message: message,
-                messageType: "info"
+                messages: [{type: "info", message: message}],
             });
         }
         else
@@ -283,8 +279,7 @@ class ProfileHeader extends React.Component {
                 loggedInUser: loggedInUser
             });
             this.props.setMessage({
-                message: "Some unknown error occurred when trying to follow the user",
-                messageType: "failure"
+                messages: [{type: "failure", message: "Some unknown error occurred when trying to follow the user"}]
             });
         }
     }
@@ -302,8 +297,7 @@ class ProfileHeader extends React.Component {
                 loggedInUser: loggedInUser
             });
             this.props.setMessage({
-                message: message,
-                messageType: "success"
+                messages: [{type: "success", message: message}]
             });
         }
         else if(status === 401)
@@ -320,8 +314,7 @@ class ProfileHeader extends React.Component {
                 redirect: true
             });
             this.props.setMessage({
-                message: message,
-                messageType: "failure"
+                messages: [{type: "failure", message: message}]
             });
         }
         else if(status === 400 && message === "User cannot unfollow themself")
@@ -330,8 +323,7 @@ class ProfileHeader extends React.Component {
                 loggedInUser: loggedInUser
             });
             this.props.setMessage({
-                message: message,
-                messageType: "warning"
+                messages: [{type: "warning", message: message}]
             });
         }
         else if(status === 400 && message === "You already do not follow the user")
@@ -341,8 +333,7 @@ class ProfileHeader extends React.Component {
                 loggedInUser: loggedInUser
             });
             this.props.setMessage({
-                message: message,
-                messageType: "info"
+                messages: [{type: "info", message: message}]
             });
         }
         else
@@ -351,8 +342,7 @@ class ProfileHeader extends React.Component {
                 loggedInUser: loggedInUser
             });
             this.props.setMessage({
-                message: "Some unknown error occurred when trying to unfollow the user",
-                messageType: "failure"
+                messages: [{type: "failure", message: "Some unknown error occurred when trying to unfollow the user"}]
             });
         }
     }
