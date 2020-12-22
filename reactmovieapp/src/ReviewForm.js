@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import style from './css/reviewform.module.css';
 import SearchDropDown from './SearchDropDown.js';
-import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
+import Alert from './Alert.js';
 
 
 class ReviewPopUp extends React.Component {
@@ -50,14 +52,16 @@ class ReviewPopUp extends React.Component {
                 reviewRowCount: 6,
                 reviewMaxCharacters: 6000,
                 lockGoodTags: false,
-                lockBadTags: false
+                lockBadTags: false,
+                message: "",
+                messageId: -1,
+                messageType: ""
 
             };
         }
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.removeButtonHandler = this.removeButtonHandler.bind(this);
-        this.validateForm = this.validateForm.bind(this);
         this.sendReviewToServer = this.sendReviewToServer.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.updateReviewApi = this.updateReviewApi.bind(this);
@@ -224,36 +228,116 @@ class ReviewPopUp extends React.Component {
     }
 
     // api call when first creating a review
-    sendReviewToServer()
+    async sendReviewToServer()
     {
-        console.log(this.state);
+        event.preventDefault();
+        if(this.state.movie === undefined)
+        {
+            this.setState({
+                message: "You must select a movie",
+                messageType: "warning",
+                messageId: this.state.messageId + 1
+            })
+            return;
+        }
         // Simple POST request with a JSON body using fetch
         let goodTags = this.getTagsForApi(this.state.goodTags);
         let badTags = this.getTagsForApi(this.state.badTags);
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-                movie: this.state.movie.id,
-                rating: this.state.rating,
-                goodTags: goodTags.ids,
-                goodTagStrings: goodTags.strings,
-                badTags: badTags.ids,
-                badTagStrings: badTags.strings,
-                review: this.state.review
-            })
+        let url = "http://localhost:9000/review";
+        let params = {
+            movie: this.state.movie.id,
+            rating: this.state.rating,
+            goodTags: goodTags.ids,
+            goodTagStrings: goodTags.strings,
+            badTags: badTags.ids,
+            badTagStrings: badTags.strings,
+            review: this.state.review
         };
 
-        let status = 0;
-        return fetch("http://localhost:9000/review", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result=> {
-                console.log(result);
-                return [status, result];
+        let result = await apiPostJsonRequest(url, params);
+        let status = result[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        this.reviewCreationResultsHandler(status, message, requester, result);
+    }
+
+    reviewCreationResultsHandler(status, message, requester, result)
+    {
+        if(status === 201)
+        {
+            this.props.updateLoggedIn(requester);
+            let errorMessages = result[1].errors;
+            if(errorMessages.length > 0)
+            {
+                console.log(errorMessages);
+            }
+            // if there are error messages, want to display those somewhere?
+            // otherwise, simply show review successfully created
+            // pass it down to parent? with id so it knows new message?
+            this.setState({
+                message: message,
+                messageType: "success",
+                messageId: this.state.messageId + 1
             });
+            // call generateMessageState??
+            // redirect to users page and show review popup?
+        }
+        else
+        {
+            if(status === 401)
+            {
+                // 3 scenarios: not logged in, when creating review, user not found,
+                // and when creating tag associations user not found
+                // do not need to call updateLoggedIn as this will update it
+                this.props.showLoginPopUp(false);
+            }
+            else if(status === 400)
+            {
+                // something formatted incorrectly
+                let movie = (message === "The movie ID is invalid") ? undefined : this.state.movie;
+                this.props.updateLoggedIn(requester);
+                this.setState({
+                    message: message,
+                    messageType: "failure",
+                    messageId: this.state.messageId + 1,
+                    movie: movie
+                });
+            }
+            else if(status === 404)
+            {
+                this.props.updateLoggedIn(requester);
+                if(message === "Movie associated with the review does not exist")
+                {
+                    // review should not exist at this point but double check
+                    let movie = (message === "Movie associated with the review does not exist") ? undefined : this.state.movie;
+                    this.setState({
+                        message: message,
+                        messageType: "failure",
+                        messageId: this.state.messageId + 1,
+                        movie: movie
+                    });
+                }
+                else if(message === "Review could not be found when associating tags with the review")
+                {
+                    this.setState({
+                        message: message,
+                        messageType: "failure",
+                        messageId: this.state.messageId + 1
+                    });
+                }
+            }
+            else if(status === 500)
+            {
+                // some unknown error occurred when creating review
+                // show message
+                this.props.updateLoggedIn(requester);
+                this.setState({
+                    message: message,
+                    messageType: "failure",
+                    messageId: this.state.messageId + 1
+                });
+            }
+        }
     }
 
     // function to send update to server
@@ -323,39 +407,6 @@ class ReviewPopUp extends React.Component {
                 alert("Some unexpected error occurred trying to update the review");
             }
         });
-    }
-
-    async validateForm(event) {
-        event.preventDefault();
-        console.log(event);
-        // limit review inptu field to so many characters
-        // check to see if a movie is selected
-        if(this.state.movie === undefined)
-        {
-            alert("No movie provided");
-            return;
-        }
-
-
-        this.sendReviewToServer().then(result => {
-            let status = result[0];
-            let response = result[1];
-            if(status === 201 && response === "Review successfully created!")
-            {
-                alert("Review successfully posted");
-                this.closeModal();
-            }
-            else if(status === 401 && response === "You are not logged in")
-            {
-                // redirect to login page...
-                alert("You are not logged in");
-            }
-            else
-            {
-                alert("Some unexpected error occurred trying to post the review");
-            }
-        });
-
     }
 
     // used to update the state for the title, review, and the rating
@@ -689,7 +740,7 @@ class ReviewPopUp extends React.Component {
                         form="form2"
                         value="create_account"
                         className="submitButton"
-                        onClick={this.validateForm}
+                        onClick={this.sendReviewToServer}
                     >POST YOUR REVIEW</button>
                 </React.Fragment>);
         }
@@ -714,8 +765,18 @@ class ReviewPopUp extends React.Component {
                                 <h3 className ="inlineH3"> Movie Review </h3>
                             </div>
                             <div className={style.content}>
+                                <Alert
+                                    message={this.state.message}
+                                    messageId={this.state.messageId}
+                                    type={this.state.messageType}
+                                    timeout={0}
+                                    innerContainerStyle={{"z-index": "2"}}
+                                    symbolStyle={{"width": "5%", "margin-top": "3px"}}
+                                    messageBoxStyle={{width: "86%"}}
+                                    closeButtonStyle={{width: "5%", "margin-top": "3px"}}
+                                />
                                 {/* This will eventually be a post form */}
-                                <form id="form2" onSubmit={this.validateForm} noValidate/>
+                                <form id="form2" onSubmit={this.sendReviewToServer} noValidate/>
                                 <div className = "inputFieldContainer">
                                     {titleInput}
                                 </div>

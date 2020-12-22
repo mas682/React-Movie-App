@@ -80,6 +80,7 @@
     display: flex;
     flex-flow: row;
     justify-content: center;
+    z-index: 0;
 }
 
 .titleInputContainer {
@@ -181,11 +182,6 @@
     max-height: 700px;
     font-size: 1.3em !important;
     font-weight: none;
-    /*
-    height: auto;
-    min-height: 100px;
-    max-height: 400px;
-    /*resize: vertical;*/
 }
 
 /* set the color for good buttons */

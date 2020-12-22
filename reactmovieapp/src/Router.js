@@ -121,7 +121,7 @@ class Routes extends React.Component
         //alert("Router: " + this.state.currentUser);
         return (<React.Fragment>
             <Router>
-                <Header currentUser={this.state.currentUser} loggedIn={this.state.loggedIn} updateLoggedIn={this.updateLoggedIn} redirectOnLogin={this.state.redirect} showLoginPopUp={this.state.displayLogin} removeLoginPopUp={this.removeLoginPopUp}/>
+                <Header currentUser={this.state.currentUser} loggedIn={this.state.loggedIn} updateLoggedIn={this.updateLoggedIn} redirectOnLogin={this.state.redirect} showLoginPopUp={this.state.displayLogin} showLoginPopUpFunction={this.showLoginPopUp} removeLoginPopUp={this.removeLoginPopUp}/>
                 <main>
                     <Switch>
                         <Route exact path="/" render={(props)=> <Landing {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/>}/>

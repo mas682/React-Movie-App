@@ -11,9 +11,11 @@ class Alert extends React.Component
 {
     constructor(props) {
         super(props);
+        let innerContainerStyle = (this.props.innerContainerStyle === undefined) ? {} : this.props.innerContainerStyle;
         this.state = {
             messages: {},
-            messageCount: 0
+            messageCount: 0,
+            innerContainerStyle: innerContainerStyle
         };
         this.generateMessages = this.generateMessages.bind(this);
         this.timerHandler = this.timerHandler.bind(this);
@@ -88,6 +90,7 @@ class Alert extends React.Component
         let symbolStyle = (props.symbolStyle === undefined) ? {} : props.symbolStyle;
         let messageBoxStyle = (props.messageBoxStyle === undefined) ? {} : props.messageBoxStyle;
         let closeButtonStyle = (props.closeButtonStyle === undefined) ? {} : props.closeButtonStyle;
+        let innerContainerStyle = (this.props.innerContainerStyle === undefined) ? {} : this.props.innerContainerStyle;
         let timeout = (props.timeout === undefined) ? 5000 : props.timeout;
         let interval = (timeout === 0) ? undefined : setTimeout(() =>{this.timerHandler(messageKey)}, timeout);
         messages[messageKey] = {
@@ -101,7 +104,8 @@ class Alert extends React.Component
         };
         return {
             messages: messages,
-            messageCount: messageKey
+            messageCount: messageKey,
+            innerContainerStyle: innerContainerStyle
         };
     }
 
@@ -248,7 +252,7 @@ class Alert extends React.Component
         let messages = this.generateMessages();
         return (
             <div className={style.messagesContainer}>
-                <div className={style.messagesInnerContainer}>
+                <div className={style.messagesInnerContainer} style={this.state.innerContainerStyle}>
                     {messages}
                 </div>
             </div>

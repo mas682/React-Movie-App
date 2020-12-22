@@ -138,6 +138,7 @@ fieldset, label {
 .rating {
     border: none;
     float: left;
+    z-index: 0;
 }
 
 .rating > input { display: none; }
@@ -157,6 +158,7 @@ fieldset, label {
 .rating > label {
     color: #ddd;
     float: right;
+    position: relative;
 }
 
 /***** CSS Magic to Highlight Stars on Hover *****/

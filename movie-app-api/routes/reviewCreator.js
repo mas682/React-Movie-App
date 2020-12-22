@@ -164,7 +164,7 @@ const reviewErrorHandler = (err) =>
     {
         if(errorObject.original.constraint === "reviews_userId_fkey" || errorObject.original.constraint === "ReviewBadTags_userId_fkey")
         {
-            status = 404;
+            status = 401;
             message = "User associated with the review does not exist";
         }
         else if(errorObject.original.constraint === "reviews_movieId_fkey")
@@ -354,20 +354,23 @@ const createReviewTagAssociation = async (review, tagId, userId, type) => {
 const validateAddTagResult = (warnings, res, requester) => {
      let message = "";
      let failed = false;
+     let status;
      if(warnings.userNotFound)
      {
          failed = true;
+         status = 401;
          // if user could not be found, review should not exist
          message = "User could not be found when associating tags with the review";
      }
      else if(warnings.reviewNotFound)
      {
          failed = true;
+         status = 404;
          message = "Review could not be found when associating tags with the review";
      }
      if(failed)
      {
-        res.status(500).send({
+        res.status(status).send({
             message: message,
             requester: requester
         });

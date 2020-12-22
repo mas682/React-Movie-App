@@ -67,11 +67,13 @@ class Header extends React.Component {
 
     updateNewState(nextProps)
     {
+        let reviewFormOpen = (nextProps.showLoginPopUp) ? false : this.state.showLoginPopUp;
         this.setState({
             currentUser: nextProps.currentUser,
             loggedIn: nextProps.loggedIn,
             displaySignIn: nextProps.showLoginPopUp,
-            redirectOnLogin: nextProps.redirectOnLogin
+            redirectOnLogin: nextProps.redirectOnLogin,
+            reviewFormOpen: reviewFormOpen
         });
     }
 
@@ -161,7 +163,12 @@ class Header extends React.Component {
         let reviewForm = "";
         if(this.state.reviewFormOpen)
         {
-            reviewForm = <ReviewForm edit={false} removeFunction={this.removeReviewForm}/>;
+            reviewForm = <ReviewForm
+                            edit={false}
+                            removeFunction={this.removeReviewForm}
+                            showLoginPopUp={this.props.showLoginPopUpFunction}
+                            updateLoggedIn={this.props.updateLoggedIn}
+                        />;
         }
         let homePath = "/";
         if(this.state.currentUser !== "")
