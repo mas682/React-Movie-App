@@ -168,6 +168,7 @@ class Header extends React.Component {
                             removeFunction={this.removeReviewForm}
                             showLoginPopUp={this.props.showLoginPopUpFunction}
                             updateLoggedIn={this.props.updateLoggedIn}
+                            setMessages={this.props.setMessages}
                         />;
         }
         let homePath = "/";

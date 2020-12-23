@@ -87,7 +87,7 @@ class MoviePostPopUp extends React.Component {
         if(messageState !== undefined)
         {
             console.log(messageState);
-            this.props.setMessage(messageState);
+            this.props.setMessages(messageState);
         }
         this.props.removeFunction("openPopUp", false);
     }
@@ -107,7 +107,7 @@ class MoviePostPopUp extends React.Component {
                                 showLoginPopUp={this.props.showLoginPopUp}
                                 removePost={this.props.removePost}
                                 closeFunction={this.closeModal}
-                                setMessage={this.setMessage}
+                                setMessages={this.setMessage}
                             />;
         let commentBox = <CommentBox
                             reviewId={this.state.id}
@@ -119,17 +119,17 @@ class MoviePostPopUp extends React.Component {
                             closeFunction={this.closeModal}
                         />;
         let moviePost = <MoviePost
-            data={this.state.data}
-            type={"popup"}
-            updateLiked={this.props.updateLiked}
-            closeFunction={this.closeModal}
-            updatePost={this.props.updatePost}
-            updatePopUpState={this.changeState}
-            removePost={this.props.removePost}
-            showLoginPopUp={this.props.showLoginPopUp}
-            updateLoggedIn={this.props.updateLoggedIn}
-            setMessage={this.setMessage}
-        />;
+                            data={this.state.data}
+                            type={"popup"}
+                            updateLiked={this.props.updateLiked}
+                            closeFunction={this.closeModal}
+                            updatePost={this.props.updatePost}
+                            updatePopUpState={this.changeState}
+                            removePost={this.props.removePost}
+                            showLoginPopUp={this.props.showLoginPopUp}
+                            updateLoggedIn={this.props.updateLoggedIn}
+                            setMessages={this.setMessage}
+                        />;
         if(this.state.removePost)
         {
             commentBox = "";

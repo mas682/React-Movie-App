@@ -25,16 +25,13 @@ class UserProfile extends React.Component {
             followerCountChange: 0,
             currentUser: this.props.currentUser,
             redirect: false,
-            messages: "",
-            messageId: -1,
             showErrorPage: false,
             errorMessage: ""
-        }
+        };
         this.setPostCount = this.setPostCount.bind(this);
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
         this.updateFollowerCount = this.updateFollowerCount.bind(this);
         this.redirectToHome = this.redirectToHome.bind(this);
-        this.setMessage = this.setMessage.bind(this);
         this.showErrorPage = this.showErrorPage.bind(this);
     }
 
@@ -57,7 +54,7 @@ class UserProfile extends React.Component {
     }
 
     // called after component was updated
-    componentDidUpdate()
+    componentDidUpdate(prevProps, prevState)
     {
         // if the state is not 0, call the updateFollowingCount function to reset to 0
         // this will cause shouldComponentUpdate to be called which will return false
@@ -69,7 +66,24 @@ class UserProfile extends React.Component {
         {
             this.updateFollowerCount(0);
         }
+        else if(prevState.username !== this.state.username)
+        {
+            // need to test to make sure this works...
+            this.props.setMessages({
+                messages: undefined,
+                clearMessages: true
+            });
+        }
 
+    }
+
+    componentDidMount()
+    {
+        // clear the messages on mount
+        this.props.setMessages({
+            message: undefined,
+            clearMessages: true
+        });
     }
 
     // plan is to have movie posts follower list call the update function to
@@ -84,7 +98,6 @@ class UserProfile extends React.Component {
              || nextState.currentUser !== this.state.currentUser
              || nextState.postCount !== this.state.postCount
              || nextState.redirect === true
-             || nextState.messageId !== this.state.messageId
              || nextState.showErrorPage !== this.state.showErrorPage
          );
     }
@@ -123,17 +136,8 @@ class UserProfile extends React.Component {
     static setProfileUser = (param, currentUser) => {
         return {
             username: param,
-            currentUser: currentUser,
-            messages: undefined,
-            messageId: -1
+            currentUser: currentUser
         };
-    }
-
-    setMessage(messageState)
-    {
-        console.log(messageState);
-        console.log(generateMessageState(messageState, this.state.messageId));
-        this.setState(generateMessageState(messageState, this.state.messageId));
     }
 
     showErrorPage(message)
@@ -160,10 +164,6 @@ class UserProfile extends React.Component {
 
         return (
             <React.Fragment>
-                <Alert
-                    messages={this.state.messages}
-                    messageId={this.state.messageId}
-                />
                 <div className={style5.mainBodyContainer}>
                     <ProfileHeader
                         username={this.state.username}
@@ -174,7 +174,7 @@ class UserProfile extends React.Component {
                         showLoginPopUp={this.props.showLoginPopUp}
                         currentUser={this.state.currentUser}
                         redirectToHome={this.redirectToHome}
-                        setMessage={this.setMessage}
+                        setMessages={this.props.setMessages}
                         showErrorPage={this.showErrorPage}
                     />
                     <MoviePostDisplay
@@ -186,7 +186,7 @@ class UserProfile extends React.Component {
                         showLoginPopUp={this.props.showLoginPopUp}
                         currentUser={this.state.currentUser}
                         redirectToHome={this.redirectToHome}
-                        setMessage={this.setMessage}
+                        setMessages={this.props.setMessages}
                         showErrorPage={this.showErrorPage}
                     />
                 </div>

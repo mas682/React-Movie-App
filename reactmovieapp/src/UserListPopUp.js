@@ -166,7 +166,7 @@ class UserListPopUp extends React.Component {
             // if this is for Likes on a post, this will update the like count
             // if it has changed since the page loaded
             this.props.changeFunction(result[1].users.length);
-            this.props.setMessage({messages: [{message: message, type: "success"}]});
+            this.props.setMessages({messages: [{message: message, type: "success"}]});
         }
         else
         {
@@ -185,7 +185,7 @@ class UserListPopUp extends React.Component {
                     loading: false,
                     loggedInUser: user
                 });
-                this.props.setMessage({messages: [{message: message, type: "failure"}]});
+                this.props.setMessages({messages: [{message: message, type: "failure"}]});
                 this.closeModal();
             }
             else if(status === 404)
@@ -203,7 +203,7 @@ class UserListPopUp extends React.Component {
                 this.setState({
                     loading: false
                 });
-                this.props.setMessage({messages: [{message: message, type: "failure"}]});
+                this.props.setMessages({messages: [{message: message, type: "failure"}]});
                 this.closeModal();
             }
         }

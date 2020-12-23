@@ -176,7 +176,7 @@ class MovieDisplayPopUp extends React.Component {
         {
             this.props.removeMovieDisplay(this.state.index);
             this.props.updateLoggedIn(requester);
-            this.props.setMessage(result.messageState);
+            this.props.setMessages(result.messageState);
         }
         else
         {

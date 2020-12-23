@@ -11,6 +11,8 @@ import MovieInfoPage from'./MovieInfoPage.js';
 import Header from './Header.js';
 import MovieFilterPage from './MovieFilterPages.js';
 import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import Alert from './Alert.js';
+import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
 
 class Routes extends React.Component
 {
@@ -20,11 +22,15 @@ class Routes extends React.Component
             currentUser: "",
             loggedIn: null,
             displayLogin: false,
-            redirect: true
+            redirect: true,
+            messages: [],
+            messageId: -1,
+            clearMessages: false
         });
         this.updateLoggedIn = this.updateLoggedIn.bind(this);
         this.showLoginPopUp = this.showLoginPopUp.bind(this);
         this.removeLoginPopUp = this.removeLoginPopUp.bind(this);
+        this.setMessages = this.setMessages.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState)
@@ -105,6 +111,37 @@ class Routes extends React.Component
         }
     }
 
+    setMessages(messageState)
+    {
+        let state = {...messageState};
+        if(state.messages !== undefined)
+        {
+            let messageCount = this.state.messageId + state.messages.length;
+            state.messageId = messageCount;
+        }
+        else if(state.clearMessages !== undefined)
+        {
+            // if messages was undefined and clearMessages set to true, reset id to clear all messages
+            if(state.clearMessages)
+            {
+                state.messageId = -1;
+            }
+        }
+        else
+        {
+            return;
+        }
+        if(state.clearMessages === undefined)
+        {
+            state.clearMessages = false;
+        }
+        // will have to do some error handling around swithcing pages..
+        // need to deal with clearMessages....
+        // preferably in the generateMessageState function
+        console.log(state);
+        this.setState(state);
+    }
+
     async componentDidMount()
     {
         // on mount, see who is logged in as the app doesn't know at this point
@@ -121,18 +158,33 @@ class Routes extends React.Component
         //alert("Router: " + this.state.currentUser);
         return (<React.Fragment>
             <Router>
-                <Header currentUser={this.state.currentUser} loggedIn={this.state.loggedIn} updateLoggedIn={this.updateLoggedIn} redirectOnLogin={this.state.redirect} showLoginPopUp={this.state.displayLogin} showLoginPopUpFunction={this.showLoginPopUp} removeLoginPopUp={this.removeLoginPopUp}/>
+                <Header
+                    currentUser={this.state.currentUser}
+                    loggedIn={this.state.loggedIn}
+                    updateLoggedIn={this.updateLoggedIn}
+                    redirectOnLogin={this.state.redirect}
+                    showLoginPopUp={this.state.displayLogin}
+                    showLoginPopUpFunction={this.showLoginPopUp}
+                    removeLoginPopUp={this.removeLoginPopUp}
+                    setMessages={this.setMessages}
+                />
                 <main>
+                    <Alert
+                        messages={this.state.messages}
+                        messageId={this.state.messageId}
+                        clearMessages={this.state.clearMessages}
+                        timeout={0}
+                    />
                     <Switch>
                         <Route exact path="/" render={(props)=> <Landing {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/>}/>
-                        <Route exact path="/watch_list" render={(props)=> <MovieFilterPage {...props} type="My Watch List" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser}/>}/>
-                        <Route exact path="/watched_list" render={(props)=> <MovieFilterPage {...props} type="My Watched Movies" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser}/>}/>
-                        <Route exact path="/upcoming" render={(props)=> <MovieFilterPage {...props} type="Upcoming Movies" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser}/>}/>
-                        <Route exact path="/new_releases" render={(props)=> <MovieFilterPage {...props} type="New Releases" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser}/>}/>
-                        <Route exact path="/profile/:id" render={()=> <UserProfile updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} removeLoginPopUp={this.removeLoginPopUp} currentUser={this.state.currentUser}/> } />
+                        <Route exact path="/watch_list" render={(props)=> <MovieFilterPage {...props} type="My Watch List" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
+                        <Route exact path="/watched_list" render={(props)=> <MovieFilterPage {...props} type="My Watched Movies" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
+                        <Route exact path="/upcoming" render={(props)=> <MovieFilterPage {...props} type="Upcoming Movies" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
+                        <Route exact path="/new_releases" render={(props)=> <MovieFilterPage {...props} type="New Releases" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
+                        <Route exact path="/profile/:id" render={()=> <UserProfile updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} removeLoginPopUp={this.removeLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/> } />
                         <Route exact path="/profile/:id/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/> } />
-                        <Route exact path="/settings" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn}/>} />
-                        <Route exact path="/movie/:id" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser}/>} />
+                        <Route exact path="/settings" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn} setMessages={this.setMessages}/>} />
+                        <Route exact path="/movie/:id" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
                     </Switch>
                 </main>
             </Router>

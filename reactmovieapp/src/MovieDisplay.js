@@ -125,7 +125,7 @@ class MovieDisplay extends React.Component {
                 {
                     this.props.removeMovieDisplay(this.state.index);
                     this.props.updateLoggedIn(requester);
-                    this.props.setMessage(result.messageState);
+                    this.props.setMessages(result.messageState);
                     return;
                 }
             }
@@ -144,7 +144,7 @@ class MovieDisplay extends React.Component {
                 {
                     this.props.removeMovieDisplay(this.state.index);
                     this.props.updateLoggedIn(requester);
-                    this.props.setMessage(result.messageState);
+                    this.props.setMessages(result.messageState);
                     return;
                 }
             }
@@ -154,7 +154,7 @@ class MovieDisplay extends React.Component {
         {
             this.props.removeMovieDisplay(this.state.index);
             this.props.updateLoggedIn(requester);
-            this.props.setMessage(result.messageState);
+            this.props.setMessages(result.messageState);
         }
         else
         {
@@ -168,7 +168,7 @@ class MovieDisplay extends React.Component {
                 if(result.messageState !== undefined)
                 {
                     console.log("Set message");
-                    this.props.setMessage(result.messageState)
+                    this.props.setMessages(result.messageState)
                 }
                 this.setState(result.state);
                 this.props.updateLoggedIn(requester);
@@ -204,7 +204,7 @@ class MovieDisplay extends React.Component {
                             showLoginPopUp = {this.props.showLoginPopUp}
                             type = {this.state.type}
                             updateParentState = {this.updateState}
-                            setMessage={this.props.setMessage}
+                            setMessages={this.props.setMessages}
                         />;
         }
         let watchListIcon = generateWatchListButton(style, this.buttonHandler, this.state.watchList);

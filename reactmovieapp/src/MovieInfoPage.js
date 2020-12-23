@@ -26,7 +26,6 @@ class MovieInfoPage extends React.Component {
               if(isNaN(id))
               {
                   id = null;
-                  alert("Invalid movie id provided");
               }
           }
           this.state = {
@@ -42,8 +41,7 @@ class MovieInfoPage extends React.Component {
               currentUser: this.props.currentUser,
               watchList: false,
               watched: false,
-              messages: [],
-              messageId: -1,
+              errorMessage: "",
               loading: true
           }
           this.generateMoviePoster = this.generateMoviePoster.bind(this);
@@ -91,7 +89,6 @@ class MovieInfoPage extends React.Component {
       // function to handle call to api and result
       async updateMovieInfo(value)
       {
-          alert("Update movie info called");
           let url = "http://localhost:9000/movie/" + value;
           let movieData = await apiGetJsonRequest(url)
           let status = movieData[0];
@@ -128,9 +125,11 @@ class MovieInfoPage extends React.Component {
                 watchList: watchList,
                 watched: watched,
                 url: newUrl,
-                messages: [{message: message, type: "success"}],
-                messageId: this.state.messageId + 1,
                 loading: false
+              });
+              this.props.setMessages({
+                  messages: [{message: message, type: "success"}],
+                  clearMessages: true
               });
               this.props.updateLoggedIn(requester);
           }
@@ -143,8 +142,7 @@ class MovieInfoPage extends React.Component {
                   // redirect to 400 page?
                   this.setState({
                       movie: undefined,
-                      messages: [{message: message, type: "failure"}],
-                      messageId: this.state.messageId + 1
+                      errorMessage: message
                   });
               }
               else if(status === 404)
@@ -153,16 +151,14 @@ class MovieInfoPage extends React.Component {
                   // show error message
                   this.setState({
                       movie: undefined,
-                      messages: [{message: message, type: "failure"}],
-                      messageId: this.state.messageId + 1
+                      errorMessage: message
                   });
               }
               else
               {
                   this.setState({
                       movie: undefined,
-                      messages: [{message: message, type: "failure"}],
-                      messageId: this.state.messageId + 1
+                      errorMessage: message
                   });
               }
           }
@@ -239,7 +235,7 @@ class MovieInfoPage extends React.Component {
               this.setState({
                   movie: undefined,
                   // set the message to display on the 404 page
-                  message: message
+                  errorMessage: message
               });
           }
           else
@@ -254,8 +250,7 @@ class MovieInfoPage extends React.Component {
                   let state = result.state;
                   if(result.messageState !== undefined)
                   {
-                      let newState = generateMessageState(result.messageState, this.state.messageId);
-                      state = {...result.state, ...newState};
+                      this.props.setMessages(result.messageState);
                   }
                   this.setState(state);
                   this.props.updateLoggedIn(requester);
@@ -286,7 +281,7 @@ class MovieInfoPage extends React.Component {
         // if the movie is undefined, some error occurred trying to retrieve it
         if(this.state.movie === undefined)
         {
-            return getErrorDisplay(this.state.message);
+            return getErrorDisplay(this.state.errorMessage);
         }
         if(this.state.redirect404)
         {
@@ -315,10 +310,6 @@ class MovieInfoPage extends React.Component {
         console.log(this.state);
     	return (
           <React.Fragment>
-              <Alert
-                messages={this.state.messages}
-                messageId={this.state.messageId}
-              />
               <div className={style.mainBodyContainer}>
                   <div className={style.headerContainer} style={headerBackgroundCss}>
                       {poster}

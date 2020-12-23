@@ -231,7 +231,7 @@ class ProfileHeader extends React.Component {
                 followerCount: value,
                 loggedInUser: loggedInUser
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "success", message: message}]
             });
         }
@@ -250,7 +250,7 @@ class ProfileHeader extends React.Component {
             });
             // for now, just show error message
             // want to cause a full page rerender somehow..
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "failure", message: message}],
             });
         }
@@ -259,7 +259,7 @@ class ProfileHeader extends React.Component {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "warning", message: message}]
             });
         }
@@ -269,7 +269,7 @@ class ProfileHeader extends React.Component {
                 following: true,
                 loggedInUser: loggedInUser
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "info", message: message}],
             });
         }
@@ -278,7 +278,7 @@ class ProfileHeader extends React.Component {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "failure", message: "Some unknown error occurred when trying to follow the user"}]
             });
         }
@@ -296,7 +296,7 @@ class ProfileHeader extends React.Component {
                 followerCount: value,
                 loggedInUser: loggedInUser
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "success", message: message}]
             });
         }
@@ -313,7 +313,7 @@ class ProfileHeader extends React.Component {
                 loggedInUser: loggedInUser,
                 redirect: true
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "failure", message: message}]
             });
         }
@@ -322,7 +322,7 @@ class ProfileHeader extends React.Component {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "warning", message: message}]
             });
         }
@@ -332,7 +332,7 @@ class ProfileHeader extends React.Component {
                 following: false,
                 loggedInUser: loggedInUser
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "info", message: message}]
             });
         }
@@ -341,7 +341,7 @@ class ProfileHeader extends React.Component {
             this.setState({
                 loggedInUser: loggedInUser
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "failure", message: "Some unknown error occurred when trying to unfollow the user"}]
             });
         }

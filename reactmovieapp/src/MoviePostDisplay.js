@@ -63,7 +63,7 @@ class MoviePostDisplay extends React.Component {
                 currentUser: user,
                 loading: false
             });
-            this.props.setMessage({
+            this.props.setMessages({
                 messages: [{type: "success", message: message}],
             });
         }
@@ -125,7 +125,7 @@ class MoviePostDisplay extends React.Component {
                             updateFollowersFunction={this.props.updateFollowersFunction}
                             showLoginPopUp={this.props.showLoginPopUp}
                             updateLoggedIn={this.props.updateLoggedIn}
-                            setMessage={this.props.setMessage}
+                            setMessages={this.props.setMessages}
                         />);
         });
         return (<React.Fragment>{posts}</React.Fragment>);

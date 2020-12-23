@@ -56,11 +56,8 @@ class ReviewPopUp extends React.Component {
                 // set to undefined if passing multiple messages
                 message: "",
                 // if multiple messages to display at once, set this to an array of them
-                messages: undefined,
-                // if passing multiple messages set to true
-                multipleMessages: undefined,
-                messageId: -1,
-                messageType: ""
+                messages: [],
+                messageId: -1
 
             };
         }
@@ -236,27 +233,14 @@ class ReviewPopUp extends React.Component {
     async sendReviewToServer()
     {
         event.preventDefault();
-        if(this.state.messageId === -1 || this.state.messageId === 5)
-        {
-            this.setState({
-                message: undefined,
-                messageId: 2,
-                messages: [{type: "success", message: "Success 1"}, {type: "warning", message: "warning1"}, {type: "failure", message: "failure1"}, {type: "warning", message: "warning2"}]
-            });
-        }
-        else
-        {
-            this.setState({
-                messageId: this.state.messageId + 1,
-                messages: [{type: "success", message: "Single message"}]
-            });
-        }
+        this.props.setMessages({
+            messages: [{message: "Review message test", type: "warning"}]
+        });
         return;
         if(this.state.movie === undefined)
         {
             this.setState({
-                message: "You must select a movie",
-                messageType: "warning",
+                messages: [{message: "You must select a movie", type: "warning"}],
                 messageId: this.state.messageId + 1
             })
             return;
@@ -288,17 +272,16 @@ class ReviewPopUp extends React.Component {
         {
             this.props.updateLoggedIn(requester);
             let errorMessages = result[1].errors;
-            if(errorMessages.length > 0)
+            let messages = [{message: message, type: "success"}];
+            let messageCount = this.state.messageId + 1;
+            for(let error of errorMessages)
             {
-                console.log(errorMessages);
+                messages.push({message: error, type: "warning"});
+                messageCount = messageCount + 1;
             }
-            // if there are error messages, want to display those somewhere?
-            // otherwise, simply show review successfully created
-            // pass it down to parent? with id so it knows new message?
             this.setState({
-                message: message,
-                messageType: "success",
-                messageId: this.state.messageId + 1
+                messages: messages,
+                messageId: messageCount
             });
             // call generateMessageState??
             // redirect to users page and show review popup?
@@ -318,8 +301,7 @@ class ReviewPopUp extends React.Component {
                 let movie = (message === "The movie ID is invalid") ? undefined : this.state.movie;
                 this.props.updateLoggedIn(requester);
                 this.setState({
-                    message: message,
-                    messageType: "failure",
+                    messages: [{message: message, type: "failure"}],
                     messageId: this.state.messageId + 1,
                     movie: movie
                 });
@@ -332,8 +314,7 @@ class ReviewPopUp extends React.Component {
                     // review should not exist at this point but double check
                     let movie = (message === "Movie associated with the review does not exist") ? undefined : this.state.movie;
                     this.setState({
-                        message: message,
-                        messageType: "failure",
+                        messages: [{message: message, type: "failure"}],
                         messageId: this.state.messageId + 1,
                         movie: movie
                     });
@@ -341,8 +322,7 @@ class ReviewPopUp extends React.Component {
                 else if(message === "Review could not be found when associating tags with the review")
                 {
                     this.setState({
-                        message: message,
-                        messageType: "failure",
+                        messages: [{message: message, type: "failure"}],
                         messageId: this.state.messageId + 1
                     });
                 }
@@ -353,8 +333,7 @@ class ReviewPopUp extends React.Component {
                 // show message
                 this.props.updateLoggedIn(requester);
                 this.setState({
-                    message: message,
-                    messageType: "failure",
+                    messages: [{message: message, type: "failure"}],
                     messageId: this.state.messageId + 1
                 });
             }
@@ -788,11 +767,8 @@ class ReviewPopUp extends React.Component {
                             </div>
                             <div className={style.content}>
                                 <Alert
-                                    message={this.state.message}
-                                    type={this.state.messageType}
-                                    messageId={this.state.messageId}
-                                    multipleMessages={true}
                                     messages={this.state.messages}
+                                    messageId={this.state.messageId}
                                     timeout={0}
                                     innerContainerStyle={{"z-index": "2"}}
                                     symbolStyle={{"width": "5%", "margin-top": "3px"}}

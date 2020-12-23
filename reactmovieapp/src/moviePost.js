@@ -316,7 +316,7 @@ class MoviePost extends React.Component {
                 this.props.updateLiked(1, true);
             }
             this.props.updateLoggedIn(user);
-            this.props.setMessage({messages: [{message: message, type: "success"}]});
+            this.props.setMessages({messages: [{message: message, type: "success"}]});
         }
         else
         {
@@ -333,7 +333,7 @@ class MoviePost extends React.Component {
                         liked: true,
                         likeCount: newCount
                     });
-                    this.props.setMessage({messages: [{message: message, type: "info"}]});
+                    this.props.setMessages({messages: [{message: message, type: "info"}]});
                     if(this.state.type === "popup")
                     {
                         this.props.updateLiked(-1, false);
@@ -344,7 +344,7 @@ class MoviePost extends React.Component {
                     this.setState({
                         currentUser: user,
                     });
-                    this.props.setMessage({messages: [{message: message, type: "failure"}]});
+                    this.props.setMessages({messages: [{message: message, type: "failure"}]});
                 }
             }
             else if(status === 401)
@@ -367,7 +367,7 @@ class MoviePost extends React.Component {
                 this.setState({
                     currentUser: user,
                 });
-                this.props.setMessage({messages: [{message: message, type: "failure"}]});
+                this.props.setMessages({messages: [{message: message, type: "failure"}]});
             }
         }
     }
@@ -388,7 +388,7 @@ class MoviePost extends React.Component {
                 this.props.updateLiked(-1, false);
             }
             this.props.updateLoggedIn(user);
-            this.props.setMessage({messages: [{message: message, type: "success"}]});
+            this.props.setMessages({messages: [{message: message, type: "success"}]});
         }
         else
         {
@@ -405,7 +405,7 @@ class MoviePost extends React.Component {
                         liked: false,
                         likeCount: newCount
                     });
-                    this.props.setMessage({messages: [{message: message, type: "info"}]});
+                    this.props.setMessages({messages: [{message: message, type: "info"}]});
                     if(this.state.type === "popup")
                     {
                         this.props.updateLiked(-1, false);
@@ -416,7 +416,7 @@ class MoviePost extends React.Component {
                     this.setState({
                         currentUser: user
                     });
-                    this.props.setMessage({messages: [{message: message, type: "warning"}]});
+                    this.props.setMessages({messages: [{message: message, type: "warning"}]});
 
                 }
                 this.props.updateLoggedIn(user);
@@ -438,7 +438,7 @@ class MoviePost extends React.Component {
             }
             else
             {
-                this.props.setMessage({messages: [{message: message, type: "failure"}]});
+                this.props.setMessages({messages: [{message: message, type: "failure"}]});
                 this.setState({
                     currentUser: user
                 });
@@ -519,7 +519,7 @@ class MoviePost extends React.Component {
             // if there is a message
             if(messageState !== undefined)
             {
-                this.props.setMessage(messageState);
+                this.props.setMessages(messageState);
             }
         }
     }
@@ -529,7 +529,6 @@ class MoviePost extends React.Component {
     {
         let url = "http://localhost:9000/review/removepost";
         let params = {reviewId: this.state.id};
-        params = {reviewId: "abc"};
         let result = await apiPostJsonRequest(url, params);
         let status = result[0];
         let message = result[1].message;
@@ -548,9 +547,10 @@ class MoviePost extends React.Component {
         {
             if(status === 400)
             {
+                console.log(this.props);
                 // bad format to movie id
                 this.props.updateLoggedIn(user);
-                this.props.setMessage({messages: [{message: message, type: "failure"}]});
+                this.props.setMessages({messages: [{message: message, type: "failure"}]});
             }
             else if(status === 404)
             {
@@ -570,7 +570,7 @@ class MoviePost extends React.Component {
                 if(message === "You cannot remove another users post")
                 {
                     this.props.updateLoggedIn(user);
-                    this.props.setMessage({messages: [{message: message, type: "failure"}]});
+                    this.props.setMessages({messages: [{message: message, type: "failure"}]});
                     // may want to use the remove post handler instead..?
                     this.setState({
                         removePost: false
@@ -590,7 +590,7 @@ class MoviePost extends React.Component {
             }
             else
             {
-                this.props.setMessage({messages: [{message: message, type: "failure"}]});
+                this.props.setMessages({messages: [{message: message, type: "failure"}]});
                 this.props.updateLoggedIn(user);
             }
         }
@@ -710,7 +710,7 @@ class MoviePost extends React.Component {
                             changeFunction={this.changeLikes}
                             updateLoggedIn={this.props.updateLoggedIn}
                             showLoginPopUp={this.props.showLoginPopUp}
-                            setMessage={this.props.setMessage}
+                            setMessages={this.props.setMessages}
                             removePost={this.removeFunction}
                         />;
         }
@@ -731,7 +731,7 @@ class MoviePost extends React.Component {
                             removePost={this.removeFunction}
                             updateLoggedIn={this.props.updateLoggedIn}
                             showLoginPopUp={this.props.showLoginPopUp}
-                            setMessage={this.props.setMessage}
+                            setMessages={this.props.setMessages}
                         />;
         }
         return postPopUp;
