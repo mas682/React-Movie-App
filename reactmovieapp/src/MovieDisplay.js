@@ -12,7 +12,6 @@ import {generateWatchListButton, generateWatchedListButton, checkMovieOnWatchLis
 class MovieDisplay extends React.Component {
     constructor(props){
         super(props);
-        //alert("HERE");
         let state = MovieDisplay.generateDisplayState(this.props);
         this.state = state;
 
@@ -205,6 +204,7 @@ class MovieDisplay extends React.Component {
                             showLoginPopUp = {this.props.showLoginPopUp}
                             type = {this.state.type}
                             updateParentState = {this.updateState}
+                            setMessage={this.props.setMessage}
                         />;
         }
         let watchListIcon = generateWatchListButton(style, this.buttonHandler, this.state.watchList);

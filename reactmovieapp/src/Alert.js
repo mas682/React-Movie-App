@@ -119,12 +119,15 @@ class Alert extends React.Component
             // if there are multiple values in the array
             if(this.props.messages.length > 0)
             {
-                console.log("1 or more messages found");
                 // if new message(s) were received
                 if(prevProps.messageId !== this.props.messageId)
                 {
-                    console.log("message id does not match previous id");
-                    let state = this.state;
+                    let state = {...this.state};
+                    if(this.props.clearMessages)
+                    {
+                        this.clearAllMessages(state.messages);
+                        state.messages = {};
+                    }
                     for(let message of this.props.messages)
                     {
                         state = this.addNewMessage(this.props, state, message.message, message.type);
@@ -142,18 +145,20 @@ class Alert extends React.Component
     }
 
     // function to recieve a new message and update the state appropriately
-    addNewMessage(props, state, message, messageType)
+    addNewMessage(props, state, message, messageType, oldMessages)
     {
         console.log("New alert message found");
         console.log(state);
         console.log(props);
         let messages = {...state.messages};
+        /*
         // if the messageId is 0, reset the messages to none
         if(props.messageId === 0)
         {
             this.clearAllMessages(state.messages);
             messages = {};
         }
+        */
         // key is the total message counter
         let messageKey = state.messageCount + 1;
         let type = (messageType === undefined) ? "success" : messageType;

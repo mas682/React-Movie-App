@@ -10,6 +10,7 @@ import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
      from './StaticFunctions/UserResultsHandlers.js';
 import SignInPopup from './SignIn.js';
 import Alert from './Alert.js';
+import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
 
 // component to display the movie poster large on screen when clicked on
 // the movies page
@@ -59,9 +60,8 @@ class MovieDisplayPopUp extends React.Component {
 			type: props.type,
 			// show the sign in pop up
 			displaySignIn: false,
-            message: "",
+            messages: [],
             messageId: -1,
-            messageType: "",
             props: props
 		};
 	}
@@ -176,6 +176,7 @@ class MovieDisplayPopUp extends React.Component {
         {
             this.props.removeMovieDisplay(this.state.index);
             this.props.updateLoggedIn(requester);
+            this.props.setMessage(result.messageState);
         }
         else
         {
@@ -187,11 +188,8 @@ class MovieDisplayPopUp extends React.Component {
             }
             else
             {
-                //this.setState(result.state);
-                let messageState = result.messageState;
-                let messageCount = this.state.messageId + 1;
-                messageState["messageId"] = messageCount;
-                console.log(messageState);
+                console.log(result);
+                let messageState = generateMessageState(result.messageState, this.state.messageId);
                 this.setState({...messageState,...result.state});
 				// if the pop up was caused because of a movie review, do not call this
 				if(this.state.type !== "Review")
@@ -228,6 +226,7 @@ class MovieDisplayPopUp extends React.Component {
 			{
 				signInForm = <SignInPopup removeFunction={this.signInRemoveFunction} redirectOnLogin={false}/>
 			}
+            console.log(this.state.messages);
     		return (
         			<div>
                         <Popup
@@ -240,9 +239,8 @@ class MovieDisplayPopUp extends React.Component {
                             <div className={style.modal}>
                                 <div className={style.content} style={headerBackgroundCss}>
                                     <Alert
-                                        message={this.state.message}
+                                        messages={this.state.messages}
                                         messageId={this.state.messageId}
-                                        type={this.state.messageType}
                                     />
                                     <div className={style.headerContainer}>
                                         {poster}

@@ -6,6 +6,7 @@ import style from './css/Movies/moviefilterpages.module.css'
 import MovieDisplay from './MovieDisplay.js';
 import { useParams } from "react-router";
 import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
 const moment = require('moment');
 
 class MovieFilterPage extends React.Component {
@@ -24,9 +25,8 @@ class MovieFilterPage extends React.Component {
             startDate: startDate,
             queryString: query,
             currentUser: this.props.currentUser,
-            message: "",
-            messageId: -1,
-            messageType: ""
+            messages: [],
+            messageId: -1
         };
         // if the query parameters were updated
         if(values.updated)
@@ -78,9 +78,9 @@ class MovieFilterPage extends React.Component {
         let result = await this.getMovies(query, props.type);
         let movies = (result.movies === undefined) ? [] : result.movies;
         let currentUser = result.currentUser;
-        let message = (result.message === undefined) ? this.state.message : result.message;
-        let messageType = (result.messageType === undefined) ? this.state.messageType : result.messageType;
+        let messages = (result.messages === undefined) ? this.state.messages : result.messages;
         let messageId = (result.messageId === undefined) ? this.state.messageId : result.messageId;
+        let clearMessages = (result.clearMessages === undefined) ? this.state.clearMessages : result.clearMessages;
         this.setState({
             header: this.props.type,
             movies: movies,
@@ -88,9 +88,9 @@ class MovieFilterPage extends React.Component {
             startDate: startDate,
             queryString: query,
             currentUser: currentUser,
-            message: message,
-            messageType: messageType,
-            messageId: messageId
+            messages: messages,
+            messageId: messageId,
+            clearMessages: clearMessages
         });
         // if the query parameters changed
         if(queryResult.updated)
@@ -299,14 +299,13 @@ class MovieFilterPage extends React.Component {
               movies: result.movies,
               currentUser: requester,
               loading: false,
-              message: message,
-              messageId: 0,
-              messageType: "success"
+              messages: [{message: message, type: "success"}],
+              messageId: this.state.messageId + 1,
+              clearMessages: true
             };
         }
         else
         {
-            alert(message);
             this.props.updateLoggedIn(requester);
             if(status === 401)
             {
@@ -316,16 +315,15 @@ class MovieFilterPage extends React.Component {
             }
             else if(status === 404)
             {
-                alert(message);
                 // if this occurs, the user was not found but this should never
                 // really occur as a 401 should come instead I think
                 return {
                     currentUser: requester,
                     loading: false,
-                    message: message,
+                    messages: [{message: message, type: "failure"}],
                     // resetting message ID to 0 as right now this means page reset/reloaded
-                    messageId: 0,
-                    messageType: "failure"
+                    clearMessages: true,
+                    messageId: this.state.messageId + 1
                 };
             }
             else
@@ -333,9 +331,9 @@ class MovieFilterPage extends React.Component {
                 return {
                     currentUser: requester,
                     loading: false,
-                    message: message,
-                    messageId: 0,
-                    messageType: "failure"
+                    messages: [{message: message, type: "failure"}],
+                    clearMessages: true,
+                    messageId: this.state.messageId + 1
                 };
             }
         }
@@ -353,9 +351,9 @@ class MovieFilterPage extends React.Component {
               movies: result.movies,
               currentUser: requester,
               loading: false,
-              message: message,
-              messageId: 0,
-              messageType: "success"
+              messages: [{message: message, type: "success"}],
+              clearMessages: true,
+              messageId: this.state.messageId + 1
             };
         }
         else
@@ -370,17 +368,17 @@ class MovieFilterPage extends React.Component {
                 return {
                     currentUser: requester,
                     loading: false,
-                    message: message,
-                    messageId: 0,
-                    messageType: "failure"
+                    messages: [{message: message, type: "failure"}],
+                    clearMessages: true,
+                    messageId: this.state.messageId + 1
                 };
             }
             else
             {
                 return {
-                    message: message,
-                    messageId: 0,
-                    messageType: "failure",
+                    messageId: this.state.messageId + 1,
+                    clearMessages: true,
+                    messages: [{message: message, type: "failure"}],
                     currentUser: requester,
                     loading: false
                 };
@@ -401,9 +399,9 @@ class MovieFilterPage extends React.Component {
 
     setMessage(messageState)
     {
-        let messageCount = this.state.messageId + 1;
-        messageState["messageId"] = messageCount;
-        this.setState(messageState);
+        let newState = generateMessageState(messageState, this.state.messageId);
+        newState["clearMessages"] = (messageState.clearMessages === undefined) ? this.state.clearMessages : messageState.clearMessages;
+        this.setState(newState);
     }
 
     generateMovieDisplays()
@@ -442,12 +440,13 @@ class MovieFilterPage extends React.Component {
         }
         let movies = this.generateMovieDisplays();
         console.log(this.state.messageId);
+        console.log(this.state);
         return (
             <React.Fragment>
                 <Alert
-                    message={this.state.message}
+                    messages={this.state.messages}
                     messageId={this.state.messageId}
-                    type={this.state.messageType}
+                    clearMessages={this.state.clearMessages}
                 />
                 <div className={style.mainBodyContainer}>
                     <div className={style.headerContainer}>

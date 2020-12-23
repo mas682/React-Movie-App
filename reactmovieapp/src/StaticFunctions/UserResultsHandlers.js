@@ -14,13 +14,12 @@ const addMovieToWatchListResultsHandler = (status, message, requester) =>
             watchList: true
         };
         messageState = {
-            message: message,
-            messageType: "success"
+            messages: [{message: message, type: "success"}],
+            clearMessages: false
         };
     }
     else
     {
-        alert(message);
         if(status === 401)
         {
             // not logged in
@@ -33,8 +32,8 @@ const addMovieToWatchListResultsHandler = (status, message, requester) =>
         {
             // request not understood as movie id in incorrect format
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
         else if(status === 404)
@@ -42,16 +41,16 @@ const addMovieToWatchListResultsHandler = (status, message, requester) =>
             // movie not found
             movieNotFound = true;
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
         else
         {
             // some unknown/unexpected error occurred
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
     }
@@ -77,8 +76,8 @@ const removeWatchListMovieResultsHandler = (status, message, requester, type) =>
         };
         removeFromDisplay = (type === "My Watch List") ? true : false;
         messageState = {
-            message: message,
-            messageType: "success"
+            messages: [{message: message, type: "success"}],
+            clearMessages: false
         }
     }
     else
@@ -95,8 +94,8 @@ const removeWatchListMovieResultsHandler = (status, message, requester, type) =>
         {
             // request not understood as movie id in incorrect format
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
         else if(status === 404)
@@ -104,16 +103,16 @@ const removeWatchListMovieResultsHandler = (status, message, requester, type) =>
             // movie not found
             movieNotFound = true;
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
         else
         {
             // some unknown/unexpected error occurred
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
     }
@@ -139,8 +138,8 @@ const addMovieToWatchedListResultsHandler = (status, message, requester) =>
             currentUser: requester
         };
         messageState = {
-            message: message,
-            messageType: "success"
+            messages: [{message: message, type: "success"}],
+            clearMessages: false
         };
     }
     else
@@ -157,8 +156,8 @@ const addMovieToWatchedListResultsHandler = (status, message, requester) =>
         {
             // request not understood as movie id in incorrect format
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
         else if(status === 404)
@@ -166,16 +165,16 @@ const addMovieToWatchedListResultsHandler = (status, message, requester) =>
             // movie not found
             movieNotFound = true;
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
         else
         {
             // some unknown/unexpected error occurred
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
     }
@@ -201,8 +200,8 @@ const removeWatchedListMovieResultsHandler = (status, message, requester, type) 
         };
         removeFromDisplay = (type === "My Watched Movies") ? true : false;
         messageState = {
-            message: message,
-            messageType: "success"
+            messages: [{message: message, type: "success"}],
+            clearMessages: false
         };
     }
     else
@@ -219,8 +218,8 @@ const removeWatchedListMovieResultsHandler = (status, message, requester, type) 
         {
             // request not understood as movie id in incorrect format
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
         else if(status === 404)
@@ -228,16 +227,16 @@ const removeWatchedListMovieResultsHandler = (status, message, requester, type) 
             // movie not found
             movieNotFound = true;
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
         else
         {
             // some unknown/unexpected error occurred
             messageState = {
-                message: message,
-                messageType: "failure"
+                messages: [{message: message, type: "failure"}],
+                clearMessages: false
             };
         }
     }
