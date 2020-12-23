@@ -11,6 +11,7 @@ import {apiPostJsonRequest, apiGetJsonRequest} from './StaticFunctions/ApiFuncti
 import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
     addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
      from './StaticFunctions/UserResultsHandlers.js';
+import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
 
 
 class MovieInfoPage extends React.Component {
@@ -41,9 +42,9 @@ class MovieInfoPage extends React.Component {
               currentUser: this.props.currentUser,
               watchList: false,
               watched: false,
-              message: "",
+              messages: [],
               messageId: -1,
-              messageType: ""
+              loading: true
           }
           this.generateMoviePoster = this.generateMoviePoster.bind(this);
           this.posterClickHandler = this.posterClickHandler.bind(this);
@@ -63,12 +64,12 @@ class MovieInfoPage extends React.Component {
               if(isNaN(id)) return;
           }
           // if the movie id changed
-          if(this.state.id !== id)
+          if(this.state.id !== id && !this.state.loading)
           {
               this.updateMovieInfo(id);
           }
           // if the logged in user changed
-          else if(this.props.currentUser !== this.state.currentUser)
+          else if(this.props.currentUser !== this.state.currentUser && !this.state.loading)
           {
               this.updateMovieInfo(id);
           }
@@ -90,12 +91,12 @@ class MovieInfoPage extends React.Component {
       // function to handle call to api and result
       async updateMovieInfo(value)
       {
+          alert("Update movie info called");
           let url = "http://localhost:9000/movie/" + value;
           let movieData = await apiGetJsonRequest(url)
           let status = movieData[0];
           let requester = movieData[1].requester;
           let message = movieData[1].message;
-          console.log(movieData[1]);
           this.movieInfoResultsHandler(status, message, requester, movieData[1]);
       }
 
@@ -126,7 +127,10 @@ class MovieInfoPage extends React.Component {
                 currentUser: requester,
                 watchList: watchList,
                 watched: watched,
-                url: newUrl
+                url: newUrl,
+                messages: [{message: message, type: "success"}],
+                messageId: this.state.messageId + 1,
+                loading: false
               });
               this.props.updateLoggedIn(requester);
           }
@@ -139,7 +143,8 @@ class MovieInfoPage extends React.Component {
                   // redirect to 400 page?
                   this.setState({
                       movie: undefined,
-                      message: message
+                      messages: [{message: message, type: "failure"}],
+                      messageId: this.state.messageId + 1
                   });
               }
               else if(status === 404)
@@ -148,14 +153,16 @@ class MovieInfoPage extends React.Component {
                   // show error message
                   this.setState({
                       movie: undefined,
-                      message: message
+                      messages: [{message: message, type: "failure"}],
+                      messageId: this.state.messageId + 1
                   });
               }
               else
               {
                   this.setState({
                       movie: undefined,
-                      message: message
+                      messages: [{message: message, type: "failure"}],
+                      messageId: this.state.messageId + 1
                   });
               }
           }
@@ -247,9 +254,8 @@ class MovieInfoPage extends React.Component {
                   let state = result.state;
                   if(result.messageState !== undefined)
                   {
-                      state = {...result.state, ...result.messageState};
-                      let messageCount = this.state.messageId + 1;
-                      state["messageId"] = messageCount;
+                      let newState = generateMessageState(result.messageState, this.state.messageId);
+                      state = {...result.state, ...newState};
                   }
                   this.setState(state);
                   this.props.updateLoggedIn(requester);
@@ -306,9 +312,13 @@ class MovieInfoPage extends React.Component {
                 posterPopup = <MoviePosterPopUp posterPath={posterPath} removeFunction={this.posterClickHandler} />;
             }
         }
+        console.log(this.state);
     	return (
           <React.Fragment>
-              <Alert message={this.state.message} messageId={this.state.messageId} type={this.state.messageType}/>
+              <Alert
+                messages={this.state.messages}
+                messageId={this.state.messageId}
+              />
               <div className={style.mainBodyContainer}>
                   <div className={style.headerContainer} style={headerBackgroundCss}>
                       {poster}
