@@ -6,7 +6,6 @@ import Popup from 'reactjs-popup';
 import style from './css/reviewform.module.css';
 import SearchDropDown from './SearchDropDown.js';
 import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
-import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
 import Alert from './Alert.js';
 
 
@@ -17,21 +16,37 @@ class ReviewPopUp extends React.Component {
         // anoter for if the user is creating a new post
         if(this.props.edit)
         {
+            console.log(this.props.data);
+            let goodTags = this.getTags(this.props.data.fullReview.goodTags);
+            let badTags = this.getTags(this.props.data.fullReview.badTags);
             this.state = {
                 // only true if editing the post
                 edit: this.props.edit,
-                open: false,
+                open: true,
                 title:this.props.data.title,
                 movie: this.props.data.movie,
-                user:this.props.data.user,
+                // the loggedin users username
+                currentUser:this.props.data.currentUser,
                 form:this.props.data.form,
+                // username for the user who posted the reveiw
                 username: this.props.data.username,
+                // id of the review post
                 id: this.props.data.id,
                 rating: this.props.data.rating,
-                usedGoodButtons: this.props.data.usedGoodButtons,
-                usedBadButtons: this.props.data.usedBadButtons,
+                // the optional review text
                 review: this.props.data.review,
-                editUpdate: false
+                // a {} containing {value: id, value: id, ...} for each of the tags
+                goodTags: goodTags,
+                badTags: badTags,
+                // for the review input field
+                reviewRowCountMin: 6,
+                reviewRowCount: 6,
+                reviewMaxCharacters: 6000,
+                // booleans to lock tag entry if 5 entered already
+                lockGoodTags: Object.keys(goodTags).length === 5,
+                lockBadTags: Object.keys(badTags).length === 5,
+                messages:  [],
+                messageId: -1
             };
         }
         else
@@ -43,8 +58,6 @@ class ReviewPopUp extends React.Component {
                 title: "",
                 movie: undefined,
                 rating: "0",
-                usedGoodButtons: [],
-                usedBadButtons: [],
                 review: "",
                 goodTags: {},
                 badTags: {},
@@ -53,15 +66,12 @@ class ReviewPopUp extends React.Component {
                 reviewMaxCharacters: 6000,
                 lockGoodTags: false,
                 lockBadTags: false,
-                // set to undefined if passing multiple messages
-                message: "",
                 // if multiple messages to display at once, set this to an array of them
                 messages: [],
                 messageId: -1
 
             };
         }
-        this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.removeButtonHandler = this.removeButtonHandler.bind(this);
         this.sendReviewToServer = this.sendReviewToServer.bind(this);
@@ -75,15 +85,23 @@ class ReviewPopUp extends React.Component {
         this.setTags = this.setTags.bind(this);
         this.generateTagButtons = this.generateTagButtons.bind(this);
         this.reviewInputHandler = this.reviewInputHandler.bind(this);
+        this.getTags = this.getTags.bind(this);
     }
 
     componentDidMount()
     {
-        if(this.state.edit)
+
+    }
+
+    // used when editing a review to generate the goodTag and badTag state objects
+    getTags(tagArray)
+    {
+        let tags = {};
+        for(let tag of tagArray)
         {
-            // call this to initi
-            this.openModal();
+            tags[tag.value] = {value: tag.value, id: tag.id};
         }
+        return tags;
     }
 
     // function to generate the arrays of tags to send to the server
@@ -216,27 +234,16 @@ class ReviewPopUp extends React.Component {
         {
             this.props.removeFunction();
         }
-        if(!this.state.edit)
-        {
-            this.setState({
-                open: false,
-                title: "",
-                rating: "",
-                review: "",
-                goodTags: {},
-                badTags: {}
-            });
-        }
+
+        this.setState({
+            open: false,
+        });
     }
 
-    // api call when first creating a review
+    // api call when creating a review
     async sendReviewToServer()
     {
         event.preventDefault();
-        this.props.setMessages({
-            messages: [{message: "Review message test", type: "warning"}]
-        });
-        return;
         if(this.state.movie === undefined)
         {
             this.setState({
@@ -283,7 +290,6 @@ class ReviewPopUp extends React.Component {
                 messages: messages,
                 messageId: messageCount
             });
-            // call generateMessageState??
             // redirect to users page and show review popup?
         }
         else
@@ -341,33 +347,38 @@ class ReviewPopUp extends React.Component {
     }
 
     // function to send update to server
-    updateReviewApi()
+    async updateReviewApi()
     {
+        event.preventDefault();
+        if(this.state.movie === undefined)
+        {
+            this.setState({
+                messages: [{message: "You must select a movie", type: "warning"}],
+                messageId: this.state.messageId + 1
+            })
+            return;
+        }
         // Simple POST request with a JSON body using fetch
         let goodTags = this.getTagsForApi(this.state.goodTags);
         let badTags = this.getTagsForApi(this.state.badTags);
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-                movie: this.state.title,
-                rating: this.state.rating,
-                good: goodString,
-                bad: badString,
-                review: this.state.review,
-                reviewId: this.state.id
-            })
+        let url = "http://localhost:9000/review/update";
+        let params = {
+            movie: this.state.movie.id,
+            rating: this.state.rating,
+            goodTags: goodTags.ids,
+            goodTagStrings: goodTags.strings,
+            badTags: badTags.ids,
+            badTagStrings: badTags.strings,
+            review: this.state.review,
+            reviewId: this.state.id
         };
 
-        let status = 0;
-        return fetch("http://localhost:9000/review/update", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.json();
-            }).then(result=> {
-                return [status, result];
-            });
+        let result = await apiPostJsonRequest(url, params);
+        let status = result[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        console.log(message);
+        this.reviewCreationResultsHandler(status, message, requester, result);
     }
 
     // function called sending request to update review to server
@@ -460,16 +471,6 @@ class ReviewPopUp extends React.Component {
         }
     }
 
-    // function called when opening the pop up
-    openModal() {
-        this.setState({ open: true });
-        // if editing, get the appropriate unused buttons based off of the buttons
-        // already in use
-        if(this.state.edit)
-        {
-        }
-    }
-
     // called by SearchDropDown to set the movie that was selected
     setMovie(value)
     {
@@ -483,37 +484,37 @@ class ReviewPopUp extends React.Component {
     // substring that the user has already entered
     getTitleSuggestions(value)
     {
-      // Simple POST request with a JSON body using fetch
-      const requestOptions = {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-      };
+        // Simple POST request with a JSON body using fetch
+        const requestOptions = {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+        };
 
-      let status = 0;
-      let url = "http://localhost:9000/movie/get_movie_titles/?title=" + value;
-      return fetch(url, requestOptions)
-          .then(res => {
-              status = res.status;
-              if(status === 200)
-              {
-                  return res.json();
-              }
-              else
-              {
-                  return res.text();
-              }
-          }).then(result=> {
-              // if suggestions could not be found
-              if(status !== 200)
-              {
-                return {};
-              }
-              else
-              {
-                  return result;
-              }
-          });
+        let status = 0;
+        let url = "http://localhost:9000/movie/get_movie_titles/?title=" + value;
+        return fetch(url, requestOptions)
+            .then(res => {
+                status = res.status;
+                if(status === 200)
+                {
+                    return res.json();
+                }
+                else
+                {
+                    return res.text();
+                }
+            }).then(result=> {
+                // if suggestions could not be found
+                if(status !== 200)
+                {
+                    return {};
+                }
+                else
+                {
+                    return result;
+                }
+            });
     }
 
     // function to get a tag suggesion based off the substring that the user has entered
@@ -521,10 +522,8 @@ class ReviewPopUp extends React.Component {
     {
         let url = "http://localhost:9000/movie/get_movie_tags/?tag=" + value;
         let result = await apiGetJsonRequest(url);
-        console.log(result);
         if(result[0] === 200)
         {
-            console.log(result[1].tags);
             return {tags: result[1].tags};
         }
         else
@@ -750,7 +749,6 @@ class ReviewPopUp extends React.Component {
     // function to generate all the html needed to render the popup
     generateHTML(titleInput, reviewInput, usedGoodButtonArr, usedBadButtonArr, ratingStars, submitButton, moviePoster)
     {
-        console.log(this.state);
         let html = (
                 <React.Fragment>
                     <Popup

@@ -138,7 +138,6 @@ class Routes extends React.Component
         // will have to do some error handling around swithcing pages..
         // need to deal with clearMessages....
         // preferably in the generateMessageState function
-        console.log(state);
         this.setState(state);
     }
 

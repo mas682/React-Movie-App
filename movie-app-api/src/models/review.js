@@ -148,6 +148,35 @@ const review = (sequelize, DataTypes) => {
         return result;
     }
 
+    Review.findByIdForUpdate = async (models, reviewId) => {
+        let reviews = await Review.findAll({
+            where: {
+                id: reviewId
+            },
+            // only get these attributes
+            // include the following models with the specified attributes
+            include:[
+                {
+                    model: models.MovieTag,
+                    as: "goodTags",
+                    // included the id to make one less query needed to find tag
+                    attributes:["id", "value"],
+                    // do not include the association table
+                    through: {attributes: []}
+                },
+                {
+                    model: models.MovieTag,
+                    as: "badTags",
+                    // included the id to make one less query needed to find tag
+                    attributes: ["id", "value"],
+                    through: {attributes: []}
+                }
+            ]
+        });
+        return reviews;
+    }
+
+
     // find a review based off its id
     Review.findByReviewId = async (models,reviewId) => {
         let reviews = await Review.findAll({

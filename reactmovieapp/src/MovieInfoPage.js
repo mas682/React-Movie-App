@@ -125,7 +125,8 @@ class MovieInfoPage extends React.Component {
                 watchList: watchList,
                 watched: watched,
                 url: newUrl,
-                loading: false
+                loading: false,
+                errorMessage: ""
               });
               this.props.setMessages({
                   messages: [{message: message, type: "success"}],
@@ -142,7 +143,8 @@ class MovieInfoPage extends React.Component {
                   // redirect to 400 page?
                   this.setState({
                       movie: undefined,
-                      errorMessage: message
+                      errorMessage: message,
+                      loading: false
                   });
               }
               else if(status === 404)
@@ -151,14 +153,16 @@ class MovieInfoPage extends React.Component {
                   // show error message
                   this.setState({
                       movie: undefined,
-                      errorMessage: message
+                      errorMessage: message,
+                      loading: false
                   });
               }
               else
               {
                   this.setState({
                       movie: undefined,
-                      errorMessage: message
+                      errorMessage: message,
+                      loading: false
                   });
               }
           }

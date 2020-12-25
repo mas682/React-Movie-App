@@ -2,6 +2,45 @@ import {validateIntegerParameter, validateStringParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 
 
+// function to run all the checks when a new review comes in or if a review update comes in
+const validateReviewParameters = (res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, checkReviewId, reviewId) =>
+{
+    // check to make sure the rating is a actual number
+    let valid = validateIntegerParameter(res, rating, requester, "The rating for the review is invalid");
+    if(!valid) return valid;
+    // check the review itself
+    valid = validateStringParameter(res, reviewText, 0, 6000, requester, "The review field is invalid");
+    if(!valid) return valid;
+    // check the movie id
+    valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
+    if(!valid) return valid;
+    // check the number of tags provided
+    let goodTagCount = goodTags.length + goodTagStrings.length;
+    valid = validateReviewTagCount(res, goodTagCount, requester, "More than 5 good tags were found");
+    if(!valid) return valid;
+    let badTagCount = badTags.length + badTagStrings.length;
+    valid = validateReviewTagCount(res, goodTagCount, requester, "More than 5 bad tags were found");
+    if(!valid) return valid;
+    // check the goodTags passed
+    valid = validateReviewTags(res, goodTags, requester);
+    if(!valid) return valid;
+    // check the badTags passed
+    valid = validateReviewTags(res, badTags, requester);
+    if(!valid) return valid;
+    // check the goodTagStrings
+    valid = validateReviewTagStrings(res, goodTagStrings, requester);
+    if(!valid) return valid;
+    // check the badTagStrings
+    valid = validateReviewTagStrings(res, badTagStrings, requester);
+    if(!valid) return valid;
+    // optional check: check the reviewId
+    if(checkReviewId)
+    {
+        valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
+    }
+    return valid;
+}
+
 // function to create a review
 // the body of the request should include:
 // rating - the rating for the movie
@@ -19,33 +58,7 @@ const createReview = async (cookie, req, res) =>
     let badTags = req.body.badTags;
     let badTagStrings = req.body.badTagStrings;
     let movieId = req.body.movie;
-    // check to make sure the rating is a actual number
-    let valid = validateIntegerParameter(res, rating, requester, "The rating for the review is invalid");
-    if(!valid) return;
-    // check the review itself
-    valid = validateStringParameter(res, reviewText, 0, 6000, requester, "The review field is invalid");
-    if(!valid) return;
-    // check the movie id
-    valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
-    if(!valid) return;
-    // check the number of tags provided
-    let goodTagCount = goodTags.length + goodTagStrings.length;
-    valid = validateReviewTagCount(res, goodTagCount, requester, "More than 5 good tags were found");
-    if(!valid) return;
-    let badTagCount = badTags.length + badTagStrings.length;
-    valid = validateReviewTagCount(res, goodTagCount, requester, "More than 5 bad tags were found");
-    if(!valid) return;
-    // check the goodTags passed
-    valid = validateReviewTags(res, goodTags, requester);
-    if(!valid) return;
-    // check the badTags passed
-    valid = validateReviewTags(res, badTags, requester);
-    if(!valid) return;
-    // check the goodTagStrings
-    valid = validateReviewTagStrings(res, goodTagStrings, requester);
-    if(!valid) return;
-    // check the badTagStrings
-    valid = validateReviewTagStrings(res, badTagStrings, requester);
+    let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, false, undefined);
     if(!valid) return;
 
     let review;
@@ -111,6 +124,215 @@ const createReview = async (cookie, req, res) =>
         });
     }
 };
+
+
+// function to update a review
+// body of request must include:
+// movieId - movie to associate with the review
+// rating - rating for movie
+// review - review for movie
+// reviewId - id of the review being updated
+// goodTags - a array of objects containing {value: value, id: id} of existing tags
+// badTags - a array of objects containing {value: value, id: id} of existing tags
+// goodTagStrings - array of tag strings to add
+// badTagStrings - array of tag strings to add
+const updateReview = async (cookie, req, res) =>
+{
+    let userId = cookie.id;
+    let requester = cookie.name;
+    let rating = req.body.rating;
+    let reviewText = req.body.review;
+    let goodTags = req.body.goodTags;
+    let goodTagStrings = req.body.goodTagStrings;
+    let badTags = req.body.badTags;
+    let badTagStrings = req.body.badTagStrings;
+    let movieId = req.body.movie;
+    let reviewId = req.body.reviewId;
+    let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, true, reviewId);
+    if(!valid) return;
+
+    let review = await models.Review.findByIdForUpdate(models, reviewId);
+    if(review === null || review === undefined || review.length < 1)
+    {
+        res.status(404).send({
+            message: "Review could not be found",
+            requester: requester
+        });
+        return;
+    }
+    review = review[0];
+    if(userId !== review.userId)
+    {
+        res.status(401).send({
+            message: "You cannot update another users review",
+            requester: requester
+        });
+        return;
+    }
+    let movieChange = (review.movieId === movieId) ? false : true;
+    // may want to set a boolean client side to see if this changed at all for efficiency
+    // otherwise, will just about always have to update..
+    let reviewChange = (review.review.legnth === 0 && reviewText.length === 0) ? false : true;
+    let result;
+    if(movieChange || reviewChange)
+    {
+        try
+        {
+            result = await review.update({
+                movieId: movieId,
+                review: reviewText
+            });
+        }
+        catch(err)
+        {
+            console.log("Error occurred updating review");
+            console.log(err);
+            res.status(500).send({
+                message: "Review update failed due to server issue",
+                requester: requester
+            });
+        }
+        if(result === undefined || result === null)
+        {
+            // update should return a updated instance of the review
+            res.status(404).send({
+                message: "Review could not be found",
+                requester: requester
+            });
+            return;
+        }
+    }
+    // if here, the review exists and was successfully updated if applicable
+    // now update the tags
+    let usedGoodTags = {};
+    let usedBadTags = {};
+    let warnings = {
+        duplicate: false,
+        tagCreationFailure: false,
+        tagAlreadyAssociated: false,
+        userNotFound: false,
+        reviewNotFound: false,
+        tagAssociationFailure: false,
+        serverError: false
+    };
+    // get the tags to remove and the new ones to associate
+    let newGoodTags = getTagsToUpdate(review.goodTags, goodTags, goodTagStrings, usedGoodTags, warnings);
+    let newBadTags = getTagsToUpdate(review.badTags, badTags, badTagStrings, usedBadTags, warnings);
+    // remove any tags that should no longer be associated
+    if(newGoodTags.tagsToRemove.length > 0)
+    {
+        // returns the number of associations removed
+        // if the number is off, it means the association didn't exist so nothing to worry about
+        // if the review does not exist, it will return 0 as well
+        await review.removeGoodTags(newGoodTags.tagsToRemove);
+    }
+    if(newBadTags.tagsToRemove.length > 0)
+    {
+        await review.removeBadTags(newBadTags.tagsToRemove);
+    }
+    // add any good tag strings
+    await addTagsToReview(newGoodTags.newTagStrings, "good", review, userId, usedGoodTags, warnings);
+    let failed = validateAddTagResult(warnings, res, requester);
+    if(failed) return;
+    // add any bad tag strings
+    await addTagsToReview(newBadTags.newTagStrings, "bad", review, userId, usedBadTags, warnings);
+    failed = validateAddTagResult(warnings, res, requester);
+    if(failed) return;
+    // add any good tags with id's
+    await addTagsToReview(newGoodTags.newTagsWithId, "good", review, userId, usedGoodTags, warnings);
+    failed = validateAddTagResult(warnings, res, requester);
+    if(failed) return;
+    // add any bad tags with id's
+    await addTagsToReview(newBadTags.newTagsWithId, "bad", review, userId, usedBadTags, warnings);
+    failed = validateAddTagResult(warnings, res, requester);
+    if(failed) return;
+    let errorMessages = generateAddTagErrorMessages(warnings);
+    console.log(warnings);
+    res.status(201).send({
+        message: "Review successfully updated",
+        requester: requester,
+        errors: errorMessages
+    });
+};
+
+
+// function to get the tags to remove and add to the review
+// used to prevent duplicates, prevent tag associations that already exist from being attempted,
+// and finds which existing tags to remove
+// existingTags are the good or bad tags that already are assocaited with the review
+// tags with id's are the tags passed in by the user that have ids
+// tagStrings are the tags passed in by the user that are string values only
+// usedTags keeps track of which tags are staying associated with the review
+// warnings is used if there are duplicate tags
+const getTagsToUpdate = (existingTags, tagsWithIds, tagStrings, usedTags, warnings) =>
+{
+    let tagsToRemove = {};
+    // get all of the good tags that previously existed
+    for(let tag of existingTags)
+    {
+        tagsToRemove[tag.value] = {value: tag.value, id: tag.id}
+    }
+
+    // hold the new tags with ID's to associate
+    let newTagsWithId = [];
+    for(let tag of tagsWithIds)
+    {
+        if(usedTags.hasOwnProperty(tag.value))
+        {
+            warnings.duplicate = true;
+            continue;
+        }
+        usedTags[tag.value] = tag.value;
+        // if the tag previously existed, remove it from the tagsToRemove
+        if(tagsToRemove.hasOwnProperty(tag.value))
+        {
+            usedTags[tag.value] = tag.value;
+            delete tagsToRemove[tag.value]
+            // 2 options: call function to remove 1 by 1
+            // or try to remove all at once?
+        }
+        else
+        {
+            if(usedTags.hasOwnProperty(tag.value))
+            {
+                warnings.duplicate = true;
+                continue;
+            }
+            // the tag did not exist, so add it to the array
+            // should actually call function to add tag here...
+            newTagsWithId.push(tag);
+        }
+    }
+
+    let newTagStrings = [];
+    for(let tag of tagStrings)
+    {
+        if(tagStrings.hasOwnProperty(tag))
+        {
+            usedTags[tag] = tag;
+            delete tagsToRemove[tag]
+        }
+        else
+        {
+            if(usedTags.hasOwnProperty(tag))
+            {
+                warnings.duplicate = true;
+                continue;
+            }
+            newTagStrings.push(tag);
+        }
+    }
+
+    // get the id's of the tags to remove
+    let tagsToRemoveKeys = Object.keys(tagsToRemove);
+    let tagsToRemoveIds = [];
+    for(let key of tagsToRemoveKeys)
+    {
+        let id = tagsToRemove[key].id;
+        tagsToRemoveIds.push(id);
+    }
+    return {tagsToRemove: tagsToRemoveIds, newTagsWithId: newTagsWithId, newTagStrings: newTagStrings};
+}
 
 // function to validate tags that are passed to the server that have a id and value
 const validateReviewTags = (res, tags, requester) =>
@@ -384,7 +606,7 @@ const generateAddTagErrorMessages = (warnings) => {
     let errors = [];
     if(warnings.duplicate || warnings.tagAlreadyAssociated)
     {
-        errors.push("Duplicate tag(s) were found during review creation");
+        errors.push("Duplicate tag(s) were found during when associating them with the review");
     }
     if(warnings.tagCreationFailure)
     {
@@ -401,4 +623,4 @@ const generateAddTagErrorMessages = (warnings) => {
     return errors;
 }
 
-export {createReview};
+export {createReview, updateReview};

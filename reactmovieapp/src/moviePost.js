@@ -14,7 +14,6 @@ import {generateRatingStars} from './StaticFunctions/MovieHtmlFunctions.js';
 class MoviePost extends React.Component {
     constructor(props) {
         super(props);
-        console.log(this.props);
         if(this.props.type === "popup")
         {
             this.state = {
@@ -40,6 +39,7 @@ class MoviePost extends React.Component {
                 usedGoodButtons: this.props.data.usedGoodButtons,
                 usedBadButtons: this.props.data.usedBadButtons,
                 review: this.props.data.review,
+                fullReview: this.props.data.fullReview,
                 time: this.props.data.time,
                 // the logged in users username
                 currentUser: this.props.data.currentUser,
@@ -81,6 +81,7 @@ class MoviePost extends React.Component {
                 usedBadButtons: MoviePost.getBadButtons(this.props.data.review.badTags),
                 // the review text
                 review: this.props.data.review.review,
+                fullReview: this.props.data.review,
                 time: this.props.data.review.createdAt,
                 // the logged in users username
                 currentUser: this.props.currentUser,
@@ -155,8 +156,6 @@ class MoviePost extends React.Component {
         {
             if((prevState.props.data.review.id !== nextProps.data.review.id) || (prevState.props.currentUser !== nextProps.currentUser))
             {
-                console.log(prevState.props);
-                console.log(nextProps);
                 alert("New props received movie post");
                 return MoviePost.newPropState(nextProps);
             }
@@ -167,7 +166,6 @@ class MoviePost extends React.Component {
         }
         else
         {
-            console.log(prevState.props);
             if((prevState.props.data.id !== nextProps.data.id) || (prevState.props.currentUser !== nextProps.currentUser))
             {
                 // need to fix newPropState..
@@ -212,6 +210,7 @@ class MoviePost extends React.Component {
             usedGoodButtons: MoviePost.getGoodButtons(props.data.review.goodTags),
             usedBadButtons: MoviePost.getBadButtons(props.data.review.badTags),
             review: props.data.review.review,
+            fullReview: props.data.review,
             time: props.data.review.createdAt,
             // the logged in users username
             currentUser: props.currentUser,
@@ -647,7 +646,12 @@ class MoviePost extends React.Component {
         let popup = "";
         if(this.state.openEdit)
         {
-            popup = <ReviewForm data={this.state} edit={true} removeFunction={this.changeState} successFunction={this.updateState}/>;
+            popup = <ReviewForm
+                        data={this.state}
+                        edit={true}
+                        removeFunction={this.changeState}
+                        successFunction={this.updateState}
+                    />;
         }
         return popup;
     }

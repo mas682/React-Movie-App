@@ -41,7 +41,6 @@ class Alert extends React.Component
 
     async componentDidUpdate(prevProps, prevState)
     {
-        console.log(this.props);
         // if the props received indicate to reset the component
         if(this.props.messageId === -1)
         {
@@ -88,8 +87,6 @@ class Alert extends React.Component
     addNewMessage(props, state, message)
     {
         console.log("New alert message found");
-        console.log(state);
-        console.log(props);
         let messages = {...state.messages};
         // key is the total message counter
         let messageKey = state.messageCount + 1;
@@ -129,7 +126,6 @@ class Alert extends React.Component
         await keys.forEach((key) => {
             if(messages[key] !== undefined)
             {
-                console.log("Removing: " + messages[key].timer);
                 clearTimeout(messages[key].timer);
             }
         });

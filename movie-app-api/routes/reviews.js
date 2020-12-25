@@ -1,6 +1,6 @@
 import models, { sequelize } from '../src/models';
 import {verifyLogin, validateIntegerParameter, validateStringParameter} from './globals.js';
-import {createReview} from './reviewCreator.js';
+import {createReview, updateReview} from './reviewCreator.js';
 
 
 // function to post a reviews
@@ -64,6 +64,8 @@ const selectPath = (cookie, req, res) =>
     }
     else if(req.method === "POST")
     {
+        console.log(req.params.type);
+        console.log(req.body);
         if(Object.keys(req.params).length == 0)
         {
             createReview(cookie, req, res);
@@ -131,108 +133,6 @@ const selectPath = (cookie, req, res) =>
     }
 };
 
-
-// function to update a review
-// body of request must include:
-// title - title of movie
-// rating - rating for movie
-// review - review for movie
-// reviewId - id of the review being updated
-// good - a comma seperated string of good tags
-// bad - a comma seperated string of bad tags
-const updateReview = (cookie, req, res) =>
-{
-
-    // get the review
-    models.Review.findOne({
-        where: {id: req.body.reviewId}
-    }).then((review) => {
-        if(review === undefined)
-        {
-            res.status(404).send(["Review id does not match any reviews", null]);
-        }
-        if(review.userId !== cookie.id)
-        {
-            res.status(401).send(["You cannot update another users review", null]);
-        }
-        // update the values
-        review.title = req.body.title;
-        review.rating = req.body.rating;
-        review.review = req.body.review;
-        review.save()
-        .then(async (updatedReview) => {
-            // should do if(updatedReview === undefined)
-            // get the id's of the good tags
-            let goodTagArr = await getTagIds(req.body.good, "good");
-            // get the id's of the bad tags
-            let badTagArr = await getTagIds(req.body.bad, "bad");
-            // update the good tags
-            updatedReview.setGoodTags(goodTagArr, {through: {userID: updatedReview.userId}})
-            .then((result) => {
-                // update the bad tags
-                updatedReview.setBadTags(badTagArr, {through: {userID: updatedReview.userId}})
-                .then((result2) => {
-                    models.Review.findByReviewId(models,req.body.reviewId)
-                    .then((finalReview) =>
-                    {
-                        if(finalReview === undefined)
-                        {
-                            res.status(404).send(["Reviw updated but could not be found", null]);
-                        }
-                        else
-                        {
-                            console.log(finalReview);
-                            res.status(201).send(["Review successfully updated!", finalReview]);
-                        }
-                    });
-                });
-            });
-        });
-    });
-};
-
-// function to get id's of a string of tags(ex. too short, funny, acting) and return them
-// in a array
-// this will handle if duplicate tags are passed in or a tag that does not exist is passed in
-// also handles if the tag string has a extra , at the end
-const getTagIds = async (tagString, type) =>{
-    // get each of the good tags
-    let tags = tagString.split(",");
-    let tagArray = [];
-    let returnArray = [];
-    // iterate through the array of good tags
-    tags.forEach(tag => {
-        tagArray.push(tag);
-    });
-    if(type === "good")
-    {
-        let result = await models.GoodTag.findAll({
-            where: {
-                value: tagArray
-            },
-            attribute:["id"]
-        });
-        result.forEach((tag) => {
-            returnArray.push(tag.id);
-        });
-        console.log(returnArray);
-        return returnArray;
-    }
-    else
-    {
-        let result = await models.BadTag.findAll({
-            where: {
-                value: tagArray
-            },
-            attribute:["id"]
-        })
-        result.forEach((tag) => {
-            returnArray.push(tag.id);
-        });
-        return returnArray;
-    }
-};
-
 // function to remove a review
 // the body of the request must include:
 // reviewId - the id the post
@@ -245,8 +145,6 @@ const removePost = async (req, res, cookie) =>
 
     // try to get the review
     let review = await models.Review.getReviewWithCreator(reviewId, models);
-    console.log("Review: ");
-    console.log(review);
     if(review === null)
     {
         res.status(404).send({
@@ -353,8 +251,6 @@ const removeLike = (cookie, req, res) =>
     // get the review
     models.Review.getReviewWithLikedUser(reviewId, userId, models)
     .then((review) => {
-        console.log("Movie review");
-        console.log(review);
         if(review === null)
         {
             res.status(404).send({
