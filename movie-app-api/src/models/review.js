@@ -44,16 +44,16 @@ const review = (sequelize, DataTypes) => {
 
     Review.associate = models => {
         // each review is associated with a movie
-        Review.belongsTo(models.Movies, {as: "movie"});
+        Review.belongsTo(models.Movies, {as: "movie", onDelete: 'CASCADE'});
         // each review is associated with a user
-        Review.belongsTo(models.User, {as: "user"});
+        Review.belongsTo(models.User, {as: "user", onDelete: 'CASCADE'});
         // each review can have many comments
         Review.hasMany(models.Comment);
         // each review can have many likes
-        Review.belongsToMany(models.User, {as:"likes", through: models.Like});
+        Review.belongsToMany(models.User, {as:"likes", through: models.Like, onDelete: 'CASCADE'});
         // each review can have many good tags
-        Review.belongsToMany(models.MovieTag, {as: "goodTags", through: models.ReviewGoodTags});
-        Review.belongsToMany(models.MovieTag, {as: "badTags", through: models.ReviewBadTags});
+        Review.belongsToMany(models.MovieTag, {as: "goodTags", through: models.ReviewGoodTags, onDelete: 'CASCADE'});
+        Review.belongsToMany(models.MovieTag, {as: "badTags", through: models.ReviewBadTags, onDelete: 'CASCADE'});
     };
 
     // function to get reviews for a set of users
@@ -109,6 +109,98 @@ const review = (sequelize, DataTypes) => {
         let reviews = await Review.findAll({
             where: {
                 userId: ids
+            },
+            order: [["updatedAt", 'DESC']],
+            // only get these attributes
+            attributes: ["id", "rating", "review", "updatedAt", "createdAt"],
+            // include the following models with the specified attributes
+            include:includeArray,
+            group: groupByArray
+        });
+
+        // this will be really slow so will need fixed at some point
+        // array to hold result
+        let result = [];
+        // loop through the reviews of the user
+        for(let i = 0; i < reviews.length; i++)
+        {
+            // get the first review
+            let tempReview = reviews[i];
+            let liked = false;
+            // if undefined, user looking at posts not logged in
+            if(requesterId !== undefined)
+            {
+                // query to see if requester liked post
+                // will return a empty array if not
+                let user = await tempReview.getLikes(
+                    {
+                        where: {id: requesterId}
+                    }
+                );
+                if(user.length > 0)
+                {
+                    liked = true;
+                }
+            }
+            result.push({review: tempReview, liked: liked});
+        }
+
+        return result;
+    }
+
+
+    // function to get a individual review with the users who liked it
+    // this also checks to see if the reviews that are returned are
+    // also liked by the requester
+    Review.findByIdWithLikes = async (models, reviewId, requesterId) =>
+    {
+        let includeArray = [
+            {
+                model: models.User,
+                as: "user",
+                attributes: ["username", "id"]
+            },
+            {
+                model: models.MovieTag,
+                as: "goodTags",
+                // included the id to make one less query needed to find tag
+                attributes:["id", "value"],
+                // do not include the association table
+                through: {attributes: []}
+            },
+            {
+                model: models.MovieTag,
+                as: "badTags",
+                // included the id to make one less query needed to find tag
+                attributes: ["id", "value"],
+                through: {attributes: []}
+            },
+            {
+
+                model: models.User,
+                as: "likes",
+                required: false,
+                attributes: [
+                    // count the number of user id's found in each record and return it as
+                    // the attirube liked
+                    [sequelize.fn("COUNT", sequelize.col("user.id")), "liked"]
+                ],
+                through: {attributes: []},
+                seperate: true
+            },
+            {
+                    model: models.Movies,
+                    as: "movie",
+                    attributes: ["title", "id", "poster"],
+            }
+
+        ];
+        let groupByArray = ["review.id", "user.username", "user.id", "goodTags.id","badTags.id",
+         "likes.id", "movie.title", "movie.id", "movie.poster"];
+        // may need to eventually sort by time stamps if not doing it already
+        let reviews = await Review.findAll({
+            where: {
+                id: reviewId
             },
             order: [["updatedAt", 'DESC']],
             // only get these attributes

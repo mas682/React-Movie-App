@@ -183,8 +183,6 @@ class MoviePost extends React.Component {
 
     static newPropState(props)
     {
-        let watched = false;
-        let watchList = false;
         let moviePath = props.data.review.movie.title.replace(" ", "-");
         moviePath = "/movie/" + props.data.review.movie.id + "-" + moviePath;
         return {
@@ -220,10 +218,6 @@ class MoviePost extends React.Component {
             removePost: false,
             type: "non-popup",
             moviePath: moviePath,
-            // has the user watched the movie?
-            watched: watched,
-            // is the movie on he users watchlist
-            watchList: watchList,
             // storing the props as needed for getDerivedStateFromProps
             props: props
         };
@@ -447,19 +441,44 @@ class MoviePost extends React.Component {
 
     // function used to update the movie post after edited
     // called by ReviewForm component when creator is editing their existing post
-    updateState(titleUpdate, ratingUpdate, reviewUpdate, goodButtonUpdate, badButtonUpdate)
+    updateState(reviewResult)
     {
+        reviewResult = undefined;
+        if(reviewResult === undefined)
+        {
+            // may want to use this?
+            // this.removeFunction({messages: [{message: message, type: "success"}]});
+            this.removeFunction();
+            return;
+        }
+        console.log("Updated review: ");
+        console.log(reviewResult);
+        let moviePath = reviewResult.review.movie.title.replace(" ", "-");
         this.setState({
-            title: titleUpdate,
-            rating: ratingUpdate,
-            review: reviewUpdate,
-            usedGoodButtons: this.getGoodButtons(goodButtonUpdate),
-            usedBadButtons: this.getGoodButtons(badButtonUpdate),
+            // boolean for opening the edit pop up
+            openEdit: false,
+            // boolean indicating if logged in user liked post
+            liked: reviewResult.liked,
+            // count of likes on post
+            likeCount: reviewResult.review.likes.length,
+            // title of post
+            title: reviewResult.review.movie.title,
+            poster: 'https://image.tmdb.org/t/p/w500' + reviewResult.review.movie.poster,
+            movie: reviewResult.review.movie,
+            rating: reviewResult.review.rating,
+            usedGoodButtons: MoviePost.getGoodButtons(reviewResult.review.goodTags),
+            usedBadButtons: MoviePost.getBadButtons(reviewResult.review.badTags),
+            review: reviewResult.review.review,
+            fullReview: reviewResult.review,
+            time: reviewResult.review.createdAt,
+            moviePath: moviePath
         });
+        /*
         if(this.state.type === "popup")
         {
             this.props.updatePost(titleUpdate, ratingUpdate, reviewUpdate, goodButtonUpdate, badButtonUpdate);
         }
+        */
     }
 
     // function to change the state of the component
@@ -650,7 +669,12 @@ class MoviePost extends React.Component {
                         data={this.state}
                         edit={true}
                         removeFunction={this.changeState}
+                        removeReview={this.removeFunction}
                         successFunction={this.updateState}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
+                        setMessages={this.props.setMessages}
+                        loggedInUser={this.state.currentUser}
                     />;
         }
         return popup;

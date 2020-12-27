@@ -27,8 +27,8 @@ const movieTag = (sequelize, DataTypes) => {
     MovieTag.associate = models => {
         //MovieTag.belongsToMany(models.Review, { as: "goodTags", through: models.ReviewGoodTags, onDelete: 'CASCADE' });
     //    MovieTag.hasMany(models.ReviewGoodTags, { foreignKey: { allowNull: false}, onDelete: 'CASCADE'});
-        MovieTag.belongsToMany(models.Review, {as: "goodReviews", through: models.ReviewGoodTags});
-        MovieTag.belongsToMany(models.Review, {as: "badReviews", through: models.ReviewBadTags});
+        MovieTag.belongsToMany(models.Review, {as: "goodReviews", through: models.ReviewGoodTags, onDelete: 'CASCADE'});
+        MovieTag.belongsToMany(models.Review, {as: "badReviews", through: models.ReviewBadTags, onDelete: 'CASCADE'});
     };
 
     // function to find a tag or create one and include a review with it

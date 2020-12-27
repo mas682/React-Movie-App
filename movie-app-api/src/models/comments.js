@@ -47,8 +47,8 @@ const comment = (sequelize, DataTypes) => {
     // associate bad tags with reviews
     // each tag can belong to many reviews
     Comment.associate = models => {
-        Comment.belongsTo(models.Review);
-        Comment.belongsTo(models.User);
+        Comment.belongsTo(models.Review, {onDelete: 'CASCADE'});
+        Comment.belongsTo(models.User, {onDelete: 'CASCADE'});
     };
 
     // function to get comments for a review post

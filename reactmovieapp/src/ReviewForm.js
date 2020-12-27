@@ -77,7 +77,6 @@ class ReviewPopUp extends React.Component {
         this.sendReviewToServer = this.sendReviewToServer.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.updateReviewApi = this.updateReviewApi.bind(this);
-        this.validateUpdate = this.validateUpdate.bind(this);
         this.getTitleSuggestions = this.getTitleSuggestions.bind(this);
         this.setMovie = this.setMovie.bind(this);
         this.generateMovieImage = this.generateMovieImage.bind(this);
@@ -86,6 +85,7 @@ class ReviewPopUp extends React.Component {
         this.generateTagButtons = this.generateTagButtons.bind(this);
         this.reviewInputHandler = this.reviewInputHandler.bind(this);
         this.getTags = this.getTags.bind(this);
+        this.reviewUpdateResultsHandler = this.reviewUpdateResultsHandler.bind(this);
     }
 
     componentDidMount()
@@ -332,6 +332,19 @@ class ReviewPopUp extends React.Component {
                         messageId: this.state.messageId + 1
                     });
                 }
+                else if(message === "Review could not be found")
+                {
+                    // should remove the review...
+                    // occurs when updating
+                    this.setState({
+                        messages: [{message: message, type: "failure"}],
+                        messageId: this.state.messageId + 1
+                    });
+                }
+                else
+                {
+                    // reivew path does not exist...should never happen
+                }
             }
             else if(status === 500)
             {
@@ -374,50 +387,126 @@ class ReviewPopUp extends React.Component {
         };
 
         let result = await apiPostJsonRequest(url, params);
+        console.log(result);
         let status = result[0];
         let message = result[1].message;
         let requester = result[1].requester;
         console.log(message);
-        this.reviewCreationResultsHandler(status, message, requester, result);
+        this.reviewUpdateResultsHandler(status, message, requester, result);
     }
 
-    // function called sending request to update review to server
-    async validateUpdate(event) {
-        event.preventDefault();
-        this.updateReviewApi().then(result => {
-            let status = result[0];
-            let response = result[1][0];
-            let review = result[1][1][0];
-            if(status === 201 && response === "Review successfully updated!")
+    // 2 options:
+    // add the update stuff into the reviewCreationResultsHandler or do it here
+    // will be similar but reivewUpdate will have more probably
+    // need to figure out what to do on success...
+    /*
+    maybe pass in a function successHandler for both
+    for header one, need to consider what to do
+        - 1. simply close the popup and display messages?
+        - 2. redirect to users page?
+            - new post should be at top...
+        - 3. update depending on current page?
+    for update one...want to return the updated review on success
+    if review not found, remove
+    .. other scenarios?
+    */
+
+    reviewUpdateResultsHandler(status, message, requester, result)
+    {
+        if(status === 201)
+        {
+            this.props.updateLoggedIn(requester);
+            let errorMessages = result[1].errors;
+            let messages = [{message: message, type: "success"}];
+            let messageCount = this.state.messageId + 1;
+            for(let error of errorMessages)
             {
-                console.log(review);
-                this.props.successFunction(review.title, review.rating, review.review, review.goodTags, review.badTags);
-                // need to be careful with this
-                this.closeModal();
+                messages.push({message: error, type: "warning"});
+                messageCount = messageCount + 1;
             }
-            else if(status === 401 && response === "You are not logged in")
+            if(result[1].review === undefined)
             {
-                // redirect to login page...
-                alert(response);
+                messages.push({message: "Could not find the review after it was updated", type: "warning"});
             }
-            else if(status === 401 && response === "You cannot update antother users review")
+            this.props.setMessages({messages: messages});
+            this.props.successFunction(result[1].review);
+        }
+        else
+        {
+            if(status === 401)
             {
-                alert(response);
+                // 3 scenarios: not logged in, when creating review, user not found,
+                // and when creating tag associations user not found
+                // do not need to call updateLoggedIn as this will update it
+                this.props.showLoginPopUp(false);
             }
-            else if(status === 404 && response === "Review id does not match any reviews")
+            else if(status === 400)
             {
-                alert(response);
+                // something formatted incorrectly
+                let movie = (message === "The movie ID is invalid") ? undefined : this.state.movie;
+                this.props.updateLoggedIn(requester);
+                this.setState({
+                    messages: [{message: message, type: "failure"}],
+                    messageId: this.state.messageId + 1,
+                    movie: movie
+                });
             }
-            else if(status === 404 && response === "Review updated but could not be found")
+            else if(status === 404)
             {
-                alert(response);
+                this.props.updateLoggedIn(requester);
+                if(message === "Movie associated with the review does not exist")
+                {
+                    // if the user changed the movie from the original movie, it could still exist if the new movie was deleted
+                    // if the old movie was deleted, the review should no longer exist
+                    // this should catch when the user tried to change the movie and it no longer exists
+                    if(this.props.movie.id !== this.state.movie.id)
+                    {
+                        this.props.removeReview();
+                        this.props.setMessages({messages: [{message: message, type: "failure"}]});
+                    }
+                    else
+                    {
+                        this.setState({
+                            messages: [{message: message, type: "failure"}],
+                            messageId: this.state.messageId + 1,
+                            movie: undefined
+                        });
+                    }
+                }
+                else if(message === "Review could not be found when associating tags with the review")
+                {
+                    this.props.setMessages({messages: [{message: message, type: "failure"}]})
+                    // remove the review
+                    this.props.removeReview();
+                }
+                else if(message === "Review could not be found")
+                {
+                    // should remove the review...
+                    // occurs when updating
+                    this.props.setMessages({messages: [{message: message, type: "failure"}]});
+                    // remove the review
+                    this.props.removeReview();
+                }
+                else
+                {
+                    // reivew path does not exist...should never happen
+                    this.setState({
+                        messages: [{message: message, type: "warning"}],
+                        messageId: this.state.messageId + 1
+                    });
+                }
             }
-            else
+            else if(status === 500)
             {
-                alert(response);
-                alert("Some unexpected error occurred trying to update the review");
+                // some unknown error occurred when creating review
+                // show message
+                this.props.updateLoggedIn(requester);
+                this.setState({
+                    messages: [{message: message, type: "failure"}],
+                    messageId: this.state.messageId + 1
+                });
             }
-        });
+        }
     }
 
     // used to update the state for the title, review, and the rating
@@ -727,7 +816,7 @@ class ReviewPopUp extends React.Component {
                         form="form2"
                         value="create_account"
                         className="submitButton"
-                        onClick={this.validateUpdate}
+                        onClick={this.updateReviewApi}
                     >Submit changes</button>
                 </React.Fragment>);
         }

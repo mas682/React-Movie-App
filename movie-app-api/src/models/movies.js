@@ -99,7 +99,7 @@ const movie = (sequelize, DataTypes) => {
 
     Movie.associate = models => {
         // each movie can be associated with many reviews
-        Movie.hasMany(models.Review, { onDelete: 'CASCADE' });
+        Movie.hasMany(models.Review);
         // each movie can have many genres
         Movie.belongsToMany(models.Genre, {through: models.MovieGenreTable});
         Movie.belongsToMany(models.User, {as: "UserWatchLists", through: models.UserWatchList, onDelete: 'CASCADE'});

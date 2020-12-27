@@ -180,17 +180,18 @@ const updateReview = async (cookie, req, res) =>
         {
             result = await review.update({
                 movieId: movieId,
-                review: reviewText
+                review: reviewText,
+                userId: userId
             });
         }
         catch(err)
         {
-            console.log("Error occurred updating review");
-            console.log(err);
-            res.status(500).send({
-                message: "Review update failed due to server issue",
+            let errorResult = reviewErrorHandler(err);
+            res.status(errorResult.status).send({
+                message: errorResult.message,
                 requester: requester
             });
+            return;
         }
         if(result === undefined || result === null)
         {
@@ -248,8 +249,18 @@ const updateReview = async (cookie, req, res) =>
     if(failed) return;
     let errorMessages = generateAddTagErrorMessages(warnings);
     console.log(warnings);
+    let updatedReview = await models.Review.findByIdWithLikes(models, review.id, userId);
+    if(updatedReview === null || updatedReview === undefined || updatedReview.length < 1)
+    {
+        updatedReview = undefined;
+    }
+    else
+    {
+        updatedReview = updatedReview[0];
+    }
     res.status(201).send({
         message: "Review successfully updated",
+        review: updatedReview,
         requester: requester,
         errors: errorMessages
     });
@@ -282,7 +293,6 @@ const getTagsToUpdate = (existingTags, tagsWithIds, tagStrings, usedTags, warnin
             warnings.duplicate = true;
             continue;
         }
-        usedTags[tag.value] = tag.value;
         // if the tag previously existed, remove it from the tagsToRemove
         if(tagsToRemove.hasOwnProperty(tag.value))
         {
@@ -380,11 +390,11 @@ const reviewErrorHandler = (err) =>
 {
     let status;
     let message;
-    console.log("Error occured adding tag to review");
+    console.log("Error occured during review creation or update");
     let errorObject = JSON.parse(JSON.stringify(err));
     if(errorObject.name === "SequelizeForeignKeyConstraintError")
     {
-        if(errorObject.original.constraint === "reviews_userId_fkey" || errorObject.original.constraint === "ReviewBadTags_userId_fkey")
+        if(errorObject.original.constraint === "reviews_userId_fkey")
         {
             status = 401;
             message = "User associated with the review does not exist";
@@ -404,7 +414,7 @@ const reviewErrorHandler = (err) =>
     }
     else
     {
-        console.log("Some unknown error occurred during posting a comment: " + errorObject.name);
+        console.log("Some unknown error occurred: " + errorObject.name);
         console.log(err);
         status = 500;
         message = "Some unexpected error occurred on the server";
