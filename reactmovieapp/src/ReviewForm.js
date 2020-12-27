@@ -286,11 +286,9 @@ class ReviewPopUp extends React.Component {
                 messages.push({message: error, type: "warning"});
                 messageCount = messageCount + 1;
             }
-            this.setState({
-                messages: messages,
-                messageId: messageCount
-            });
-            // redirect to users page and show review popup?
+            this.props.setMessages({messages: messages});
+            // redirect to users profile page
+            this.props.successFunction();
         }
         else
         {
@@ -396,9 +394,6 @@ class ReviewPopUp extends React.Component {
     }
 
     // 2 options:
-    // add the update stuff into the reviewCreationResultsHandler or do it here
-    // will be similar but reivewUpdate will have more probably
-    // need to figure out what to do on success...
     /*
     maybe pass in a function successHandler for both
     for header one, need to consider what to do
@@ -406,9 +401,6 @@ class ReviewPopUp extends React.Component {
         - 2. redirect to users page?
             - new post should be at top...
         - 3. update depending on current page?
-    for update one...want to return the updated review on success
-    if review not found, remove
-    .. other scenarios?
     */
 
     reviewUpdateResultsHandler(status, message, requester, result)
@@ -563,7 +555,6 @@ class ReviewPopUp extends React.Component {
     // called by SearchDropDown to set the movie that was selected
     setMovie(value)
     {
-        console.log(value);
         this.setState({
           movie: value
         });

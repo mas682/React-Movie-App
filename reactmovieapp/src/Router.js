@@ -25,12 +25,14 @@ class Routes extends React.Component
             redirect: true,
             messages: [],
             messageId: -1,
-            clearMessages: false
+            clearMessages: false,
+            newReview: false
         });
         this.updateLoggedIn = this.updateLoggedIn.bind(this);
         this.showLoginPopUp = this.showLoginPopUp.bind(this);
         this.removeLoginPopUp = this.removeLoginPopUp.bind(this);
         this.setMessages = this.setMessages.bind(this);
+        this.setNewReviewFlag = this.setNewReviewFlag.bind(this);
     }
 
     shouldComponentUpdate(nextProps, nextState)
@@ -141,6 +143,13 @@ class Routes extends React.Component
         this.setState(state);
     }
 
+    setNewReviewFlag()
+    {
+        this.setState({
+            newReview: !this.state.newReview
+        });
+    }
+
     async componentDidMount()
     {
         // on mount, see who is logged in as the app doesn't know at this point
@@ -166,6 +175,7 @@ class Routes extends React.Component
                     showLoginPopUpFunction={this.showLoginPopUp}
                     removeLoginPopUp={this.removeLoginPopUp}
                     setMessages={this.setMessages}
+                    setNewReviewFlag={this.setNewReviewFlag}
                 />
                 <main>
                     <Alert
@@ -180,7 +190,7 @@ class Routes extends React.Component
                         <Route exact path="/watched_list" render={(props)=> <MovieFilterPage {...props} type="My Watched Movies" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
                         <Route exact path="/upcoming" render={(props)=> <MovieFilterPage {...props} type="Upcoming Movies" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
                         <Route exact path="/new_releases" render={(props)=> <MovieFilterPage {...props} type="New Releases" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
-                        <Route exact path="/profile/:id" render={()=> <UserProfile updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} removeLoginPopUp={this.removeLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/> } />
+                        <Route exact path="/profile/:id" render={(props)=> <UserProfile {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} removeLoginPopUp={this.removeLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages} newReview={this.state.newReview}/> } />
                         <Route exact path="/profile/:id/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/> } />
                         <Route exact path="/settings" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn} setMessages={this.setMessages}/>} />
                         <Route exact path="/movie/:id" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />

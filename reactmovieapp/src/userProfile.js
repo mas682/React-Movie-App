@@ -26,7 +26,10 @@ class UserProfile extends React.Component {
             currentUser: this.props.currentUser,
             redirect: false,
             showErrorPage: false,
-            errorMessage: ""
+            errorMessage: "",
+            // used a switch to cause rerender when new review posted from this page
+            newReview: this.props.newReview,
+            props: props
         };
         this.setPostCount = this.setPostCount.bind(this);
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
@@ -41,11 +44,16 @@ class UserProfile extends React.Component {
     {
         if(prevState.username !== nextProps.match.params.id)
         {
-            return UserProfile.setProfileUser(nextProps.match.params.id, nextProps.currentUser);
+            return UserProfile.setProfileUser(nextProps.match.params.id, nextProps.currentUser, nextProps);
         }
         else if(prevState.currentUser !== nextProps.currentUser)
         {
-            return UserProfile.setProfileUser(nextProps.match.params.id, nextProps.currentUser);
+            return UserProfile.setProfileUser(nextProps.match.params.id, nextProps.currentUser, nextProps);
+        }
+        else if(prevState.newReview !== nextProps.newReview)
+        {
+            alert("New review render");
+            return {newReview: nextProps.newReview}
         }
         else
         {
@@ -79,11 +87,26 @@ class UserProfile extends React.Component {
 
     componentDidMount()
     {
-        // clear the messages on mount
-        this.props.setMessages({
-            message: undefined,
-            clearMessages: true
-        });
+        // used when a user posts a review to keep the review messages displayed
+        if(this.props.location.state !== undefined)
+        {
+            if(this.props.location.state.newReview === undefined)
+            {
+                // clear the messages on mount
+                this.props.setMessages({
+                    message: undefined,
+                    clearMessages: true
+                });
+            }
+        }
+        else
+        {
+            // clear the messages on mount
+            this.props.setMessages({
+                message: undefined,
+                clearMessages: true
+            });
+        }
     }
 
     // plan is to have movie posts follower list call the update function to
@@ -99,6 +122,7 @@ class UserProfile extends React.Component {
              || nextState.postCount !== this.state.postCount
              || nextState.redirect === true
              || nextState.showErrorPage !== this.state.showErrorPage
+             || nextState.newReview !== this.state.newReview
          );
     }
 
@@ -133,10 +157,11 @@ class UserProfile extends React.Component {
 
     // this only gets called by the above method to update the state on
     // user profile change
-    static setProfileUser = (param, currentUser) => {
+    static setProfileUser = (param, currentUser, props) => {
         return {
             username: param,
-            currentUser: currentUser
+            currentUser: currentUser,
+            props: props
         };
     }
 
@@ -176,6 +201,7 @@ class UserProfile extends React.Component {
                         redirectToHome={this.redirectToHome}
                         setMessages={this.props.setMessages}
                         showErrorPage={this.showErrorPage}
+                        newReview={this.state.newReview}
                     />
                     <MoviePostDisplay
                         username={this.state.username}
@@ -188,6 +214,7 @@ class UserProfile extends React.Component {
                         redirectToHome={this.redirectToHome}
                         setMessages={this.props.setMessages}
                         showErrorPage={this.showErrorPage}
+                        newReview={this.state.newReview}
                     />
                 </div>
             </React.Fragment>

@@ -109,6 +109,10 @@ class ProfileHeader extends React.Component {
         {
             this.getData(this.props.username);
         }
+        else if(!prevState.loading && (this.props.newReview !== prevProps.newReview))
+        {
+            this.getData(this.props.username);
+        }
     }
 
     // function to handle getting data from api
@@ -127,7 +131,6 @@ class ProfileHeader extends React.Component {
             // see if request succeeded
             if(status === 200)
             {
-                console.log("profile header data received");
                 this.setState({
                     username: username,
                     // get the users id from the response

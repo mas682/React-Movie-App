@@ -36,6 +36,10 @@ class MoviePostDisplay extends React.Component {
         {
             this.getData(this.props.username);
         }
+        else if(!this.state.loading && (this.props.newReview !== prevProps.newReview))
+        {
+            this.getData(this.props.username);
+        }
     }
 
     // handles calling api for componentDidMount and componentDidUpdate

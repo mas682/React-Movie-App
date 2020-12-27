@@ -20,7 +20,8 @@ class Header extends React.Component {
             displaySignIn: this.props.showLoginPopUp,
             displaySignUp: false,
             redirect: false,
-            redirectOnLogin: this.props.redirectOnLogin
+            redirectOnLogin: this.props.redirectOnLogin,
+            redirectToProfile: false
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
@@ -31,6 +32,7 @@ class Header extends React.Component {
         this.signUpRemoveFunction = this.signUpRemoveFunction.bind(this);
         this.logout = this.logout.bind(this);
         this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
+        this.reviewSuccessFunction = this.reviewSuccessFunction.bind(this);
     }
 
     signUpRemoveFunction = () =>
@@ -77,6 +79,28 @@ class Header extends React.Component {
         });
     }
 
+    // function called when review successfully posted
+    reviewSuccessFunction()
+    {
+        let path = "/profile/" + this.state.currentUser;
+        // if already on the users profile page
+        if(path === this.props.location.pathname)
+        {
+            // flip the swith to cause a rerender
+            this.props.setNewReviewFlag();
+            this.setState({
+                reviewFormOpen: false,
+            });
+        }
+        else
+        {
+            this.setState({
+                redirectToProfile: true,
+                reviewFormOpen: false
+            });
+        }
+    }
+
     removeReviewForm = () =>
     {
         this.setState({reviewFormOpen: false});
@@ -99,6 +123,10 @@ class Header extends React.Component {
         {
             return false;
         }
+        else if(this.state.redirectToProfile === true && nextState.redirectToProfile === false)
+        {
+            return false;
+        }
         // could optimize this more..
         return true ;
     }
@@ -108,6 +136,10 @@ class Header extends React.Component {
         if(this.state.redirect)
         {
             this.setState({redirect: false});
+        }
+        else if(this.state.redirectToProfile)
+        {
+            this.setState({redirectToProfile: false});
         }
     }
 
@@ -160,12 +192,21 @@ class Header extends React.Component {
         {
             redirect = <Redirect to="/" />;
         }
+        if(this.state.redirectToProfile)
+        {
+            let path = "/profile/" + this.state.currentUser;
+            if(this.state.currentUser !== "")
+            {
+                redirect = <Redirect to={{pathname: path}}/>;
+            }
+        }
         let reviewForm = "";
         if(this.state.reviewFormOpen)
         {
             reviewForm = <ReviewForm
                             edit={false}
                             removeFunction={this.removeReviewForm}
+                            successFunction={this.reviewSuccessFunction}
                             showLoginPopUp={this.props.showLoginPopUpFunction}
                             updateLoggedIn={this.props.updateLoggedIn}
                             setMessages={this.props.setMessages}
@@ -228,6 +269,7 @@ class Header extends React.Component {
                             </div>
         				</div>
                         {reviewForm}
+                        {redirect}
         			</div>
     		);
         //  class={`fa fa-thumbs-up ${style.thumbsUp}`}
