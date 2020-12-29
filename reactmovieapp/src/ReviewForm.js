@@ -16,7 +16,7 @@ class ReviewPopUp extends React.Component {
         // anoter for if the user is creating a new post
         if(this.props.edit)
         {
-            console.log(this.props.data);
+            console.log(this.props);
             let goodTags = this.getTags(this.props.data.fullReview.goodTags);
             let badTags = this.getTags(this.props.data.fullReview.badTags);
             this.state = {
@@ -247,7 +247,7 @@ class ReviewPopUp extends React.Component {
         if(this.state.movie === undefined)
         {
             this.setState({
-                messages: [{message: "You must select a movie", type: "warning"}],
+                messages: [{message: "You must select a movie from the dropdown list", type: "warning"}],
                 messageId: this.state.messageId + 1
             })
             return;
@@ -280,7 +280,7 @@ class ReviewPopUp extends React.Component {
         if(this.state.movie === undefined)
         {
             this.setState({
-                messages: [{message: "You must select a movie", type: "warning"}],
+                messages: [{message: "You must select a movie from the dropdown list", type: "warning"}],
                 messageId: this.state.messageId + 1
             })
             return;
@@ -521,13 +521,25 @@ class ReviewPopUp extends React.Component {
     {
         let url = "http://localhost:9000/movie/get_movie_tags/?tag=" + value;
         let result = await apiGetJsonRequest(url);
-        if(result[0] === 200)
+        let status = result[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        if(status === 200 && requester !== "")
         {
             return {tags: result[1].tags};
         }
         else
         {
-            return {};
+            if(status === 404 && requester !== "")
+            {
+                // send a empty object as no tag matches the value
+                return {};
+            }
+            else if(requester === "")
+            {
+                // if the user is not logged in, the review creation pop up should not be open
+                this.props.showLoginPopUp(false);
+            }
         }
     }
 
@@ -570,25 +582,23 @@ class ReviewPopUp extends React.Component {
             // so new tag not added..
             // probably want to update still as the value could of changed but
             // display a warning/error message
+            this.setState({
+                messages: [{message: "You have already selected the tag: " + value, type: "info"}],
+                messageId: this.state.messageId + 1
+            })
         }
         if(type === "good")
         {
-            // this will be removed eventually...
-            let usedGoodButtons = Object.keys(tempObj);
-            console.log(tempObj);
             this.setState({
                 goodTags: tempObj
             });
         }
         else
         {
-            // this will be removed eventually..
-            let usedGoodButtons = Object.keys(tempObj);
             this.setState({
                 badTags: tempObj
             });
         }
-        console.log(newCount);
         if(newCount === 5)
         {
             if(type === "good")
