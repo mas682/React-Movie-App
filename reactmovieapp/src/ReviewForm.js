@@ -16,7 +16,6 @@ class ReviewPopUp extends React.Component {
         // anoter for if the user is creating a new post
         if(this.props.edit)
         {
-            console.log(this.props);
             let goodTags = this.getTags(this.props.data.fullReview.goodTags);
             let badTags = this.getTags(this.props.data.fullReview.badTags);
             this.state = {
@@ -776,8 +775,7 @@ class ReviewPopUp extends React.Component {
                                 <Alert
                                     messages={this.state.messages}
                                     messageId={this.state.messageId}
-                                    timeout={0}
-                                    innerContainerStyle={{"z-index": "2"}}
+                                    innerContainerStyle={{"z-index": "2", "font-size": "1.25em"}}
                                     symbolStyle={{"width": "5%", "margin-top": "3px"}}
                                     messageBoxStyle={{width: "86%"}}
                                     closeButtonStyle={{width: "5%", "margin-top": "3px"}}
