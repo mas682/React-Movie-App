@@ -85,7 +85,7 @@ class ReviewPopUp extends React.Component {
         this.generateTagButtons = this.generateTagButtons.bind(this);
         this.reviewInputHandler = this.reviewInputHandler.bind(this);
         this.getTags = this.getTags.bind(this);
-        this.reviewUpdateResultsHandler = this.reviewUpdateResultsHandler.bind(this);
+        this.reviewApiResultsHandler = this.reviewApiResultsHandler.bind(this);
     }
 
     componentDidMount()
@@ -270,91 +270,7 @@ class ReviewPopUp extends React.Component {
         let status = result[0];
         let message = result[1].message;
         let requester = result[1].requester;
-        this.reviewCreationResultsHandler(status, message, requester, result);
-    }
-
-    reviewCreationResultsHandler(status, message, requester, result)
-    {
-        if(status === 201)
-        {
-            this.props.updateLoggedIn(requester);
-            let errorMessages = result[1].errors;
-            let messages = [{message: message, type: "success"}];
-            let messageCount = this.state.messageId + 1;
-            for(let error of errorMessages)
-            {
-                messages.push({message: error, type: "warning"});
-                messageCount = messageCount + 1;
-            }
-            this.props.setMessages({messages: messages});
-            // redirect to users profile page
-            this.props.successFunction();
-        }
-        else
-        {
-            if(status === 401)
-            {
-                // 3 scenarios: not logged in, when creating review, user not found,
-                // and when creating tag associations user not found
-                // do not need to call updateLoggedIn as this will update it
-                this.props.showLoginPopUp(false);
-            }
-            else if(status === 400)
-            {
-                // something formatted incorrectly
-                let movie = (message === "The movie ID is invalid") ? undefined : this.state.movie;
-                this.props.updateLoggedIn(requester);
-                this.setState({
-                    messages: [{message: message, type: "failure"}],
-                    messageId: this.state.messageId + 1,
-                    movie: movie
-                });
-            }
-            else if(status === 404)
-            {
-                this.props.updateLoggedIn(requester);
-                if(message === "Movie associated with the review does not exist")
-                {
-                    // review should not exist at this point but double check
-                    let movie = (message === "Movie associated with the review does not exist") ? undefined : this.state.movie;
-                    this.setState({
-                        messages: [{message: message, type: "failure"}],
-                        messageId: this.state.messageId + 1,
-                        movie: movie
-                    });
-                }
-                else if(message === "Review could not be found when associating tags with the review")
-                {
-                    this.setState({
-                        messages: [{message: message, type: "failure"}],
-                        messageId: this.state.messageId + 1
-                    });
-                }
-                else if(message === "Review could not be found")
-                {
-                    // should remove the review...
-                    // occurs when updating
-                    this.setState({
-                        messages: [{message: message, type: "failure"}],
-                        messageId: this.state.messageId + 1
-                    });
-                }
-                else
-                {
-                    // reivew path does not exist...should never happen
-                }
-            }
-            else if(status === 500)
-            {
-                // some unknown error occurred when creating review
-                // show message
-                this.props.updateLoggedIn(requester);
-                this.setState({
-                    messages: [{message: message, type: "failure"}],
-                    messageId: this.state.messageId + 1
-                });
-            }
-        }
+        this.reviewApiResultsHandler(status, message, requester, result, "create");
     }
 
     // function to send update to server
@@ -385,25 +301,15 @@ class ReviewPopUp extends React.Component {
         };
 
         let result = await apiPostJsonRequest(url, params);
-        console.log(result);
         let status = result[0];
         let message = result[1].message;
         let requester = result[1].requester;
-        console.log(message);
-        this.reviewUpdateResultsHandler(status, message, requester, result);
+        this.reviewApiResultsHandler(status, message, requester, result, "update");
     }
 
-    // 2 options:
-    /*
-    maybe pass in a function successHandler for both
-    for header one, need to consider what to do
-        - 1. simply close the popup and display messages?
-        - 2. redirect to users page?
-            - new post should be at top...
-        - 3. update depending on current page?
-    */
 
-    reviewUpdateResultsHandler(status, message, requester, result)
+    // function to handle result of review creation or update
+    reviewApiResultsHandler(status, message, requester, result, type)
     {
         if(status === 201)
         {
@@ -416,12 +322,22 @@ class ReviewPopUp extends React.Component {
                 messages.push({message: error, type: "warning"});
                 messageCount = messageCount + 1;
             }
-            if(result[1].review === undefined)
+            if(type === "update")
             {
-                messages.push({message: "Could not find the review after it was updated", type: "warning"});
+                console.log(result[1].review);
+                if(result[1].review === undefined)
+                {
+                    messages.push({message: "Could not find the review after it was updated", type: "warning"});
+                }
+                this.props.successFunction(result[1].review);
             }
+            else
+            {
+                // redirect to users profile page on new creation
+                this.props.successFunction();
+            }
+
             this.props.setMessages({messages: messages});
-            this.props.successFunction(result[1].review);
         }
         else
         {
@@ -451,7 +367,7 @@ class ReviewPopUp extends React.Component {
                     // if the user changed the movie from the original movie, it could still exist if the new movie was deleted
                     // if the old movie was deleted, the review should no longer exist
                     // this should catch when the user tried to change the movie and it no longer exists
-                    if(this.props.movie.id !== this.state.movie.id)
+                    if(type === "update" && this.props.movie.id !== this.state.movie.id)
                     {
                         this.props.removeReview();
                         this.props.setMessages({messages: [{message: message, type: "failure"}]});
@@ -467,11 +383,21 @@ class ReviewPopUp extends React.Component {
                 }
                 else if(message === "Review could not be found when associating tags with the review")
                 {
-                    this.props.setMessages({messages: [{message: message, type: "failure"}]})
-                    // remove the review
-                    this.props.removeReview();
+                    if(type === "update")
+                    {
+                        this.props.setMessages({messages: [{message: message, type: "failure"}]});
+                        // remove the review
+                        this.props.removeReview();
+                    }
+                    else
+                    {
+                        this.setState({
+                            messages: [{message: message, type: "failure"}],
+                            messageId: this.state.messageId + 1
+                        });
+                    }
                 }
-                else if(message === "Review could not be found")
+                else if(message === "Review could not be found" && type === "update")
                 {
                     // should remove the review...
                     // occurs when updating
@@ -481,7 +407,7 @@ class ReviewPopUp extends React.Component {
                 }
                 else
                 {
-                    // reivew path does not exist...should never happen
+                    // reivew api path does not exist...should never happen
                     this.setState({
                         messages: [{message: message, type: "warning"}],
                         messageId: this.state.messageId + 1
@@ -562,40 +488,33 @@ class ReviewPopUp extends React.Component {
 
     // function to get the movie title suggestions based off of a
     // substring that the user has already entered
-    getTitleSuggestions(value)
+    async getTitleSuggestions(value)
     {
-        // Simple POST request with a JSON body using fetch
-        const requestOptions = {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-        };
-
-        let status = 0;
         let url = "http://localhost:9000/movie/get_movie_titles/?title=" + value;
-        return fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                if(status === 200)
-                {
-                    return res.json();
-                }
-                else
-                {
-                    return res.text();
-                }
-            }).then(result=> {
-                // if suggestions could not be found
-                if(status !== 200)
-                {
-                    return {};
-                }
-                else
-                {
-                    return result;
-                }
-            });
+        let result = await apiGetJsonRequest(url);
+        let status = result[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        if(status === 200 && requester !== "")
+        {
+            return {Movies: result[1].movies};
+        }
+        else
+        {
+            if(status === 404 && requester !== "")
+            {
+                // send a empty object as no movies match the value
+                return {};
+            }
+            else if(requester === "")
+            {
+                // if the user is not logged in, the review creation pop up should not be open
+                this.props.showLoginPopUp(false);
+            }
+        }
     }
+
+
 
     // function to get a tag suggesion based off the substring that the user has entered
     async getTagSuggestions(value)

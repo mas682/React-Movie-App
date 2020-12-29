@@ -148,98 +148,100 @@ const generateGenres = (style, genres) =>
 // function to generate the stars for a rating that already exists
 // id is the movie or review id
 // rating is the value to set the stars to
-const generateRatingStars = (style, id, rating) =>
+const generateRatingStars = (style, id, rating, form) =>
 {
     let stars = [];
     let tempId = "star5" + id;
+    form = (form === undefined) ? "moviepage" : form;
     if(rating == 5.0)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={"moviepage"} checked={true}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={form} checked={true}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={"moviepage"}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="5" form={form}/><label class={style.full} for={tempId} title="Awesome - 5 stars"></label></React.Fragment>);
     }
     tempId = "star4half" + id;
     if(rating == 4.50)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={form} checked={true}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4.5" form={form}/><label class={style.half} for={tempId} title="Pretty good - 4.5 stars"></label></React.Fragment>);
     }
     tempId = "star4" + id;
     if(rating == 4.00)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={"moviepage"} checked={true}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={form} checked={true}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={"moviepage"}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="4" form={form}/><label class = {style.full} for={tempId} title="Pretty good - 4 stars"></label></React.Fragment>);
     }
     tempId = "star3half" + id;
     if(rating == 3.50)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={form} checked={true}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3.5" form={form}/><label class={style.half} for={tempId} title="Meh - 3.5 stars"></label></React.Fragment>);
     }
     tempId = "star3" + id;
     if(rating == 3.00)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={"moviepage"} checked={true}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
+        console.log("HERE");
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={form} checked={true}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={"moviepage"}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="3" form={form}/><label class = {style.full} for={tempId} title="Meh - 3 stars"></label></React.Fragment>);
     }
     tempId = "star2half" + id;
     if(rating == 2.50)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={form} checked={true}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2.5" form={form}/><label class={style.half} for={tempId} title="Kinda bad - 2.5 stars"></label></React.Fragment>);
     }
     tempId = "star2" + id;
     if(rating == 2.00)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={"moviepage"} checked={true}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={form} checked={true}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={"moviepage"}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="2" form={form}/><label class = {style.full} for={tempId} title="Kinda bad - 2 stars"></label></React.Fragment>);
     }
     tempId = "star1half" + id;
     if(rating == 1.50)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={form} checked={true}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1.5" form={form}/><label class={style.half} for={tempId} title="Meh - 1.5 stars"></label></React.Fragment>);
     }
     tempId = "star1half" + id;
     if(rating == 1.00)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={"moviepage"} checked={true}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={form} checked={true}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={"moviepage"}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="1" form={form}/><label class = {style.full} for={tempId} title="Sucks big time - 1 star"></label></React.Fragment>);
     }
     tempId = "starhalf" + id;
     if(rating == 0.50)
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={"moviepage"} checked={true}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={form} checked={true}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
     }
     else
     {
-        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={"moviepage"}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
+        stars.push(<React.Fragment><input type="radio" id={tempId} name={style.rating} value="0.5" form={form}/><label class={style.half} for={tempId} title="Don't waste your time - 0.5 stars"></label></React.Fragment>);
     }
     return stars;
 }

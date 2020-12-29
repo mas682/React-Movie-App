@@ -15,8 +15,8 @@ const movieHandler = (req, res, next) => {
 				// see if the cookie has a valid user
 				verifyLogin(cookie).then((cookieValid) =>
 				{
-						// get the reviews and pass the cookie
-						selectPath(JSON.parse(cookie), req, res, cookieValid);
+					// get the reviews and pass the cookie
+					selectPath(JSON.parse(cookie), req, res, cookieValid);
 				});
 		}
 		// if no cookie was found
@@ -29,105 +29,119 @@ const movieHandler = (req, res, next) => {
 
 const selectPath = (cookie, req, res, cookieValid) =>
 {
-    if(req.params.type === "get_movie_titles" && cookieValid)
-    {
-        getMovieTitles(cookie, req, res, cookieValid);
-    }
-	// this is temporary
-	else if(req.params.type === "create_tag")
+	let routeFound = false;
+	let foundNoCookie = false;
+	if(req.method === "GET")
 	{
-		createTag(cookie, req, res);
-	}
-	else if(req.params.type === "get_movie_tags")
-	{
-		getMovieTagSuggestions(cookie, req, res, cookieValid);
-	}
-	else if(req.params.id !== undefined)
-	{
-		getMovieInfo(cookie, req, res, cookieValid);
-	}
-	else if(req.params.type === "my_watch_list" && cookieValid)
-	{
-		getWatchList(cookie, req, res);
-	}
-	else if(req.params.type === "my_watched_list" && cookieValid)
-	{
-		getWatchedList(cookie, req, res);
-	}
-	else if(req.params.type === "add_to_watchlist")
-	{
-		if(cookieValid)
+		if(req.params.type === "get_movie_titles")
 		{
-			console.log(cookieValid);
-			addToWatchList(cookie, req, res);
+			getMovieTitles(cookie, req, res, cookieValid);
+			routeFound = true;
 		}
-		else
+		else if(req.params.type === "get_movie_tags")
 		{
-			res.status(401).send({
-				message: "No cookie or cookie invalid",
-				requester: ""
-			});
+			getMovieTagSuggestions(cookie, req, res, cookieValid);
+			routeFound = true;
 		}
-	}
-	else if(req.params.type === "remove_from_watchlist")
-	{
-		if(cookieValid)
+		else if(req.params.id !== undefined)
 		{
-			removeFromWatchList(cookie, req, res);
+			getMovieInfo(cookie, req, res, cookieValid);
+			routeFound = true;
 		}
-		else
+		else if(req.params.type === "my_watch_list")
 		{
-			res.status(401).send({
-				message: "No cookie or cookie invalid",
-				requester: ""
-			});
+			if(cookieValid)
+			{
+				getWatchList(cookie, req, res);
+				routeFound = true;
+			}
+			else
+			{
+				foundNoCookie = true;
+			}
+		}
+		else if(req.params.type === "my_watched_list")
+		{
+			if(cookieValid)
+			{
+				getWatchedList(cookie, req, res);
+				routeFound = true;
+			}
+			else
+			{
+				foundNoCookie = true;
+			}
 		}
 	}
-	else if(req.params.type === "add_to_watched")
+	else if(req.method === "POST")
 	{
-		if(cookieValid)
+		if(req.params.type === "add_to_watchlist")
 		{
-			addToWatched(cookie, req, res);
+			if(cookieValid)
+			{
+				addToWatchList(cookie, req, res);
+				routeFound = true;
+			}
+			else
+			{
+				foundNoCookie = true;
+			}
 		}
-		else
+		else if(req.params.type === "remove_from_watchlist")
 		{
-			res.status(401).send({
-				message: "No cookie or cookie invalid",
-				requester: ""
-			});
+			if(cookieValid)
+			{
+				removeFromWatchList(cookie, req, res);
+				routeFound = true;
+			}
+			else
+			{
+				foundNoCookie = true;
+			}
+		}
+		else if(req.params.type === "add_to_watched")
+		{
+			if(cookieValid)
+			{
+				addToWatched(cookie, req, res);
+				routeFound = true;
+			}
+			else
+			{
+				foundNoCookie = true;
+			}
+		}
+		else if(req.params.type === "remove_from_watched")
+		{
+			if(cookieValid)
+			{
+				removeFromWatched(cookie, req, res);
+				routeFound = true;
+			}
+			else
+			{
+				foundNoCookie = true;
+			}
 		}
 	}
-	else if(req.params.type === "remove_from_watched")
+	// if the route did not match any of the above
+	if(!routeFound)
 	{
-		if(cookieValid)
-		{
-			removeFromWatched(cookie, req, res);
-		}
-		else
-		{
-			res.status(401).send({
-				message: "No cookie or cookie invalid",
-				requester: ""
-			});
-		}
-	}
-	else if((req.params.type === "my_watched_list" || req.params.type === "my_watch_list") && !cookieValid)
-	{
-		res.status(401).send({
-			message: "No cookie or cookie invalid",
-			requester: ""
-		});
-	}
-    // some unknow path given
-    else
-    {
-        console.log(req.params);
 		let requester = cookieValid ? cookie.name : "";
-        res.status(404).send({
-			message: "Request not understood",
+		res.status(404).send({
+			message:"The movie path sent to the server does not exist",
 			requester: requester
 		});
-    }
+	}
+	// if the route was found but cookie not found or invalid
+	else if(foundNoCookie)
+	{
+		let requester = cookieValid ? cookie.name : "";
+		res.status(401).send({
+			message:"You are not logged in",
+			requester: requester
+		});
+	}
 };
 
 // this function will return the movie titles for the review form
@@ -135,39 +149,37 @@ const selectPath = (cookie, req, res, cookieValid) =>
 // limits the number returned to 10
 const getMovieTitles = async (cookie, req, res, cookieValid) =>
 {
-		let value = req.query.title;
-		console.log("Value: " + value);
-		// find the movies containing the value
-		let movies = await models.Movies.findByTitle(models, value, 10);
-		if(movies === undefined)
+	let value = req.query.title;
+	let requester = (cookieValid) ? cookie.name : "";
+	// find the movies containing the value
+	let movies = await models.Movies.findByTitle(models, value, 10);
+	if(movies === undefined)
+	{
+		res.status(404).send({
+			message: "Unable to find any movies matching that value",
+			requester: requester
+		});
+	}
+	else
+	{
+		if(movies.length < 1)
 		{
-				res.status(404).send("Unable to find any movies matching that value");
+			res.status(404).send({
+				message: "Unable to find any movies matching that value",
+				requester: requester
+			});
 		}
 		else
 		{
-				if(movies.length < 1)
-				{
-						res.status(404).send("Unable to find any movies matching that value");
-				}
-				else
-				{
-					console.log(movies);
-					res.status(200).send({Movies: movies});
-				}
+			console.log(movies);
+			res.status(200).send({
+				message: "Movies successfully found",
+				requester: requester,
+				movies: movies
+			});
 		}
+	}
 };
-
-// temp function to creat tags
-const createTag = async (cookie, req, res) =>
-{
-	let value = req.query.tag;
-	let tag = await models.MovieTag.create({
-		value: value
-	});
-	res.status(200).send({
-		tag: tag
-	});
-}
 
 // this function will return a list of tag suggestions based off the value passed in
 const getMovieTagSuggestions = async (cookie, req, res, cookieValid) =>

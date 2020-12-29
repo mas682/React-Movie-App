@@ -55,6 +55,7 @@ class MoviePost extends React.Component {
         }
         else
         {
+            console.log(this.props.data.review);
             let moviePath = this.props.data.review.movie.title.replace(" ", "-");
             moviePath = "/movie/" + this.props.data.review.movie.id + "-" + moviePath;
             this.state = {
@@ -443,7 +444,6 @@ class MoviePost extends React.Component {
     // called by ReviewForm component when creator is editing their existing post
     updateState(reviewResult)
     {
-        reviewResult = undefined;
         if(reviewResult === undefined)
         {
             // may want to use this?
@@ -782,7 +782,7 @@ class MoviePost extends React.Component {
     generateHTML()
     {
         let editButtons = this.generateEditButtons();
-        let stars = generateRatingStars(style, this.state.id, this.state.rating);
+        let stars = generateRatingStars(style, this.state.id, this.state.rating, this.state.form);
         let likedButton = this.generateLikedButton();
         let editPopup = this.generateEditPopUp();
         let goodButtonArray = this.generateGoodButtons();

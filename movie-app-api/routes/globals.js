@@ -45,7 +45,7 @@ const verifyLogin= async (cookie)=>
 // value is the parameter value
 // username is the logged in user
 // message is the message to return
-const validateIntegerParameter = (res, value, requester, message) => {
+const validateIntegerParameter = (res, value, requester, message, minValue, maxValue) => {
     if(value === undefined)
     {
         res.status(400).send({
@@ -61,6 +61,28 @@ const validateIntegerParameter = (res, value, requester, message) => {
             requester: requester
         });
         return false;
+    }
+    if(minValue !== undefined)
+    {
+        if(value < minValue)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+            return false;
+        }
+    }
+    if(maxValue !== undefined)
+    {
+        if(value > maxValue)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+            return false;
+        }
     }
     return true;
 };

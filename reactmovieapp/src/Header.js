@@ -197,7 +197,7 @@ class Header extends React.Component {
             let path = "/profile/" + this.state.currentUser;
             if(this.state.currentUser !== "")
             {
-                redirect = <Redirect to={{pathname: path}}/>;
+                redirect = <Redirect to={{pathname: path, state: {newReview: true}}}/>;
             }
         }
         let reviewForm = "";

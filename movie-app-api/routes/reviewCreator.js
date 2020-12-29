@@ -6,7 +6,7 @@ import models, { sequelize } from '../src/models';
 const validateReviewParameters = (res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, checkReviewId, reviewId) =>
 {
     // check to make sure the rating is a actual number
-    let valid = validateIntegerParameter(res, rating, requester, "The rating for the review is invalid");
+    let valid = validateIntegerParameter(res, rating, requester, "The rating for the review is invalid", 0, 5);
     if(!valid) return valid;
     // check the review itself
     valid = validateStringParameter(res, reviewText, 0, 6000, requester, "The review field is invalid");
@@ -61,6 +61,7 @@ const createReview = async (cookie, req, res) =>
     let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, false, undefined);
     if(!valid) return;
 
+    console.log("Review rating: " + rating);
     let review;
     try {
         review = await models.Review.create({
@@ -181,7 +182,8 @@ const updateReview = async (cookie, req, res) =>
             result = await review.update({
                 movieId: movieId,
                 review: reviewText,
-                userId: userId
+                userId: userId,
+                rating: rating
             });
         }
         catch(err)
