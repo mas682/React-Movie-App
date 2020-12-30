@@ -18,64 +18,41 @@ class Landing extends React.Component {
 			}
 		}
 		this.state = {
-			authenticated: null,
-			username: "",
+			loading: true,
+			currentUser: this.props.currentUser,
 		}
 	}
 
-	async componentDidMount()
-    {
-        this.callApi().then(result =>{
-            // set status to result[0]
-            let status = result[0];
-            // see if request succeeded
-            if(status == 200 && result[1] !== "No user logged in")
-            {
-                this.setState({
-                    authenticated: true,
-					username: result[1],
-					loaded: true
-                });
-				this.props.updateLoggedIn(result[1], true);
-            }
-            else
-            {
-				this.setState({authenticated: false});
-				this.props.updateLoggedIn("", false);
-            }
-        });
-    }
-	// will eventually want some data returned other than just
-	// verifying if logged in or not
-	callApi()
-	{
-		const requestOptions = {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json'},
-        };
+	componentDidMount() {
+		this.setState({
+			loading: false
+		});
+	}
 
-        let status = 0;
-        return fetch("http://localhost:9000/", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.text();
-            }).then(result =>{
-                return [status, result];
-            });
+	static getDerivedStateFromProps(nextProps, prevState)
+	{
+		if(prevState.currentUser !== nextProps.currentUser)
+		{
+			return {currentUser: nextProps.currentUser};
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 
 	render() {
-		if(this.state.authenticated === null)
+		if(this.state.loading)
 		{
 			return null;
 		}
 		else
 		{
-			if(this.state.authenticated)
+			// if logged in
+			if(this.state.currentUser !== "")
 			{
-				let path = "/profile/" + this.state.username + "/feed";
+				let path = "/profile/" + this.state.currentUser + "/feed";
 				return <Redirect to={path} />
 			}
 			return (

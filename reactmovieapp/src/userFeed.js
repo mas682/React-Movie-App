@@ -14,7 +14,7 @@ class UserFeed extends React.Component {
             // this gets the username from the url
             // in the router, set the username as :id
             username: this.props.match.params.id,
-            currentUser: "",
+            currentUser: this.props.currentUser,
             // this will be set by the api call
             posts: [],
             loading: true,
@@ -38,12 +38,11 @@ class UserFeed extends React.Component {
             if(status == 200)
             {
                 this.setState({
-                    posts: result[1],
-                    currentUser: this.state.username,
+                    posts: result[1].reviews,
+                    currentUser: result[1].requester,
                     loading: false
                 });
-                console.log(this.state.username);
-                this.props.updateLoggedIn(this.state.username);
+                this.props.updateLoggedIn(result[1].requester);
             }
             else
             {

@@ -70,6 +70,19 @@ class Header extends React.Component {
     updateNewState(nextProps)
     {
         let reviewFormOpen = (nextProps.showLoginPopUp) ? false : this.state.showLoginPopUp;
+        let redirect = false;
+        console.log(this.state);
+        console.log(nextProps);
+        /*
+        left off here...
+        need to get this working so that it redirects on login
+        issue may be in users feed page?
+        actually issue is on landing page, does not receive props...
+        */
+        if(nextProps.redirectOnLogin && (this.state.currentUser !== nextProps.currentUser))
+        {
+            redirect = true;
+        }
         this.setState({
             currentUser: nextProps.currentUser,
             loggedIn: nextProps.loggedIn,
@@ -108,6 +121,11 @@ class Header extends React.Component {
 
     generateReviewForm()
     {
+        if(this.state.currentUser === "")
+        {
+            this.props.showLoginPopUpFunction(true);
+            return;
+        }
         this.setState({reviewFormOpen: true});
     }
 
@@ -115,6 +133,7 @@ class Header extends React.Component {
     {
         document.cookie = "MovieAppCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         this.setState({currentUser: "", loggedIn: false, redirect: true});
+        this.props.updateLoggedIn("");
     }
 
     shouldComponentUpdate(nextProps, nextState)
@@ -194,11 +213,16 @@ class Header extends React.Component {
         }
         if(this.state.redirectToProfile)
         {
+            alert("Redirect to profile");
             let path = "/profile/" + this.state.currentUser;
             if(this.state.currentUser !== "")
             {
                 redirect = <Redirect to={{pathname: path, state: {newReview: true}}}/>;
             }
+        }
+        if(this.state.redirectOnLogin)
+        {
+
         }
         let reviewForm = "";
         if(this.state.reviewFormOpen)

@@ -208,7 +208,7 @@ const addLike = (cookie, req, res) =>
         {
             // may want to only let a user like their friends posts???
             // add the like to the review based off the users id
-            review.addLike(userId)
+            review.addLike(userId, { through: {uid: userId }})
             .then((result) => {
                 // if undefined, a association already exists
                 if(result === undefined)

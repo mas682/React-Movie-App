@@ -413,54 +413,75 @@ const review = (sequelize, DataTypes) => {
         return usersWhoLiked;
     };
 
-    // function to return all users from a list of users who liked a post that
-    // the requesting user follows
-    // reviewId is the id of the review whose likes are being checked
-    // userId is the user id of the requesting user
-    Review.getFollowingFromLikes = async (reviewId, userId, models) => {
-        // get the review
-        let review = await Review.findAll({where: {id: reviewId}});
-        if(review === null)
-        {
-            return null;
-        }
-        // get the users who liked the post that have the requester as a follower
-        let followedUsers = await review[0].getLikes({
-            include:[
-                {
+    // function to get reviews for a set of users
+    // can also be used to get a individual users reviews if passed a single id
+    // this also checks to see if the reviews that are returned are
+    // also liked by the requester
+    Review.getUserReviewFeed = async (models, requesterId) =>
+    {
+        let includeArray = [
+            {
+                model: models.User,
+                as: "user",
+                attributes: ["username", "id"],
+                required: true,
+                include: {
                     model: models.User,
                     as: "Followers",
-                    where: {id: userId}
+                    attributes: ["id"],
+                    through: {attributes: []},
+                    where: {id: requesterId},
+                    required: true
                 }
-            ]
-        });
-        return followedUsers;
-    };
+            },
+            {
+                model: models.MovieTag,
+                as: "goodTags",
+                // included the id to make one less query needed to find tag
+                attributes:["id", "value"],
+                // do not include the association table
+                through: {attributes: []}
+            },
+            {
+                model: models.MovieTag,
+                as: "badTags",
+                // included the id to make one less query needed to find tag
+                attributes: ["id", "value"],
+                through: {attributes: []}
+            },
 
-    // function to return all users from a list of users who liked a post that
-    // the requesting user does not follow
-    // reviewId is the id of the review whose likes are being checked
-    // userId is the user id of the requesting user
-    // ids is an array of user id's whom the requesting user already follows
-    // this should be called after the getFollowingFromLikes function is called
-    Review.getNotFollowingFromLikes = async (reviewId, userId, ids, models) => {
-        let review = await Review.findAll({where: {id: reviewId}});
-        if(review === null)
-        {
-            return null;
-        }
-        // get the users who liked the post that do not have requester as a follower
-        let notFollowedUsers = await review[0].getLikes({
-                where: {id:{[Op.notIn]:ids}},
-                include:[
-                    {
-                        model: models.User,
-                        as: "Followers",
-                    }
-                ]
+            {
+                model: models.User,
+                as: "likes",
+                required: false,
+                attributes: [],
+                through: {attributes: []}
+            },
+            {
+                    model: models.Movies,
+                    as: "movie",
+                    attributes: ["title", "id", "poster"],
+            }
+
+        ];
+        let groupByArray = ["review.id", "user.id", "goodTags.id","badTags.id", "movie.id", "user->Followers.id"];
+        // may need to eventually sort by time stamps if not doing it already
+        let reviews = await Review.findAll({
+            order: [["updatedAt", 'DESC']],
+            // only get these attributes
+            attributes: {
+                include: ["id", "rating", "review", "updatedAt", "createdAt",
+                        // get the number of likes
+                        [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"],
+                        // check if the user liked the post
+                        [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->like"."userId" != ${requesterId} THEN 0 ELSE 1 END`)), 'liked']]},
+            // include the following models with the specified attributes
+            include:includeArray,
+            group: groupByArray
         });
-        return notFollowedUsers;
-    };
+
+        return reviews;
+    }
 
 
     return Review;

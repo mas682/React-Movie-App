@@ -255,16 +255,35 @@ const getReviews = async (cookie, req, res, cookieValid) =>
 };
 
 // function to get the feed for a specific user
-const getFeed = (cookie, req, res) =>
+const getFeed = async (cookie, req, res) =>
 {
     let username = req.params.userId;
+    let requester = cookie.name;
+    // may want to just do /feed...?, no username?
+    let valid = validateUsernameParameter(res, username, requester, "Username for the users feed is invalid");
+    if(!valid) return;
     if(username !== cookie.name)
     {
         // unathorized
-        res.status(401).send("You cannot access the feed of another user");
+        res.status(401).send({
+            message: "You cannot access the feed of another user",
+            requester: requester
+        });
         return;
     }
-    models.User.getAllFollowers(username)
+
+    let reviews = await models.Review.getUserReviewFeed(models, cookie.id);
+    console.log("New query: ");
+    console.log(reviews);
+    console.log(reviews[0].dataValues);
+    console.log(reviews[0].likeCount);
+    left off here...
+    working on getting a users feed
+    now set it up to get the count, if user liked it easier
+    will need to apply this to other functions in review.js that get the count...
+    will also need to handle changes client side..
+
+    models.User.getAllFollowers(cookie.id)
     .then((followers) =>{
         let userIds = [];
         followers.forEach((user) => {
@@ -273,8 +292,11 @@ const getFeed = (cookie, req, res) =>
         userIds.push(cookie.id);
         models.Review.findByIds(models, userIds, cookie.id)
         .then((reviews) =>{
-            console.log(reviews[0].review.movie);
-            res.status(200).send(reviews);
+            res.status(200).send({
+                message: "Users feed successfully found",
+                requester: requester,
+                reviews: reviews
+            });
         });
     });
 
