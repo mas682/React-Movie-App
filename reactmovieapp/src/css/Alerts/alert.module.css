@@ -8,7 +8,9 @@
 {
     position: sticky;
     top: 0; /* required */
-    width: 100%;
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
     z-index: 1;
     padding-top: 15px;
     /*border-top: 20px solid transparent;*/
@@ -17,9 +19,7 @@
 .messageBox {
     position: sticky;
     margin-bottom: 10px;
-    width: 80%;
-    margin-left: 10%;
-    margin-right: 10%;
+    width: 100%;
     border-radius: 10px;
     font-size: 1.25em;
     display: flex;

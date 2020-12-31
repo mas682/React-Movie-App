@@ -117,7 +117,6 @@ class ProfileHeader extends React.Component {
 
     // function to handle getting data from api
     getData = async (username) => {
-        //alert("Get data header");
         // note: this will get called twice if going from address bar as this the first props
         // will come in saying the logged in user is "" even if you are logged in
         // second time around have the correct username and send the request again
@@ -423,7 +422,7 @@ class ProfileHeader extends React.Component {
                         username={this.state.username}
                         type="Followers"
                         removeFunction={this.removePopUp}
-                        updateFunction={this.updateFollowingCount}
+                        updateFollowingFunction={this.updateFollowingCount}
                         changeFunction={this.changeFollowedCount}
                         loggedInUser={this.state.loggedInUser}
                         updateLoggedIn={this.props.updateLoggedIn}
@@ -437,7 +436,7 @@ class ProfileHeader extends React.Component {
                         username={this.state.username}
                         type="Following"
                         removeFunction={this.removePopUp}
-                        updateFunction={this.updateFollowingCount}
+                        updateFollowingFunction={this.updateFollowingCount}
                         changeFunction={this.changeFollowingCount}
                         loggedInUser={this.state.loggedInUser}
                         updateLoggedIn={this.props.updateLoggedIn}

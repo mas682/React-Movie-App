@@ -27,61 +27,137 @@ const profileHandler = (req, res, next) => {
 
 const selectPath = (cookie, req, res, cookieValid) =>
 {
-    console.log(req.params.userId);
-    // if here, the path is profile/username
-    if(Object.keys(req.params).length == 1 && Object.keys(req.query).length === 0)
+    let routeFound = false;
+    let foundNoCookie = false;
+    if(req.method === "GET")
     {
-        getReviews(cookie, req, res, cookieValid);
+        // if here, the path is profile/username
+        if(req.params.type === "reviews")
+        {
+            routeFound = true;
+            getReviews(cookie, req, res, cookieValid);
+        }
+        else if(req.params.userId === "query")
+        {
+            routeFound = true;
+            // get profile names
+            // Not sure if this is ever actually used? could be in future though for
+            // search pages..
+            getProfiles(cookie, req, res, cookieValid);
+        }
+        else if(req.params.type === "user_info")
+        {
+            routeFound = true;
+            getUserHeaderInfo(cookie, req, res, cookieValid);
+        }
+        else if(req.params.type === "feed")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                getFeed(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
+        else if(req.params.type === "getfollowers")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                getFollowers(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
+        else if(req.params.type === "getfollowing")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                getFollowing(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
     }
-    else if(req.params.userId === "query")
+    else if(req.method === "POST")
     {
-        getProfiles(cookie, req, res, cookieValid);
+        // if the path is profile/username/follow
+        if(req.params.type === "follow")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                followUser(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
+        // if the path is profile/username/follow
+        else if(req.params.type === "unfollow")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                unfollowUser(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
+        // profile/username/update
+        else if(req.params.type === "update")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                updateInfo(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
+        else if(req.params.type === "update_password")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                updatePassword(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
     }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "user_info")
+    // if the route did not match any of the above
+    if(!routeFound)
     {
-        getUserHeaderInfo(cookie, req, res, cookieValid);
-    }
-    // if the path is profile/username/follow
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "follow" && cookieValid)
-    {
-        followUser(cookie, req, res);
-    }
-    // if the path is profile/username/follow
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "unfollow" && cookieValid)
-    {
-        unfollowUser(cookie, req, res);
-    }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "feed" && cookieValid)
-    {
-        getFeed(cookie, req, res);
-    }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "update" && cookieValid)
-    {
-        updateInfo(cookie, req, res);
-    }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "update_password" && cookieValid)
-    {
-        updatePassword(cookie, req, res);
-    }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "getfollowers" && cookieValid)
-    {
-        getFollowers(cookie, req, res);
-    }
-    else if(Object.keys(req.params).length == 2 && req.params[0] === "getfollowing" && cookieValid)
-    {
-        getFollowing(cookie, req, res);
-    }
-    else if(!cookieValid)
-    {
-        res.status(401).send({
-            message: "No cookie or cookie invalid",
-            requester: ""
+        let requester = cookieValid ? cookie.name : "";
+        res.status(404).send({
+            message:"The profile path sent to the server does not exist",
+            requester: requester
         });
     }
-    // some unknow path given
-    else
+    // if the route was found but cookie not found or invalid
+    else if(foundNoCookie)
     {
-        res.status(404).send({message: "Request failed"});
+        let requester = cookieValid ? cookie.name : "";
+        res.status(401).send({
+            message:"You are not logged in",
+            requester: requester
+        });
     }
 };
 
@@ -272,32 +348,15 @@ const getFeed = async (cookie, req, res) =>
         return;
     }
 
+    // this will always return an array, even if the user does not exist
+    // if the user does not exist, it will just be a empty array
+    // if verified the user is logged in, should not really be an issue
     let reviews = await models.Review.getUserReviewFeed(models, cookie.id);
-    console.log("New query: ");
-    console.log(reviews);
-    console.log(reviews[0].dataValues);
-    console.log(reviews[0].likeCount);
-    left off here...
-    working on getting a users feed
-    now set it up to get the count, if user liked it easier
-    will need to apply this to other functions in review.js that get the count...
-    will also need to handle changes client side..
 
-    models.User.getAllFollowers(cookie.id)
-    .then((followers) =>{
-        let userIds = [];
-        followers.forEach((user) => {
-            userIds.push(user.id);
-        });
-        userIds.push(cookie.id);
-        models.Review.findByIds(models, userIds, cookie.id)
-        .then((reviews) =>{
-            res.status(200).send({
-                message: "Users feed successfully found",
-                requester: requester,
-                reviews: reviews
-            });
-        });
+    res.status(200).send({
+        message: "Users feed successfully found",
+        requester: requester,
+        reviews: reviews
     });
 
 };

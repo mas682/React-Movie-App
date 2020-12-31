@@ -115,8 +115,8 @@ class UserProfile extends React.Component {
     shouldComponentUpdate(nextProps, nextState){
         // only rerender if there was a change in followers, following, or username
         // whose page we are currently on
-        return (nextState.followingCountChange !== 0
-             || nextState.followerCountChange !== 0
+        return (nextState.followingCountChange !== this.state.followingCountChange
+             || nextState.followerCountChange !== this.state.followerCountChange
              || nextState.username !== this.state.username
              || nextState.currentUser !== this.state.currentUser
              || nextState.postCount !== this.state.postCount
@@ -206,7 +206,7 @@ class UserProfile extends React.Component {
                     <MoviePostDisplay
                         username={this.state.username}
                         setPostCount={this.setPostCount}
-                        updateFunction={this.updateFollowingCount}
+                        updateFollowingFunction={this.updateFollowingCount}
                         updateFollowersFunction={this.updateFollowerCount}
                         updateLoggedIn={this.props.updateLoggedIn}
                         showLoginPopUp={this.props.showLoginPopUp}

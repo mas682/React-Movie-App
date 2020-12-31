@@ -84,17 +84,11 @@ const review = (sequelize, DataTypes) => {
                 through: {attributes: []}
             },
             {
-
                 model: models.User,
                 as: "likes",
                 required: false,
-                attributes: [
-                    // count the number of user id's found in each record and return it as
-                    // the attirube liked
-                    [sequelize.fn("COUNT", sequelize.col("user.id")), "liked"]
-                ],
-                through: {attributes: []},
-                seperate: true
+                attributes: [],
+                through: {attributes: []}
             },
             {
                     model: models.Movies,
@@ -103,8 +97,20 @@ const review = (sequelize, DataTypes) => {
             }
 
         ];
-        let groupByArray = ["review.id", "user.username", "user.id", "goodTags.id","badTags.id",
-         "likes.id", "movie.title", "movie.id", "movie.poster"];
+        let groupByArray = ["review.id", "user.id", "goodTags.id","badTags.id", "movie.id"];
+        let attributes = ["id", "rating", "review", "updatedAt", "createdAt",
+                // get the number of likes
+                [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"],
+                // check if the user liked the post
+                [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->like"."userId" = ${requesterId} THEN 1 ELSE 0 END`)), 'liked']
+        ];
+        if(requesterId === undefined)
+        {
+            attributes = ["id", "rating", "review", "updatedAt", "createdAt",
+                    // get the number of likes
+                    [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"]
+            ]
+        }
         // may need to eventually sort by time stamps if not doing it already
         let reviews = await Review.findAll({
             where: {
@@ -112,44 +118,20 @@ const review = (sequelize, DataTypes) => {
             },
             order: [["updatedAt", 'DESC']],
             // only get these attributes
-            attributes: ["id", "rating", "review", "updatedAt", "createdAt"],
+            attributes: {
+                include: attributes
+            },
             // include the following models with the specified attributes
             include:includeArray,
             group: groupByArray
         });
-
-        // this will be really slow so will need fixed at some point
-        // array to hold result
-        let result = [];
-        // loop through the reviews of the user
-        for(let i = 0; i < reviews.length; i++)
-        {
-            // get the first review
-            let tempReview = reviews[i];
-            let liked = false;
-            // if undefined, user looking at posts not logged in
-            if(requesterId !== undefined)
-            {
-                // query to see if requester liked post
-                // will return a empty array if not
-                let user = await tempReview.getLikes(
-                    {
-                        where: {id: requesterId}
-                    }
-                );
-                if(user.length > 0)
-                {
-                    liked = true;
-                }
-            }
-            result.push({review: tempReview, liked: liked});
-        }
-
-        return result;
+        console.log(requesterId);
+        console.log(reviews);
+        return reviews;
     }
 
 
-    // function to get a individual review with the users who liked it
+    // function to get a INDIVIDUAL review with the users who liked it
     // this also checks to see if the reviews that are returned are
     // also liked by the requester
     Review.findByIdWithLikes = async (models, reviewId, requesterId) =>
@@ -176,17 +158,11 @@ const review = (sequelize, DataTypes) => {
                 through: {attributes: []}
             },
             {
-
                 model: models.User,
                 as: "likes",
                 required: false,
-                attributes: [
-                    // count the number of user id's found in each record and return it as
-                    // the attirube liked
-                    [sequelize.fn("COUNT", sequelize.col("user.id")), "liked"]
-                ],
-                through: {attributes: []},
-                seperate: true
+                attributes: [],
+                through: {attributes: []}
             },
             {
                     model: models.Movies,
@@ -195,8 +171,20 @@ const review = (sequelize, DataTypes) => {
             }
 
         ];
-        let groupByArray = ["review.id", "user.username", "user.id", "goodTags.id","badTags.id",
-         "likes.id", "movie.title", "movie.id", "movie.poster"];
+        let groupByArray = ["review.id", "user.id", "goodTags.id","badTags.id", "movie.id"];
+        let attributes = ["id", "rating", "review", "updatedAt", "createdAt",
+                // get the number of likes
+                [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"],
+                // check if the user liked the post
+                [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->like"."userId" = ${requesterId} THEN 1 ELSE 0 END`)), 'liked']
+        ];
+        if(requesterId === undefined)
+        {
+            attributes = ["id", "rating", "review", "updatedAt", "createdAt",
+                    // get the number of likes
+                    [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"]
+            ]
+        }
         // may need to eventually sort by time stamps if not doing it already
         let reviews = await Review.findAll({
             where: {
@@ -204,40 +192,15 @@ const review = (sequelize, DataTypes) => {
             },
             order: [["updatedAt", 'DESC']],
             // only get these attributes
-            attributes: ["id", "rating", "review", "updatedAt", "createdAt"],
+            attributes: {
+                include: attributes
+            },
             // include the following models with the specified attributes
             include:includeArray,
             group: groupByArray
         });
 
-        // this will be really slow so will need fixed at some point
-        // array to hold result
-        let result = [];
-        // loop through the reviews of the user
-        for(let i = 0; i < reviews.length; i++)
-        {
-            // get the first review
-            let tempReview = reviews[i];
-            let liked = false;
-            // if undefined, user looking at posts not logged in
-            if(requesterId !== undefined)
-            {
-                // query to see if requester liked post
-                // will return a empty array if not
-                let user = await tempReview.getLikes(
-                    {
-                        where: {id: requesterId}
-                    }
-                );
-                if(user.length > 0)
-                {
-                    liked = true;
-                }
-            }
-            result.push({review: tempReview, liked: liked});
-        }
-
-        return result;
+        return reviews;
     }
 
     Review.findByIdForUpdate = async (models, reviewId) => {
@@ -262,59 +225,6 @@ const review = (sequelize, DataTypes) => {
                     // included the id to make one less query needed to find tag
                     attributes: ["id", "value"],
                     through: {attributes: []}
-                }
-            ]
-        });
-        return reviews;
-    }
-
-
-    // find a review based off its id
-    Review.findByReviewId = async (models,reviewId) => {
-        let reviews = await Review.findAll({
-            where: {
-                id: reviewId
-            },
-            // only get these attributes
-            // include the following models with the specified attributes
-            include:[
-                {
-                    model: models.User,
-                    as: "user",
-                    attributes: ["username", "id"]
-                },
-                {
-                    model: models.Movies,
-                    as: "movie",
-                    //attributes: ["title", "id", "poster"]
-                },
-                {
-                    model: models.MovieTag,
-                    as: "goodTags",
-                    // included the id to make one less query needed to find tag
-                    attributes:["id", "value"],
-                    // do not include the association table
-                    through: {attributes: []}
-                },
-                {
-                    model: models.MovieTag,
-                    as: "badTags",
-                    // included the id to make one less query needed to find tag
-                    attributes: ["id", "value"],
-                    through: {attributes: []}
-                },
-                {
-                    model: models.Comment,
-                    attributes: ["id", "value", "updatedAt"],
-                    seperate: true,
-                    order: [["updatedAt", 'ASC']],
-                    // for the comments, also include the following information about the user
-                    include: [
-                        {
-                            model: models.User,
-                            attributes: ["username", "email"]
-                        }
-                    ]
                 }
             ]
         });
@@ -449,7 +359,6 @@ const review = (sequelize, DataTypes) => {
                 attributes: ["id", "value"],
                 through: {attributes: []}
             },
-
             {
                 model: models.User,
                 as: "likes",
@@ -465,16 +374,26 @@ const review = (sequelize, DataTypes) => {
 
         ];
         let groupByArray = ["review.id", "user.id", "goodTags.id","badTags.id", "movie.id", "user->Followers.id"];
+        let attributes = ["id", "rating", "review", "updatedAt", "createdAt",
+                // get the number of likes
+                [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"],
+                // check if the user liked the post
+                [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->like"."userId" = ${requesterId} THEN 1 ELSE 0 END`)), 'liked']
+        ];
+        if(requesterId === undefined)
+        {
+            attributes = ["id", "rating", "review", "updatedAt", "createdAt",
+                    // get the number of likes
+                    [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"]
+            ]
+        }
         // may need to eventually sort by time stamps if not doing it already
         let reviews = await Review.findAll({
             order: [["updatedAt", 'DESC']],
             // only get these attributes
             attributes: {
-                include: ["id", "rating", "review", "updatedAt", "createdAt",
-                        // get the number of likes
-                        [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"],
-                        // check if the user liked the post
-                        [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->like"."userId" != ${requesterId} THEN 0 ELSE 1 END`)), 'liked']]},
+                include: attributes
+            },
             // include the following models with the specified attributes
             include:includeArray,
             group: groupByArray

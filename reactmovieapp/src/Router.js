@@ -26,7 +26,8 @@ class Routes extends React.Component
             messages: [],
             messageId: -1,
             clearMessages: false,
-            newReview: false
+            newReview: false,
+            loading: true
         });
         this.updateLoggedIn = this.updateLoggedIn.bind(this);
         this.showLoginPopUp = this.showLoginPopUp.bind(this);
@@ -156,12 +157,18 @@ class Routes extends React.Component
         let result = await apiGetJsonRequest("http://localhost:9000/login/authenticate");
         let requester = result[1].requester;
         this.updateLoggedIn(requester);
+        this.setState({
+            loading: false
+        });
     }
 
     render()
     {
         //<Route exact path="/movie" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} />} />
-
+        if(this.state.loading)
+        {
+            return null;
+        }
         console.log("username in router " + this.state.currentUser);
         //alert("Router: " + this.state.currentUser);
         return (<React.Fragment>
@@ -191,8 +198,8 @@ class Routes extends React.Component
                         <Route exact path="/upcoming" render={(props)=> <MovieFilterPage {...props} type="Upcoming Movies" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
                         <Route exact path="/new_releases" render={(props)=> <MovieFilterPage {...props} type="New Releases" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
                         <Route exact path="/profile/:id" render={(props)=> <UserProfile {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} removeLoginPopUp={this.removeLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages} newReview={this.state.newReview}/> } />
-                        <Route exact path="/profile/:id/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp}/> } />
-                        <Route exact path="/settings" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn} setMessages={this.setMessages}/>} />
+                        <Route exact path="/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/> } />
+                        <Route exact path="/settings" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn} setMessages={this.setMessages} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
                         <Route exact path="/movie/:id" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
                     </Switch>
                 </main>

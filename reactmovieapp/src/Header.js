@@ -13,6 +13,7 @@ import SearchDropDown from './SearchDropDown.js';
 class Header extends React.Component {
     constructor(props){
         super(props);
+        console.log(props);
         this.state = {
             reviewFormOpen: false,
             currentUser: this.props.currentUser,
@@ -132,8 +133,13 @@ class Header extends React.Component {
     logout()
     {
         document.cookie = "MovieAppCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        this.setState({currentUser: "", loggedIn: false, redirect: true});
+        this.setState({currentUser: "", loggedIn: false});
         this.props.updateLoggedIn("");
+        // clear the messages being displayed..
+        this.props.setMessages({
+            message: undefined,
+            clearMessages: true
+        });
     }
 
     shouldComponentUpdate(nextProps, nextState)
@@ -209,6 +215,7 @@ class Header extends React.Component {
         let redirect = "";
         if(this.state.redirect)
         {
+            alert("redirecting");
             redirect = <Redirect to="/" />;
         }
         if(this.state.redirectToProfile)
@@ -239,7 +246,7 @@ class Header extends React.Component {
         let homePath = "/";
         if(this.state.currentUser !== "")
         {
-            homePath = "/profile/" + this.state.currentUser + "/feed";
+            homePath = "/feed";
         }
         if(this.state.loggedIn)
         {
@@ -296,7 +303,6 @@ class Header extends React.Component {
                         {redirect}
         			</div>
     		);
-        //  class={`fa fa-thumbs-up ${style.thumbsUp}`}
         }
         else
         {
@@ -340,10 +346,10 @@ class Header extends React.Component {
                         </div>
                         <div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
                         <div class="profile">
-                            <Link class="profileButton" onClick={this.showSignInForm}>About</Link>
+                            <Link class="profileButton" onClick={() => {this.props.showLoginPopUpFunction(false)}}>About</Link>
                         </div>
                         <div class="profile">
-                            <Link class="profileButton" onClick={this.showSignInForm}>Login</Link>
+                            <Link class="profileButton" onClick={() => {this.props.showLoginPopUpFunction(true)}}>Login</Link>
                         </div>
                         <div class="profile">
                             <Link class="profileButton" onClick={this.showSignUpForm}>Sign Up</Link>

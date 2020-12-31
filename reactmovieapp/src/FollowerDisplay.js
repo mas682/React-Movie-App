@@ -74,19 +74,17 @@ class FollowerDisplay extends React.Component {
                 following: true,
                 loggedInUser: loggedInUser
             });
-            if(this.state.type !== "Likes")
+
+            // if this is the current user, update their following count
+            if(loggedInUser === this.state.username)
             {
-                // if this is the current user, update their following count
-                if(loggedInUser === this.state.username)
-                {
-                    this.props.updateFunction(1);
-                }
-                // if the clicked on username to follow is the user whose page we are on
-                // update their follower count
-                else if(this.state.user.username === this.state.username)
-                {
-                    this.props.updateFollowersFunction(1);
-                }
+                this.props.updateFollowingFunction(1);
+            }
+            // if the clicked on username to follow is the user whose page we are on
+            // update their follower count
+            else if(this.state.user.username === this.state.username)
+            {
+                this.props.updateFollowersFunction(1);
             }
             this.props.showMessage({messages: [{message: message, type: "success"}]});
         }
@@ -150,12 +148,15 @@ class FollowerDisplay extends React.Component {
             });
             if(loggedInUser === this.state.username)
             {
-                this.props.updateFunction(-1);
+                this.props.updateFollowingFunction(-1);
             }
             // if the clicked on username to follow is the user whose page we are on
             // update their follower count
+            // should only occur from likes post as users who are on their own page cannot follow
+            // themself
             else if(this.state.user.username === this.state.username)
             {
+                console.log(this.props);
                 this.props.updateFollowersFunction(-1);
             }
             this.props.showMessage({messages: [{message: message, type: "success"}]});

@@ -49,18 +49,21 @@ router.get('/getuserinfo', function(req, res, next) {
 });
 
 // used to see a users posts
-router.get('/profile/:userId/', function(req, res, next) {
+// will need to test this
+router.get('/profile/query', function(req, res, next) {
     profileHandler(req, res, next);
 });
 
-router.get('/profile/:userId/*', function(req, res, next) {
+router.get('/profile/:userId/:type', function(req, res, next) {
     profileHandler(req, res, next);
 });
 
 // used for all posts routes to /profile/username/some other parameter
-router.post('/profile/:userId/*', function(req, res, next) {
+router.post('/profile/:userId/:type', function(req, res, next) {
     profileHandler(req, res, next);
 });
+
+
 // used to return the movies from the API call to the screen
 router.get('/movies/:type', function(req, res, next) {
     movieHandler(req, res, next);

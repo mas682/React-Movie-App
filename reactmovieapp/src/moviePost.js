@@ -22,9 +22,9 @@ class MoviePost extends React.Component {
                 // boolean to open popup to comment on post
                 openPopUp: true,
                 // boolean indicating if logged in user liked post
-                liked: this.props.data.liked,
+                liked: (parseInt(this.props.data.liked) === 1) ? true : false,
                 // count of likes on post
-                likeCount: this.props.data.likeCount,
+                likeCount: parseInt(this.props.data.likeCount),
                 // title of post
                 title: this.props.data.title,
                 // post for the movie
@@ -34,6 +34,9 @@ class MoviePost extends React.Component {
                 form: this.props.data.form,
                 // username for the user who posted the review
                 username: this.props.data.username,
+                // the users page that this post is apperating on if on a specific users page
+                // if undefined, not on a specific users page
+                usersPage: this.props.data.usersPage,
                 // id of the review post
                 id: this.props.data.id,
                 rating: this.props.data.rating,
@@ -56,35 +59,38 @@ class MoviePost extends React.Component {
         }
         else
         {
-            console.log(this.props.data.review);
-            let moviePath = this.props.data.review.movie.title.replace(" ", "-");
-            moviePath = "/movie/" + this.props.data.review.movie.id + "-" + moviePath;
+            console.log(this.props);
+            let moviePath = this.props.data.movie.title.replace(" ", "-");
+            moviePath = "/movie/" + this.props.data.movie.id + "-" + moviePath;
             this.state = {
                 // boolean for opening the edit pop up
                 openEdit: false,
                 // boolean to open popup to comment on post
                 openPopUp: false,
                 // boolean indicating if logged in user liked post
-                liked: this.props.data.liked,
+                liked: (parseInt(this.props.data.liked) === 1) ? true : false,
                 // count of likes on post
-                likeCount: this.props.data.review.likes.length,
+                likeCount: parseInt(this.props.data.likeCount),
                 // title of post
-                title: this.props.data.review.movie.title,
-                poster: 'https://image.tmdb.org/t/p/w500' + this.props.data.review.movie.poster,
-                movie: this.props.data.review.movie,
+                title: this.props.data.movie.title,
+                poster: 'https://image.tmdb.org/t/p/w500' + this.props.data.movie.poster,
+                movie: this.props.data.movie,
                 // form id for post
-                form: "form" + this.props.data.review.id,
+                form: "form" + this.props.data.id,
+                // the users page that this post is apperating on if on a specific users page
+                // if undefined, not on a specific users page
+                usersPage: this.props.usersPage,
                 // username for the user who posted the review
-                username: this.props.data.review.user.username,
+                username: this.props.data.user.username,
                 // id of the review post
-                id: this.props.data.review.id,
-                rating: this.props.data.review.rating,
-                usedGoodButtons: MoviePost.getGoodButtons(this.props.data.review.goodTags),
-                usedBadButtons: MoviePost.getBadButtons(this.props.data.review.badTags),
+                id: this.props.data.id,
+                rating: this.props.data.rating,
+                usedGoodButtons: MoviePost.getGoodButtons(this.props.data.goodTags),
+                usedBadButtons: MoviePost.getBadButtons(this.props.data.badTags),
                 // the review text
-                review: this.props.data.review.review,
-                fullReview: this.props.data.review,
-                time: this.props.data.review.createdAt,
+                review: this.props.data.review,
+                fullReview: this.props.data,
+                time: this.props.data.createdAt,
                 // the logged in users username
                 currentUser: this.props.currentUser,
                 // used to show likes pop up
@@ -156,7 +162,7 @@ class MoviePost extends React.Component {
         // may need to use props for currentUser too?
         if(prevState.type !== "popup")
         {
-            if((prevState.props.data.review.id !== nextProps.data.review.id) || (prevState.props.currentUser !== nextProps.currentUser))
+            if((prevState.props.data.id !== nextProps.data.id) || (prevState.props.currentUser !== nextProps.currentUser))
             {
                 alert("New props received movie post");
                 return MoviePost.newPropState(nextProps);
@@ -185,8 +191,8 @@ class MoviePost extends React.Component {
 
     static newPropState(props)
     {
-        let moviePath = props.data.review.movie.title.replace(" ", "-");
-        moviePath = "/movie/" + props.data.review.movie.id + "-" + moviePath;
+        let moviePath = props.data.movie.title.replace(" ", "-");
+        moviePath = "/movie/" + props.data.movie.id + "-" + moviePath;
         return {
             // boolean for opening the edit pop up
             openEdit: false,
@@ -195,23 +201,23 @@ class MoviePost extends React.Component {
             // boolean indicating if logged in user liked post
             liked: props.data.liked,
             // count of likes on post
-            likeCount: props.data.review.likes.length,
+            likeCount: props.data.likeCount,
             // title of post
-            title: props.data.review.movie.title,
-            poster: 'https://image.tmdb.org/t/p/w500' + props.data.review.movie.poster,
-            movie: props.data.review.movie,
+            title: props.data.movie.title,
+            poster: 'https://image.tmdb.org/t/p/w500' + props.data.movie.poster,
+            movie: props.data.movie,
             // form id for post
-            form: "form" + props.data.review.id,
+            form: "form" + props.data.id,
             // username for the user who posted the review
-            username: props.data.review.user.username,
+            username: props.data.user.username,
             // id of the review post
-            id: props.data.review.id,
-            rating: props.data.review.rating,
-            usedGoodButtons: MoviePost.getGoodButtons(props.data.review.goodTags),
-            usedBadButtons: MoviePost.getBadButtons(props.data.review.badTags),
-            review: props.data.review.review,
+            id: props.data.id,
+            rating: props.data.rating,
+            usedGoodButtons: MoviePost.getGoodButtons(props.data.goodTags),
+            usedBadButtons: MoviePost.getBadButtons(props.data.badTags),
+            review: props.data.review,
             fullReview: props.data.review,
-            time: props.data.review.createdAt,
+            time: props.data.createdAt,
             // the logged in users username
             currentUser: props.currentUser,
             // used to show likes pop up
@@ -454,24 +460,24 @@ class MoviePost extends React.Component {
         }
         console.log("Updated review: ");
         console.log(reviewResult);
-        let moviePath = reviewResult.review.movie.title.replace(" ", "-");
+        let moviePath = reviewResult.movie.title.replace(" ", "-");
         this.setState({
             // boolean for opening the edit pop up
             openEdit: false,
             // boolean indicating if logged in user liked post
-            liked: reviewResult.liked,
+            liked: (parseInt(reviewResult.liked) === 1) ? true : false,
             // count of likes on post
-            likeCount: reviewResult.review.likes.length,
+            likeCount: reviewResult.likeCount,
             // title of post
-            title: reviewResult.review.movie.title,
-            poster: 'https://image.tmdb.org/t/p/w500' + reviewResult.review.movie.poster,
-            movie: reviewResult.review.movie,
-            rating: reviewResult.review.rating,
-            usedGoodButtons: MoviePost.getGoodButtons(reviewResult.review.goodTags),
-            usedBadButtons: MoviePost.getBadButtons(reviewResult.review.badTags),
-            review: reviewResult.review.review,
+            title: reviewResult.movie.title,
+            poster: 'https://image.tmdb.org/t/p/w500' + reviewResult.movie.poster,
+            movie: reviewResult.movie,
+            rating: reviewResult.rating,
+            usedGoodButtons: MoviePost.getGoodButtons(reviewResult.goodTags),
+            usedBadButtons: MoviePost.getBadButtons(reviewResult.badTags),
+            review: reviewResult.review,
             fullReview: reviewResult.review,
-            time: reviewResult.review.createdAt,
+            time: reviewResult.createdAt,
             moviePath: moviePath
         });
         /*
@@ -733,8 +739,10 @@ class MoviePost extends React.Component {
             likesPopUp = <UserListPopUp
                             reviewId={this.state.id}
                             type="Likes"
+                            username={this.state.usersPage}
                             removeFunction={this.changeState}
-                            updateFunction={null}
+                            updateFollowingFunction={this.props.updateFollowingFunction}
+                            updateFollowersFunction={this.props.updateFollowersFunction}
                             loggedInUser={this.state.currentUser}
                             changeFunction={this.changeLikes}
                             updateLoggedIn={this.props.updateLoggedIn}
@@ -761,6 +769,8 @@ class MoviePost extends React.Component {
                             updateLoggedIn={this.props.updateLoggedIn}
                             showLoginPopUp={this.props.showLoginPopUp}
                             setMessages={this.props.setMessages}
+                            updateFollowingFunction={this.props.updateFollowingFunction}
+                            updateFollowersFunction={this.props.updateFollowersFunction}
                         />;
         }
         return postPopUp;

@@ -9,7 +9,7 @@ class MoviePostDisplay extends React.Component {
     {
         super(props);
         this.state ={
-            // this gets the username from the url
+            // the users page that the user is on
             username: this.props.username,
             // this will be set by the api call
             posts: [],
@@ -45,7 +45,7 @@ class MoviePostDisplay extends React.Component {
     // handles calling api for componentDidMount and componentDidUpdate
     getData(username)
     {
-        let url = "http://localhost:9000/profile/" + username;
+        let url = "http://localhost:9000/profile/" + username + "/reviews";
         apiGetJsonRequest(url).then(result =>{
             let status = result[0];
             let message = result[1].message;
@@ -125,7 +125,7 @@ class MoviePostDisplay extends React.Component {
                             data={p}
                             usersPage={this.state.username}
                             currentUser={this.state.currentUser}
-                            updateFunction={this.props.updateFunction}
+                            updateFollowingFunction={this.props.updateFollowingFunction}
                             updateFollowersFunction={this.props.updateFollowersFunction}
                             showLoginPopUp={this.props.showLoginPopUp}
                             updateLoggedIn={this.props.updateLoggedIn}

@@ -129,6 +129,8 @@ class MoviePostPopUp extends React.Component {
                             showLoginPopUp={this.props.showLoginPopUp}
                             updateLoggedIn={this.props.updateLoggedIn}
                             setMessages={this.setMessage}
+                            updateFollowingFunction={this.props.updateFollowingFunction}
+                            updateFollowersFunction={this.props.updateFollowersFunction}
                         />;
         if(this.state.removePost)
         {

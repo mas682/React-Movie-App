@@ -16,6 +16,7 @@ class ReviewPopUp extends React.Component {
         // anoter for if the user is creating a new post
         if(this.props.edit)
         {
+            console.log(this.props);
             let goodTags = this.getTags(this.props.data.fullReview.goodTags);
             let badTags = this.getTags(this.props.data.fullReview.badTags);
             this.state = {

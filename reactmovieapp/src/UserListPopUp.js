@@ -254,7 +254,7 @@ class UserListPopUp extends React.Component {
                                 following={true}
                                 loggedInUser={this.state.loggedInUser}
                                 username={this.state.username}
-                                updateFunction={this.props.updateFunction}
+                                updateFollowingFunction={this.props.updateFollowingFunction}
                                 updateFollowersFunction={this.props.updateFollowersFunction}
                                 updateLoggedIn={this.props.updateLoggedIn}
                                 showLoginPopUp={this.props.showLoginPopUp}
@@ -271,7 +271,7 @@ class UserListPopUp extends React.Component {
                                 following={false}
                                 loggedInUser={this.state.loggedInUser}
                                 username={this.state.username}
-                                updateFunction={this.props.updateFunction}
+                                updateFollowingFunction={this.props.updateFollowingFunction}
                                 updateFollowersFunction={this.props.updateFollowersFunction}
                                 showLoginPopUp={this.props.showLoginPopUp}
                                 updateLoggedIn={this.props.updateLoggedIn}
@@ -282,6 +282,7 @@ class UserListPopUp extends React.Component {
                 notFollowedUsers.push(userHtml);
             }
         });
+        console.log(this.props);
         return followedUsers.concat(notFollowedUsers);
 
     }

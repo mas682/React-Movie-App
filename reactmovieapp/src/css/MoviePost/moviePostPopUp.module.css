@@ -157,6 +157,8 @@
     flex-flow: row wrap;
     justify-content: flex-end;
     margin-bottom: 10px;
+    position: relative;
+    z-index: 0;
 }
 
 /* used for the dropdown to edit/remove a comment */
@@ -178,7 +180,7 @@
     width: 2.0%;
     margin-top: 0.7%;
     margin-bottom: 1%;
-    z-index: 1;
+    z-index: 0;
 }
 
 /* used for the buttons when the dropdown is opened to edit a comment */
