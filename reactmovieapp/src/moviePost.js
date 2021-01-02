@@ -164,7 +164,6 @@ class MoviePost extends React.Component {
         {
             if((prevState.props.data.id !== nextProps.data.id) || (prevState.props.currentUser !== nextProps.currentUser))
             {
-                alert("New props received movie post");
                 return MoviePost.newPropState(nextProps);
             }
             else
@@ -176,6 +175,9 @@ class MoviePost extends React.Component {
         {
             if((prevState.props.data.id !== nextProps.data.id) || (prevState.props.currentUser !== nextProps.currentUser))
             {
+                // this should almost never occur...if in a popup and logged out, it should close
+                // don't see a scenario where the logged in user changes when already in the pop up
+                // as it shouldn't be open if not logged in
                 // need to fix newPropState..
                 console.log(prevState.props);
                 console.log(nextProps);
@@ -201,7 +203,7 @@ class MoviePost extends React.Component {
             // boolean indicating if logged in user liked post
             liked: props.data.liked,
             // count of likes on post
-            likeCount: props.data.likeCount,
+            likeCount: parseInt(props.data.likeCount),
             // title of post
             title: props.data.movie.title,
             poster: 'https://image.tmdb.org/t/p/w500' + props.data.movie.poster,
@@ -351,7 +353,7 @@ class MoviePost extends React.Component {
             else if(status === 401)
             {
                 // not logged in
-                this.props.showLoginPopUp(false);
+                this.props.showLoginPopUp();
                 //if not logged in, this shouldn't have been visible..so remove it
                 if(this.state.type === "popup")
                 {
@@ -425,7 +427,7 @@ class MoviePost extends React.Component {
             else if(status === 401)
             {
                 // not logged in
-                this.props.showLoginPopUp(false);
+                this.props.showLoginPopUp();
                 // if not logged in, this should not be up so remove it
                 if(this.state.type === "popup")
                 {
@@ -498,12 +500,12 @@ class MoviePost extends React.Component {
         }
         if(key === "displayLikes" && this.state.currentUser === "")
         {
-            this.props.showLoginPopUp(false);
+            this.props.showLoginPopUp();
             return;
         }
         if(key === "openPopUp" && this.state.currentUser === "")
         {
-            this.props.showLoginPopUp(false);
+            this.props.showLoginPopUp();
             return;
         }
         this.setState({[key]: value});
@@ -610,7 +612,7 @@ class MoviePost extends React.Component {
                     this.props.updateLoggedIn(user);
                     // if this is a private page, may want to do something else
                     // but since all pages public for now, this is fine
-                    this.props.showLoginPopUp(false);
+                    this.props.showLoginPopUp();
                 }
             }
             else

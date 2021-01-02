@@ -25,13 +25,13 @@ class MovieDisplay extends React.Component {
     {
         if(prevState.id !== nextProps.movie.id)
         {
-            console.log("False");
+            alert("Movie changed");
             // do not display the popup as there was a change in the movie id
             return MovieDisplay.generateDisplayState(nextProps, false);
         }
         else if(prevState.currentUser !== nextProps.currentUser)
         {
-            console.log("False2");
+            alert("User change in movie display");
             let moviePopup = false;
             if(prevState.moviePopup)
             {
@@ -40,10 +40,63 @@ class MovieDisplay extends React.Component {
             // if the popup was open, leave it open
             return MovieDisplay.generateDisplayState(nextProps, moviePopup);
         }
+        else if(prevState.type !== nextProps.type)
+        {
+            // do not display the popup as the page chanaged
+            return MovieDisplay.generateDisplayState(nextProps, false);
+        }
         else
         {
-            console.log("Null");
             return null;
+        }
+    }
+
+    shouldComponentUpdate(nextProps, nextState)
+    {
+        // if the movie id changed
+        if(this.state.id !== nextState.id)
+        {
+            if(this.state.id === 665877 || nextState.id === 665877)
+            {
+                //console.log("New movie id recieved");
+            }
+            return true;
+        }
+        // if the loggedin user chagned
+        else if(this.state.currentUser !== nextState.currentUser)
+        {
+            if(this.state.id === 665877 || nextState.id === 665877)
+            {
+                //console.log("New user recieved");
+            }
+            return true;
+        }
+        // if the page the movie display is being shown on changed
+        else if(this.state.type !== nextState.type)
+        {
+            if(this.state.id === 665877 || nextState.id === 665877)
+            {
+                //console.log("New type received");
+            }
+            return true;
+        }
+        // if the watchlist, watched, or moviepop up changed
+        else if((this.state.watchList !== nextState.watchList) || (this.state.watched !== nextState.watched) || (this.state.moviePopup !== nextState.moviePopup))
+        {
+            if(this.state.id === 665877 || nextState.id === 665877)
+            {
+                //console.log("Watched/watchlist/pop up changed");
+            }
+            return true;
+        }
+        // do not render if none of the above are true
+        else
+        {
+            if(this.state.id === 665877 || nextState.id === 665877)
+            {
+                //console.log("Not updating");
+            }
+            return false;
         }
     }
 
@@ -184,6 +237,10 @@ class MovieDisplay extends React.Component {
 
     render()
     {
+        if(this.state.id === 665877)
+        {
+            //console.log("Movie display render");
+        }
         let posterPath = "";
         if(this.state.poster !== null)
         {

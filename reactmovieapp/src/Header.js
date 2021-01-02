@@ -22,6 +22,8 @@ class Header extends React.Component {
             displaySignUp: false,
             redirect: false,
             redirectOnLogin: this.props.redirectOnLogin,
+            // used to cause a redirect to a users profile page when they post a
+            // new review
             redirectToProfile: false
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
@@ -220,7 +222,6 @@ class Header extends React.Component {
         }
         if(this.state.redirectToProfile)
         {
-            alert("Redirect to profile");
             let path = "/profile/" + this.state.currentUser;
             if(this.state.currentUser !== "")
             {

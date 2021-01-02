@@ -17,6 +17,7 @@ import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js
 class MovieDisplayPopUp extends React.Component {
 	constructor(props) {
 		super(props);
+        alert("HERE");
 		this.state = MovieDisplayPopUp.generateState(this.props);
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
@@ -34,7 +35,7 @@ class MovieDisplayPopUp extends React.Component {
 		}
 		else if(prevState.props.currentUser !== nextProps.currentUser)
 		{
-			return MovieDisplayPopUp.generateState(nextProps);
+			return MovieDisplayPopUp.generateState(nextProps, prevState);
 		}
 		else
 		{
@@ -42,8 +43,12 @@ class MovieDisplayPopUp extends React.Component {
 		}
 	}
 
-	static generateState(props)
+	static generateState(props, prevState)
 	{
+        console.log("New props: ");
+        console.log(props);
+        console.log("Previous state: ");
+        console.log(prevState);
 		return {
 			open: true,
 			movie: props.movie,
@@ -59,7 +64,7 @@ class MovieDisplayPopUp extends React.Component {
 			// the type of page the pop up is called from
 			type: props.type,
 			// show the sign in pop up
-			displaySignIn: false,
+			displaySignIn: (prevState === undefined) ? false : prevState.displaySignIn,
             messages: [],
             messageId: -1,
             props: props
@@ -79,6 +84,7 @@ class MovieDisplayPopUp extends React.Component {
 
 	showSignInForm()
 	{
+        console.log("Show sign in");
 		this.setState({displaySignIn: true});
 	}
 
@@ -107,7 +113,8 @@ class MovieDisplayPopUp extends React.Component {
 
         if(!this.state.currentUser)
         {
-			this.showSignInForm();
+			//this.props.showLoginPopUp();
+            this.showSignInForm();
             return;
         }
 
@@ -180,11 +187,14 @@ class MovieDisplayPopUp extends React.Component {
         }
         else
         {
+            console.log(result);
             if(result.showLoginPopUp)
             {
+                this.showSignInForm();
+                this.props.updateLoggedIn("");
                 // this will also update who is logged in
-                this.props.showLoginPopUp(true);
-				this.closeModal();
+                //this.props.showLoginPopUp(true);
+				//this.closeModal();
             }
             else
             {

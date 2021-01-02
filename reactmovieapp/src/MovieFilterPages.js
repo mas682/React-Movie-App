@@ -18,13 +18,17 @@ class MovieFilterPage extends React.Component {
         let values = MovieFilterPage.updateMovieFilter(this.props);
         let query = values.query;
         let startDate = values.startDate;
+        console.log(query);
         this.state = {
             header: this.props.type,
             movies: [],
             loading: true,
+            // boolean used when going from one movie filter page to another
+            loadingNewData: false,
             startDate: startDate,
             queryString: query,
-            currentUser: this.props.currentUser
+            currentUser: this.props.currentUser,
+            redirect: false
         };
         // if the query parameters were updated
         if(values.updated)
@@ -43,19 +47,132 @@ class MovieFilterPage extends React.Component {
         this.generateNewState = this.generateNewState.bind(this);
     }
 
-    componentDidUpdate(prevProps, prevState)
+
+    static getDerivedStateFromProps(nextProps, prevState)
     {
+        // if the page type changed
+        if(!prevState.loading && (nextProps.type !== prevState.header))
+        {
+            console.log("new type found in movie filter page");
+            let queryResult = MovieFilterPage.updateMovieFilter(nextProps);
+            console.log(queryResult);
+            let query = queryResult.query;
+            let startDate = queryResult.startDate;
+            let state = {
+                queryString:query,
+                header: nextProps.type,
+                startDate: queryResult.startDate,
+                loadingNewData: true
+            };
+            if(queryResult.updated)
+            {
+                nextProps.history.replace({
+                    pathname: nextProps.location.pathname,
+                    search: query
+                });
+            }
+            return state;
+        }
+        // if the query parameters changed
+        // checking the previous type as when going from one page to another, this will get hit if the type just changed
+        else if(!prevState.loading && (nextProps.location.search !== prevState.queryString) && (prevState.header === nextProps.type))
+        {
+            console.log("new parameters found in movie filter page");
+            let queryResult = MovieFilterPage.updateMovieFilter(nextProps);
+            let query = queryResult.query;
+            let startDate = queryResult.startDate;
+            console.log(queryResult);
+            //this.generateNewState(this.props);
+        }
+
+        
+        return null;
+    }
+
+    shouldComponentUpdate(nextProps, nextState)
+    {
+        console.log("Should componenet update");
+        console.log(this.props);
+        console.log(nextProps);
+        console.log(this.state);
+        console.log(nextState);
+        if(this.props.type !== nextProps.type)
+        {
+            console.log("New type in props");
+            return true;
+        }
+        if(this.state.header !== nextState.header)
+        {
+            console.log("New header in state");
+            return true;
+        }
+        if(this.state.queryString !== nextState.queryString)
+        {
+            console.log("New query string in state");
+            return true;
+        }
+        if(this.state.loadingNewData !== nextState.loadingNewData)
+        {
+            console.log("Loading new data changed");
+            return true;
+        }
+        if(this.state.loading !== nextState.loading)
+        {
+            return true;
+        }
+        // if a movie is removed for some reason..
+        if(this.state.movies.length !== nextState.movies.length)
+        {
+            return true;
+        }
+        if(this.state.currentUser !== nextState.currentUser)
+        {
+            return true;
+        }
+        // have to do something for just query string changing...
+        // but want to keep query string change for props from causing it?
+        return false;
+    }
+
+    async componentDidUpdate(prevProps, prevState)
+    {
+        /*
+        console.log("Component did update movie filter page");
+        console.log(prevProps);
+        console.log(this.props);
+        console.log(prevState);
+        console.log(this.state);
+        */
         // if the user changed
         if(!prevState.loading && (this.props.currentUser !== prevProps.currentUser))
         {
-            console.log("new user found in movie filter page");
-            this.generateNewState(this.props);
+            // if the new user is not logged in
+            if(this.props.currentUser === "")
+            {
+                // if on a page that you need to be logged in for
+                if(this.props.type === "My Watch List" || this.props.type === "My Watched Movies")
+                {
+                    // set redirect to true as user should not be on this page
+                    this.setState({redirect: true});
+                    this.props.showLoginPopUp();
+                }
+                else
+                {
+                    console.log("new user found in movie filter page");
+                    this.generateNewState(this.props);
+                }
+            }
+            else
+            {
+                console.log("new user found in movie filter page");
+                this.generateNewState(this.props);
+            }
         }
         // if the page type changed
         else if(!prevState.loading && (this.props.type !== prevProps.type))
         {
             console.log("new type found in movie filter page");
-            this.generateNewState(this.props);
+            await this.generateNewState(this.props);
         }
         // if the query parameters changed
         // checking the previous type as when going from one page to another, this will get hit if the type just changed
@@ -67,28 +184,15 @@ class MovieFilterPage extends React.Component {
     }
 
     // called by componentDidUpdate when a change in the props is found
-    async generateNewState(props)
+    async generateNewState()
     {
-        let queryResult = MovieFilterPage.updateMovieFilter(props);
-        let query = queryResult.query;
-        let startDate = queryResult.startDate;
-        let result = await this.getMovies(query, props.type);
+        let result = await this.getMovies(this.state.queryString, this.state.header);
         let movies = (result.state.movies === undefined) ? [] : result.state.movies;
         let state = {...result.state};
-        state.queryString = query;
-        state.startDate = startDate;
-        state.header = this.props.type;
+        state.loadingNewData = false;
         state.movies = movies;
         this.setState(state);
         this.props.setMessages(result.messageState);
-        // if the query parameters changed
-        if(queryResult.updated)
-        {
-            props.history.replace({
-                pathname: this.props.location.pathname,
-                search: query
-            });
-        }
     }
 
     static updateMovieFilter(props) {
@@ -137,14 +241,15 @@ class MovieFilterPage extends React.Component {
             if(type === "Upcoming Movies")
             {
                 // these are for testing, will be removed
-                date.setMonth(8);
+                date.setMonth(9);
                 date.setDate(1);
+                date.setYear(2020);
             }
             else if(type === "New Releases")
             {
                 let month = date.getMonth();
                 // go back 1 month, set to 3 for testing
-                let newMonth = month - 4;
+                let newMonth = month - 3;
                 if(month === 0)
                 {
                     newMonth = 11;
@@ -231,10 +336,34 @@ class MovieFilterPage extends React.Component {
 
     async componentDidMount()
     {
-        let result = await this.getMovies(undefined, this.state.header);
-        console.log(result);
-        this.setState(result.state);
-        this.props.setMessages(result.messageState);
+        // if the new user is not logged in
+        if(this.state.currentUser === "")
+        {
+            // if on a page that you need to be logged in for
+            if(this.state.header === "My Watch List" || this.state.header === "My Watched Movies")
+            {
+                // set redirect to true as user should not be on this page
+                this.setState({
+                    redirect: true,
+                    loading: false
+                });
+                this.props.showLoginPopUp();
+            }
+            else
+            {
+                let result = await this.getMovies(undefined, this.state.header);
+                console.log(result);
+                this.setState(result.state);
+                this.props.setMessages(result.messageState);
+            }
+        }
+        else
+        {
+            let result = await this.getMovies(undefined, this.state.header);
+            console.log(result);
+            this.setState(result.state);
+            this.props.setMessages(result.messageState);
+        }
     }
 
     // function to handle call to api and result
@@ -305,7 +434,13 @@ class MovieFilterPage extends React.Component {
             {
                 // this will be dipslayed immediately but will be redirected to the home page
                 // almost immediately to display there
-                this.props.showLoginPopUp(true);
+                this.props.showLoginPopUp();
+                return {
+                    state: {
+                        redirect: true,
+                        loading: false
+                    }
+                };
             }
             else if(status === 404)
             {
@@ -399,18 +534,11 @@ class MovieFilterPage extends React.Component {
     // used for watch list and movies watched
     removeMovieDisplay(index)
     {
-        let updatedMovies = this.state.movies;
+        let updatedMovies = [...this.state.movies];
         updatedMovies.splice(index, 1);
         this.setState({
             movies: updatedMovies
         });
-    }
-
-    setMessage(messageState)
-    {
-        let newState = generateMessageState(messageState, this.state.messageId);
-        newState["clearMessages"] = (messageState.clearMessages === undefined) ? this.state.clearMessages : messageState.clearMessages;
-        this.setState(newState);
     }
 
     generateMovieDisplays()
@@ -439,17 +567,21 @@ class MovieFilterPage extends React.Component {
 
     render()
     {
+        alert("Movie filter page rendering");
+        //alert("Rendering movie filter page");
         if(this.state.loading)
         {
             return null;
+        }
+        else if(this.state.redirect)
+        {
+            return <Redirect to="" />;
         }
         else if(!this.state.currentUser && (this.state.header === "My Watch List" || this.state.header === "My Watched Movies"))
         {
             return <Redirect to={"/"} />;
         }
         let movies = this.generateMovieDisplays();
-        console.log(this.state.messageId);
-        console.log(this.state);
         return (
             <React.Fragment>
                 <div className={style.mainBodyContainer}>

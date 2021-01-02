@@ -50,10 +50,10 @@ const selectPath = (cookie, req, res, cookieValid) =>
 		}
 		else if(req.params.type === "my_watch_list")
 		{
+			routeFound = true;
 			if(cookieValid)
 			{
 				getWatchList(cookie, req, res);
-				routeFound = true;
 			}
 			else
 			{
@@ -62,10 +62,10 @@ const selectPath = (cookie, req, res, cookieValid) =>
 		}
 		else if(req.params.type === "my_watched_list")
 		{
+			routeFound = true;
 			if(cookieValid)
 			{
 				getWatchedList(cookie, req, res);
-				routeFound = true;
 			}
 			else
 			{
@@ -77,10 +77,10 @@ const selectPath = (cookie, req, res, cookieValid) =>
 	{
 		if(req.params.type === "add_to_watchlist")
 		{
+			routeFound = true;
 			if(cookieValid)
 			{
 				addToWatchList(cookie, req, res);
-				routeFound = true;
 			}
 			else
 			{
@@ -89,10 +89,10 @@ const selectPath = (cookie, req, res, cookieValid) =>
 		}
 		else if(req.params.type === "remove_from_watchlist")
 		{
+			routeFound = true;
 			if(cookieValid)
 			{
 				removeFromWatchList(cookie, req, res);
-				routeFound = true;
 			}
 			else
 			{
@@ -101,10 +101,10 @@ const selectPath = (cookie, req, res, cookieValid) =>
 		}
 		else if(req.params.type === "add_to_watched")
 		{
+			routeFound = true;
 			if(cookieValid)
 			{
 				addToWatched(cookie, req, res);
-				routeFound = true;
 			}
 			else
 			{
@@ -113,10 +113,10 @@ const selectPath = (cookie, req, res, cookieValid) =>
 		}
 		else if(req.params.type === "remove_from_watched")
 		{
+			routeFound = true;
 			if(cookieValid)
 			{
 				removeFromWatched(cookie, req, res);
-				routeFound = true;
 			}
 			else
 			{
