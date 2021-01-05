@@ -12,32 +12,21 @@ const moment = require('moment');
 class MovieFilterPage extends React.Component {
     constructor(props){
         super(props);
-        // the function returns the query string and the start date
-        // made this function as these steps are also done when
-        // recieving new props
-        let values = MovieFilterPage.updateMovieFilter(this.props);
-        let query = values.query;
-        let startDate = values.startDate;
-        console.log(query);
+        // getDerivedStateFromProps will set the state based off the props
         this.state = {
-            header: this.props.type,
+            header: "",
             movies: [],
             loading: true,
             // boolean used when going from one movie filter page to another
+            // seperate from loading as loading can cause the page to return null
+            // and do not want to dismount all movieDisplay components
+            // needed so that shouldComponentUpdate catches that the new movies were loaded
             loadingNewData: false,
-            startDate: startDate,
-            queryString: query,
-            currentUser: this.props.currentUser,
+            startDate: undefined,
+            queryString: "",
+            currentUser: "",
             redirect: false
         };
-        // if the query parameters were updated
-        if(values.updated)
-        {
-            this.props.history.replace({
-                pathname: this.props.location.pathname,
-                search: query
-            });
-        }
         this.getMovies = this.getMovies.bind(this);
         this.apiCall = this.apiCall.bind(this);
         this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
@@ -51,86 +40,110 @@ class MovieFilterPage extends React.Component {
     static getDerivedStateFromProps(nextProps, prevState)
     {
         // if the page type changed
-        if(!prevState.loading && (nextProps.type !== prevState.header))
+        if(nextProps.type !== prevState.header)
         {
-            console.log("new type found in movie filter page");
-            let queryResult = MovieFilterPage.updateMovieFilter(nextProps);
-            console.log(queryResult);
-            let query = queryResult.query;
-            let startDate = queryResult.startDate;
-            let state = {
-                queryString:query,
-                header: nextProps.type,
-                startDate: queryResult.startDate,
-                loadingNewData: true
-            };
-            if(queryResult.updated)
+            //console.log("new type found in movie filter page");
+            let result = MovieFilterPage.getNewStateFromProps(nextProps, true);
+            let state = result.state;
+            if(result.updated)
             {
                 nextProps.history.replace({
                     pathname: nextProps.location.pathname,
-                    search: query
+                    search: state.queryString
                 });
             }
             return state;
         }
         // if the query parameters changed
         // checking the previous type as when going from one page to another, this will get hit if the type just changed
-        else if(!prevState.loading && (nextProps.location.search !== prevState.queryString) && (prevState.header === nextProps.type))
+        else if((nextProps.location.search !== prevState.queryString) && (prevState.header === nextProps.type))
         {
-            console.log("new parameters found in movie filter page");
-            let queryResult = MovieFilterPage.updateMovieFilter(nextProps);
-            let query = queryResult.query;
-            let startDate = queryResult.startDate;
-            console.log(queryResult);
-            //this.generateNewState(this.props);
+            //console.log("new parameters found in movie filter page");
+            let result = MovieFilterPage.getNewStateFromProps(nextProps, true);
+            let state = result.state;
+            console.log(state);
+            if(result.updated)
+            {
+                nextProps.history.replace({
+                    pathname: nextProps.location.pathname,
+                    search: state.queryString
+                });
+            }
+            return state;
         }
-
-        
         return null;
+        /*
+        may want to move movie deletion to here?
+        need to make sure not changing objects directly in any other component as this will cause major issues...
+        */
+    }
+
+    static getNewStateFromProps(props, loadingNewData)
+    {
+        // generate the query string if not correct
+        let queryResult = MovieFilterPage.updateMovieFilter(props);
+        let query = queryResult.query;
+        let startDate = queryResult.startDate;
+        let state = {
+            queryString: query,
+            header: props.type,
+            startDate: queryResult.startDate,
+            // true if going from one movie filter page to another
+            loadingNewData: loadingNewData,
+            currentUser: props.currentUser
+        };
+        return {state: state, updated: queryResult.updated};
     }
 
     shouldComponentUpdate(nextProps, nextState)
     {
+        /*
         console.log("Should componenet update");
         console.log(this.props);
         console.log(nextProps);
         console.log(this.state);
         console.log(nextState);
+        */
         if(this.props.type !== nextProps.type)
         {
-            console.log("New type in props");
+            //console.log("New type in props");
             return true;
         }
-        if(this.state.header !== nextState.header)
+        else if(this.state.header !== nextState.header)
         {
-            console.log("New header in state");
+            //console.log("New header in state");
             return true;
         }
-        if(this.state.queryString !== nextState.queryString)
+        else if(this.state.queryString !== nextState.queryString)
         {
-            console.log("New query string in state");
+            //console.log("New query string in state");
             return true;
         }
-        if(this.state.loadingNewData !== nextState.loadingNewData)
+        else if(this.state.loadingNewData !== nextState.loadingNewData)
         {
-            console.log("Loading new data changed");
+            //console.log("Loading new data changed");
             return true;
         }
-        if(this.state.loading !== nextState.loading)
+        else if(this.state.loading !== nextState.loading)
         {
+            //console.log("Loading changed");
             return true;
         }
         // if a movie is removed for some reason..
-        if(this.state.movies.length !== nextState.movies.length)
+        else if(this.state.movies.length !== nextState.movies.length)
+        {
+            //console.log("Movie count changed");
+            return true;
+        }
+        else if(this.state.currentUser !== nextState.currentUser)
+        {
+            //console.log("User chagned");
+            return true;
+        }
+        else if(nextProps.currentUser !== this.props.currentUser)
         {
             return true;
         }
-        if(this.state.currentUser !== nextState.currentUser)
-        {
-            return true;
-        }
-        // have to do something for just query string changing...
-        // but want to keep query string change for props from causing it?
         return false;
     }
 
@@ -143,8 +156,12 @@ class MovieFilterPage extends React.Component {
         console.log(prevState);
         console.log(this.state);
         */
+        if(prevState.loading)
+        {
+            return;
+        }
         // if the user changed
-        if(!prevState.loading && (this.props.currentUser !== prevProps.currentUser))
+        else if(this.props.currentUser !== prevProps.currentUser)
         {
             // if the new user is not logged in
             if(this.props.currentUser === "")
@@ -158,27 +175,27 @@ class MovieFilterPage extends React.Component {
                 }
                 else
                 {
-                    console.log("new user found in movie filter page");
+                    //console.log("new user found in movie filter page");
                     this.generateNewState(this.props);
                 }
             }
             else
             {
-                console.log("new user found in movie filter page");
+                //console.log("new user found in movie filter page");
                 this.generateNewState(this.props);
             }
         }
         // if the page type changed
-        else if(!prevState.loading && (this.props.type !== prevProps.type))
+        else if(this.props.type !== prevProps.type)
         {
-            console.log("new type found in movie filter page");
+            //console.log("new type found in movie filter page");
             await this.generateNewState(this.props);
         }
         // if the query parameters changed
         // checking the previous type as when going from one page to another, this will get hit if the type just changed
-        else if(!prevState.loading && (this.props.location.search !== this.state.queryString) && (prevState.header === this.props.type))
+        else if((prevState.queryString!== this.state.queryString) && (prevState.header === this.props.type))
         {
-            console.log("new parameters found in movie filter page");
+            //console.log("new parameters found in movie filter page");
             this.generateNewState(this.props);
         }
     }
@@ -567,7 +584,6 @@ class MovieFilterPage extends React.Component {
 
     render()
     {
-        alert("Movie filter page rendering");
         //alert("Rendering movie filter page");
         if(this.state.loading)
         {

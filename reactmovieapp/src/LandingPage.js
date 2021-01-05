@@ -24,6 +24,11 @@ class Landing extends React.Component {
 	}
 
 	componentDidMount() {
+		// clear the messages on mount
+		this.props.setMessages({
+			message: undefined,
+			clearMessages: true
+		});
 		this.setState({
 			loading: false
 		});

@@ -38,16 +38,6 @@ class Routes extends React.Component
 
     shouldComponentUpdate(nextProps, nextState)
     {
-        // if the displayLogin was reset to false, do not cause a rerender
-        if(this.state.displayLogin === true && nextState.displayLogin === false)
-        {
-            // if login display closed but user logged in
-            if(this.state.currentUser !== nextState.currentUser)
-            {
-                return true;
-            }
-            return false;
-        }
         return true;
     }
 

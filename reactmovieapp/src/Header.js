@@ -30,7 +30,6 @@ class Header extends React.Component {
         this.removeReviewForm = this.removeReviewForm.bind(this);
         this.updateNewState = this.updateNewState.bind(this);
         this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
-        this.showSignInForm = this.showSignInForm.bind(this);
         this.showSignUpForm = this.showSignUpForm.bind(this);
         this.signUpRemoveFunction = this.signUpRemoveFunction.bind(this);
         this.logout = this.logout.bind(this);
@@ -57,11 +56,6 @@ class Header extends React.Component {
         }
         this.props.removeLoginPopUp(user);
         this.setState({displaySignIn: false});
-    }
-
-    showSignInForm()
-    {
-        this.setState({displaySignIn: true});
     }
 
     componentWillReceiveProps(nextProps) {
@@ -347,10 +341,10 @@ class Header extends React.Component {
                         </div>
                         <div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
                         <div class="profile">
-                            <Link class="profileButton" onClick={() => {this.props.showLoginPopUpFunction(false)}}>About</Link>
+                            <Link class="profileButton" onClick={() => {this.props.showLoginPopUpFunction()}}>About</Link>
                         </div>
                         <div class="profile">
-                            <Link class="profileButton" onClick={() => {this.props.showLoginPopUpFunction(true)}}>Login</Link>
+                            <Link class="profileButton" onClick={() => {this.props.showLoginPopUpFunction()}}>Login</Link>
                         </div>
                         <div class="profile">
                             <Link class="profileButton" onClick={this.showSignUpForm}>Sign Up</Link>

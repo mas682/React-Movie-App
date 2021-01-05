@@ -25,13 +25,12 @@ class MovieDisplay extends React.Component {
     {
         if(prevState.id !== nextProps.movie.id)
         {
-            alert("Movie changed");
             // do not display the popup as there was a change in the movie id
             return MovieDisplay.generateDisplayState(nextProps, false);
         }
         else if(prevState.currentUser !== nextProps.currentUser)
         {
-            alert("User change in movie display");
+            //alert("User change in movie display");
             let moviePopup = false;
             if(prevState.moviePopup)
             {
