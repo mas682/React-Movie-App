@@ -17,7 +17,6 @@ import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js
 class MovieDisplayPopUp extends React.Component {
 	constructor(props) {
 		super(props);
-        alert("HERE");
 		this.state = MovieDisplayPopUp.generateState(this.props);
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
@@ -45,10 +44,6 @@ class MovieDisplayPopUp extends React.Component {
 
 	static generateState(props, prevState)
 	{
-        console.log("New props: ");
-        console.log(props);
-        console.log("Previous state: ");
-        console.log(prevState);
 		return {
 			open: true,
 			movie: props.movie,

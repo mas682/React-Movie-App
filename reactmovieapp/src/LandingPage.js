@@ -26,7 +26,7 @@ class Landing extends React.Component {
 	componentDidMount() {
 		// clear the messages on mount
 		this.props.setMessages({
-			message: undefined,
+			messages: undefined,
 			clearMessages: true
 		});
 		this.setState({
@@ -54,12 +54,6 @@ class Landing extends React.Component {
 		}
 		else
 		{
-			// if logged in
-			if(this.state.currentUser !== "")
-			{
-				let path = "/profile/" + this.state.currentUser + "/feed";
-				return <Redirect to={path} />
-			}
 			return (
 				<div className="landingPage">
 					<h1 id="h1Landing">

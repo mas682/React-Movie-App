@@ -31,7 +31,7 @@
 	grid-gap: 0px;
 }
 
-.home, .homeButton, .profile, .profileButton {
+.home, .homeButton {
   display: block;
   color: white;
   text-align: center;
@@ -41,7 +41,7 @@
   position: relative;
 }
 
-.movieDropdown, .movieButton, .showDropdown, .showButton {
+.movieDropdown, .movieButton, .showDropdown, .showButton, .profileDropdown, .profileButton {
   font-size: 16px;
   border: none;
   outline: none;
@@ -52,7 +52,7 @@
   margin: 0;
 }
 
-.movieDropdownContent, .showDropdownContent {
+.movieDropdownContent, .showDropdownContent, .profileDropdownContent {
 	display: none;
 	position: absolute;
 	background-color: #f9f9f9;
@@ -62,7 +62,7 @@
 	overflow: auto;
 }
 
-.movieDropdownContent a, .showDropdownContent a {
+.movieDropdownContent a, .showDropdownContent a, .profileDropdownContent a {
   float: none;
   color: black;
   padding: 12px 16px;
@@ -111,19 +111,19 @@
     margin-left: 2%;
 }
 
-.homeButton:hover, .movieButton:hover, .home:hover, .profile:hover, .movieDropdown:hover, .showDropdown:hover {
+.homeButton:hover, .movieButton:hover, .home:hover, .movieDropdown:hover, .showDropdown:hover, .profileDropdown:hover, .profileButton:hover {
   background-color: red;
 }
 
-.homeButton:link, .homeButton:visited, .profileButton:link, .profileButton:visited {
+.homeButton:link, .homeButton:visited {
 	color: white;
 }
 
-.movieDropdownContent a:hover, .showDropdownContent a:hover {
+.movieDropdownContent a:hover, .showDropdownContent a:hover, .profileDropdownContent a:hover {
   background-color: #ddd;
 }
 
-.movieDropdown:hover .movieDropdownContent, .showDropdown:hover .showDropdownContent {
+.movieDropdown:hover .movieDropdownContent, .showDropdown:hover .showDropdownContent, .profileDropdown:hover .profileDropdownContent {
   display: block;
 }
 

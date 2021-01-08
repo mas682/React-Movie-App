@@ -71,6 +71,12 @@ class MovieFilterPage extends React.Component {
             }
             return state;
         }
+        else if(nextProps.currentUser === "")
+        {
+            return {
+                currentUser: ""
+            };
+        }
         return null;
         /*
         may want to move movie deletion to here?
@@ -593,7 +599,7 @@ class MovieFilterPage extends React.Component {
         {
             return <Redirect to="" />;
         }
-        else if(!this.state.currentUser && (this.state.header === "My Watch List" || this.state.header === "My Watched Movies"))
+        else if(this.state.currentUser === "" && (this.state.header === "My Watch List" || this.state.header === "My Watched Movies"))
         {
             return <Redirect to={"/"} />;
         }

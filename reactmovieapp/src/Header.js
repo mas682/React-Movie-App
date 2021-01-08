@@ -20,15 +20,12 @@ class Header extends React.Component {
             loggedIn: this.props.loggedIn,
             displaySignIn: this.props.showLoginPopUp,
             displaySignUp: false,
-            redirect: false,
-            redirectOnLogin: this.props.redirectOnLogin,
             // used to cause a redirect to a users profile page when they post a
             // new review
             redirectToProfile: false
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
-        this.updateNewState = this.updateNewState.bind(this);
         this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
         this.showSignUpForm = this.showSignUpForm.bind(this);
         this.signUpRemoveFunction = this.signUpRemoveFunction.bind(this);
@@ -53,40 +50,41 @@ class Header extends React.Component {
         if(username !== undefined)
         {
             user = username;
+            if(username !== "")
+            {
+                this.props.setMessages({
+                    messages: [{type: "success", message: "You successfully logged in!"}],
+                    clearMessages: true
+                });
+            }
         }
         this.props.removeLoginPopUp(user);
         this.setState({displaySignIn: false});
     }
 
-    componentWillReceiveProps(nextProps) {
-        if(this.state.currentUser !== nextProps.currentUser || this.state.loggedIn !== nextProps.loggedIn || nextProps.showLoginPopUp) {
-            this.updateNewState(nextProps);
+    // update the state if new props came in with a different profile
+    // or a different user logged in
+    static getDerivedStateFromProps(nextProps, prevState)
+    {
+        if(nextProps.currentUser !== prevState.currentUser || nextProps.loggedIn !== prevState.loggedIn || nextProps.showLoginPopUp)
+        {
+            return Header.updateNewState(nextProps, prevState);
+        }
+        else
+        {
+            return null;
         }
     }
 
-    updateNewState(nextProps)
+    static updateNewState(nextProps, prevState)
     {
-        let reviewFormOpen = (nextProps.showLoginPopUp) ? false : this.state.showLoginPopUp;
-        let redirect = false;
-        console.log(this.state);
-        console.log(nextProps);
-        /*
-        left off here...
-        need to get this working so that it redirects on login
-        issue may be in users feed page?
-        actually issue is on landing page, does not receive props...
-        */
-        if(nextProps.redirectOnLogin && (this.state.currentUser !== nextProps.currentUser))
-        {
-            redirect = true;
-        }
-        this.setState({
+        let reviewFormOpen = (nextProps.showLoginPopUp) ? false :prevState.showLoginPopUp;
+        return {
             currentUser: nextProps.currentUser,
             loggedIn: nextProps.loggedIn,
             displaySignIn: nextProps.showLoginPopUp,
-            redirectOnLogin: nextProps.redirectOnLogin,
             reviewFormOpen: reviewFormOpen
-        });
+        };
     }
 
     // function called when review successfully posted
@@ -140,11 +138,7 @@ class Header extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState)
     {
-        if(this.state.redirect === true && nextState.redirect === false)
-        {
-            return false;
-        }
-        else if(this.state.redirectToProfile === true && nextState.redirectToProfile === false)
+        if(this.state.redirectToProfile === true && nextState.redirectToProfile === false)
         {
             return false;
         }
@@ -154,11 +148,7 @@ class Header extends React.Component {
 
     componentDidUpdate()
     {
-        if(this.state.redirect)
-        {
-            this.setState({redirect: false});
-        }
-        else if(this.state.redirectToProfile)
+        if(this.state.redirectToProfile)
         {
             this.setState({redirectToProfile: false});
         }
@@ -209,11 +199,6 @@ class Header extends React.Component {
             return null;
         }
         let redirect = "";
-        if(this.state.redirect)
-        {
-            alert("redirecting");
-            redirect = <Redirect to="/" />;
-        }
         if(this.state.redirectToProfile)
         {
             let path = "/profile/" + this.state.currentUser;
@@ -221,10 +206,6 @@ class Header extends React.Component {
             {
                 redirect = <Redirect to={{pathname: path, state: {newReview: true}}}/>;
             }
-        }
-        if(this.state.redirectOnLogin)
-        {
-
         }
         let reviewForm = "";
         if(this.state.reviewFormOpen)
@@ -271,14 +252,18 @@ class Header extends React.Component {
                                 </div>
                             </div>
         					<div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
-        					<div class="profile">
-        						<Link class="profileButton" to={profilePath}>Profile</Link>
+        					<div class="profileDropdown">
+                                <button class="profileButton">Profile</button>
+                                <div class="profileDropdownContent">
+                                    <Link class="profileButton" to="/feed">My Feed</Link>
+                                    <Link class="profileButton" to={profilePath}>My Profile</Link>
+                                </div>
         					</div>
-                            <div class="profile">
-                                <Link to="/settings" class="profileButton">Settings</Link>
+                            <div class="home">
+                                <Link to="/settings" class="homeButton">Settings</Link>
                             </div>
-                            <div class="profile">
-                                <Link to="#" class="profileButton" onClick={this.logout}>Logout</Link>
+                            <div class="home">
+                                <Link to="#" class="homeButton" onClick={this.logout}>Logout</Link>
                             </div>
         				</div>
         				<div className="searchBar">
@@ -304,12 +289,7 @@ class Header extends React.Component {
             let signInForm = "";
             if(this.state.displaySignIn)
             {
-                let redirect = false;
-                if(this.state.redirectOnLogin)
-                {
-                    redirect = true;
-                }
-                signInForm = <SignInPopup removeFunction={this.signInRemoveFunction} redirectOnLogin={redirect}/>
+                signInForm = <SignInPopup removeFunction={this.signInRemoveFunction}/>
             }
             let signUpForm = "";
             if(this.state.displaySignUp)
@@ -340,14 +320,14 @@ class Header extends React.Component {
                             </div>
                         </div>
                         <div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
-                        <div class="profile">
-                            <Link class="profileButton" onClick={() => {this.props.showLoginPopUpFunction()}}>About</Link>
+                        <div class="home">
+                            <Link class="homeButton" onClick={() => {this.props.showLoginPopUpFunction()}}>About</Link>
                         </div>
-                        <div class="profile">
-                            <Link class="profileButton" onClick={() => {this.props.showLoginPopUpFunction()}}>Login</Link>
+                        <div class="home">
+                            <Link class="homeButton" onClick={() => {this.props.showLoginPopUpFunction()}}>Login</Link>
                         </div>
-                        <div class="profile">
-                            <Link class="profileButton" onClick={this.showSignUpForm}>Sign Up</Link>
+                        <div class="home">
+                            <Link class="homeButton" onClick={this.showSignUpForm}>Sign Up</Link>
                         </div>
                     </div>
                     <div className="searchBar">

@@ -2,7 +2,7 @@ import React from 'react';
 // should get rid of this eventually
 import { Redirect, withRouter } from "react-router-dom";
 import MoviePost from './moviePost.js';
-import style5 from './css/userProfile.module.css';
+import style from './css/userProfile.module.css';
 import './css/forms.css';
 import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
@@ -137,7 +137,7 @@ class UserFeed extends React.Component {
 
         return (
 
-            <div className={style5.mainBodyContainer}>
+            <div className={style.mainBodyContainer}>
                 {posts}
             </div>
         );

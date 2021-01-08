@@ -22,7 +22,6 @@ class Routes extends React.Component
             currentUser: "",
             loggedIn: null,
             displayLogin: false,
-            redirect: true,
             messages: [],
             messageId: -1,
             clearMessages: false,
@@ -41,20 +40,14 @@ class Routes extends React.Component
         return true;
     }
 
-    showLoginPopUp(redirect)
+    showLoginPopUp()
     {
         // if the login pop up is not already visible
         if(!this.state.displayLogin)
         {
-            if(redirect === undefined)
-            {
-                redirect = true;
-            }
             // if displaying login, user must not be logged in
             this.setState({
-                // need to change this to true..
                 displayLogin: true,
-                redirect: redirect,
                 currentUser: "",
                 loggedIn: false
             });
@@ -167,7 +160,6 @@ class Routes extends React.Component
                     currentUser={this.state.currentUser}
                     loggedIn={this.state.loggedIn}
                     updateLoggedIn={this.updateLoggedIn}
-                    redirectOnLogin={this.state.redirect}
                     showLoginPopUp={this.state.displayLogin}
                     showLoginPopUpFunction={this.showLoginPopUp}
                     removeLoginPopUp={this.removeLoginPopUp}

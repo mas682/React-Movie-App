@@ -4,31 +4,25 @@ import { Link, Redirect } from 'react-router-dom';
 import history from './History'
 import style from './css/signin.module.css';
 import './css/signin.css';
+import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 
 //documentation for PopUp https://react-popup.elazizi.com/component-api/
 class SignInPopup extends React.Component {
 	constructor(props) {
 		super(props);
-		let redirectOnLogin = this.props.redirectOnLogin;
-		if(redirectOnLogin === undefined)
-		{
-			redirectOnLogin = true;
-		}
 		this.state = {
 			open: true,
 			username: "",
 			password: "",
 			usernameError: "",
-			passwordError: "",
-			redirect: false,
-			redirectOnLogin: redirectOnLogin
+			passwordError: ""
 		};
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
 		this.changeHandler = this.changeHandler.bind(this);
 		this.validateForm = this.validateForm.bind(this);
-		this.callApi = this.callApi.bind(this);
+		this.loginResultsHandler = this.loginResultsHandler.bind(this);
 	}
 
 	openModal() {
@@ -49,26 +43,7 @@ class SignInPopup extends React.Component {
         this.setState({[name]: value});
     }
 
-	callApi() {
-		const requestOptions = {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			credentials: 'include',
-			body: JSON.stringify({
-				username: this.state.username,
-				password: this.state.password
-			})
-		};
-
-		let returnValue = 0;
-		return fetch("http://localhost:9000/login", requestOptions)
-			.then(res => {
-				console.log(res);
-				return res.json()
-			});
-	}
-
-	validateForm(event) {
+	async validateForm(event) {
 		event.preventDefault();
 		let error = false;
 
@@ -88,41 +63,54 @@ class SignInPopup extends React.Component {
 
 		if(!error)
 		{
-			this.callApi().then(result => {
-				let status = JSON.parse(result[0]);
-				let user = JSON.parse(result[1]);
-				if(status.result == "created cookie")
-				{
-					alert("You have successfully logged in");
-					console.log(user);
-					this.props.removeFunction(user.user);
-					this.setState({
-						open: false,
-						redirect: true,
-						username: user.user
-					});
-				}
-				else if(status.result == "You are already logged in")
-				{
-					this.closeModal();
-				}
-				else
-				{
-					alert(result);
-					console.log(result);
-					alert("Login failed");
-				}
+			let params = {
+				username: this.state.username,
+				password: this.state.password
+			};
+			let url = "http://localhost:9000/login";
+			let result = await apiPostJsonRequest(url, params);
+			let status = result[0];
+			let message = result[1].message;
+			let requester = result[1].requester;
+			this.loginResultsHandler(status, message, requester);
+		}
+	}
+
+	loginResultsHandler(status, message, requester)
+	{
+		// successfully logged in or already logged in
+		if(status === 200)
+		{
+			this.props.removeFunction(requester);
+			this.setState({
+				open: false
 			});
+		}
+		else if(status === 400)
+		{
+			if(message === "Username or email must be between 1-30 characters")
+			{
+				this.setState({usernameError: message});
+			}
+			else if(message === "Password must be between 6-15 characters")
+			{
+				this.setState({passwordError: message});
+			}
+
+		}
+		else if(status === 404)
+		{
+			// user does not exist
+			this.setState({usernameError: message});
+		}
+		else if(status === 401)
+		{
+			// incorrect password
+			this.setState({passwordError: message});
 		}
 	}
 
     render() {
-		// if the user successfully logged in
-		if(!this.state.open && this.state.redirect && this.state.redirectOnLogin)
-		{
-			let path = "/profile/" + this.state.username + "/feed";
-			return <Redirect to={path} />
-		}
 		let usernameInput =  (
             <React.Fragment>
                 <label>
