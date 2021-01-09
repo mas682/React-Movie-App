@@ -1,6 +1,7 @@
 import models, { sequelize } from '../src/models';
 import {verifyLogin} from './globals.js';
 const Op = require('Sequelize').Op;
+import {validateStringParameter, validateUsernameParameter, validateEmailParameter} from './globals.js';
 
 
 // function to create an account
@@ -15,7 +16,10 @@ const signUp = (req, res, next) => {
         {
             if(cookieValid)
             {
-                res.status(403).send('You are already logged in.')
+                res.status(401).send({
+                    message: "You are already logged in so you must have an account",
+                    requester: cookie.name
+                });
             }
             // cookie not valid
             else
@@ -34,14 +38,31 @@ const signUp = (req, res, next) => {
 // function to create a user
 const createUser =(req, res) =>
 {
-    // find the a user with the username or password sent
-    models.User.findOrCreate({where: {[Op.or]: [{username: req.body.username}, {email: req.body.email}]},
+    let username = req.body.username;
+    let email = req.body.email;
+    let password = req.body.password;
+    let firstName = req.body.password;
+    let lastName = req.body.lastName;
+    let valid = validateUsernameParameter(res, username, "", "Username is invalid");
+    if(!valid) return;
+    valid = validateEmailParameter(res, email, "", "Email is invalid");
+    if(!valid) return;
+    valid = validateStringParameter(res, password, 6, 15, "", "Password must be betweeen 6-15 characters");
+    if(!valid) return;
+    valid = validateStringParameter(res, firstName, 1, 20, "", "First name must be between 1-20 characters");
+    if(!valid) return;
+    valid = validateStringParameter(res, lastName, 1, 20, "", "Last name must be between 1-20 characters");
+    if(!valid) return;
+
+
+    // find the a user with the username or email sent
+    models.User.findOrCreate({where: {[Op.or]: [{username: username}, {email: email}]},
         defaults: {
-            username: req.body.username,
-            email: req.body.email,
-            password: req.body.password,
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
+            username: username,
+            email: email,
+            password: password,
+            firstName: firstName,
+            lastName: lastName,
         }}
     ).then(([user, created]) => {
         // if the user did not already exist and was successfully created
@@ -50,22 +71,34 @@ const createUser =(req, res) =>
             let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
-            res.status(201).send("User has been created");
+            res.status(201).send({
+                message: "User has been created",
+                requester: username
+            });
         }
         // the user existed
         else
         {
             if(user.username == req.body.username)
             {
-                res.status(409).send("username already in use");
+                res.status(409).send({
+                    message: "Username already exists",
+                    requester: ""
+                });
             }
             else if(user.email == req.body.email)
             {
-                res.status(409).send("email already in use");
+                res.status(409).send({
+                    message: "Email already associated with a user",
+                    requester: ""
+                });
             }
             else
             {
-                res.status(500).send("something went wrong creating the user");
+                res.status(500).send({
+                    message: "Someting went wrong on the server when creating the user",
+                    requester: ""
+                });
             }
         }
     });

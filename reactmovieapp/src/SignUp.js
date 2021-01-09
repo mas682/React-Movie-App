@@ -3,6 +3,7 @@ import { Link, Redirect } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import './css/signup.css';
 import style from './css/signup.module.css';
+import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 // documentation for PopUp https://react-popup.elazizi.com/component-api/
 class SignUpPopup extends React.Component {
@@ -26,49 +27,21 @@ class SignUpPopup extends React.Component {
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.validateForm = this.validateForm.bind(this);
-        this.callApi = this.callApi.bind(this);
+        this.signUpResultsHandler = this.signUpResultsHandler.bind(this);
     }
 
     closeModal() {
-        this.setState({
-            open: false,
-        });
+        this.setState({open: false});
         // function that is passed in by the calling component that
         // sets some state in the other component when this is closed,
         // such as whether or not the pop up should be open
         this.props.removeFunction();
     }
 
-    callApi()
-    {
-        // Simple POST request with a JSON body using fetch
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: this.state.username,
-                firstName: this.state.firstName,
-                lastName: this.state.lastName,
-                email: this.state.email,
-                password: this.state.password
-            })
-        };
-
-        let status = 0;
-        return fetch("http://localhost:9000/signup", requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.text();
-            }).then(result => {
-                return [status, result];
-            });
-    }
-
     // function called when CREATE AN ACCOUNT button is clicked
     // to validate that the fields are correct and handle sending
     // data to server
-    validateForm(event) {
+    async validateForm(event) {
         event.preventDefault();
         let error = false;
         // checks to see if email in format string@string.string
@@ -76,101 +49,114 @@ class SignUpPopup extends React.Component {
         // if firstName is empty
         if(!this.state.firstName)
         {
-            this.setState({"firstNameError": "First name is required"});
+            this.setState({firstNameError: "First name is required"});
             error = true;
         }
         else
         {
-            this.setState({"firstNameError": ""});
+            this.setState({firstNameError: ""});
         }
 
         if(!this.state.username)
         {
-            this.setState({"usernameError": "Username is required"});
+            this.setState({usernameError: "Username is required"});
             error = true;
         }
-        else if(this.state.username < 8)
+        else if(this.state.username.length < 8 || this.state.username.length > 20)
         {
-            this.setState({"usernameError": "Username must be at least 8 characters"});
+            this.setState({usernameError: "Username must be between 6-20 characters"});
             error = true;
         }
         else
         {
-            this.setState({"usernameError": ""});
+            this.setState({usernameError: ""});
         }
 
         // if lastName is empty
         if(!this.state.lastName)
         {
-            this.setState({"lastNameError": "Last name is required"});
+            this.setState({lastNameError: "Last name is required"});
             error = true;
         }
         else
         {
-            this.setState({"lastNameError": ""});
+            this.setState({lastNameError: ""});
         }
 
         // if lastName is empty
         if(!this.state.email)
         {
-            this.setState({"emailError": "Email is required"});
+            this.setState({emailError: "Email is required"});
             error = true;
         }
         else if(!this.state.email.includes("@") | !validEmail)
         {
-            this.setState({"emailError": "You must enter a valid email address"});
+            this.setState({emailError: "You must enter a valid email address"});
             error = true;
         }
         else
         {
-            this.setState({"emailError": ""});
+            this.setState({emailError: ""});
         }
 
         // if password lenght < 8
-        if(this.state.password.length < 8)
+        if(this.state.password.length < 6 || this.state.password.length > 15)
         {
-            this.setState({"passwordError": "Your password must be at least 8 characters"});
+            this.setState({passwordError: "Password must be between 6-15 characters"});
             error = true;
         }
         else
         {
-            this.setState({"passwordError": ""})
+            this.setState({passwordError: ""})
         }
         if(!error)
         {
-            this.callApi().then(result => {
-                let status = result[0];
-                let response = result[1];
-                if(status === 201 && response === "User has been created")
-                {
-                    // redirect to either homepage
-                    alert("User successfully created");
-                    this.closeModal();
-                    // set the state to redirect so render will redirect to landing on success
-                    this.setState({redirect: true});
-                }
-                else if(status === 403 && response === "You are already logged in")
-                {
-                    // redirect to home page?
-                    alert("You are already logged in!");
-                }
-                else if(status === 409 && response === "username already in use")
-                {
-                    this.setState({"usernameError": "This username is already in use"});
-                }
-                else if(status === 409 && response === "email already in use")
-                {
-                    this.setState({"emailError": "This email address is already in use"});
-                }
-                else if(status === 500 && response === "sometihgn went wrong creating the user")
-                {
-                    alert("Something went wrong creating the account.  Please contact a admin");
-                }
-                else
-                {
-                    alert("Something unexpected happened when trying to create the account");
-                }
-            });
+            let params = {
+                username: this.state.username,
+                firstName: this.state.firstName,
+                lastName: this.state.lastName,
+                email: this.state.email,
+                password: this.state.password
+            };
+            let url = "http://localhost:9000/signup";
+            let result = await apiPostJsonRequest(url, params);
+            let status = result[0];
+            let message = result[1].message;
+            let requester = result[1].requester;
+            this.signUpResultsHandler(status, message, requester);
+        }
+    }
+
+    signUpResultsHandler(status, message, requester)
+    {
+        if(status === 201 && message === "User has been created")
+        {
+            // redirect to either homepage
+            alert("User successfully created");
+            this.closeModal();
+            // set the state to redirect so render will redirect to landing on success
+            this.setState({redirect: true});
+        }
+        else if(status === 403 && message === "You are already logged in")
+        {
+            // redirect to home page?
+            alert("You are already logged in!");
+        }
+        else if(status === 409 && message === "username already in use")
+        {
+            this.setState({usernameError: "This username is already in use"});
+        }
+        else if(status === 409 && message === "email already in use")
+        {
+            this.setState({emailError: "This email address is already in use"});
+        }
+        else if(status === 500 && message === "something went wrong creating the user")
+        {
+            alert("Something went wrong creating the account.  Please contact a admin");
+        }
+        else
+        {
+            alert("Something unexpected happened when trying to create the account");
         }
     }
 

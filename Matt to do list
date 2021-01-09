@@ -278,3 +278,4 @@ To do list:
         - movie post works, need to change what you listed above..
         - next: work on movie pages, make functions reusable on client and api where possible
         - profile/:id done for now, need to fix movie posts returned as stated above
+        - in movie post popup, make sure on login success, displays message

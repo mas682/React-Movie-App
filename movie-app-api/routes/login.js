@@ -71,7 +71,7 @@ const checkLogin = (req, res) =>
     let password = req.body.password;
     let username = req.body.username;
     // set to 30 as if allowing email will have to be longer
-    let valid = validateStringParameter(res, username, 1, 30, "", "Username or email must be between 1-30 characters");
+    let valid = validateStringParameter(res, username, 8, 30, "", "Username or email must be between 6-30 characters");
     if(!valid) return;
     valid = validateStringParameter(res, password, 6, 15, "", "Password must be between 6-15 characters");
     if(!valid) return;

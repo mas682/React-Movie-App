@@ -98,7 +98,7 @@ const validateUsernameParameter = (res, username, requester, message) => {
     }
     let userLength = username.length;
     // limit usernames to 1-20 characters
-    if(userLength > 20 || userLength < 1)
+    if(userLength > 20 || userLength < 6)
     {
         res.status(400).send({
             message: message,
@@ -108,6 +108,51 @@ const validateUsernameParameter = (res, username, requester, message) => {
     }
     return true;
 };
+
+const validateEmailParameter = (res, email, requester, message) => {
+    if(email === undefined)
+    {
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+    let emailLength = email.length;
+    // limit usernames to 1-20 characters
+    if(emailLength > 30 || emailLength < 7)
+    {
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+    else if(email.includes("@"))
+    {
+        // checks to see if email in format string@string.string
+        let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        if(!validEmail)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+            return false;
+        }
+        return true;
+    }
+    else
+    {
+        // does not have a @ in it
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+    return true;
+}
 
 // function to validate that a variable is in fact a string and is not empty
 // if maxLength is undefined it will be skipped
@@ -144,4 +189,4 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
     return true;
 };
 
-export {router, verifyLogin, validateIntegerParameter, validateUsernameParameter, validateStringParameter};
+export {router, verifyLogin, validateIntegerParameter, validateUsernameParameter, validateStringParameter, validateEmailParameter};

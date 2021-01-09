@@ -30,9 +30,7 @@ class SignInPopup extends React.Component {
 	}
 
 	closeModal() {
-        this.setState({
-            open: false,
-        });
+        this.setState({open: false});
 		// function passed by callling component to close the pop up
 		this.props.removeFunction();
     }
@@ -48,17 +46,29 @@ class SignInPopup extends React.Component {
 		let error = false;
 
 		if(!this.state.username) {
-			this.setState({"usernameError": "Username is required"});
+			this.setState({usernameError: "Username is required"});
 			error = true;
-		} else {
-			this.setState({"usernameError": ""});
+		}
+		else if(this.state.username.length < 6 || this.state.username.length > 30)
+		{
+			this.setState({usernameError: "Username or email must be between 6-30 characters"});
+			error = true;
+		}
+		else {
+			this.setState({usernameError: ""});
 		}
 
 		if(!this.state.password) {
-			this.setState({"passwordError": "Password is required"});
+			this.setState({passwordError: "Password is required"});
 			error = true;
-		} else {
-			this.setState({"passwordError": ""});
+		}
+		else if(this.state.password.length < 6 || this.state.password.length > 30)
+		{
+			this.setState({passwordError: "Password must be between 6-15 characters"});
+			error = true;
+		}
+		else {
+			this.setState({passwordError: ""});
 		}
 
 		if(!error)
@@ -82,13 +92,11 @@ class SignInPopup extends React.Component {
 		if(status === 200)
 		{
 			this.props.removeFunction(requester);
-			this.setState({
-				open: false
-			});
+			this.setState({open: false});
 		}
 		else if(status === 400)
 		{
-			if(message === "Username or email must be between 1-30 characters")
+			if(message === "Username or email must be between 6-30 characters")
 			{
 				this.setState({usernameError: message});
 			}
