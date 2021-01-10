@@ -447,6 +447,7 @@ class SignUpPopup extends React.Component {
                 open={this.state.open}
                 closeOnDocumentClick
                 onClose={this.closeModal}
+                className={"signUp"}
             >
                 <div className="modal">
                     {/* &times is the multiplication symbol (x) --> */}

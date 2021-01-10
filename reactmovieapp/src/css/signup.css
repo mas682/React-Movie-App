@@ -10,3 +10,45 @@
 .logInLink {
     color: #4682B4;
 }
+
+@media screen and (min-width: 1400px) {
+    .signUp-content {
+        width: 50% !important;
+    }
+}
+
+@media screen and (max-width: 1399px) {
+    .signUp-content {
+        width: 55% !important;
+    }
+}
+
+@media screen and (max-width: 1199px) {
+    .signUp-content {
+        width: 60% !important;
+    }
+}
+
+@media screen and (max-width: 999px) {
+    .signUp-content {
+        width: 65% !important;
+    }
+}
+
+@media screen and (max-width: 799px) {
+    .signUp-content {
+        width: 70% !important;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .signUp-content {
+        width: 75% !important;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .signUp-content {
+        width: 80% !important;
+    }
+}

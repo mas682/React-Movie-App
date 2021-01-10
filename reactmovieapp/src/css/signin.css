@@ -13,3 +13,46 @@
     background: white;
     outline: none;
 }
+
+
+@media screen and (min-width: 1400px) {
+    .signIn-content {
+        width: 35% !important;
+    }
+}
+
+@media screen and (max-width: 1399px) {
+    .signIn-content {
+        width: 40% !important;
+    }
+}
+
+@media screen and (max-width: 1199px) {
+    .signIn-content {
+        width: 45% !important;
+    }
+}
+
+@media screen and (max-width: 999px) {
+    .signIn-content {
+        width: 50% !important;
+    }
+}
+
+@media screen and (max-width: 799px) {
+    .signIn-content {
+        width: 55% !important;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .signIn-content {
+        width: 60% !important;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .signIn-content {
+        width: 65% !important;
+    }
+}

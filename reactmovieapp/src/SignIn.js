@@ -205,7 +205,7 @@ class SignInPopup extends React.Component {
 					open={this.state.open}
 					closeOnDocumentClick
 					onClose={this.closeModal}
-					contentStyle={{ width: "35%"}}
+					className={"signIn"}
 				>
 					<div className="modal">
 						{/* &times is the multiplication symbol (x) --> */}

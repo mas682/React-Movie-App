@@ -42,12 +42,236 @@
     display:flex;
 }
 
-.moviePoster {
-    width: 90%;
-    margin: 5%;
-    height: inherit;
-    max-height: 375px;
-    background: white;
+@media screen and (min-width: 1400px) {
+    .movieDetailsOutterContainer {
+        width: 65%;
+        height: 97%;
+        color: white;
+        margin-left: 2.5%;
+        margin-right: 2.5%;
+        justify-content: center;
+        align-content: center;
+        margin-top:  0.5%;
+        margin-bottom: 2.5%;
+        position: relative;
+    }
+
+    .moviePoster {
+        width: 90%;
+        margin: 5%;
+        height: inherit;
+        max-height: 375px;
+        min-height: 300px;
+        background: white;
+    }
+}
+
+@media screen and (max-width: 1399px) {
+    .movieImageContainer {
+        width: 30%;
+        margin: 0px;
+        min-height: 0px;
+        display:flex;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 65%;
+        height: 97%;
+        color: white;
+        margin-left: 2.5%;
+        margin-right: 2.5%;
+        justify-content: center;
+        align-content: center;
+        margin-top:  0.5%;
+        margin-bottom: 2.5%;
+        position: relative;
+    }
+
+    .moviePoster {
+        width: 90%;
+        margin: 5%;
+        height: inherit;
+        max-height: 375px;
+        min-height: 300px;
+        background: white;
+    }
+}
+
+@media screen and (max-width: 1199px) {
+    .movieImageContainer {
+        width: 30%;
+        margin: 0px;
+        min-height: 0px;
+        display:flex;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 65%;
+        height: 97%;
+        color: white;
+        margin-left: 2.5%;
+        margin-right: 2.5%;
+        justify-content: center;
+        align-content: center;
+        margin-top:  0.5%;
+        margin-bottom: 2.5%;
+        position: relative;
+    }
+
+    .moviePoster {
+        width: 90%;
+        margin: 5%;
+        height: inherit;
+        max-height: 375px;
+        min-height: 300px;
+        background: white;
+    }
+}
+
+@media screen and (max-width: 999px) {
+    .movieImageContainer {
+        width: 40%;
+        margin: 0px;
+        min-height: 0px;
+        display:flex;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 55%;
+        height: 97%;
+        color: white;
+        margin-left: 2.5%;
+        margin-right: 2.5%;
+        justify-content: center;
+        align-content: center;
+        margin-top:  0.5%;
+        margin-bottom: 2.5%;
+        position: relative;
+    }
+
+    .moviePoster {
+        width: 90%;
+        margin: 5%;
+        height: inherit;
+        max-height: 375px;
+        min-height: 300px;
+        background: white;
+    }
+}
+
+@media screen and (max-width: 799px) {
+    .movieImageContainer {
+        width: 100%;
+        margin: 0px;
+        min-height: 0px;
+        display:flex;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 95%;
+        height: 97%;
+        color: white;
+        margin-left: 2.5%;
+        margin-right: 2.5%;
+        justify-content: center;
+        align-content: center;
+        margin-top:  0.5%;
+        margin-bottom: 2.5%;
+        position: relative;
+    }
+
+    .moviePoster {
+        width: 50%;
+        margin-left: 25%;
+        margin-right: 25%;
+        margin-top: 5%;
+        margin-bottom: 5%;
+        height: inherit;
+        min-height: 375px;
+        min-height: 300px;
+        background: white;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .movieImageContainer {
+        width: 100%;
+        margin: 0px;
+        min-height: 0px;
+        display:flex;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 95%;
+        height: 97%;
+        color: white;
+        margin-left: 2.5%;
+        margin-right: 2.5%;
+        justify-content: center;
+        align-content: center;
+        margin-top:  0.5%;
+        margin-bottom: 2.5%;
+        position: relative;
+    }
+
+    .moviePoster {
+        width: 50%;
+        margin-left: 25%;
+        margin-right: 25%;
+        margin-top: 5%;
+        margin-bottom: 5%;
+        height: inherit;
+        max-height: 375px;
+        min-height: 300px;
+        background: white;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .movieImageContainer {
+        width: 100%;
+        margin: 0px;
+        min-height: 0px;
+        display:flex;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 95%;
+        height: 97%;
+        color: white;
+        margin-left: 2.5%;
+        margin-right: 2.5%;
+        justify-content: center;
+        align-content: center;
+        margin-top:  0.5%;
+        margin-bottom: 2.5%;
+        position: relative;
+    }
+    .moviePoster {
+        width: 50%;
+        margin-left: 25%;
+        margin-right: 25%;
+        margin-top: 5%;
+        margin-bottom: 5%;
+        height: inherit;
+        max-height: 375px;
+        min-height: 300px;
+        background: white;
+    }
+}
+
+.watchListIconContainer {
+    width: 50px;
+    display: flex;
+    justify-content: flex-start;
+    font-size: 2.5em;
+}
+
+.watchedIconContainer {
+    width: 50px;
+    display: flex;
+    justify-content: flex-start;
+    font-size: 2.5em;
 }
 
 .headerContainer {
@@ -57,19 +281,6 @@
   position: relative;
   background-repeat: no-repeat;
   background-size: cover;
-}
-
-.movieDetailsOutterContainer {
-    width: 65%;
-    height: 97%;
-    color: white;
-    margin-left: 2.5%;
-    margin-right: 2.5%;
-    justify-content: center;
-    align-content: center;
-    margin-top:  0.5%;
-    margin-bottom: 2.5%;
-    position: relative;
 }
 
 .movieDetailsContainer {
@@ -122,7 +333,6 @@
     display: flex;
     flex-flow: row wrap;
     font-weight: 500;
-    white-space: pre;
     color: white;
 }
 /*  new for watchlist icons */
@@ -131,13 +341,6 @@
     display: flex;
     flex-flow: row wrap;
     margin-top: 2%;
-}
-
-.watchListIconContainer {
-    width: 10%;
-    display: flex;
-    justify-content: flex-start;
-    font-size: 2.5em;
 }
 
 .watchListIcon {
@@ -150,13 +353,6 @@
 
 .watchListIcon:hover {
     color: red;
-}
-
-.watchedIconContainer {
-    width: 10%;
-    display: flex;
-    justify-content: flex-start;
-    font-size: 2.5em;
 }
 
 .watchedIcon {

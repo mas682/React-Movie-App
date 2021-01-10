@@ -70,7 +70,7 @@ const generateMovieTrailer = (style, trailer) =>
     if(trailer !== null)
     {
         trailerPath = "https://www.youtube.com/embed/" + trailer;
-        trailerElem = <iframe className={style.movieTrailer} src={trailerPath}></iframe>;
+        trailerElem = <iframe allowfullscreen="allowfullscreen" className={style.movieTrailer} src={trailerPath}></iframe>;
     }
     return (
         <div className={style.movieTrailerContainer}>

@@ -36,7 +36,6 @@ class MovieFilterPage extends React.Component {
         this.generateNewState = this.generateNewState.bind(this);
     }
 
-
     static getDerivedStateFromProps(nextProps, prevState)
     {
         // if the page type changed

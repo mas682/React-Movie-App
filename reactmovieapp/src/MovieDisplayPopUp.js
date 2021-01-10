@@ -1,6 +1,7 @@
 import React from 'react';
 import Popup from 'reactjs-popup';
 import style from './css/Movies/MovieDisplayPopUp.module.css'
+import './css/Movies/MovieDisplayPopUp.css'
 import {Redirect, withRouter} from 'react-router-dom';
 import {generateWatchListButton, generateWatchedListButton, generateMovieTrailer,
 generateMovieInfo, generateOverview, generateDirector, generateGenres, generateMoviePoster} from './StaticFunctions/MovieHtmlFunctions.js';
@@ -290,14 +291,14 @@ class MovieDisplayPopUp extends React.Component {
                             />
             }
             console.log(this.state.messages);
+            console.log(style.contentStyle);
     		return (
         			<div>
                         <Popup
                             open={this.state.open}
                             closeOnDocumentClick
+                            className={"movieDisplay"}
                             onClose={this.closeModal}
-                            contentStyle={{ width: "50%", border: "0px", padding: "0px"}}
-							//overlayStyle={{"z-index": "2"}}
                         >
                             <div className={style.modal}>
                                 <div className={style.content} style={headerBackgroundCss}>
