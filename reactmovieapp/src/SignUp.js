@@ -30,6 +30,7 @@ class SignUpPopup extends React.Component {
         this.changeHandler = this.changeHandler.bind(this);
         this.validateForm = this.validateForm.bind(this);
         this.signUpResultsHandler = this.signUpResultsHandler.bind(this);
+        this.showLoginPopUp = this.showLoginPopUp.bind(this);
     }
 
     closeModal() {
@@ -38,6 +39,11 @@ class SignUpPopup extends React.Component {
         // sets some state in the other component when this is closed,
         // such as whether or not the pop up should be open
         this.props.removeFunction();
+    }
+
+    showLoginPopUp() {
+        this.props.showLoginPopUp();
+        this.closeModal();
     }
 
     // function called when CREATE AN ACCOUNT button is clicked
@@ -125,7 +131,6 @@ class SignUpPopup extends React.Component {
 
     signUpResultsHandler(status, message, requester)
     {
-        status = 500;
         if(status === 201)
         {
             // redirect to either homepage
@@ -259,6 +264,12 @@ class SignUpPopup extends React.Component {
         let value = event.target.value;
         this.setState({[name]: value});
     }
+
+    /*
+    need to fix login link at bottom in here to bring up login pop up
+    also need to do the same for the login side where there is a button for
+    the to sign up..
+    */
 
     render() {
         let usernameInput =  (
@@ -480,7 +491,7 @@ class SignUpPopup extends React.Component {
                         >CREATE YOUR ACCOUNT</button>
                     </div>
                     <div className={style.accountExistsText}>
-                        Already have an account? <a className="logInLink" href="">Log In Here</a>
+                        <button className="logInLink" onClick={this.showLoginPopUp}>Already have an account? Log In Here!</button>
                     </div>
                 </div>
             </Popup>

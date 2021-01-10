@@ -279,3 +279,5 @@ To do list:
         - next: work on movie pages, make functions reusable on client and api where possible
         - profile/:id done for now, need to fix movie posts returned as stated above
         - in movie post popup, make sure on login success, displays message
+        - need to eventually create a page(s) for a user to go through when they first create their account
+        

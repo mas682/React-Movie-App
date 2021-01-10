@@ -9,4 +9,7 @@
 
 .logInLink {
     color: #4682B4;
+    border: none;
+    background: white;
+    outline: none;
 }

@@ -9,6 +9,7 @@ import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
     addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
      from './StaticFunctions/UserResultsHandlers.js';
 import SignInPopup from './SignIn.js';
+import SignUpPopup from './SignUp.js';
 import Alert from './Alert.js';
 import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
 
@@ -24,6 +25,9 @@ class MovieDisplayPopUp extends React.Component {
 		this.buttonHandler = this.buttonHandler.bind(this);
 		this.showSignInForm = this.showSignInForm.bind(this);
 		this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
+        this.showSignUpForm = this.showSignUpForm.bind(this);
+        this.signUpRemoveFunction  = this.signUpRemoveFunction.bind(this);
+        this.setMessages = this.setMessages.bind(this);
 	}
 
 	static getDerivedStateFromProps(nextProps, prevState)
@@ -60,8 +64,10 @@ class MovieDisplayPopUp extends React.Component {
 			type: props.type,
 			// show the sign in pop up
 			displaySignIn: (prevState === undefined) ? false : prevState.displaySignIn,
+            displaySignUp: (prevState === undefined) ? false : prevState.displaySignUp,
             messages: [],
             messageId: -1,
+            clearMessages: false,
             props: props
 		};
 	}
@@ -79,9 +85,13 @@ class MovieDisplayPopUp extends React.Component {
 
 	showSignInForm()
 	{
-        console.log("Show sign in");
 		this.setState({displaySignIn: true});
 	}
+
+    showSignUpForm()
+    {
+        this.setState({displaySignUp: true});
+    }
 
 	signInRemoveFunction = (username) =>
 	{
@@ -93,6 +103,41 @@ class MovieDisplayPopUp extends React.Component {
 		this.props.updateLoggedIn(user);
 		this.setState({displaySignIn: false});
 	}
+
+    signUpRemoveFunction = (username) =>
+    {
+        this.setState({displaySignUp: false});
+    }
+
+    setMessages(messageState)
+    {
+        let state = {...messageState};
+        if(state.messages !== undefined)
+        {
+            let messageCount = this.state.messageId + state.messages.length;
+            state.messageId = messageCount;
+        }
+        else if(state.clearMessages !== undefined)
+        {
+            // if messages was undefined and clearMessages set to true, reset id to clear all messages
+            if(state.clearMessages)
+            {
+                state.messageId = -1;
+            }
+        }
+        else
+        {
+            return;
+        }
+        if(state.clearMessages === undefined)
+        {
+            state.clearMessages = false;
+        }
+        // will have to do some error handling around swithcing pages..
+        // need to deal with clearMessages....
+        // preferably in the generateMessageState function
+        this.setState(state);
+    }
 
 
 	changeHandler(event) {
@@ -229,8 +274,21 @@ class MovieDisplayPopUp extends React.Component {
 			let signInForm = "";
 			if(this.state.displaySignIn)
 			{
-				signInForm = <SignInPopup removeFunction={this.signInRemoveFunction} redirectOnLogin={false}/>
+				signInForm = <SignInPopup
+                                removeFunction={this.signInRemoveFunction}
+                                showSignUpForm={this.showSignUpForm}
+                            />;
 			}
+            let signUpForm = "";
+            if(this.state.displaySignUp)
+            {
+                signUpForm = <SignUpPopup
+                                removeFunction={this.signUpRemoveFunction}
+                                updateLoggedIn={this.props.updateLoggedIn}
+                                setMessages={this.setMessages}
+                                showLoginPopUp={this.showSignInForm}
+                            />
+            }
             console.log(this.state.messages);
     		return (
         			<div>
@@ -246,6 +304,7 @@ class MovieDisplayPopUp extends React.Component {
                                     <Alert
                                         messages={this.state.messages}
                                         messageId={this.state.messageId}
+                                        clearMessages={this.state.clearMessages}
                                     />
                                     <div className={style.headerContainer}>
                                         {poster}
@@ -272,6 +331,7 @@ class MovieDisplayPopUp extends React.Component {
                             </div>
                         </Popup>
 						{signInForm}
+                        {signUpForm}
         			</div>
     		);
     }

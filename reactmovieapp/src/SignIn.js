@@ -26,6 +26,7 @@ class SignInPopup extends React.Component {
 		this.changeHandler = this.changeHandler.bind(this);
 		this.validateForm = this.validateForm.bind(this);
 		this.loginResultsHandler = this.loginResultsHandler.bind(this);
+		this.showSignUpForm = this.showSignUpForm.bind(this);
 	}
 
 	openModal() {
@@ -37,6 +38,12 @@ class SignInPopup extends React.Component {
 		// function passed by callling component to close the pop up
 		this.props.removeFunction();
     }
+
+	showSignUpForm()
+	{
+		this.props.showSignUpForm();
+		this.closeModal();
+	}
 
 	changeHandler(event) {
         let name = event.target.name;
@@ -241,7 +248,7 @@ class SignInPopup extends React.Component {
 							<div className={style.forgotText}><a className="logInLink" href="">Forgot Password?</a></div>
 						</div>
 						<div className="newHere">
-							<div className={style.forgotText}><a className="logInLink" href="">New Here? Sign Up!</a></div>
+							<div className={style.forgotText}><button className="logInLink" onClick={this.showSignUpForm}>New Here? Sign Up!</button></div>
 						</div>
 					</div>
 				</Popup>

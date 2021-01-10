@@ -118,7 +118,7 @@ class Header extends React.Component {
     {
         if(this.state.currentUser === "")
         {
-            this.props.showLoginPopUpFunction(true);
+            this.props.showLoginPopUpFunction();
             return;
         }
         this.setState({reviewFormOpen: true});
@@ -289,7 +289,10 @@ class Header extends React.Component {
             let signInForm = "";
             if(this.state.displaySignIn)
             {
-                signInForm = <SignInPopup removeFunction={this.signInRemoveFunction}/>
+                signInForm = <SignInPopup
+                                showSignUpForm={this.showSignUpForm}
+                                removeFunction={this.signInRemoveFunction}
+                            />
             }
             let signUpForm = "";
             if(this.state.displaySignUp)
@@ -298,6 +301,7 @@ class Header extends React.Component {
                                 removeFunction={this.signUpRemoveFunction}
                                 updateLoggedIn={this.props.updateLoggedIn}
                                 setMessages={this.props.setMessages}
+                                showLoginPopUp={this.props.showLoginPopUpFunction}
                             />
             }
             return (
