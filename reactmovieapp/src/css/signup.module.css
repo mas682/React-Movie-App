@@ -6,6 +6,16 @@
     width: 45%;
     margin-bottom: 10px;
     margin-left: 2.5%;
+    margin-right: 1%;
+    position: relative;
+}
+
+.lastNameContainer {
+    width: 45%;
+    margin-bottom: 10px;
+    margin-left: 2.5%;
+    margin-right: 2.5%;
+    position: relative;
 }
 
 /*
@@ -28,4 +38,5 @@
 .accountExistsText {
     text-align: center;
     width: 100%;
+    position: relative;
 }

@@ -34,7 +34,7 @@ class Header extends React.Component {
         this.reviewSuccessFunction = this.reviewSuccessFunction.bind(this);
     }
 
-    signUpRemoveFunction = () =>
+    signUpRemoveFunction = (username) =>
     {
         this.setState({displaySignUp: false});
     }
@@ -294,7 +294,11 @@ class Header extends React.Component {
             let signUpForm = "";
             if(this.state.displaySignUp)
             {
-                signUpForm = <SignUpPopup removeFunction={this.signUpRemoveFunction}/>
+                signUpForm = <SignUpPopup
+                                removeFunction={this.signUpRemoveFunction}
+                                updateLoggedIn={this.props.updateLoggedIn}
+                                setMessages={this.props.setMessages}
+                            />
             }
             return (
                 <div className="App-Header">

@@ -4,6 +4,7 @@ import Popup from 'reactjs-popup';
 import './css/signup.css';
 import style from './css/signup.module.css';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import Alert from './Alert.js';
 
 // documentation for PopUp https://react-popup.elazizi.com/component-api/
 class SignUpPopup extends React.Component {
@@ -21,7 +22,8 @@ class SignUpPopup extends React.Component {
             lastNameError: "",
             emailError: "",
             passwordError: "",
-            redirect: false
+            messages: [],
+            messageId: -1
         };
 
         this.closeModal = this.closeModal.bind(this);
@@ -49,7 +51,7 @@ class SignUpPopup extends React.Component {
         // if firstName is empty
         if(!this.state.firstName)
         {
-            this.setState({firstNameError: "First name is required"});
+            this.setState({firstNameError: "First name must be between 1-20 characters"});
             error = true;
         }
         else
@@ -57,12 +59,7 @@ class SignUpPopup extends React.Component {
             this.setState({firstNameError: ""});
         }
 
-        if(!this.state.username)
-        {
-            this.setState({usernameError: "Username is required"});
-            error = true;
-        }
-        else if(this.state.username.length < 8 || this.state.username.length > 20)
+        if(this.state.username.length < 6 || this.state.username.length > 20)
         {
             this.setState({usernameError: "Username must be between 6-20 characters"});
             error = true;
@@ -75,7 +72,7 @@ class SignUpPopup extends React.Component {
         // if lastName is empty
         if(!this.state.lastName)
         {
-            this.setState({lastNameError: "Last name is required"});
+            this.setState({lastNameError: "Last name must be between 1-20 characters"});
             error = true;
         }
         else
@@ -83,15 +80,14 @@ class SignUpPopup extends React.Component {
             this.setState({lastNameError: ""});
         }
 
-        // if lastName is empty
-        if(!this.state.email)
+        if(this.state.email.length < 7 || this.state.email.length > 30)
         {
-            this.setState({emailError: "Email is required"});
+            this.setState({emailError: "The email provided is not a valid email address"});
             error = true;
         }
         else if(!this.state.email.includes("@") | !validEmail)
         {
-            this.setState({emailError: "You must enter a valid email address"});
+            this.setState({emailError: "The email provided is not a valid email address"});
             error = true;
         }
         else
@@ -129,34 +125,132 @@ class SignUpPopup extends React.Component {
 
     signUpResultsHandler(status, message, requester)
     {
-        if(status === 201 && message === "User has been created")
+        status = 500;
+        if(status === 201)
         {
             // redirect to either homepage
-            alert("User successfully created");
+            this.props.setMessages({
+                messages: [{type: "success", message: "Account successfully created!"}],
+                clearMessages: true
+            });
+            this.props.updateLoggedIn(requester);
             this.closeModal();
             // set the state to redirect so render will redirect to landing on success
-            this.setState({redirect: true});
+            // actually want to redirect to a page to customize profile....
+            // this.setState({redirect: true});
         }
-        else if(status === 403 && message === "You are already logged in")
+        else if(status === 401)
         {
-            // redirect to home page?
-            alert("You are already logged in!");
+            this.props.setMessages({
+                messages: [{type: "info", message: "You are already logged in"}],
+                clearMessages: true
+            });
+            this.props.updateLoggedIn(requester);
+            this.closeModal();
         }
-        else if(status === 409 && message === "username already in use")
+        else if(status === 409)
         {
-            this.setState({usernameError: "This username is already in use"});
+            this.props.updateLoggedIn(requester);
+            if(message === "Username already exists")
+            {
+                this.setState({
+                    usernameError: "This username is already in use",
+                    emailError: "",
+                    passwordError: "",
+                    firstNameError: "",
+                    lastNameError: ""
+                });
+            }
+            else
+            {
+                this.setState({
+                    emailError: "This email address is already in use",
+                    usernameError: "",
+                    passwordError: "",
+                    firstNameError: "",
+                    lastNameError: ""
+                });
+            }
         }
-        else if(status === 409 && message === "email already in use")
+        else if(status === 400)
         {
-            this.setState({emailError: "This email address is already in use"});
+            this.props.updateLoggedIn(requester);
+            if(message === "Username must be between 6-20 characters")
+            {
+                this.setState({
+                    usernameError: message,
+                    emailError: "",
+                    passwordError: "",
+                    firstNameError: "",
+                    lastNameError: ""
+                });
+            }
+            else if(message === "The email provided is not a valid email address")
+            {
+                this.setState({
+                    emailError: message,
+                    usernameError: "",
+                    passwordError: "",
+                    firstNameError: "",
+                    lastNameError: ""
+                });
+            }
+            else if(message === "Password must be betweeen 6-15 characters")
+            {
+                this.setState({
+                    passwordError: message,
+                    usernameError: "",
+                    emailError: "",
+                    firstNameError: "",
+                    lastNameError: ""
+                });
+            }
+            else if(message === "First name must be between 1-20 characters")
+            {
+                this.setState({
+                    firstNameError: message,
+                    usernameError: "",
+                    emailError: "",
+                    passwordError: "",
+                    lastNameError: ""
+                });
+            }
+            else if(message === "Last name must be between 1-20 characters")
+            {
+                this.setState({
+                    lastNameError: message,
+                    usernameError: "",
+                    emailError: "",
+                    passwordError: "",
+                    firstNameError: "",
+                });
+            }
         }
-        else if(status === 500 && message === "something went wrong creating the user")
+        else if(status === 500)
         {
-            alert("Something went wrong creating the account.  Please contact a admin");
+            this.setState({
+                lastNameError: "",
+                usernameError: "",
+                emailError: "",
+                passwordError: "",
+                firstNameError: "",
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: message}]
+            });
+            this.props.updateLoggedIn(requester);
         }
         else
         {
-            alert("Something unexpected happened when trying to create the account");
+            this.setState({
+                lastNameError: "",
+                usernameError: "",
+                emailError: "",
+                passwordError: "",
+                firstNameError: "",
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: "An unexpected error occurred on the server when trying to create the account"}]
+            });
+            this.props.updateLoggedIn(requester);
         }
     }
 
@@ -167,11 +261,6 @@ class SignUpPopup extends React.Component {
     }
 
     render() {
-        if(!this.state.open && this.state.redirect)
-        {
-            return <Redirect to="/" />;
-        }
-
         let usernameInput =  (
             <React.Fragment>
                 <label>
@@ -181,6 +270,7 @@ class SignUpPopup extends React.Component {
                     type="text"
                     name="username"
                     form = "form1"
+                    maxLength = {20}
                     className="inputFieldBoxLong validInputBox"
                     onChange={this.changeHandler}
                 />
@@ -195,6 +285,7 @@ class SignUpPopup extends React.Component {
                     type="text"
                     name="firstName"
                     form = "form1"
+                    maxLength = {20}
                     className={`${style.inputFieldBoxShort} validInputBox`}
                     onChange={this.changeHandler}
                 />
@@ -208,6 +299,7 @@ class SignUpPopup extends React.Component {
                     type="text"
                     name="lastName"
                     form = "form1"
+                    maxLength = {20}
                     className={`${style.inputFieldBoxShort} validInputBox`}
                     onChange={this.changeHandler}
                 />
@@ -222,6 +314,7 @@ class SignUpPopup extends React.Component {
                     type="text"
                     name="email"
                     form = "form1"
+                    maxLength = {30}
                     className="inputFieldBoxLong validInputBox"
                     onChange={this.changeHandler}
                 />
@@ -236,6 +329,7 @@ class SignUpPopup extends React.Component {
                     type="password"
                     name="password"
                     form = "form1"
+                    maxLength = {15}
                     className="inputFieldBoxLong validInputBox"
                     onChange={this.changeHandler}
                 />
@@ -252,6 +346,7 @@ class SignUpPopup extends React.Component {
                         type="text"
                         name="username"
                         form = "form1"
+                        maxLength = {20}
                         className="inputFieldBoxLong inputBoxError"
                         onChange={this.changeHandler}
                     />
@@ -270,6 +365,7 @@ class SignUpPopup extends React.Component {
                     type="text"
                     name="firstName"
                     form = "form1"
+                    maxLength = {20}
                     className={`${style.inputFieldBoxShort} inputBoxError`}
                     onChange={this.changeHandler}
                 />
@@ -288,6 +384,7 @@ class SignUpPopup extends React.Component {
                         type="text"
                         name="lastName"
                         form = "form1"
+                        maxLength = {20}
                         className={`${style.inputFieldBoxShort} inputBoxError`}
                         onChange={this.changeHandler}
                     />
@@ -306,6 +403,7 @@ class SignUpPopup extends React.Component {
                         type="text"
                         name="email"
                         form = "form1"
+                        maxLength = {30}
                         className="inputFieldBoxLong inputBoxError"
                         onChange={this.changeHandler}
                     />
@@ -324,6 +422,7 @@ class SignUpPopup extends React.Component {
                         type="password"
                         name="password"
                         form = "form1"
+                        maxLength = {15}
                         className="inputFieldBoxLong inputBoxError"
                         onChange={this.changeHandler}
                     />
@@ -343,16 +442,23 @@ class SignUpPopup extends React.Component {
                     <a className="close" onClick={this.closeModal}>
                     &times;
                     </a>
+                    <Alert
+                        messages={this.state.messages}
+                        messageId={this.state.messageId}
+                        innerContainerStyle={{"z-index": "2", "font-size": "1.25em"}}
+                        symbolStyle={{"width": "5%", "margin-top": "3px"}}
+                        messageBoxStyle={{width: "86%"}}
+                        closeButtonStyle={{width: "5%", "margin-top": "3px"}}
+                    />
                     <div className="header">
                         <h3 className="inlineH3"> Sign Up! </h3>
                     </div>
                     <div className="content">
-                        {/* This will eventually be a post form */}
                         <form id="form1" onSubmit={this.validateForm} noValidate/>
                         <div className={style.nameContainer}>
                             {firstNameInput}
                         </div>
-                        <div className={style.nameContainer}>
+                        <div className={style.lastNameContainer}>
                             {lastNameInput}
                         </div>
                         <div className="inputFieldContainer">

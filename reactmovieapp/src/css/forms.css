@@ -65,6 +65,7 @@
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
+    position: relative;
 }
 
 /* make a h3 header inline */
@@ -125,6 +126,7 @@
     margin-bottom: 10px;
     margin-left: 2.5%;
     margin-right: 2.5%;
+    position: relative;
 }
 
 /* Below is for the star ratings */

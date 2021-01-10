@@ -1,7 +1,7 @@
 import models, { sequelize } from '../src/models';
 import {verifyLogin} from './globals.js';
 const Op = require('Sequelize').Op;
-import {validateStringParameter} from './globals.js';
+import {validateStringParameter, validateEmailParameter, validateUsernameParameter} from './globals.js';
 
 
 // function to see if a user can login and returns a cookie to use
@@ -71,8 +71,22 @@ const checkLogin = (req, res) =>
     let password = req.body.password;
     let username = req.body.username;
     // set to 30 as if allowing email will have to be longer
-    let valid = validateStringParameter(res, username, 8, 30, "", "Username or email must be between 6-30 characters");
-    if(!valid) return;
+    // checks if this could be a username
+    let valid = validateUsernameParameter(undefined, username, "", "");
+    // if not a valid username, check to see if valid email
+    if(!valid)
+    {
+        valid = validateEmailParameter(undefined, username, "", "");
+        // if the email is also not valid
+        if(!valid)
+        {
+            res.status(400).send({
+                message: "Username or email address is invalid",
+                requester: ""
+            });
+            return;
+        }
+    }
     valid = validateStringParameter(res, password, 6, 15, "", "Password must be between 6-15 characters");
     if(!valid) return;
     // find a user by their login

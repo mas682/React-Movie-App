@@ -5,6 +5,7 @@ import history from './History'
 import style from './css/signin.module.css';
 import './css/signin.css';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import Alert from './Alert.js';
 
 
 //documentation for PopUp https://react-popup.elazizi.com/component-api/
@@ -16,7 +17,9 @@ class SignInPopup extends React.Component {
 			username: "",
 			password: "",
 			usernameError: "",
-			passwordError: ""
+			passwordError: "",
+			messages: [],
+			messageId: -1
 		};
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
@@ -62,7 +65,7 @@ class SignInPopup extends React.Component {
 			this.setState({passwordError: "Password is required"});
 			error = true;
 		}
-		else if(this.state.password.length < 6 || this.state.password.length > 30)
+		else if(this.state.password.length < 6 || this.state.password.length > 15)
 		{
 			this.setState({passwordError: "Password must be between 6-15 characters"});
 			error = true;
@@ -96,7 +99,7 @@ class SignInPopup extends React.Component {
 		}
 		else if(status === 400)
 		{
-			if(message === "Username or email must be between 6-30 characters")
+			if(message === "Username or email address is invalid")
 			{
 				this.setState({usernameError: message});
 			}
@@ -115,6 +118,13 @@ class SignInPopup extends React.Component {
 		{
 			// incorrect password
 			this.setState({passwordError: message});
+		}
+		else
+		{
+			this.setState({
+				messageId: this.state.messageId + 1,
+				messages: [{type: "failure", message: "An unexpected error occurred on the server"}]
+			});
 		}
 	}
 
@@ -195,11 +205,19 @@ class SignInPopup extends React.Component {
 						<a className="close" onClick={this.closeModal}>
 						&times;
 						</a>
+						<Alert
+							messages={this.state.messages}
+							messageId={this.state.messageId}
+							timeout={0}
+							innerContainerStyle={{"z-index": "2", "font-size": "1.25em"}}
+							symbolStyle={{"width": "5%", "margin-top": "3px"}}
+							messageBoxStyle={{width: "86%"}}
+							closeButtonStyle={{width: "5%", "margin-top": "3px"}}
+						/>
 						<div className="header">
 							<h3 className="inlineH3">Sign In!</h3>
 						</div>
 						<div className="content">
-							{/* This will eventually be a post form */}
 							<form id="form1" onSubmit={this.validateForm} noValidate/>
 							<div className="inputFieldContainer">
 								{usernameInput}

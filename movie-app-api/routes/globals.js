@@ -90,20 +90,26 @@ const validateIntegerParameter = (res, value, requester, message, minValue, maxV
 const validateUsernameParameter = (res, username, requester, message) => {
     if(username === undefined)
     {
-        res.status(400).send({
-            message: message,
-            requester: requester
-        });
+        if(res !== undefined)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+        }
         return false;
     }
     let userLength = username.length;
     // limit usernames to 1-20 characters
     if(userLength > 20 || userLength < 6)
     {
-        res.status(400).send({
-            message: message,
-            requester: requester
-        });
+        if(res !== undefined)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+        }
         return false;
     }
     return true;
@@ -112,20 +118,26 @@ const validateUsernameParameter = (res, username, requester, message) => {
 const validateEmailParameter = (res, email, requester, message) => {
     if(email === undefined)
     {
-        res.status(400).send({
-            message: message,
-            requester: requester
-        });
+        if(res !== undefined)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+        }
         return false;
     }
     let emailLength = email.length;
     // limit usernames to 1-20 characters
     if(emailLength > 30 || emailLength < 7)
     {
-        res.status(400).send({
-            message: message,
-            requester: requester
-        });
+        if(res !== undefined)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+        }
         return false;
     }
     else if(email.includes("@"))
@@ -134,21 +146,27 @@ const validateEmailParameter = (res, email, requester, message) => {
         let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         if(!validEmail)
         {
-            res.status(400).send({
-                message: message,
-                requester: requester
-            });
+            if(res !== undefined)
+            {
+                res.status(400).send({
+                    message: message,
+                    requester: requester
+                });
+            }
             return false;
         }
         return true;
     }
     else
     {
-        // does not have a @ in it
-        res.status(400).send({
-            message: message,
-            requester: requester
-        });
+        if(res !== undefined)
+        {
+            // does not have a @ in it
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+        }
         return false;
     }
     return true;
