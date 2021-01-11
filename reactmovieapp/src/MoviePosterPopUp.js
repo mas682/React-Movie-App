@@ -1,6 +1,7 @@
 import React from 'react';
 import Popup from 'reactjs-popup';
 import style from './css/Movies/movieinfo.module.css'
+import './css/Movies/MoviePosterPopup.css';
 
 // component to display the movie poster large on screen when clicked on
 // the movies page
@@ -40,7 +41,7 @@ class MoviePosterPopUp extends React.Component {
                       open={this.state.open}
                       closeOnDocumentClick
                       onClose={this.closeModal}
-                      contentStyle={{ width: "30%", border: "0px", padding: "0px", background: ""}}
+					  className={"moviePoster"}
                   >
                       <div className={style.modal}>
                           <div className={style.content}>

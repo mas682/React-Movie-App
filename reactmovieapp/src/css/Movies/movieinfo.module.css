@@ -1,16 +1,348 @@
 
-.mainBodyContainer {
-    width: 70%;
-    height: auto;
-    margin-left: 15%;
-    margin-right: 15%;
-    position: static;
-    display: flex;
-    flex-flow: row wrap;
-    align-content: flex-start;
-    margin-bottom: 20px;
-    background: white;
-    overflow: visible;
+
+@media screen and (min-width: 1400px) {
+    .mainBodyContainer {
+        width: 70%;
+        height: auto;
+        margin-left: 15%;
+        margin-right: 15%;
+        margin-top: 20px;
+        position: static;
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+        margin-bottom: 20px;
+        background: white;
+        min-height: 600px;
+        position: relative;
+    }
+
+    .movieImageContainer {
+        width: 35%;
+        margin: 0px;
+        min-height: 500px;
+        display:flex;
+        flex-flow: column;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 55%;
+        height: 90%;
+        color: white;
+        height: inherit;
+        margin-left: 5%;
+        margin-right: 5%;
+        justify-content: center;
+        align-content: center;
+        margin-top: 5%;
+        margin-bottom: 5%;
+    }
+
+    .moviePoster {
+        width: 80%;
+        margin: 10%;
+        height: inherit;
+        background: white;
+    }
+
+    .movieTrailerContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 10%;
+        margin-right: 10%;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 400px;
+    }
+}
+
+@media screen and (max-width: 1399px) {
+    .mainBodyContainer {
+        width: 75%;
+        height: auto;
+        margin-left: 12.5%;
+        margin-right: 12.5%;
+        margin-top: 20px;
+        position: static;
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+        margin-bottom: 20px;
+        background: white;
+        min-height: 600px;
+        position: relative;
+    }
+
+    .movieImageContainer {
+        width: 35%;
+        margin: 0px;
+        min-height: 500px;
+        display:flex;
+        flex-flow: column;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 55%;
+        height: 90%;
+        color: white;
+        height: inherit;
+        margin-left: 5%;
+        margin-right: 5%;
+        justify-content: center;
+        align-content: center;
+        margin-top: 5%;
+        margin-bottom: 5%;
+    }
+
+    .moviePoster {
+        width: 80%;
+        margin: 10%;
+        height: inherit;
+        background: white;
+    }
+
+    .movieTrailerContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 10%;
+        margin-right: 10%;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 400px;
+    }
+}
+
+@media screen and (max-width: 1199px) {
+    .mainBodyContainer {
+        width: 80%;
+        height: auto;
+        margin-left: 10%;
+        margin-right: 10%;
+        margin-top: 20px;
+        position: static;
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+        margin-bottom: 20px;
+        background: white;
+        min-height: 600px;
+        position: relative;
+    }
+
+    .movieImageContainer {
+        width: 40%;
+        margin: 0px;
+        min-height: 500px;
+        display:flex;
+        flex-flow: column;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 50%;
+        height: 90%;
+        color: white;
+        height: inherit;
+        margin-left: 5%;
+        margin-right: 5%;
+        justify-content: center;
+        align-content: center;
+        margin-top: 5%;
+        margin-bottom: 5%;
+    }
+
+    .moviePoster {
+        width: 80%;
+        margin: 10%;
+        height: inherit;
+        background: white;
+    }
+
+    .movieTrailerContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 10%;
+        margin-right: 10%;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 400px;
+    }
+}
+
+@media screen and (max-width: 999px) {
+    .mainBodyContainer {
+        width: 85%;
+        height: auto;
+        margin-left: 7.5%;
+        margin-right: 7.5%;
+        margin-top: 20px;
+        position: static;
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+        margin-bottom: 20px;
+        background: white;
+        min-height: 600px;
+        position: relative;
+    }
+
+    .movieImageContainer {
+        width: 45%;
+        margin: 0px;
+        min-height: 500px;
+        display:flex;
+        flex-flow: column;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 45%;
+        height: 90%;
+        color: white;
+        height: inherit;
+        margin-left: 5%;
+        margin-right: 5%;
+        justify-content: center;
+        align-content: center;
+        margin-top: 5%;
+        margin-bottom: 5%;
+    }
+    .moviePoster {
+        width: 80%;
+        margin: 10%;
+        height: inherit;
+        background: white;
+    }
+
+    .movieTrailerContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 5%;
+        margin-right: 5%;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 400px;
+    }
+}
+
+@media screen and (max-width: 799px) {
+    .mainBodyContainer {
+        width: 90%;
+        height: auto;
+        margin-left: 5%;
+        margin-right: 5%;
+        margin-top: 20px;
+        position: static;
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+        margin-bottom: 20px;
+        background: white;
+        min-height: 600px;
+        position: relative;
+    }
+
+    .movieImageContainer {
+        width: 100%;
+        margin: 0px;
+        min-height: 100px;
+        display:flex;
+        flex-flow: column;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 90%;
+        height: 90%;
+        color: white;
+        height: inherit;
+        margin-left: 5%;
+        margin-right: 5%;
+        justify-content: center;
+        align-content: center;
+        margin-top: 0%;
+        margin-bottom: 5%;
+    }
+    .moviePoster {
+        width: 50%;
+        margin-top: 5%;
+        margin-left: 25%;
+        margin-right: 25%;
+        margin-bottom: 5%;
+        height: inherit;
+        background: white;
+    }
+
+    .movieTrailerContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 5%;
+        margin-right: 5%;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 400px;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .mainBodyContainer {
+        width: 95%;
+        height: auto;
+        margin-left: 2.5%;
+        margin-right: 2.5%;
+        margin-top: 20px;
+        position: static;
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+        margin-bottom: 20px;
+        background: white;
+        min-height: 600px;
+        position: relative;
+    }
+
+    .movieImageContainer {
+        width: 100%;
+        margin: 0px;
+        min-height: 100px;
+        display:flex;
+        flex-flow: column;
+    }
+
+    .movieDetailsOutterContainer {
+        width: 90%;
+        height: 90%;
+        color: white;
+        height: inherit;
+        margin-left: 5%;
+        margin-right: 5%;
+        justify-content: center;
+        align-content: center;
+        margin-top: 0%;
+        margin-bottom: 5%;
+    }
+    .moviePoster {
+        width: 50%;
+        margin-top: 5%;
+        margin-left: 25%;
+        margin-right: 25%;
+        margin-bottom: 5%;
+        height: inherit;
+        background: white;
+    }
+
+    .movieTrailerContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-left: 5%;
+        margin-right: 5%;
+        width: 100%;
+        margin-top: 20px;
+        margin-bottom: 400px;
+    }
 }
 
 .headerContainer {
@@ -21,21 +353,7 @@
   position: relative;
   background-repeat: no-repeat;
   background-size: cover;
-}
-
-.movieImageContainer {
-    width: 35%;
-    margin: 0px;
-    min-height: 500px;
-    display:flex;
-    flex-flow: column;
-}
-
-.moviePoster {
-    width: 80%;
-    margin: 10%;
-    height: inherit;
-    background: white;
+  background-position: center;
 }
 
 .moviePosterLarge {
@@ -48,21 +366,6 @@
     height: 450px;
 }
 
-.movieDetailsOutterContainer {
-    width: 55%;
-    height: 90%;
-    color: white;
-    height: inherit;
-    margin-left: 5%;
-    margin-right: 5%;
-    justify-content: center;
-    align-content: center;
-    margin-top: 5%;
-    margin-bottom: 5%;
-    position: relative;
-}
-
-
 .movieDetailsContainer {
   width: 100%;
   height: 100%;
@@ -70,18 +373,6 @@
   display: flex;
   flex-flow: column;
   z-index: 1;
-}
-
-
-.movieTrailerContainer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-left: 10%;
-    margin-right: 10%;
-    width: 100%;
-    margin-top: 20px;
-    margin-bottom: 400px;
 }
 
 
@@ -94,7 +385,6 @@
     display: flex;
     flex-flow: row wrap;
     font-weight: 500;
-    white-space: pre;
     color: white;
 }
 
@@ -125,7 +415,7 @@
 }
 
 .watchListIconContainer {
-    width: 12%;
+    width: 50px;
     display: flex;
     justify-content: flex-start;
     font-size: 2.5em;
@@ -145,7 +435,7 @@
 
 
 .watchedIconContainer {
-    width: 12%;
+    width: 50px;;
     display: flex;
     justify-content: flex-start;
     font-size: 2.5em;

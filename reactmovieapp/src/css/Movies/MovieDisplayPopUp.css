@@ -41,9 +41,3 @@
         width: 80% !important;
     }
 }
-
-@media screen and (max-width: 599px) {
-    .movieDisplay-content {
-        width: 85% !important;
-    }
-}
