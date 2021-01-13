@@ -43,9 +43,46 @@
 	position: relative;
 }
 
-.postShadow {
-	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-    width: 60%;
+@media screen and (min-width: 1400px) {
+	.postShadow {
+		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+	    width: 60%;
+	}
+}
+
+@media screen and (max-width: 1399px) {
+	.postShadow {
+		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+	    width: 65%;
+	}
+}
+
+@media screen and (max-width: 1199px) {
+	.postShadow {
+		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+	    width: 70%;
+	}
+}
+
+@media screen and (max-width: 999px) {
+	.postShadow {
+		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+	    width: 75%;
+	}
+}
+
+@media screen and (max-width: 799px) {
+	.postShadow {
+		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+	    width: 82.5%;
+	}
+}
+
+@media screen and (max-width: 599px) {
+	.postShadow {
+		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+	    width: 90%;
+	}
 }
 
 /* used to format the buttons on the film review popup */

@@ -19,6 +19,12 @@ main{
     width: 100%;
 }
 
+@media screen and (min-width: 600px) {
+    main{
+        position: absolute !important;
+    }
+}
+
 .mainBodyContainer {
     width: 70%;
     /*height: 1000px;*/

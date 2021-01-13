@@ -22,7 +22,10 @@ class Header extends React.Component {
             displaySignUp: false,
             // used to cause a redirect to a users profile page when they post a
             // new review
-            redirectToProfile: false
+            redirectToProfile: false,
+            showDropdown: false,
+            showMovieDropDown: false,
+            showShowsDropDown: false
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
@@ -32,6 +35,10 @@ class Header extends React.Component {
         this.logout = this.logout.bind(this);
         this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
         this.reviewSuccessFunction = this.reviewSuccessFunction.bind(this);
+
+        this.menuClickHandler = this.menuClickHandler.bind(this);
+        this.windowResizeEventHandler = this.windowResizeEventHandler.bind(this);
+        this.showMovieOptionsEventHandler = this.showMovieOptionsEventHandler.bind(this);
     }
 
     signUpRemoveFunction = (username) =>
@@ -42,6 +49,74 @@ class Header extends React.Component {
     showSignUpForm()
     {
         this.setState({displaySignUp: true});
+    }
+
+    showMovieOptionsEventHandler()
+    {
+        let element = document.getElementById("movieOptions");
+        let icon = document.getElementById("movieIcon");
+        console.log(element);
+        if(element.style.height === "100px")
+        {
+            element.style.height = "0px";
+            icon.style.transform = "";
+        }
+        else
+        {
+            element.style.height = "100px";
+            icon.style.transform = "rotate(180deg)";
+        }
+        if(!this.state.showMovieDropDown)
+        {
+            this.setState({showMovieDropDown: true});
+        }
+        else
+        {
+            this.setState({showMovieDropDown: false});
+        }
+    }
+
+    menuClickHandler()
+    {
+        if(!this.state.showDropdown)
+        {
+            this.setState({
+                showDropdown: true
+            });
+            let elm = document.querySelector("main");
+            elm.style.position = "fixed";
+        }
+        else
+        {
+            this.setState({
+                showDropdown: false
+            });
+            let element = document.querySelector("main");
+            element.style.removeProperty("position");
+        }
+
+    }
+
+    windowResizeEventHandler(event)
+    {
+        //console.log(event);
+        if(event.target.innerWidth < 600)
+        {
+
+        }
+        if(event.target.innerWidth >= 600)
+        {
+            let element = document.querySelector("main");
+            if(element.style.position === "fixed")
+            {
+                element.style.removeProperty("position");
+            }
+        }
+    }
+
+    componentDidMount()
+    {
+        window.addEventListener('resize', this.windowResizeEventHandler);
     }
 
     signInRemoveFunction = (username) =>
@@ -75,7 +150,6 @@ class Header extends React.Component {
             return null;
         }
     }
-
     static updateNewState(nextProps, prevState)
     {
         let reviewFormOpen = (nextProps.showLoginPopUp) ? false :prevState.showLoginPopUp;
@@ -304,6 +378,76 @@ class Header extends React.Component {
                                 showLoginPopUp={this.props.showLoginPopUpFunction}
                             />
             }
+            let dropDownContent = "";
+            if(this.state.showDropdown)
+            {
+                dropDownContent = (
+                    <div className="dropDownContent">
+                        <div className = "dropDownContainer">
+                            <div className = "dropDownItem">
+                                <div className = "pageName">
+                                    Home
+                                </div>
+                                <div className = "iconContainer">
+                                </div>
+                            </div>
+                            <div className = "dropDownItem">
+                                <div className = "pageName">
+                                    Movies
+                                </div>
+                                <div className = "iconContainer" id="movieIcon">
+                                    <button onClick={this.showMovieOptionsEventHandler}><i class="fa fa-angle-down" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                            <div className="optionsContainer" id="movieOptions">
+                                <div className = "innerDropDownItem">
+                                    <div className = "pageName">
+                                        Top Rated
+                                    </div>
+                                    <div className = "iconContainer">
+                                    </div>
+                                </div>
+                                <div className = "innerDropDownItem">
+                                    <div className = "pageName">
+                                        Upcoming
+                                    </div>
+                                    <div className = "iconContainer">
+                                    </div>
+                                </div>
+                            </div>
+                            <div className = "dropDownItem">
+                                <div className = "pageName">
+                                    Shows
+                                </div>
+                                <div className = "iconContainer">
+                                    <button><i class="fa fa-angle-down" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                            <div className = "dropDownItem">
+                                <div className = "pageName">
+                                    About
+                                </div>
+                                <div className = "iconContainer">
+                                </div>
+                            </div>
+                            <div className = "dropDownItem">
+                                <div className = "pageName">
+                                    Login
+                                </div>
+                                <div className = "iconContainer">
+                                </div>
+                            </div>
+                            <div className = "dropDownItem">
+                                <div className = "pageName">
+                                    Sign Up
+                                </div>
+                                <div className = "iconContainer">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
             return (
                 <div className="App-Header">
                     <div className="logo">
@@ -347,10 +491,14 @@ class Header extends React.Component {
                                 redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
                             />
                         </div>
-                        <div className="searchIconBox">
-                            <i class="fas fa-search searchIcon" />
-                        </div>
                     </div>
+                    <i class="fas fa-search searchIcon" />
+                    <div className="menuIconContainer" onClick={this.menuClickHandler}>
+                        <div className="topBar bar"></div>
+                        <div className="middleBar bar"></div>
+                        <div className="bottomBar bar"></div>
+                    </div>
+                    {dropDownContent}
                     {signInForm}
                     {reviewForm}
                     {signUpForm}

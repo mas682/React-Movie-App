@@ -6,6 +6,7 @@ import CommentBox from './CommentBox.js';
 import MoviePost from './moviePost.js';
 import {Link} from 'react-router-dom';
 import style2 from './css/MoviePost/moviePostPopUp.module.css';
+import './css/MoviePost/moviePostPopUp.css';
 import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
 // only used by popup
 import Alert from './Alert.js';
@@ -143,7 +144,7 @@ class MoviePostPopUp extends React.Component {
                 open={this.state.open}
                 closeOnDocumentClick
                 onClose={() => {this.closeModal(undefined)}}
-                contentStyle={{ width: "45%"}}
+                className={"moviePostPopUp"}
             >
                 <div className={style2.modal}>
                     {/* &times is the multiplication symbol (x) --> */}

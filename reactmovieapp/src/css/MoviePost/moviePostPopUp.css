@@ -1,0 +1,38 @@
+/* class needed to set pop up size dynamically */
+
+
+@media screen and (min-width: 1400px) {
+    .moviePostPopUp-content {
+        width: 40% !important;
+    }
+}
+
+@media screen and (max-width: 1399px) {
+    .moviePostPopUp-content {
+        width: 45% !important;
+    }
+}
+
+@media screen and (max-width: 1199px) {
+    .moviePostPopUp-content {
+        width: 52.5% !important;
+    }
+}
+
+@media screen and (max-width: 999px) {
+    .moviePostPopUp-content {
+        width: 60% !important;
+    }
+}
+
+@media screen and (max-width: 799px) {
+    .moviePostPopUp-content {
+        width: 70% !important;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .moviePostPopUp-content {
+        width: 90% !important;
+    }
+}

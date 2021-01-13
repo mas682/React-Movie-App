@@ -166,7 +166,7 @@ class Routes extends React.Component
                     setMessages={this.setMessages}
                     setNewReviewFlag={this.setNewReviewFlag}
                 />
-                <main>
+                <main id = "main">
                     <Alert
                         messages={this.state.messages}
                         messageId={this.state.messageId}

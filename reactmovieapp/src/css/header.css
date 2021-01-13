@@ -1,34 +1,452 @@
-.App-Header {
-    background-color: #333;
-    height: 85px;
-    width: 100%;
-	position: sticky;
-	top: 0;
-	z-index: 2;
-	list-style-type: none;
-	margin: 0;
-	overflow: visible;
-	display: grid;
-	grid-template-columns: 27.5% 45% 27.5%;
-    grid-template-rows: 85px;
-	grid-gap: 0px;
+
+
+@media screen and (min-width: 1400px) {
+    .App-Header {
+        background-color: #333;
+        height: 85px;
+        width: 100%;
+    	position: sticky;
+    	top: 0;
+    	z-index: 2;
+    	list-style-type: none;
+    	margin: 0;
+    	overflow: visible;
+    	display: grid;
+    	grid-template-columns: 27.5% 45% 27.5%;
+        grid-template-rows: 85px;
+    	grid-gap: 0px;
+    }
+
+    .logo {
+    	color: white;
+    	text-align: left;
+    	padding-left: 45px;
+    }
+    .searchBar {
+    	   text-align: left;
+         display: flex;
+         justify-content: flex-start;
+         width: 95%;
+         margin-right: 5%;
+         margin-top: 20px;
+    }
+
+    .searchInputBox {
+        width: 90%;
+    }
+
+    .searchIconBox {
+        width: 8%;
+        display: flex;
+        justify-content: flex-start;
+        margin-left: 2%;
+    }
+
+    .navButtons {
+    	text-align: center;
+    	display: block;
+    	text-decoration: none;
+    	z-index: 2;
+    	position: relative;
+    	display: grid;
+    	grid-template-columns: auto auto auto auto auto auto auto;
+    	grid-gap: 0px;
+    }
 }
 
-.logo {
-	color: white;
-	text-align: left;
-	padding-left: 45px;
+@media screen and (max-width: 1399px) {
+    .App-Header {
+        background-color: #333;
+        height: 85px;
+        width: 100%;
+    	position: sticky;
+    	top: 0;
+    	z-index: 2;
+    	list-style-type: none;
+    	margin: 0;
+    	overflow: visible;
+    	display: grid;
+    	grid-template-columns: 22.5% 50% 27.5%;
+        grid-template-rows: 85px;
+    	grid-gap: 0px;
+    }
+
+    .logo {
+    	color: white;
+    	text-align: left;
+    	padding-left: 45px;
+    }
+    .searchBar {
+    	   text-align: left;
+         display: flex;
+         justify-content: flex-start;
+         width: 95%;
+         margin-right: 5%;
+         margin-top: 20px;
+    }
+
+    .searchInputBox {
+        width: 90%;
+    }
+
+    .searchIconBox {
+        width: 8%;
+        display: flex;
+        justify-content: flex-start;
+        margin-left: 2%;
+    }
+
+    .navButtons {
+    	text-align: center;
+    	display: block;
+    	text-decoration: none;
+    	z-index: 2;
+    	position: relative;
+    	display: grid;
+    	grid-template-columns: auto auto auto auto auto auto auto;
+    	grid-gap: 0px;
+    }
 }
 
-.navButtons {
-	text-align: center;
-	display: block;
-	text-decoration: none;
-	z-index: 2;
-	position: relative;
-	display: grid;
-	grid-template-columns: auto auto auto auto auto auto auto;
-	grid-gap: 0px;
+@media screen and (max-width: 1199px) {
+    .App-Header {
+        background-color: #333;
+        height: 85px;
+        width: 100%;
+    	position: sticky;
+    	top: 0;
+    	z-index: 2;
+    	list-style-type: none;
+    	margin: 0;
+    	overflow: visible;
+    	display: grid;
+    	grid-template-columns: 27.5% 45% 27.5%;
+        grid-template-rows: 85px;
+    	grid-gap: 0px;
+    }
+
+    .logo {
+    	color: white;
+    	text-align: left;
+    	padding-left: 45px;
+    }
+    .searchBar {
+    	   text-align: left;
+         display: flex;
+         justify-content: flex-start;
+         width: 95%;
+         margin-right: 5%;
+         margin-top: 20px;
+    }
+
+    .searchInputBox {
+        width: 90%;
+    }
+
+    .searchIconBox {
+        width: 8%;
+        display: flex;
+        justify-content: flex-start;
+        margin-left: 2%;
+    }
+
+    .navButtons {
+    	text-align: center;
+    	display: block;
+    	text-decoration: none;
+    	z-index: 2;
+    	position: relative;
+    	display: grid;
+    	grid-template-columns: auto auto auto auto auto auto auto;
+    	grid-gap: 0px;
+    }
+}
+
+@media screen and (max-width: 999px) {
+    .App-Header {
+        background-color: #333;
+        height: 85px;
+        width: 100%;
+    	position: sticky;
+    	top: 0;
+    	z-index: 2;
+    	list-style-type: none;
+    	margin: 0;
+    	overflow: visible;
+    	display: grid;
+    	grid-template-columns: 0% 65% 22.5%;
+        grid-template-rows: 85px;
+    	grid-gap: 0px;
+    }
+
+    .logo {
+    	color: white;
+    	text-align: left;
+    	padding-left: 10px;
+    }
+    .searchBar {
+    	   text-align: left;
+         display: flex;
+         justify-content: flex-start;
+         width: 95%;
+         margin-right: 5%;
+         margin-top: 20px;
+    }
+
+    .searchInputBox {
+        width: 90%;
+    }
+
+    .searchIconBox {
+        width: 8%;
+        display: flex;
+        justify-content: flex-start;
+        margin-left: 2%;
+    }
+
+    .navButtons {
+    	text-align: center;
+    	display: block;
+    	text-decoration: none;
+    	z-index: 2;
+    	position: relative;
+    	display: grid;
+    	grid-template-columns: auto auto auto auto auto auto auto;
+    	grid-gap: 0px;
+    }
+}
+
+@media screen and (max-width: 799px) {
+    .App-Header {
+        background-color: #333;
+        height: 85px;
+        width: 100%;
+    	position: sticky;
+    	top: 0;
+    	z-index: 2;
+    	list-style-type: none;
+    	margin: 0;
+    	overflow: visible;
+    	display: grid;
+    	grid-template-columns: 0% 65% 22.5%;
+        grid-template-rows: 85px;
+    	grid-gap: 0px;
+    }
+
+    .logo {
+    	color: white;
+    	text-align: left;
+    	padding-left: 10px;
+    }
+    .searchBar {
+    	   text-align: left;
+         display: flex;
+         justify-content: flex-start;
+         width: 95%;
+         margin-right: 5%;
+         margin-top: 20px;
+    }
+
+    .searchInputBox {
+        width: 90%;
+    }
+
+    .searchIconBox {
+        width: 8%;
+        display: flex;
+        justify-content: flex-start;
+        margin-left: 2%;
+    }
+
+    .navButtons {
+    	text-align: center;
+    	display: block;
+    	text-decoration: none;
+    	z-index: 2;
+    	position: relative;
+    	display: grid;
+    	grid-template-columns: auto auto auto auto auto auto auto;
+    	grid-gap: 0px;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .App-Header {
+        background-color: #333;
+        height: 45px;
+        width: 100%;
+    	position: sticky;
+    	top: 0;
+    	z-index: 2;
+    	list-style-type: none;
+    	margin: 0;
+    	overflow: visible;
+    	display: grid;
+    	grid-template-columns: 13% 67% 10% 10%;
+        grid-template-rows: 45px;
+    	grid-gap: 0px;
+    }
+
+    .logo {
+    	color: white;
+    	text-align: left;
+    	padding-left: 5px;
+    }
+
+    .logo h1
+    {
+            font-size: 1em;
+    }
+
+
+    .searchBar {
+    	 text-align: left;
+         justify-content: flex-start;
+         width: 0%;
+         margin-right: 5%;
+         margin-top: 20px;
+         display: none;
+
+    }
+
+    .searchInputBox {
+        width: 0%;
+        visibility: hidden;
+    }
+
+    .searchIconBox {
+        grid-column-start: 3;
+        grid-column-end: 3;
+        place-self: center;
+    }
+
+    .searchIcon {
+        color: gray;
+        font-size: 1.5em;
+        grid-column-start: 3;
+        grid-column-end: 3;
+        align-self: center;
+        justify-self: end;
+        transform: rotate(90deg);
+    }
+
+    .navButtons {
+    	text-align: center;
+    	display: none;
+    	text-decoration: none;
+    	z-index: 2;
+    	position: relative;
+
+    	grid-template-columns: auto auto auto auto auto auto auto;
+    	grid-gap: 0px;
+    }
+    .dropDownContent {
+        position: fixed;
+        background-color: #333;
+        width: 100%;
+        height: 100%;
+        border-top: 2px solid gray;
+        z-index: 1;
+        padding: 1px 2px;
+        text-align: left;
+        margin-top: 45px;
+    }
+
+    .dropDownConntainer
+    {
+        display: flex;
+        flex-flow: row wrap;
+    }
+
+    .dropDownItem {
+        width: 100%;
+        color: white;
+        border-bottom: 1px solid gray;
+        height: 50px;
+        display: grid;
+        grid-template-columns: 90% 10%;
+    }
+
+    .pageName {
+        grid-column-start: 1;
+        grid-column-end: 1;
+        align-self: center;
+        justify-self: start;
+        padding-left: 5px;
+    }
+
+    .iconContainer {
+        grid-column-start: 2;
+        grid-column-end: 2;
+        align-self: center;
+        justify-self: center;
+        font-size: 2em;
+    }
+
+    .iconContainer button {
+        background: inherit;
+        border: none;
+        color: inherit;
+        font-size: inherit;
+    }
+
+    .iconContainer button:focus {
+        outline: none;
+    }
+
+    .dropDownItem:hover{
+        background: red;
+    }
+
+    .optionsContainer {
+        display: flex;
+        flex-flow: row wrap;
+        background-color: #f9f9f9;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        overflow: auto;
+        transition: height .5s;
+        height: 0px;
+        overflow: hidden;
+    }
+
+    .innerDropDownItem {
+        width: 100%;
+        float: none;
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        text-align: left;
+    }
+
+    .innerDropDownItem:hover {
+        background-color: #ddd;
+    }
+}
+
+.menuIconContainer {
+    display: inline-block;
+    cursor: pointer;
+    grid-column-start: 4;
+    grid-column-end: 4;
+    place-self: center;
+}
+
+.bar {
+    background-color: white;
+}
+
+.menuIconContainer:hover .bar {
+    background-color: red;
+}
+
+.topBar, .middleBar, .bottomBar {
+    width: 25px;
+    height: 2.5px;
+}
+
+.middleBar, .bottomBar {
+    margin-top: 5px;
 }
 
 .home, .homeButton {
@@ -91,26 +509,6 @@
     height: 100%;
 }
 
-.searchBar {
-	   text-align: left;
-     display: flex;
-     justify-content: flex-start;
-     width: 95%;
-     margin-right: 5%;
-     margin-top: 20px;
-}
-
-.searchInputBox {
-    width: 90%;
-}
-
-.searchIconBox {
-    width: 8%;
-    display: flex;
-    justify-content: flex-start;
-    margin-left: 2%;
-}
-
 .homeButton:hover, .movieButton:hover, .home:hover, .movieDropdown:hover, .showDropdown:hover, .profileDropdown:hover, .profileButton:hover {
   background-color: red;
 }
@@ -130,5 +528,8 @@
 .searchIcon {
     color: gray;
     font-size: 1.5em;
-    margin-top: 10px;
+}
+
+.searchIcon:hover {
+    color: red;
 }

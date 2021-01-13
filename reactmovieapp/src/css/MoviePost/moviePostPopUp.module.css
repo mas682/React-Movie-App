@@ -173,6 +173,7 @@
     padding: 0px;
     border-width: 0px;
     outline: none;
+    width: 100%;
 }
 
 /* used for the dropdown to edit/remove a comment */

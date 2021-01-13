@@ -651,7 +651,7 @@ class SearchDropDown extends React.Component {
                 });
                 counter = counter + 1;
             }
-            // if no suggestions after for each, return null
+            // if no suggestions after loop, return null
             if(suggestionHTML.length < 1)
             {
                 return null;
