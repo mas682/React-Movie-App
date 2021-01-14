@@ -24,8 +24,7 @@ class Header extends React.Component {
             // new review
             redirectToProfile: false,
             showDropdown: false,
-            showMovieDropDown: false,
-            showShowsDropDown: false
+            showSearchDropDown: false
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
@@ -39,6 +38,7 @@ class Header extends React.Component {
         this.menuClickHandler = this.menuClickHandler.bind(this);
         this.windowResizeEventHandler = this.windowResizeEventHandler.bind(this);
         this.showMovieOptionsEventHandler = this.showMovieOptionsEventHandler.bind(this);
+        this.searchClickHandler = this.searchClickHandler.bind(this);
     }
 
     signUpRemoveFunction = (username) =>
@@ -55,24 +55,15 @@ class Header extends React.Component {
     {
         let element = document.getElementById("movieOptions");
         let icon = document.getElementById("movieIcon");
-        console.log(element);
-        if(element.style.height === "100px")
+        if(element.style.height === "200px")
         {
             element.style.height = "0px";
             icon.style.transform = "";
         }
         else
         {
-            element.style.height = "100px";
+            element.style.height = "200px";
             icon.style.transform = "rotate(180deg)";
-        }
-        if(!this.state.showMovieDropDown)
-        {
-            this.setState({showMovieDropDown: true});
-        }
-        else
-        {
-            this.setState({showMovieDropDown: false});
         }
     }
 
@@ -94,7 +85,26 @@ class Header extends React.Component {
             let element = document.querySelector("main");
             element.style.removeProperty("position");
         }
+    }
 
+    searchClickHandler()
+    {
+        if(!this.state.showSearchDropDown)
+        {
+            this.setState({
+                showSearchDropDown: true
+            });
+            let elm = document.querySelector("main");
+            elm.style.position = "fixed";
+        }
+        else
+        {
+            this.setState({
+                showSearchDropDown: false
+            });
+            let element = document.querySelector("main");
+            element.style.removeProperty("position");
+        }
     }
 
     windowResizeEventHandler(event)
@@ -106,6 +116,10 @@ class Header extends React.Component {
         }
         if(event.target.innerWidth >= 600)
         {
+            if(this.state.showDropdown)
+            {
+                this.setState({showDropdown: false});
+            }
             let element = document.querySelector("main");
             if(element.style.position === "fixed")
             {
@@ -378,15 +392,49 @@ class Header extends React.Component {
                                 showLoginPopUp={this.props.showLoginPopUpFunction}
                             />
             }
+            let menuIcon = (
+                <div className="menuIconContainer" onClick={this.menuClickHandler}>
+                    <div className="topBar menuIcon"></div>
+                    <div className="middleBar menuIcon"></div>
+                    <div className="bottomBar menuIcon"></div>
+                </div>
+            );
+
             let dropDownContent = "";
-            if(this.state.showDropdown)
+            if(this.state.showSearchDropDown)
             {
                 dropDownContent = (
                     <div className="dropDownContent">
+                    <div className="searchBar">
+                        <div className="searchInputBox">
+                            <SearchDropDown
+                                allowNoSuggestion={true}
+                                getSuggestions={this.getSearchSuggestions}
+                                multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
+                                redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
+                                inputBoxStyle={{"margin-top":"0px", "border-radius":"0px", "width":"100%"}}
+                                dropDownContentStyle={{"width":"100%", "border-radius": "0px", "background":"#333"}}
+                                suggestionStyle={{"color":"white", "font-size": "1.25em"}}
+                                keyStyle={{"font-size":"1.25em", "color":"red"}}
+                            />
+                        </div>
+                    </div>
+                    </div>
+                );
+            }
+            if(this.state.showDropdown)
+            {
+                menuIcon = (
+                    <div className="menuIconContainer" onClick={this.menuClickHandler}>
+                        <i class="fas fa-times menuCloseIcon"/>
+                    </div>
+                );
+                dropDownContent = (
+                    <div className="dropDownContent">
                         <div className = "dropDownContainer">
-                            <div className = "dropDownItem">
+                            <div className = "dropDownItem" onClick={this.menuClickHandler}>
                                 <div className = "pageName">
-                                    Home
+                                    <Link class="pageLink" to={homePath}>Home</Link>
                                 </div>
                                 <div className = "iconContainer">
                                 </div>
@@ -400,19 +448,33 @@ class Header extends React.Component {
                                 </div>
                             </div>
                             <div className="optionsContainer" id="movieOptions">
-                                <div className = "innerDropDownItem">
-                                    <div className = "pageName">
-                                        Top Rated
-                                    </div>
-                                    <div className = "iconContainer">
-                                    </div>
+                                <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                                    <Link className= "pageLink" to="/movie">
+                                        <div className="pageName">
+                                            Top Rated
+                                        </div>
+                                    </Link>
                                 </div>
-                                <div className = "innerDropDownItem">
-                                    <div className = "pageName">
-                                        Upcoming
-                                    </div>
-                                    <div className = "iconContainer">
-                                    </div>
+                                <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                                    <Link className= "pageLink" to="/upcoming">
+                                        <div className="pageName">
+                                            Upcoming
+                                        </div>
+                                    </Link>
+                                </div>
+                                <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                                    <Link className= "pageLink" to="/movie">
+                                        <div className="pageName">
+                                            In Theaters
+                                        </div>
+                                    </Link>
+                                </div>
+                                <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                                    <Link className= "pageLink" to="/new_releases">
+                                        <div className="pageName">
+                                            New Releases
+                                        </div>
+                                    </Link>
                                 </div>
                             </div>
                             <div className = "dropDownItem">
@@ -430,18 +492,14 @@ class Header extends React.Component {
                                 <div className = "iconContainer">
                                 </div>
                             </div>
-                            <div className = "dropDownItem">
+                            <div className = "dropDownItem" onClick={() => {this.props.showLoginPopUpFunction(); this.menuClickHandler();}}>
                                 <div className = "pageName">
                                     Login
                                 </div>
-                                <div className = "iconContainer">
-                                </div>
                             </div>
-                            <div className = "dropDownItem">
+                            <div className = "dropDownItem" onClick={()=> {this.showSignUpForm(); this.menuClickHandler();}}>
                                 <div className = "pageName">
                                     Sign Up
-                                </div>
-                                <div className = "iconContainer">
                                 </div>
                             </div>
                         </div>
@@ -492,12 +550,8 @@ class Header extends React.Component {
                             />
                         </div>
                     </div>
-                    <i class="fas fa-search searchIcon" />
-                    <div className="menuIconContainer" onClick={this.menuClickHandler}>
-                        <div className="topBar bar"></div>
-                        <div className="middleBar bar"></div>
-                        <div className="bottomBar bar"></div>
-                    </div>
+                    <i class="fas fa-search searchIcon" onClick={this.searchClickHandler}/>
+                    {menuIcon}
                     {dropDownContent}
                     {signInForm}
                     {reviewForm}

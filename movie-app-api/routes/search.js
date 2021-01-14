@@ -34,7 +34,7 @@ const selectPath = (cookie, req, res, cookieValid) =>
 		//console.log(Object.keys(req.params).length);
 		console.log("Request params:");
 		console.log(req.params);
-    if(req.params.type === "query_all" && cookieValid)
+    if(req.params.type === "query_all")
     {
         getAllRelatedItems(cookie, req, res, cookieValid);
     }

@@ -1,5 +1,5 @@
 import React from 'react';
-import style from './css/reviewform.module.css';
+import style from './css/SearchDropDown/SearchDropDown.module.css';
 import { Link, Redirect, withRouter } from 'react-router-dom';
 
 class SearchDropDown extends React.Component {
@@ -38,6 +38,18 @@ class SearchDropDown extends React.Component {
         let locked = (this.props.locked !== undefined) ? this.props.locked : false;
         // message to display in the search bar if locked
         let lockedMessage = (this.props.lockedMessage !== undefined) ? this.props.lockedMessage : "";
+        // the outtermost divs style
+        let searchInputContainerStyle = (this.props.searchInputContainerStyle === undefined) ? {} : this.props.searchInputContainerStyle;
+        // style of container holding both the search box and the dropdown content
+        let dropDownContainerStyle = (this.props.dropDownContainerStyle === undefined) ? {} : this.props.dropDownContainerStyle;
+        // style for the input box
+        let inputBoxStyle = (this.props.inputBoxStyle === undefined) ? {} : this.props.inputBoxStyle;
+        // style for the dropDownContent box
+        let dropDownContentStyle = (this.props.dropDownContentStyle === undefined) ? {} : this.props.dropDownContentStyle;
+        // style for the suggestions themselves
+        let suggestionStyle = (this.props.suggestionStyle === undefined) ? {} : this.props.suggestionStyle;
+        // style for keys when multiple types
+        let keyStyle = (this.props.keyStyle === undefined) ? {} : this.props.keyStyle;
         this.state = {
             // current value in search box
             value: value,
@@ -73,7 +85,13 @@ class SearchDropDown extends React.Component {
             lockedMessage: lockedMessage,
             // hash table holding path, and key to use to generate path
             // ex. {Movies: {Path:"/movie/", key:"id"}, Users: {Path:"/profile/",key:"username"}}
-            redirectPaths: this.props.redirectPaths
+            redirectPaths: this.props.redirectPaths,
+            searchInputContainerStyle: searchInputContainerStyle,
+            dropDownContainerStyle: dropDownContainerStyle,
+            inputBoxStyle: inputBoxStyle,
+            dropDownContentStyle: dropDownContentStyle,
+            suggestionStyle: suggestionStyle,
+            keyStyle: keyStyle
         }
         this.changeHandler = this.changeHandler.bind(this);
         this.onFocusHandler = this.onFocusHandler.bind(this);
@@ -550,7 +568,7 @@ class SearchDropDown extends React.Component {
         {
             return (
               <React.Fragment>
-                  <div className={style.dropdown}>
+                  <div className={style.dropdown} style={this.state.dropDownContainerStyle}>
                       <input
                           autocomplete="off"
                           type="text"
@@ -564,6 +582,7 @@ class SearchDropDown extends React.Component {
                           onBlur={this.offFocusHandler}
                           value={this.state.value}
                           onKeyDown={this.keyPressedHandler}
+                          style={this.state.inputBoxStyle}
                           disabled
                       />
                   </div>
@@ -576,7 +595,7 @@ class SearchDropDown extends React.Component {
         {
             return (
               <React.Fragment>
-                  <div className={style.dropdown}>
+                  <div className={style.dropdown} style={this.state.dropDownContainerStyle}>
                       <input
                           autocomplete="off"
                           type="text"
@@ -591,6 +610,7 @@ class SearchDropDown extends React.Component {
                           onBlur={this.offFocusHandler}
                           value={this.state.value}
                           onKeyDown={this.keyPressedHandler}
+                          style={this.state.inputBoxStyle}
                       />
                       {suggestions}
                   </div>
@@ -599,7 +619,7 @@ class SearchDropDown extends React.Component {
         }
         return (
           <React.Fragment>
-              <div className={style.dropdown}>
+              <div className={style.dropdown} style={this.state.dropDownContainerStyle}>
                   <input
                       autocomplete="off"
                       type="text"
@@ -613,6 +633,7 @@ class SearchDropDown extends React.Component {
                       onBlur={this.offFocusHandler}
                       value={this.state.value}
                       onKeyDown={this.keyPressedHandler}
+                      style={this.state.inputBoxStyle}
                   />
                   {suggestions}
               </div>
@@ -622,7 +643,7 @@ class SearchDropDown extends React.Component {
 
     generateSuggestionBox()
     {
-        if(this.state.focused && this.state.value.length > 0 && (Object.keys(this.state.suggestions)).length > 0)
+        if(!this.state.focused || this.state.focused && this.state.value.length > 0 && (Object.keys(this.state.suggestions)).length > 0)
         {
             let keys = Object.keys(this.state.suggestions);
             let counter = 0;
@@ -633,19 +654,19 @@ class SearchDropDown extends React.Component {
                 let tempArr = this.state.suggestions[key];
                 if(tempArr.length > 0 && this.state.multipleTypes)
                 {
-                    suggestionHTML.push(<a>{key}</a>);
+                    suggestionHTML.push(<a style={this.state.keyStyle}>{key}</a>);
                 }
                 tempArr.forEach((value, index) => {
                     // get the value of the suggestion
                     let searchValue = value[this.state.valueKeys[key]];
-                    let html = <a onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
+                    let html = <a style={this.state.suggestionStyle} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
                     if(index === this.state.suggestionIndex && key === this.state.currentHashKey && this.state.redirectPaths !== undefined)
                     {
-                        html = <a className={style.selectedSuggestion} onMouseDown={(e) => this.redirectHandler()} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
+                        html = <a style={this.state.suggestionStyle} className={style.selectedSuggestion} onMouseDown={(e) => this.redirectHandler()} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
                     }
                     else if(index === this.state.suggestionIndex && key === this.state.currentHashKey)
                     {
-                        html = <a className={style.selectedSuggestion} onMouseDown={(e) => this.suggestionFocusHandler()} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
+                        html = <a style={this.state.suggestionStyle} className={style.selectedSuggestion} onMouseDown={(e) => this.suggestionFocusHandler()} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
                     }
                     suggestionHTML.push(html);
                 });
@@ -657,7 +678,7 @@ class SearchDropDown extends React.Component {
                 return null;
             }
             return(
-              <div className={style.dropdownContent}>
+              <div className={style.dropdownContent} style={this.state.dropDownContentStyle}>
                   {suggestionHTML}
               </div>);
         }
@@ -679,7 +700,7 @@ class SearchDropDown extends React.Component {
         let suggestionBox = this.generateSuggestionBox();
         return (
             <React.Fragment>
-                <div className={style.searchInputContainer}>
+                <div className={style.searchInputContainer} style={this.state.searchInputContainerStyle}>
                     {inputbox}
                 </div>
                 {redirect}
