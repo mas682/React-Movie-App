@@ -4,19 +4,44 @@
     position: relative;
     display: inline-block;
     width: 100%;
+    height: 100%;
 }
 
 /* Dropdown Content (Hidden by Default) */
 
 .dropdownContent {
     position: absolute;
-    display: inline-block;
     background-color: #f6f6f6;
     width: 100%;
     border-radius: 5px;
     z-index: 1;
     display: block;
     text-align: left;
+    overflow-y: auto;
+    max-height: 200px;
+}
+
+/* below is for the scroll bar on the pop up */
+/* width */
+.dropdownContent::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+.drowdownContent::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey;
+  border-radius: 10px;
+}
+
+/* Handle */
+.dropdownContent::-webkit-scrollbar-thumb {
+  background: DarkGray;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+.dropdownContent::-webkit-scrollbar-thumb:hover {
+  background: #b30000;
 }
 
 /* Links inside the dropdown */

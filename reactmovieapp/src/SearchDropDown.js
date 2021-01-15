@@ -677,10 +677,11 @@ class SearchDropDown extends React.Component {
             {
                 return null;
             }
-            return(
+            return(<React.Fragment>
               <div className={style.dropdownContent} style={this.state.dropDownContentStyle}>
                   {suggestionHTML}
-              </div>);
+              </div>
+          </React.Fragment>);
         }
         return null;
     }

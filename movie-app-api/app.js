@@ -18,7 +18,7 @@ sequelize.sync().then(() => {
 });
 */
 // restart db each time
-const eraseDatabaseOnSync = true;
+const eraseDatabaseOnSync = false;
 
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     if (eraseDatabaseOnSync) {

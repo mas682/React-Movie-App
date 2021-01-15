@@ -412,10 +412,13 @@ class Header extends React.Component {
                                 getSuggestions={this.getSearchSuggestions}
                                 multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
                                 redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
+                                searchInputContainerStyle={{"height":"100%"}}
+                                searchDropDownContainerStyle={{"height":"100%"}}
                                 inputBoxStyle={{"margin-top":"0px", "border-radius":"0px", "width":"100%"}}
-                                dropDownContentStyle={{"width":"100%", "border-radius": "0px", "background":"#333"}}
-                                suggestionStyle={{"color":"white", "font-size": "1.25em"}}
-                                keyStyle={{"font-size":"1.25em", "color":"red"}}
+                                dropDownContainerStyle={{"height":"100%", "display":"flex", "flex-flow":"column"}}
+                                dropDownContentStyle={{"width":"100%", "border-radius": "0px", "background":"#333", "height":"100%", "position":"static"}}
+                                suggestionStyle={{"color":"white", "font-size": "1em"}}
+                                keyStyle={{"font-size":"1.25em", "color":"red", "border-bottom":"1px solid gray"}}
                             />
                         </div>
                     </div>
