@@ -221,62 +221,7 @@
     }
 }
 
-@media screen and (max-width: 799px) and (min-width: 600px) {
-    .App-Header {
-        background-color: #333;
-        height: 85px;
-        width: 100%;
-    	position: sticky;
-    	top: 0;
-    	z-index: 2;
-    	list-style-type: none;
-    	margin: 0;
-    	overflow: visible;
-    	display: grid;
-    	grid-template-columns: 0% 65% 22.5%;
-        grid-template-rows: 85px;
-    	grid-gap: 0px;
-    }
-
-    .logo {
-    	color: white;
-    	text-align: left;
-    	padding-left: 10px;
-    }
-
-    .searchBar {
-    	 text-align: left;
-         display: none;
-         justify-content: flex-start;
-         width: 100%;
-         margin-right: 5%;
-         margin-top: 20px;
-    }
-
-    .searchInputBox {
-        width: 90%;
-    }
-
-    .searchIconBox {
-        width: 8%;
-        display: flex;
-        justify-content: flex-start;
-        margin-left: 2%;
-    }
-
-    .navButtons {
-    	text-align: center;
-    	display: block;
-    	text-decoration: none;
-    	z-index: 2;
-    	position: relative;
-    	display: grid;
-    	grid-template-columns: auto auto auto auto auto auto auto;
-    	grid-gap: 0px;
-    }
-}
-
-@media screen and (max-width: 599px) {
+@media screen and (max-width: 799px) {
     .App-Header {
         background-color: #333;
         height: 45px;
@@ -301,34 +246,31 @@
 
     .logo h1
     {
-            font-size: 1em;
+        font-size: 1em;
     }
 
-
+    /* div to hold the search bar */
     .searchBar {
     	 text-align: left;
          justify-content: flex-start;
          width: 100%;
-         margin-right: 5%;
          display: none;
          height: 100%;
-
     }
 
-    .searchInputBox {
-        width: 100%;
-    }
-
+    /* div to hold the search icon */
     .searchIconBox {
         grid-column-start: 3;
         grid-column-end: 3;
         place-self: center;
     }
 
+    /* when search bar inside dropDownContent */
     .dropDownContent .searchBar {
         display: flex;
     }
 
+    /* style for the search icon */
     .searchIcon {
         color: gray;
         font-size: 1.5em;
@@ -339,16 +281,12 @@
         transform: rotate(90deg);
     }
 
+    /* don't show the normal nav buttons */
     .navButtons {
-    	text-align: center;
     	display: none;
-    	text-decoration: none;
-    	z-index: 2;
-    	position: relative;
-
-    	grid-template-columns: auto auto auto auto auto auto auto;
-    	grid-gap: 0px;
     }
+
+    /* wraps the menu or the search bar drop down */
     .dropDownContent {
         position: fixed;
         background-color: #333;
@@ -360,12 +298,7 @@
         margin-top: 45px;
     }
 
-    .dropDownConntainer
-    {
-        display: flex;
-        flex-flow: row wrap;
-    }
-
+    /* container for menu routes */
     .dropDownItem {
         width: 100%;
         color: white;
@@ -373,8 +306,10 @@
         height: 50px;
         display: grid;
         grid-template-columns: 90% 10%;
+        text-decoration: none;
     }
 
+    /* container for page name */
     .pageName {
         grid-column-start: 1;
         grid-column-end: 1;
@@ -391,10 +326,30 @@
         color: white;
     }
 
+    /* container for pages with subsections */
+    .innerDropDownItem {
+        width: 100%;
+        color: black;
+        height: 50px;
+        text-decoration: none;
+        display: grid;
+        grid-template-columns: 100%;
+    }
+
+    .innerDropDownItem .pageLink
+    {
+        grid-column-start: 1;
+        grid-column-end: 1;
+        align-self: center;
+        justify-self: start;
+        padding-left: 10px;
+    }
+
     .innerDropDownItem .pageLink:visited {
         color: black;
     }
 
+    /* container for down arrow to show more pages */
     .iconContainer {
         grid-column-start: 2;
         grid-column-end: 2;
@@ -427,16 +382,6 @@
         transition: height .5s;
         height: 0px;
         overflow: hidden;
-    }
-
-    .innerDropDownItem {
-        width: 100%;
-        float: none;
-        color: black;
-        padding: 12px 16px;
-        text-decoration: none;
-        display: block;
-        text-align: left;
     }
 
     .innerDropDownItem:hover {

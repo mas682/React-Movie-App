@@ -8,53 +8,17 @@ class SearchDropDown extends React.Component {
         super(props);
         // props:
         // updateFunction - function to call to return either the object associated with the
-        // selected value or a string
 
-        // used if the array has objects that have keys, ex. movie.title
-        let valueKeys = (this.props.valueKeys !== undefined) ? this.props.valueKeys : undefined;
-        // optional prop to preset suggestions
-        let suggestions = (this.props.suggestionArray !== undefined) ? this.props.suggestionArray : {};
-        // optional prop to preset the value
-        let value = (this.props.value !== undefined) ? this.props.value : "";
-        // optional prop to display multiple types of values
-        let multipleTypes = (this.props.multipleTypes) ? this.props.multipleTypes : false;
-        // optional prop to preset the hashkey to use
-        let currentHashKey = (this.props.currentHashKey !== undefined) ? this.props.currentHashKey : "";
-        // optional prop to preset the hashKeyIndex
-        let currentHashKeyIndex = (this.props.currentHashKeyIndex !== undefined) ? this.props.currentHashKeyIndex : 0;
+        // boolean to allow user to not select a suggested value
         let allowNoSuggestion = (this.props.allowNoSuggestion !== undefined) ? this.props.allowNoSuggestion : true;
         // let the index into the suggestion array be -1 if you can select a value that is not suggested
         let suggestionIndex = (allowNoSuggestion) ? -1 : 0;
-        // boolean to call parents updateFunction on every change or just on enter/click
-        // requires updateFunction to be passed in as props
-        let updateOnChange = (this.props.updateOnChange !== undefined) ? this.props.updateOnChange : false;
-        // max number of characters allowed in input box
-        let maxLength = (this.props.maxLength !== undefined) ? this.props.maxLength : -1;
-        // value to display in input box when empty
-        let placeHolder = (this.props.placeHolder !== undefined) ? this.props.placeHolder : "";
-        // clear the input box on enter/click
-        let clearOnSubmit = (this.props.clearOnSubmit !== undefined) ? this.props.clearOnSubmit : false;
-        // prevent input on search bar
-        let locked = (this.props.locked !== undefined) ? this.props.locked : false;
-        // message to display in the search bar if locked
-        let lockedMessage = (this.props.lockedMessage !== undefined) ? this.props.lockedMessage : "";
-        // the outtermost divs style
-        let searchInputContainerStyle = (this.props.searchInputContainerStyle === undefined) ? {} : this.props.searchInputContainerStyle;
-        // style of container holding both the search box and the dropdown content
-        let dropDownContainerStyle = (this.props.dropDownContainerStyle === undefined) ? {} : this.props.dropDownContainerStyle;
-        // style for the input box
-        let inputBoxStyle = (this.props.inputBoxStyle === undefined) ? {} : this.props.inputBoxStyle;
-        // style for the dropDownContent box
-        let dropDownContentStyle = (this.props.dropDownContentStyle === undefined) ? {} : this.props.dropDownContentStyle;
-        // style for the suggestions themselves
-        let suggestionStyle = (this.props.suggestionStyle === undefined) ? {} : this.props.suggestionStyle;
-        // style for keys when multiple types
-        let keyStyle = (this.props.keyStyle === undefined) ? {} : this.props.keyStyle;
+
         this.state = {
-            // current value in search box
-            value: value,
-            // suggestions
-            suggestions: suggestions,
+            // current value in search box, optional prop to preset value
+            value: (this.props.value !== undefined) ? this.props.value : "",
+            // suggestions, optional prop to preset values
+            suggestions: (this.props.suggestionArray !== undefined) ? this.props.suggestionArray : {},
             // does the search bar have focus?
             focused: false,
             // index of the currently selected/highlighted suggestion
@@ -63,35 +27,42 @@ class SearchDropDown extends React.Component {
             // ex. {Movies:"title", Users:"username"}
             // if not multiple types, use a single string such as "title"
             // the value from the array's objects to display
-            valueKeys: valueKeys,
+            // used if the array has objects that have keys
+            valueKeys: (this.props.valueKeys !== undefined) ? this.props.valueKeys : undefined,
             // true or false depending on if the search will have multiple types of objects returned
-            multipleTypes: multipleTypes,
+            // optional prop to display multiple types of values
+            multipleTypes: (this.props.multipleTypes) ? this.props.multipleTypes : false,
             // current hashkey to use with the given index for what is selected
-            currentHashKey: currentHashKey,
-            // keeps track of index of hash key in suggestion keys array
-            // for the button clicked handler
-            currentHashKeyIndex: currentHashKeyIndex,
+            // optional prop to preset the hashkey to use
+            currentHashKey: (this.props.currentHashKey !== undefined) ? this.props.currentHashKey : "",
+            // keeps track of index of hash key in suggestion keys array for the button clicked handler
+            // optional prop to preset the hashKeyIndex
+            currentHashKeyIndex: (this.props.currentHashKeyIndex !== undefined) ? this.props.currentHashKeyIndex : 0,
             // boolean to indicate if a suggested value has to be highlighted if there are any
             // also allows component to return the value in the text box if true
             allowNoSuggestion: allowNoSuggestion,
             // boolean to indicate if the props updateFunction should be called on every change to the value
             // or highlighted value
-            updateOnChange: updateOnChange,
-            maxLength: maxLength,
+            updateOnChange: (this.props.updateOnChange !== undefined) ? this.props.updateOnChange : false,
+            // max number of characters allowed in input box
+            maxLength: (this.props.maxLength !== undefined) ? this.props.maxLength : -1,
             redirect: false,
-            placeHolder: placeHolder,
-            clearOnSubmit: clearOnSubmit,
-            locked: locked,
-            lockedMessage: lockedMessage,
+            // value to display in input box when empty
+            placeHolder: (this.props.placeHolder !== undefined) ? this.props.placeHolder : "",
+            // clear the input box on enter/click
+            clearOnSubmit: (this.props.clearOnSubmit !== undefined) ? this.props.clearOnSubmit : false,
+            // prevent input on search bar
+            locked: (this.props.locked !== undefined) ? this.props.locked : false,
+            // message to display in the search bar if locked
+            lockedMessage: (this.props.lockedMessage !== undefined) ? this.props.lockedMessage : "",
             // hash table holding path, and key to use to generate path
             // ex. {Movies: {Path:"/movie/", key:"id"}, Users: {Path:"/profile/",key:"username"}}
             redirectPaths: this.props.redirectPaths,
-            searchInputContainerStyle: searchInputContainerStyle,
-            dropDownContainerStyle: dropDownContainerStyle,
-            inputBoxStyle: inputBoxStyle,
-            dropDownContentStyle: dropDownContentStyle,
-            suggestionStyle: suggestionStyle,
-            keyStyle: keyStyle
+            searchDropDownContainterStyle: (this.props.searchDropDownContainterStyle === undefined) ? {} : this.props.searchDropDownContainterStyle,
+            inputBoxStyle: (this.props.inputBoxStyle === undefined) ? {} : this.props.inputBoxStyle,
+            dropDownContentStyle: (this.props.dropDownContentStyle === undefined) ? {} : this.props.dropDownContentStyle,
+            suggestionStyle: (this.props.suggestionStyle === undefined) ? {} : this.props.suggestionStyle,
+            keyStyle: (this.props.keyStyle === undefined) ? {} : this.props.keyStyle
         }
         this.changeHandler = this.changeHandler.bind(this);
         this.onFocusHandler = this.onFocusHandler.bind(this);
@@ -568,13 +539,13 @@ class SearchDropDown extends React.Component {
         {
             return (
               <React.Fragment>
-                  <div className={style.dropdown} style={this.state.dropDownContainerStyle}>
+                  <div className={style.searchDropDownContainer} style={this.state.searchDropDownContainterStyle}>
                       <input
                           autocomplete="off"
                           type="text"
                           name="value"
                           form = "form2"
-                          className="inputFieldBoxLong validInputBox"
+                          className={`${style.inputFieldBoxLog} validInputBox`}
                           onChange={this.changeHandler}
                           onFocus={this.onFocusHandler}
                           placeholder={this.state.lockedMessage}
@@ -595,13 +566,13 @@ class SearchDropDown extends React.Component {
         {
             return (
               <React.Fragment>
-                  <div className={style.dropdown} style={this.state.dropDownContainerStyle}>
+                  <div className={style.searchDropDownContainer} style={this.state.searchDropDownContainterStyle}>
                       <input
                           autocomplete="off"
                           type="text"
                           name="value"
                           form = "form2"
-                          className="inputFieldBoxLong validInputBox"
+                          className={`${style.inputFieldBoxLong} validInputBox`}
                           onChange={this.changeHandler}
                           onFocus={this.onFocusHandler}
                           maxlength={this.state.maxLength}
@@ -619,13 +590,13 @@ class SearchDropDown extends React.Component {
         }
         return (
           <React.Fragment>
-              <div className={style.dropdown} style={this.state.dropDownContainerStyle}>
+              <div className={style.searchDropDownContainer} style={this.state.searchDropDownContainterStyle}>
                   <input
                       autocomplete="off"
                       type="text"
                       name="value"
                       form = "form2"
-                      className="inputFieldBoxLong validInputBox"
+                      className={`${style.inputFieldBoxLong} validInputBox`}
                       onChange={this.changeHandler}
                       onFocus={this.onFocusHandler}
                       placeholder={this.state.placeHolder}
@@ -701,9 +672,7 @@ class SearchDropDown extends React.Component {
         let suggestionBox = this.generateSuggestionBox();
         return (
             <React.Fragment>
-                <div className={style.searchInputContainer} style={this.state.searchInputContainerStyle}>
-                    {inputbox}
-                </div>
+                {inputbox}
                 {redirect}
             </React.Fragment>);
     }

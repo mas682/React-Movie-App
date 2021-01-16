@@ -405,23 +405,19 @@ class Header extends React.Component {
             {
                 dropDownContent = (
                     <div className="dropDownContent">
-                    <div className="searchBar">
-                        <div className="searchInputBox">
+                        <div className="searchBar">
                             <SearchDropDown
                                 allowNoSuggestion={true}
                                 getSuggestions={this.getSearchSuggestions}
                                 multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
                                 redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
-                                searchInputContainerStyle={{"height":"100%"}}
-                                searchDropDownContainerStyle={{"height":"100%"}}
-                                inputBoxStyle={{"margin-top":"0px", "border-radius":"0px", "width":"100%"}}
-                                dropDownContainerStyle={{"height":"100%", "display":"flex", "flex-flow":"column"}}
-                                dropDownContentStyle={{"width":"100%", "border-radius": "0px", "background":"#333", "height":"100%", "position":"static"}}
-                                suggestionStyle={{"color":"white", "font-size": "1em"}}
+                                searchDropDownContainterStyle={{"display":"flex", "flex-flow":"column"}}
+                                inputBoxStyle={{"border-radius":"0px"}}
+                                dropDownContentStyle={{"border-radius": "0px", "background-color":"#333", "height":"100%", "position":"static"}}
                                 keyStyle={{"font-size":"1.25em", "color":"red", "border-bottom":"1px solid gray"}}
+                                suggestionStyle={{"color":"white", "font-size": "1em"}}
                             />
                         </div>
-                    </div>
                     </div>
                 );
             }
@@ -432,78 +428,70 @@ class Header extends React.Component {
                         <i class="fas fa-times menuCloseIcon"/>
                     </div>
                 );
+                /*
+                next...go into search drop down
+                make it optional to show a search icon
+                will need a div after input with white background
+                add on click handler
+                */
                 dropDownContent = (
                     <div className="dropDownContent">
-                        <div className = "dropDownContainer">
-                            <div className = "dropDownItem" onClick={this.menuClickHandler}>
-                                <div className = "pageName">
-                                    <Link class="pageLink" to={homePath}>Home</Link>
-                                </div>
-                                <div className = "iconContainer">
-                                </div>
+                        <div className = "dropDownItem" onClick={this.menuClickHandler}>
+                            <div className = "pageName">
+                                <Link class="pageLink" to={homePath}>Home</Link>
                             </div>
-                            <div className = "dropDownItem">
-                                <div className = "pageName">
-                                    Movies
-                                </div>
-                                <div className = "iconContainer" id="movieIcon">
-                                    <button onClick={this.showMovieOptionsEventHandler}><i class="fa fa-angle-down" aria-hidden="true"></i></button>
-                                </div>
+                        </div>
+                        <div className = "dropDownItem">
+                            <div className = "pageName">
+                                Movies
                             </div>
-                            <div className="optionsContainer" id="movieOptions">
-                                <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
-                                    <Link className= "pageLink" to="/movie">
-                                        <div className="pageName">
-                                            Top Rated
-                                        </div>
-                                    </Link>
-                                </div>
-                                <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
-                                    <Link className= "pageLink" to="/upcoming">
-                                        <div className="pageName">
-                                            Upcoming
-                                        </div>
-                                    </Link>
-                                </div>
-                                <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
-                                    <Link className= "pageLink" to="/movie">
-                                        <div className="pageName">
-                                            In Theaters
-                                        </div>
-                                    </Link>
-                                </div>
-                                <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
-                                    <Link className= "pageLink" to="/new_releases">
-                                        <div className="pageName">
-                                            New Releases
-                                        </div>
-                                    </Link>
-                                </div>
+                            <div className = "iconContainer" id="movieIcon">
+                                <button onClick={this.showMovieOptionsEventHandler}><i class="fa fa-angle-down" aria-hidden="true"></i></button>
                             </div>
-                            <div className = "dropDownItem">
-                                <div className = "pageName">
-                                    Shows
-                                </div>
-                                <div className = "iconContainer">
-                                    <button><i class="fa fa-angle-down" aria-hidden="true"></i></button>
-                                </div>
+                        </div>
+                        <div className="optionsContainer" id="movieOptions">
+                            <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                                <Link className= "pageLink" to="/movie">
+                                    Top Rated
+                                </Link>
                             </div>
-                            <div className = "dropDownItem">
-                                <div className = "pageName">
-                                    About
-                                </div>
-                                <div className = "iconContainer">
-                                </div>
+                            <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                                <Link className= "pageLink" to="/upcoming">
+                                        Upcoming
+                                </Link>
                             </div>
-                            <div className = "dropDownItem" onClick={() => {this.props.showLoginPopUpFunction(); this.menuClickHandler();}}>
-                                <div className = "pageName">
-                                    Login
-                                </div>
+                            <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                                <Link className= "pageLink" to="/movie">
+                                        In Theaters
+                                </Link>
                             </div>
-                            <div className = "dropDownItem" onClick={()=> {this.showSignUpForm(); this.menuClickHandler();}}>
-                                <div className = "pageName">
-                                    Sign Up
-                                </div>
+                            <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                                <Link className= "pageLink" to="/new_releases">
+                                        New Releases
+                                </Link>
+                            </div>
+                        </div>
+                        <div className = "dropDownItem">
+                            <div className = "pageName">
+                                Shows
+                            </div>
+                            <div className = "iconContainer">
+                                <button><i class="fa fa-angle-down" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+                        <div className = "dropDownItem">
+                            <div className = "pageName">
+                                About
+                            </div>
+                        </div>
+                        <div className = "dropDownItem" onClick={() => {this.props.showLoginPopUpFunction(); this.menuClickHandler();}}>
+                            <div className = "pageName">
+                                Login
+                            </div>
+                        </div>
+                        <div className = "dropDownItem" onClick={()=> {this.showSignUpForm(); this.menuClickHandler();}}>
+                            <div className = "pageName">
+                                Sign Up
                             </div>
                         </div>
                     </div>
