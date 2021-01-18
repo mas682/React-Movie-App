@@ -611,7 +611,7 @@ class Header extends React.Component {
             // either shows the review post form or sign up form
             let postReviewButton = this.generatePostReviewButton();
             dropDownContent = (
-                <div className="dropDownContent">
+                <div className="dropDownContent menuDropDownContent">
                     <Link className = "dropDownItem" to={homePath} onClick={this.menuClickHandler}>
                         <div className = "pageName">
                             Home

@@ -10,6 +10,7 @@ import UserSettings from'./UserSettings.js';
 import MovieInfoPage from'./MovieInfoPage.js';
 import Header from './Header.js';
 import MovieFilterPage from './MovieFilterPages.js';
+import SearchPage from './SearchPages.js';
 import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
 import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
@@ -183,6 +184,7 @@ class Routes extends React.Component
                         <Route exact path="/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/> } />
                         <Route exact path="/settings" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn} setMessages={this.setMessages} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
                         <Route exact path="/movie/:id" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
+                        <Route exact path="/search" render={(props)=> <SearchPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
                     </Switch>
                 </main>
             </Router>
