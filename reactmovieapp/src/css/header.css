@@ -1,6 +1,8 @@
 
 
-@media screen and (min-width: 1400px) {
+
+
+@media screen and (min-width: 800px) {
     .App-Header {
         background-color: #333;
         height: 85px;
@@ -12,212 +14,81 @@
     	margin: 0;
     	overflow: visible;
     	display: grid;
-    	grid-template-columns: 27.5% 45% 27.5%;
+    	grid-template-columns: 100px calc(calc(100% - 750px)/2) 600px calc(calc(100% - 750px)/2) 50px;
         grid-template-rows: 85px;
     	grid-gap: 0px;
     }
 
-    .logo {
-    	color: white;
-    	text-align: left;
-    	padding-left: 45px;
+    .navButtons {
+        grid-column-start: 3;
+        grid-column-end: 3;
+    	text-align: center;
+    	display: block;
+    	text-decoration: none;
+    	z-index: 2;
+    	position: relative;
+    	display: grid;
+    	grid-template-columns: auto auto auto auto auto auto auto;
+    	grid-gap: 0px;
     }
 
-    .dropDownContent .searchBar {
+    .menuIconContainer {
         display: none;
     }
 
+    .addPostIcon {
+        display: none;
+    }
+
+    /* style for the search icon */
+    .searchIcon {
+        color: gray;
+        font-size: 1.5em;
+        grid-column-start: 5;
+        grid-column-end: 5;
+        align-self: center;
+        justify-self: center;
+        transform: rotate(90deg);
+    }
+
+    /* div to hold the search bar */
     .searchBar {
     	 text-align: left;
-         display: flex;
-         justify-content: flex-start;
-         width: 95%;
-         margin-right: 5%;
-         margin-top: 20px;
+         width: 80%;
+         padding-left: 10%;
+         display: none;
+         height: 100%;
     }
 
-    .searchInputBox {
-        width: 90%;
-    }
-
-    .searchIconBox {
-        width: 8%;
+    /* when search bar inside dropDownContent */
+    .dropDownContent .searchBar {
         display: flex;
-        justify-content: flex-start;
-        margin-left: 2%;
+        padding-top: 10px;
     }
 
-    .navButtons {
-    	text-align: center;
-    	display: block;
-    	text-decoration: none;
-    	z-index: 2;
-    	position: relative;
-    	display: grid;
-    	grid-template-columns: auto auto auto auto auto auto auto;
-    	grid-gap: 0px;
+    .searchCloseIcon {
+        color: red;
+        font-size: 1.5em;
+        grid-column-start: 5;
+        grid-column-end: 5;
+        align-self: center;
+        justify-self: center;
     }
-}
 
-@media screen and (max-width: 1399px) and (min-width: 1200px) {
-    .App-Header {
+    .addPostCloseIcon {
+        color: red;
+    }
+
+    /* wraps the menu or the search bar drop down */
+    .dropDownContent {
+        position: fixed;
         background-color: #333;
-        height: 85px;
         width: 100%;
-    	position: sticky;
-    	top: 0;
-    	z-index: 2;
-    	list-style-type: none;
-    	margin: 0;
-    	overflow: visible;
-    	display: grid;
-    	grid-template-columns: 22.5% 50% 27.5%;
-        grid-template-rows: 85px;
-    	grid-gap: 0px;
-    }
-
-    .logo {
-    	color: white;
-    	text-align: left;
-    	padding-left: 45px;
-    }
-    .searchBar {
-    	   text-align: left;
-         display: flex;
-         justify-content: flex-start;
-         width: 95%;
-         margin-right: 5%;
-         margin-top: 20px;
-    }
-
-    .searchInputBox {
-        width: 90%;
-    }
-
-    .searchIconBox {
-        width: 8%;
-        display: flex;
-        justify-content: flex-start;
-        margin-left: 2%;
-    }
-
-    .navButtons {
-    	text-align: center;
-    	display: block;
-    	text-decoration: none;
-    	z-index: 2;
-    	position: relative;
-    	display: grid;
-    	grid-template-columns: auto auto auto auto auto auto auto;
-    	grid-gap: 0px;
-    }
-}
-
-@media screen and (max-width: 1199px) and (min-width: 1000px) {
-    .App-Header {
-        background-color: #333;
-        height: 85px;
-        width: 100%;
-    	position: sticky;
-    	top: 0;
-    	z-index: 2;
-    	list-style-type: none;
-    	margin: 0;
-    	overflow: visible;
-    	display: grid;
-    	grid-template-columns: 27.5% 45% 27.5%;
-        grid-template-rows: 85px;
-    	grid-gap: 0px;
-    }
-
-    .logo {
-    	color: white;
-    	text-align: left;
-    	padding-left: 45px;
-    }
-    .searchBar {
-    	   text-align: left;
-         display: flex;
-         justify-content: flex-start;
-         width: 95%;
-         margin-right: 5%;
-         margin-top: 20px;
-    }
-
-    .searchInputBox {
-        width: 90%;
-    }
-
-    .searchIconBox {
-        width: 8%;
-        display: flex;
-        justify-content: flex-start;
-        margin-left: 2%;
-    }
-
-    .navButtons {
-    	text-align: center;
-    	display: block;
-    	text-decoration: none;
-    	z-index: 2;
-    	position: relative;
-    	display: grid;
-    	grid-template-columns: auto auto auto auto auto auto auto;
-    	grid-gap: 0px;
-    }
-}
-
-@media screen and (max-width: 999px) and (min-width: 800px) {
-    .App-Header {
-        background-color: #333;
-        height: 85px;
-        width: 100%;
-    	position: sticky;
-    	top: 0;
-    	z-index: 2;
-    	list-style-type: none;
-    	margin: 0;
-    	overflow: visible;
-    	display: grid;
-    	grid-template-columns: 0% 65% 22.5%;
-        grid-template-rows: 85px;
-    	grid-gap: 0px;
-    }
-
-    .logo {
-    	color: white;
-    	text-align: left;
-    	padding-left: 10px;
-    }
-    .searchBar {
-    	   text-align: left;
-         display: flex;
-         justify-content: flex-start;
-         width: 95%;
-         margin-right: 5%;
-         margin-top: 20px;
-    }
-
-    .searchInputBox {
-        width: 90%;
-    }
-
-    .searchIconBox {
-        width: 8%;
-        display: flex;
-        justify-content: flex-start;
-        margin-left: 2%;
-    }
-
-    .navButtons {
-    	text-align: center;
-    	display: block;
-    	text-decoration: none;
-    	z-index: 2;
-    	position: relative;
-    	display: grid;
-    	grid-template-columns: auto auto auto auto auto auto auto;
-    	grid-gap: 0px;
+        height: calc(100% - 85px);
+        border-top: 2px solid gray;
+        z-index: 1;
+        text-align: left;
+        margin-top: 85px;
     }
 }
 
@@ -233,15 +104,9 @@
     	margin: 0;
     	overflow: visible;
     	display: grid;
-    	grid-template-columns: 13% 67% 10% 10%;
+    	grid-template-columns: 50px calc(100% - 180px) 30px 40px 60px;
         grid-template-rows: 45px;
     	grid-gap: 0px;
-    }
-
-    .logo {
-    	color: white;
-    	text-align: left;
-    	padding-left: 5px;
     }
 
     .logo h1
@@ -258,13 +123,6 @@
          height: 100%;
     }
 
-    /* div to hold the search icon */
-    .searchIconBox {
-        grid-column-start: 3;
-        grid-column-end: 3;
-        place-self: center;
-    }
-
     /* when search bar inside dropDownContent */
     .dropDownContent .searchBar {
         display: flex;
@@ -274,11 +132,31 @@
     .searchIcon {
         color: gray;
         font-size: 1.5em;
+        grid-column-start: 4;
+        grid-column-end: 4;
+        align-self: center;
+        justify-self: end;
+        transform: rotate(90deg);
+    }
+
+    .addPostIcon {
+        color: gray;
+        font-size: 1.5em;
         grid-column-start: 3;
         grid-column-end: 3;
         align-self: center;
         justify-self: end;
-        transform: rotate(90deg);
+        font-weight: bold;
+        font-size: 1.5em;
+    }
+
+    .searchCloseIcon {
+        color: red;
+        font-size: 1.5em;
+        grid-column-start: 4;
+        grid-column-end: 4;
+        align-self: center;
+        justify-self: end;
     }
 
     /* don't show the normal nav buttons */
@@ -298,17 +176,6 @@
         margin-top: 45px;
     }
 
-    /* container for menu routes */
-    .dropDownItem {
-        width: 100%;
-        color: white;
-        border-bottom: 1px solid gray;
-        height: 50px;
-        display: grid;
-        grid-template-columns: 90% 10%;
-        text-decoration: none;
-    }
-
     /* container for page name */
     .pageName {
         grid-column-start: 1;
@@ -316,14 +183,6 @@
         align-self: center;
         justify-self: start;
         padding-left: 5px;
-    }
-
-    .pageLink {
-        text-decoration: none;
-    }
-
-    .dropDownItem .pageName .pageLink:visited {
-        color: white;
     }
 
     /* container for pages with subsections */
@@ -336,16 +195,17 @@
         grid-template-columns: 100%;
     }
 
-    .innerDropDownItem .pageLink
+    .innerDropDownItem div
     {
         grid-column-start: 1;
         grid-column-end: 1;
         align-self: center;
         justify-self: start;
         padding-left: 10px;
+        text-decoration: none;
     }
 
-    .innerDropDownItem .pageLink:visited {
+    .innerDropDownItem div:visited {
         color: black;
     }
 
@@ -387,14 +247,35 @@
     .innerDropDownItem:hover {
         background-color: #ddd;
     }
+
+    .menuIconContainer {
+        display: inline-block;
+        cursor: pointer;
+        grid-column-start: 5;
+        grid-column-end: 5;
+        place-self: center;
+    }
 }
 
-.menuIconContainer {
-    display: inline-block;
-    cursor: pointer;
-    grid-column-start: 4;
-    grid-column-end: 4;
-    place-self: center;
+/* container for menu routes */
+.dropDownItem {
+    width: 100%;
+    color: white;
+    border-bottom: 1px solid gray;
+    height: 50px;
+    display: grid;
+    grid-template-columns: 90% 10%;
+    text-decoration: none;
+}
+
+.searchCloseIcon:hover {
+    color: gray;
+}
+
+.logo {
+    color: white;
+    text-align: left;
+    padding-left: 10px;
 }
 
 .menuIcon {
@@ -414,6 +295,7 @@
     color: red;
 }
 
+/* for the hamburger menu */
 .topBar, .middleBar, .bottomBar {
     width: 25px;
     height: 2.5px;
@@ -499,11 +381,10 @@
   display: block;
 }
 
-.searchIcon {
-    color: gray;
-    font-size: 1.5em;
+.searchIcon:hover {
+    color: red;
 }
 
-.searchIcon:hover {
+.addPostIcon:hover {
     color: red;
 }

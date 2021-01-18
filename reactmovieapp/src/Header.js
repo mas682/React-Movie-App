@@ -34,11 +34,20 @@ class Header extends React.Component {
         this.logout = this.logout.bind(this);
         this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
         this.reviewSuccessFunction = this.reviewSuccessFunction.bind(this);
-
         this.menuClickHandler = this.menuClickHandler.bind(this);
         this.windowResizeEventHandler = this.windowResizeEventHandler.bind(this);
         this.showMovieOptionsEventHandler = this.showMovieOptionsEventHandler.bind(this);
         this.searchClickHandler = this.searchClickHandler.bind(this);
+        this.generateMovieOptions = this.generateMovieOptions.bind(this);
+        this.generateProfileButton = this.generateProfileButton.bind(this);
+        this.showProfileOptionsEventHandler = this.showProfileOptionsEventHandler.bind(this);
+        this.removeMovieDropDown = this.removeMovieDropDown.bind(this);
+        this.removeShoWDropDown = this.removeShoWDropDown.bind(this);
+        this.removeProfileDropDown = this.removeProfileDropDown.bind(this);
+        this.showShowOptionsEventHandler = this.showShowOptionsEventHandler.bind(this);
+        this.generateSettingsButton = this.generateSettingsButton.bind(this);
+        this.generateLogoutButton = this.generateLogoutButton.bind(this);
+        this.generatePostReviewButton = this.generatePostReviewButton.bind(this);
     }
 
     signUpRemoveFunction = (username) =>
@@ -53,26 +62,114 @@ class Header extends React.Component {
 
     showMovieOptionsEventHandler()
     {
-        let element = document.getElementById("movieOptions");
-        let icon = document.getElementById("movieIcon");
-        if(element.style.height === "200px")
+        let movieDropDownHeight = (this.state.loggedIn) ? "250px" : "200px";
+        let movieDropDownContainer = document.getElementById("movieOptions");
+        let movieIcon = document.getElementById("movieIcon");
+        if(movieDropDownContainer.style.height === movieDropDownHeight)
         {
-            element.style.height = "0px";
-            icon.style.transform = "";
+            movieDropDownContainer.style.height = "0px";
+            movieIcon.style.transform = "";
         }
         else
         {
-            element.style.height = "200px";
-            icon.style.transform = "rotate(180deg)";
+            // if the show options drop down is visible, remove
+            this.removeShoWDropDown();
+            // if the profile options drop down is visible, remove
+            this.removeProfileDropDown();
+            movieDropDownContainer.style.height = movieDropDownHeight;
+            movieIcon.style.transform = "rotate(180deg)";
         }
     }
+
+    showShowOptionsEventHandler()
+    {
+        let showDropDownContainer = document.getElementById("showOptions");
+        let showIcon = document.getElementById("showIcon");
+        if(showDropDownContainer.style.height === "100px")
+        {
+            showDropDownContainer.style.height = "0px";
+            showIcon.style.transform = "";
+        }
+        else
+        {
+            // if the movie options drop down is visible, remove
+            this.removeMovieDropDown();
+            // if the profile options drop down is visible, remove
+            this.removeProfileDropDown();
+            showDropDownContainer.style.height = "100px";
+            showIcon.style.transform = "rotate(180deg)";
+        }
+    }
+
+    showProfileOptionsEventHandler()
+    {
+        let profileDropDownContainer = document.getElementById("profileOptions");
+        let profileIcon = document.getElementById("profileIcon");
+        if(profileDropDownContainer.style.height === "100px")
+        {
+            profileDropDownContainer.style.height = "0px";
+            profileIcon.style.transform = "";
+        }
+        else
+        {
+            // if the movie options drop down is visible, remove
+            this.removeMovieDropDown();
+            // if the show options drop down is visible, remove
+            this.removeShoWDropDown();
+            profileDropDownContainer.style.height = "100px";
+            profileIcon.style.transform = "rotate(180deg)";
+        }
+    }
+
+    removeMovieDropDown()
+    {
+        // if the movie options drop down is visible, remove
+        let movieDropDownContainer = document.getElementById("movieOptions");
+        let movieDropDownHeight = (this.state.loggedIn) ? "250px" : "200px";
+        if(movieDropDownContainer.style.height === movieDropDownHeight)
+        {
+            let movieIcon = document.getElementById("movieIcon");
+            movieDropDownContainer.style.height = "0px";
+            movieIcon.style.transform = "";
+        }
+    }
+
+    removeShoWDropDown()
+    {
+        // if the show options drop down is visible, remove
+        let showDropDownContainer = document.getElementById("showOptions");
+        if(showDropDownContainer.style.height === "100px")
+        {
+            let showIcon = document.getElementById("showIcon");
+            showDropDownContainer.style.height = "0px";
+            showIcon.style.transform = "";
+        }
+    }
+
+    removeProfileDropDown()
+    {
+        if(!this.state.loggedIn)
+        {
+            return;
+        }
+        // if the show options drop down is visible, remove
+        let profileDropDownContainer = document.getElementById("profileOptions");
+        if(profileDropDownContainer.style.height === "100px")
+        {
+            let profileIcon = document.getElementById("profileIcon");
+            profileDropDownContainer.style.height = "0px";
+            profileIcon.style.transform = "";
+        }
+    }
+
 
     menuClickHandler()
     {
         if(!this.state.showDropdown)
         {
             this.setState({
-                showDropdown: true
+                showDropdown: true,
+                showSearchDropDown: false
             });
             let elm = document.querySelector("main");
             elm.style.position = "fixed";
@@ -92,7 +189,8 @@ class Header extends React.Component {
         if(!this.state.showSearchDropDown)
         {
             this.setState({
-                showSearchDropDown: true
+                showSearchDropDown: true,
+                showDropdown: false
             });
             let elm = document.querySelector("main");
             elm.style.position = "fixed";
@@ -109,16 +207,13 @@ class Header extends React.Component {
 
     windowResizeEventHandler(event)
     {
-        //console.log(event);
-        if(event.target.innerWidth < 600)
-        {
-
-        }
-        if(event.target.innerWidth >= 600)
+        if(event.target.innerWidth >= 800)
         {
             if(this.state.showDropdown)
             {
-                this.setState({showDropdown: false});
+                this.setState({
+                    showDropdown: false,
+                });
             }
             let element = document.querySelector("main");
             if(element.style.position === "fixed")
@@ -209,7 +304,11 @@ class Header extends React.Component {
             this.props.showLoginPopUpFunction();
             return;
         }
-        this.setState({reviewFormOpen: true});
+        this.setState({
+            reviewFormOpen: true,
+            showSearchDropDown: false,
+            showDropdown: false
+        });
     }
 
     logout()
@@ -279,13 +378,175 @@ class Header extends React.Component {
           });
     }
 
+
+    generateMovieOptions()
+    {
+        if(this.state.loggedIn)
+        {
+            return (
+                <div className="optionsContainer" id="movieOptions">
+                    <Link to="/watch_list" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                        <div>
+                            My Watch List
+                        </div>
+                    </Link>
+                    <Link to="/watched_list" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                        <div>
+                            My Watched Movies
+                        </div>
+                    </Link>
+                    <Link to="/movie" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                        <div>
+                            Top Rated
+                        </div>
+                    </Link>
+                    <Link to="/upcoming" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                        <div>
+                            Upcoming
+                        </div>
+                    </Link>
+                    <Link to="/new_releases" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                        <div>
+                            New Releases
+                        </div>
+                    </Link>
+                </div>
+            )
+        }
+        return (
+            <div className="optionsContainer" id="movieOptions">
+                <Link to="/movie" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                    <div>
+                        Top Rated
+                    </div>
+                </Link>
+                <Link to="/upcoming" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                    <div>
+                        Upcoming
+                    </div>
+                </Link>
+                <Link to="/movie" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                    <div>
+                        In Theaters
+                    </div>
+                </Link>
+                <Link to="/new_releases" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                    <div>
+                        New Releases
+                    </div>
+                </Link>
+            </div>
+        )
+    }
+
+    generateProfileButton()
+    {
+        if(this.state.loggedIn)
+        {
+            let profilePath = "/profile/" + this.state.currentUser;
+            return (
+                <React.Fragment>
+                    <div className = "dropDownItem" onClick={this.showProfileOptionsEventHandler}>
+                        <div className = "pageName">
+                            Profile
+                        </div>
+                        <div className = "iconContainer" id="profileIcon">
+                            <button><i class="fa fa-angle-down" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div className="optionsContainer" id="profileOptions">
+                        <Link to="/feed" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                            <div>
+                                My Feed
+                            </div>
+                        </Link>
+                        <Link to={profilePath} className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                            <div>
+                                My Profile
+                            </div>
+                        </Link>
+                    </div>
+                </React.Fragment>
+            );
+        }
+
+        return (
+            <Link className = "dropDownItem"  to={"/about"} onClick={this.menuClickHandler}>
+                <div className = "pageName">
+                    About
+                </div>
+            </Link>
+        );
+    }
+
+    generatePostReviewButton()
+    {
+        if(this.state.loggedIn)
+        {
+            return (
+                <div className = "dropDownItem" onClick={() => {this.generateReviewForm(); this.menuClickHandler();}}>
+                    <div className = "pageName">
+                        Post Review
+                    </div>
+                </div>
+            );
+        }
+        return (
+            <div className = "dropDownItem" onClick={() => {this.props.showLoginPopUpFunction(); this.menuClickHandler();}}>
+                <div className = "pageName">
+                    Post Review
+                </div>
+            </div>
+        )
+    }
+
+    generateSettingsButton()
+    {
+        if(this.state.loggedIn)
+        {
+            return (
+                <Link className = "dropDownItem"  to={"/settings"} onClick={this.menuClickHandler}>
+                    <div className = "pageName">
+                        Settings
+                    </div>
+                </Link>
+            );
+        }
+        return (
+            <div className = "dropDownItem" onClick={() => {this.props.showLoginPopUpFunction(); this.menuClickHandler();}}>
+                <div className = "pageName">
+                    Login
+                </div>
+            </div>
+        );
+    }
+
+    generateLogoutButton()
+    {
+        if(this.state.loggedIn)
+        {
+            return (
+                <div className = "dropDownItem" onClick={this.logout}>
+                    <div className = "pageName">
+                        Logout
+                    </div>
+                </div>
+            )
+        }
+        return (
+            <div className = "dropDownItem" onClick={()=> {this.showSignUpForm(); this.menuClickHandler();}}>
+                <div className = "pageName">
+                    Sign Up
+                </div>
+            </div>
+        );
+    }
+
 	render() {
         // if the state loggedIn state has not been set in the router yet,
         // do not render the header
-        if(this.state.loggedIn === null)
-        {
-            return null;
-        }
+        if(this.state.loggedIn === null) return null;
+
         let redirect = "";
         if(this.state.redirectToProfile)
         {
@@ -295,25 +556,119 @@ class Header extends React.Component {
                 redirect = <Redirect to={{pathname: path, state: {newReview: true}}}/>;
             }
         }
-        let reviewForm = "";
-        if(this.state.reviewFormOpen)
+        let homePath = (this.state.currentUser !== "") ? "/feed" : "/";
+
+        let menuIcon = (
+            <div className="menuIconContainer" onClick={this.menuClickHandler}>
+                <div className="topBar menuIcon"></div>
+                <div className="middleBar menuIcon"></div>
+                <div className="bottomBar menuIcon"></div>
+            </div>
+        );
+        let searchIcon = (<i class="fas fa-search searchIcon" onClick={this.searchClickHandler}/>);
+        let addPostIcon = (<i class="fas fa-plus addPostIcon" onClick={this.generateReviewForm}/>);
+
+        let dropDownContent = "";
+        // show search bar
+        if(this.state.showSearchDropDown)
         {
-            reviewForm = <ReviewForm
-                            edit={false}
-                            removeFunction={this.removeReviewForm}
-                            successFunction={this.reviewSuccessFunction}
-                            showLoginPopUp={this.props.showLoginPopUpFunction}
-                            updateLoggedIn={this.props.updateLoggedIn}
-                            setMessages={this.props.setMessages}
-                        />;
+            searchIcon = (<i class="fas fa-times searchCloseIcon" onClick={this.searchClickHandler}/>);
+            dropDownContent = (
+                <div className="dropDownContent">
+                    <div className="searchBar">
+                        <SearchDropDown
+                            allowNoSuggestion={true}
+                            getSuggestions={this.getSearchSuggestions}
+                            showSearchIcon={true}
+                            multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
+                            redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
+                            searchDropDownContainterStyle={{"display":"flex", "flex-flow":"column"}}
+                            inputBoxStyle={{"border-radius":"0px"}}
+                            dropDownContentStyle={{"border-radius": "0px", "background-color":"#333", "height":"100%", "position":"static"}}
+                            keyStyle={{"font-size":"1.25em", "color":"red", "border-bottom":"1px solid gray"}}
+                            suggestionStyle={{"color":"white", "font-size": "1em"}}
+                            redirectHandler={this.searchClickHandler}
+                        />
+                    </div>
+                </div>
+            );
         }
-        let homePath = "/";
-        if(this.state.currentUser !== "")
+        // show menu drop down
+        if(this.state.showDropdown)
         {
-            homePath = "/feed";
+            menuIcon = (
+                <div className="menuIconContainer" onClick={this.menuClickHandler}>
+                    <i class="fas fa-times menuCloseIcon"/>
+                </div>
+            );
+            let movieOptions = this.generateMovieOptions();
+            // if not logged in, returns about button
+            let profileAboutButton = this.generateProfileButton();
+            // either returns a settings button or login button
+            let settingsLoginButton = this.generateSettingsButton();
+            // either returns a logout button or sign up button
+            let logoutSignUpButton = this.generateLogoutButton();
+            // either shows the review post form or sign up form
+            let postReviewButton = this.generatePostReviewButton();
+            dropDownContent = (
+                <div className="dropDownContent">
+                    <Link className = "dropDownItem" to={homePath} onClick={this.menuClickHandler}>
+                        <div className = "pageName">
+                            Home
+                        </div>
+                    </Link>
+                    <div className = "dropDownItem" onClick={this.showMovieOptionsEventHandler}>
+                        <div className = "pageName">
+                            Movies
+                        </div>
+                        <div className = "iconContainer" id="movieIcon">
+                            <button><i class="fa fa-angle-down" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    {movieOptions}
+                    <div className = "dropDownItem" onClick={this.showShowOptionsEventHandler}>
+                        <div className = "pageName">
+                            Shows
+                        </div>
+                        <div className = "iconContainer" id="showIcon">
+                            <button><i class="fa fa-angle-down" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div className="optionsContainer" id="showOptions">
+                        <Link to="/shows" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                            <div>
+                                Top Rated
+                            </div>
+                        </Link>
+                        <Link to="/shows" className = "innerDropDownItem" onClick={this.menuClickHandler}>
+                            <div>
+                                Schedule
+                            </div>
+                        </Link>
+                    </div>
+                    {postReviewButton}
+                    {profileAboutButton}
+                    {settingsLoginButton}
+                    {logoutSignUpButton}
+                </div>
+            );
         }
+
         if(this.state.loggedIn)
         {
+            let reviewForm = "";
+            if(this.state.reviewFormOpen)
+            {
+                reviewForm = <ReviewForm
+                                edit={false}
+                                removeFunction={this.removeReviewForm}
+                                successFunction={this.reviewSuccessFunction}
+                                showLoginPopUp={this.props.showLoginPopUpFunction}
+                                updateLoggedIn={this.props.updateLoggedIn}
+                                setMessages={this.props.setMessages}
+                            />;
+                addPostIcon = (<i class="fas fa-plus addPostCloseIcon" onClick={this.generateReviewForm}/>);
+            }
             let profilePath = "/profile/" + this.state.currentUser;
         		return (
         			<div className="App-Header">
@@ -354,24 +709,16 @@ class Header extends React.Component {
                                 <Link to="#" class="homeButton" onClick={this.logout}>Logout</Link>
                             </div>
         				</div>
-        				<div className="searchBar">
-                            <div className="searchInputBox">
-        					    <SearchDropDown
-                                    allowNoSuggestion={true}
-                                    getSuggestions={this.getSearchSuggestions}
-                                    multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
-                                    redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
-                                />
-                            </div>
-                            <div className="searchIconBox">
-                                <i class="fas fa-search searchIcon" />
-                            </div>
-        				</div>
                         {reviewForm}
                         {redirect}
+                        {addPostIcon}
+                        {searchIcon}
+                        {menuIcon}
+                        {dropDownContent}
         			</div>
     		);
         }
+        // if not logged in
         else
         {
             let signInForm = "";
@@ -391,111 +738,6 @@ class Header extends React.Component {
                                 setMessages={this.props.setMessages}
                                 showLoginPopUp={this.props.showLoginPopUpFunction}
                             />
-            }
-            let menuIcon = (
-                <div className="menuIconContainer" onClick={this.menuClickHandler}>
-                    <div className="topBar menuIcon"></div>
-                    <div className="middleBar menuIcon"></div>
-                    <div className="bottomBar menuIcon"></div>
-                </div>
-            );
-
-            let dropDownContent = "";
-            if(this.state.showSearchDropDown)
-            {
-                dropDownContent = (
-                    <div className="dropDownContent">
-                        <div className="searchBar">
-                            <SearchDropDown
-                                allowNoSuggestion={true}
-                                getSuggestions={this.getSearchSuggestions}
-                                multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
-                                redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
-                                searchDropDownContainterStyle={{"display":"flex", "flex-flow":"column"}}
-                                inputBoxStyle={{"border-radius":"0px"}}
-                                dropDownContentStyle={{"border-radius": "0px", "background-color":"#333", "height":"100%", "position":"static"}}
-                                keyStyle={{"font-size":"1.25em", "color":"red", "border-bottom":"1px solid gray"}}
-                                suggestionStyle={{"color":"white", "font-size": "1em"}}
-                            />
-                        </div>
-                    </div>
-                );
-            }
-            if(this.state.showDropdown)
-            {
-                menuIcon = (
-                    <div className="menuIconContainer" onClick={this.menuClickHandler}>
-                        <i class="fas fa-times menuCloseIcon"/>
-                    </div>
-                );
-                /*
-                next...go into search drop down
-                make it optional to show a search icon
-                will need a div after input with white background
-                add on click handler
-                */
-                dropDownContent = (
-                    <div className="dropDownContent">
-                        <div className = "dropDownItem" onClick={this.menuClickHandler}>
-                            <div className = "pageName">
-                                <Link class="pageLink" to={homePath}>Home</Link>
-                            </div>
-                        </div>
-                        <div className = "dropDownItem">
-                            <div className = "pageName">
-                                Movies
-                            </div>
-                            <div className = "iconContainer" id="movieIcon">
-                                <button onClick={this.showMovieOptionsEventHandler}><i class="fa fa-angle-down" aria-hidden="true"></i></button>
-                            </div>
-                        </div>
-                        <div className="optionsContainer" id="movieOptions">
-                            <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
-                                <Link className= "pageLink" to="/movie">
-                                    Top Rated
-                                </Link>
-                            </div>
-                            <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
-                                <Link className= "pageLink" to="/upcoming">
-                                        Upcoming
-                                </Link>
-                            </div>
-                            <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
-                                <Link className= "pageLink" to="/movie">
-                                        In Theaters
-                                </Link>
-                            </div>
-                            <div className = "innerDropDownItem" onClick={this.menuClickHandler}>
-                                <Link className= "pageLink" to="/new_releases">
-                                        New Releases
-                                </Link>
-                            </div>
-                        </div>
-                        <div className = "dropDownItem">
-                            <div className = "pageName">
-                                Shows
-                            </div>
-                            <div className = "iconContainer">
-                                <button><i class="fa fa-angle-down" aria-hidden="true"></i></button>
-                            </div>
-                        </div>
-                        <div className = "dropDownItem">
-                            <div className = "pageName">
-                                About
-                            </div>
-                        </div>
-                        <div className = "dropDownItem" onClick={() => {this.props.showLoginPopUpFunction(); this.menuClickHandler();}}>
-                            <div className = "pageName">
-                                Login
-                            </div>
-                        </div>
-                        <div className = "dropDownItem" onClick={()=> {this.showSignUpForm(); this.menuClickHandler();}}>
-                            <div className = "pageName">
-                                Sign Up
-                            </div>
-                        </div>
-                    </div>
-                );
             }
             return (
                 <div className="App-Header">
@@ -531,21 +773,11 @@ class Header extends React.Component {
                             <Link class="homeButton" onClick={this.showSignUpForm}>Sign Up</Link>
                         </div>
                     </div>
-                    <div className="searchBar">
-                        <div className="searchInputBox">
-                            <SearchDropDown
-                                allowNoSuggestion={true}
-                                getSuggestions={this.getSearchSuggestions}
-                                multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
-                                redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
-                            />
-                        </div>
-                    </div>
-                    <i class="fas fa-search searchIcon" onClick={this.searchClickHandler}/>
+                    {addPostIcon}
+                    {searchIcon}
                     {menuIcon}
                     {dropDownContent}
                     {signInForm}
-                    {reviewForm}
                     {signUpForm}
                     {redirect}
                 </div>

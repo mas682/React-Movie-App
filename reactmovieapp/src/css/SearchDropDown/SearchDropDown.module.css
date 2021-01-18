@@ -7,6 +7,32 @@
     height: 100%;
 }
 
+/* container for the inputfield and the search button if applicable */
+.inputFieldContainer {
+    display: flex;
+}
+
+/* container for search button if applicable */
+.searchButtonContainer
+{
+    position: absolute;
+    height: 32px;
+    right: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.searchButtonContainer i:hover {
+    color: red;
+}
+
+.searchButtonContainer i {
+    font-size: 1.5em;
+    color: gray;
+}
+
+
 /* Dropdown Content (Hidden by Default) */
 
 .dropdownContent {
@@ -26,7 +52,13 @@
     padding: 0px;
     border-radius: 6px;
     font-size: 1.5em;
+    height: 30px;
 }
+
+.inputBoxWithIcon {
+    padding-right: 35px;
+}
+
 /* below is for the scroll bar on the pop up */
 /* width */
 .dropdownContent::-webkit-scrollbar {

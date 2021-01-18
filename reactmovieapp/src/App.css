@@ -21,7 +21,7 @@ main{
 
 @media screen and (min-width: 600px) {
     main{
-        position: absolute !important;
+        position: absolute;
     }
 }
 

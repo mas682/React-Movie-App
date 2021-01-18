@@ -45,7 +45,8 @@ class SearchDropDown extends React.Component {
             // or highlighted value
             updateOnChange: (this.props.updateOnChange !== undefined) ? this.props.updateOnChange : false,
             // max number of characters allowed in input box
-            maxLength: (this.props.maxLength !== undefined) ? this.props.maxLength : -1,
+            // 524288 is the default value
+            maxLength: (this.props.maxLength !== undefined) ? this.props.maxLength : 524288,
             redirect: false,
             // value to display in input box when empty
             placeHolder: (this.props.placeHolder !== undefined) ? this.props.placeHolder : "",
@@ -55,6 +56,8 @@ class SearchDropDown extends React.Component {
             locked: (this.props.locked !== undefined) ? this.props.locked : false,
             // message to display in the search bar if locked
             lockedMessage: (this.props.lockedMessage !== undefined) ? this.props.lockedMessage : "",
+            // boolean to let search icon display in input
+            showSearchIcon: (this.props.showSearchIcon !== undefined) ? this.props.showSearchIcon : false,
             // hash table holding path, and key to use to generate path
             // ex. {Movies: {Path:"/movie/", key:"id"}, Users: {Path:"/profile/",key:"username"}}
             redirectPaths: this.props.redirectPaths,
@@ -62,7 +65,8 @@ class SearchDropDown extends React.Component {
             inputBoxStyle: (this.props.inputBoxStyle === undefined) ? {} : this.props.inputBoxStyle,
             dropDownContentStyle: (this.props.dropDownContentStyle === undefined) ? {} : this.props.dropDownContentStyle,
             suggestionStyle: (this.props.suggestionStyle === undefined) ? {} : this.props.suggestionStyle,
-            keyStyle: (this.props.keyStyle === undefined) ? {} : this.props.keyStyle
+            keyStyle: (this.props.keyStyle === undefined) ? {} : this.props.keyStyle,
+            searchIconStyle: (this.props.searchIconStyle === undefined) ? {} : this.props.searchIconStyle
         }
         this.changeHandler = this.changeHandler.bind(this);
         this.onFocusHandler = this.onFocusHandler.bind(this);
@@ -72,6 +76,7 @@ class SearchDropDown extends React.Component {
         this.generateSuggestionBox = this.generateSuggestionBox.bind(this);
         this.redirectHandler = this.redirectHandler.bind(this);
         this.suggestionFocusHandler = this.suggestionFocusHandler.bind(this);
+        this.searchIconClickHandler = this.searchIconClickHandler.bind(this);
     }
 
     componentDidUpdate()
@@ -79,6 +84,12 @@ class SearchDropDown extends React.Component {
         if(this.state.redirect)
         {
             this.setState({redirect: false});
+            // if a redirect was caused and this function exists, call it
+            if(this.props.redirectHandler !== undefined)
+            {
+                // function called when a redirect was caused
+                this.props.redirectHandler();
+            }
         }
     }
     // update the state if new props came in with a different profile
@@ -105,6 +116,47 @@ class SearchDropDown extends React.Component {
             render = false;
         }
         return render;
+    }
+
+
+    searchIconClickHandler()
+    {
+        // if there are no suggestions or the suggestions was a empty {} object
+        if(this.state.suggestions === undefined || (Object.keys(this.state.suggestions)).length < 1)
+        {
+            // if the field value is accepted
+            if(this.state.allowNoSuggestion)
+            {
+                if(this.props.updateFunction !== undefined)
+                {
+                    this.props.updateFunction(this.state.value);
+                    if(this.state.clearOnSubmit)
+                    {
+                        this.setState({value: ""});
+                    }
+                }
+            }
+            return;
+        }
+        // if here, there are suggestions being displayed
+        // if a suggestion is highlighted
+        if(this.state.suggestionIndex !== -1)
+        {
+            // if there are paths to redirect to
+            if(this.state.redirectPaths !== undefined)
+            {
+                this.redirectHandler();
+            }
+            else
+            {
+                this.suggestionFocusHandler();
+            }
+        }
+        // if there are no suggestions highlighted
+        else
+        {
+            this.suggestionFocusHandler();
+        }
     }
 
     // function is ran on all key presses
@@ -535,80 +587,41 @@ class SearchDropDown extends React.Component {
 
     generateInputBox()
     {
-        if(this.state.locked)
+        let searchIcon = "";
+        if(this.state.showSearchIcon)
         {
-            return (
-              <React.Fragment>
-                  <div className={style.searchDropDownContainer} style={this.state.searchDropDownContainterStyle}>
-                      <input
-                          autocomplete="off"
-                          type="text"
-                          name="value"
-                          form = "form2"
-                          className={`${style.inputFieldBoxLog} validInputBox`}
-                          onChange={this.changeHandler}
-                          onFocus={this.onFocusHandler}
-                          placeholder={this.state.lockedMessage}
-                          // when the input is no longer focused
-                          onBlur={this.offFocusHandler}
-                          value={this.state.value}
-                          onKeyDown={this.keyPressedHandler}
-                          style={this.state.inputBoxStyle}
-                          disabled
-                      />
-                  </div>
-                </React.Fragment>
+            searchIcon = (
+                <div className={style.searchButtonContainer}>
+                    <i class={`fas fa-search`} style={this.state.searchIconStyle} onClick={this.searchIconClickHandler}/>
+                </div>
             );
         }
         let suggestions = this.generateSuggestionBox();
-        // if there is a maxlength
-        if(this.state.maxLength > -1)
-        {
-            return (
-              <React.Fragment>
-                  <div className={style.searchDropDownContainer} style={this.state.searchDropDownContainterStyle}>
+        let placeHolder = (this.state.locked) ? this.state.lockedMessage : this.state.placeHolder;
+        return (
+              <div className={style.searchDropDownContainer} style={this.state.searchDropDownContainterStyle}>
+                  <div className={style.inputFieldContainer}>
                       <input
                           autocomplete="off"
                           type="text"
                           name="value"
                           form = "form2"
-                          className={`${style.inputFieldBoxLong} validInputBox`}
+                          className={`${style.inputFieldBoxLong} ${style.inputBoxWithIcon} validInputBox`}
                           onChange={this.changeHandler}
                           onFocus={this.onFocusHandler}
                           maxlength={this.state.maxLength}
-                          placeholder={this.state.placeHolder}
+                          placeholder={placeHolder}
                           // when the input is no longer focused
                           onBlur={this.offFocusHandler}
                           value={this.state.value}
                           onKeyDown={this.keyPressedHandler}
                           style={this.state.inputBoxStyle}
+                          disabled={this.state.locked}
                       />
-                      {suggestions}
+                      {searchIcon}
                   </div>
-                </React.Fragment>
-            );
-        }
-        return (
-          <React.Fragment>
-              <div className={style.searchDropDownContainer} style={this.state.searchDropDownContainterStyle}>
-                  <input
-                      autocomplete="off"
-                      type="text"
-                      name="value"
-                      form = "form2"
-                      className={`${style.inputFieldBoxLong} validInputBox`}
-                      onChange={this.changeHandler}
-                      onFocus={this.onFocusHandler}
-                      placeholder={this.state.placeHolder}
-                      // when the input is no longer focused
-                      onBlur={this.offFocusHandler}
-                      value={this.state.value}
-                      onKeyDown={this.keyPressedHandler}
-                      style={this.state.inputBoxStyle}
-                  />
                   {suggestions}
               </div>
-            </React.Fragment>
         );
     }
 
