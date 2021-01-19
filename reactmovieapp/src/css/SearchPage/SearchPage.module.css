@@ -72,7 +72,7 @@
     }
 
     .resultsContainer {
-        width: 100%;
+        width: 80%;
         padding-left: 10%;
         padding-right: 10%;
         padding-top: 20px;
@@ -81,6 +81,20 @@
     .resultType {
         font-size: 1.5em;
         font-weight: bold;
+    }
+
+    .movieDisplayContainer {
+        display: flex;
+        flex-flow: row nowrap;
+        overflow: hidden;
+        min-width: 85%;
+        max-width: 85%;
+    }
+
+    .movieContainer {
+        min-width: 28.3%;
+        margin: 2.5%;
+        margin-bottom: 5%;
     }
 
 }

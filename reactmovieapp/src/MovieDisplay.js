@@ -83,8 +83,9 @@ class MovieDisplay extends React.Component {
     // called on initialization and whenever new props come in
     static generateDisplayState(props, moviePopup)
     {
-        let watchList = checkMovieOnWatchList(props.movie, props.currentUser);
-        let watched = checkMovieOnWatchedList(props.movie, props.currentUser);
+        let showMovieInfo = (props.showMovieInfo !== undefined) ? props.showMovieInfo : true;
+        let watchList = (showMovieInfo) ? checkMovieOnWatchList(props.movie, props.currentUser) : false;
+        let watched = (showMovieInfo) ? checkMovieOnWatchedList(props.movie, props.currentUser) : false;
         return {
             id: props.movie.id,
             poster: props.movie.poster,
@@ -95,7 +96,10 @@ class MovieDisplay extends React.Component {
             watchList: watchList,
             watched: watched,
             index: props.index,
-            type: props.type
+            type: props.type,
+            // boolean to show movie info or not
+            showMovieInfo: showMovieInfo,
+            moviePosterStyle: (props.moviePosterStyle === undefined) ? "" : props.moviePosterStyle
         };
     }
 
@@ -241,11 +245,10 @@ class MovieDisplay extends React.Component {
         let watchListIcon = generateWatchListButton(style, this.buttonHandler, this.state.watchList);
         let watchedIcon = generateWatchedListButton(style, this.buttonHandler, this.state.watched);
 
-        return (
-            <div className={style.main}>
-                <div className={style.movieImageContainer} onClick={this.posterClickHandler}>
-                    <img className={style.moviePoster} src={posterPath}/>
-                </div>
+        let movieInfo = "";
+        if(this.state.showMovieInfo)
+        {
+            movieInfo = (
                 <div className={style.bottomContainer} onClick={this.posterClickHandler}>
                     <div className={style.movieDetailsContainer}>
                         <div className={style.movieTitle}>
@@ -260,6 +263,14 @@ class MovieDisplay extends React.Component {
                         {watchedIcon}
                     </div>
                 </div>
+            );
+        }
+        return (
+            <div className={style.main}>
+                <div className={style.movieImageContainer} onClick={this.posterClickHandler}>
+                    <img className={style.moviePoster} style={this.state.moviePosterStyle} src={posterPath}/>
+                </div>
+                {movieInfo}
                 {moviePopup}
             </div>
         )

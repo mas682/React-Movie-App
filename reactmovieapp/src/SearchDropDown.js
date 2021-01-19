@@ -627,7 +627,7 @@ class SearchDropDown extends React.Component {
 
     generateSuggestionBox()
     {
-        if(!this.state.focused || this.state.focused && this.state.value.length > 0 && (Object.keys(this.state.suggestions)).length > 0)
+        if(this.state.focused || this.state.focused && this.state.value.length > 0 && (Object.keys(this.state.suggestions)).length > 0)
         {
             let keys = Object.keys(this.state.suggestions);
             let counter = 0;

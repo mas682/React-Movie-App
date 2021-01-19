@@ -580,7 +580,8 @@ class Header extends React.Component {
                             allowNoSuggestion={true}
                             getSuggestions={this.getSearchSuggestions}
                             showSearchIcon={true}
-                            multipleTypes={true} valueKeys={{Movies:"title", Users: "username"}}
+                            multipleTypes={true}
+                            valueKeys={{Movies:"title", Users: "username"}}
                             redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
                             searchDropDownContainterStyle={{"display":"flex", "flex-flow":"column"}}
                             inputBoxStyle={{"border-radius":"0px"}}
