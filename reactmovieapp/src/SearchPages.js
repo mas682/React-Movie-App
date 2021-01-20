@@ -14,10 +14,57 @@ class SearchPage extends React.Component {
         this.state = {
             loading: false,
             movies: [],
-            currentUser: this.props.currentUser
+            currentUser: this.props.currentUser,
+            movieIndex: 0
         };
         this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
         this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
+        this.forwardButtonHandler = this.forwardButtonHandler.bind(this);
+        this.backwardButtonHandler = this.backwardButtonHandler.bind(this);
+    }
+
+    forwardButtonHandler()
+    {
+        let movieContainers = document.querySelectorAll("." + style.movieContainer);
+        let counter = 0;
+        let widthString = "0px";
+        while(counter < movieContainers.length)
+        {
+            let movieContainer = movieContainers[counter];
+            if(counter === 0)
+            {
+                let style = getComputedStyle(movieContainer);
+                let width = parseFloat(style.width);
+                let margin = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+                width = (width + margin) * -4 * (this.state.movieIndex + 1);
+                widthString = width + "px";
+            }
+            movieContainer.style.transform = "translate3d(" + widthString + ", 0px, 0px)";
+            counter = counter + 1;
+        }
+        this.setState({movieIndex: this.state.movieIndex + 1});
+    }
+
+    backwardButtonHandler()
+    {
+        let movieContainers = document.querySelectorAll("." + style.movieContainer);
+        let counter = 0;
+        let widthString = "0px";
+        while(counter < movieContainers.length)
+        {
+            let movieContainer = movieContainers[counter];
+            if(counter === 0)
+            {
+                let style = getComputedStyle(movieContainer);
+                let width = parseFloat(style.width);
+                let margin = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+                width = (width + margin) * -4 * (this.state.movieIndex - 1);
+                widthString = width + "px";
+            }
+            movieContainer.style.transform = "translate3d(" + widthString + ", 0px, 0px)";
+            counter = counter + 1;
+        }
+        this.setState({movieIndex: this.state.movieIndex - 1});
     }
 
     // function to get suggestions for search bar
@@ -91,6 +138,13 @@ class SearchPage extends React.Component {
 
     render()
     {
+        /*
+        still working on the search page....
+        need to put a arrow overlay on top of movies at beginning/end
+        then transform as movies become visible
+        may be easier to do with a grid??
+        actually use transform: translate3d...
+        */
         if(this.state.loading) return null;
         let movies = this.generateMovieDisplays();
         return (
@@ -129,7 +183,9 @@ class SearchPage extends React.Component {
                     <div className={style.resultType}>
                         Movies
                     </div>
-                    <div className={style.movieDisplayContainer}>
+                    <div className={style.movieDisplayContainer} id="movieDisplayContainer">
+                    <div className={style.forwardButton} onClick={this.forwardButtonHandler}/>
+                    <div className={style.backButton} onClick={this.backwardButtonHandler}/>
                         {movies}
                     </div>
                 </div>
