@@ -99,7 +99,7 @@ class MovieDisplay extends React.Component {
             type: props.type,
             // boolean to show movie info or not
             showMovieInfo: showMovieInfo,
-            moviePosterStyle: (props.moviePosterStyle === undefined) ? "" : props.moviePosterStyle
+            moviePosterStyle: (props.moviePosterStyle === undefined) ? {} : props.moviePosterStyle
         };
     }
 
