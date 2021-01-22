@@ -3,9 +3,9 @@
 @media screen and (min-width: 1400px) {
 
     .itemContainer {
-        min-width: 20%;
-        margin: 2.5%;
-        margin-bottom: 5%;
+        min-width: calc(80% / 4);
+        /*margin: 2.5%;*/
+        padding: 2.5%;
         transition: transform 2s;
     }
 
@@ -28,8 +28,8 @@
         position: absolute;
         width: auto;
         right: 0px;
-        top: 38%;
-        height: auto;
+        top: calc(50% - 32px);
+        height: 64px;
         z-index: 1;
         background-color: gray;
         opacity: 50%;
@@ -44,22 +44,94 @@
         opacity: 100%;
     }
 
-    .backButton {
+    .backButtonContainer {
         position: absolute;
         width: auto;
-        left: 10px;
-        top: 38%;
-        background-color: black;
-        height: auto;
+        left: 0px;
+        top: calc(50% - 32px);
+        background-color: gray;
+        height: 64px;
         z-index: 1;
+        opacity: 50%;
     }
 
-
-    .backButton i
-    {
+    .backButtonContainer i {
         color: white;
         font-size: 4em;
         transform: rotate(180deg);
+    }
+
+    .backButtonContainer:hover {
+        opacity: 100%;
+    }
+
+
+}
+
+
+@media screen and (min-width: 1200px) and (max-width: 1399px) {
+
+    .itemContainer {
+        min-width: calc(85% / 3);
+        padding: 2.5%;
+        transition: transform 2s;
+    }
+
+    .carouselItemsContainer {
+        display: flex;
+        flex-flow: row nowrap;
+        overflow: hidden;
+        min-width: 100%;
+        max-width: 100%;
+        position: relative;
+        z-index: 0;
+        transform: scale3d();
+        /*
+        display: inline-grid;
+        grid-template-columns: 33.33% 33.33% 33.33%;
+        grid-template-rows: 100%;
+        */
+    }
+
+    .forwardButtonContainer {
+        position: absolute;
+        width: auto;
+        right: 0px;
+        top: calc(50% - 32px);
+        height: 64px;
+        z-index: 1;
+        background-color: gray;
+        opacity: 50%;
+    }
+
+    .forwardButtonContainer i {
+        color: white;
+        font-size: 4em;
+    }
+
+    .forwardButtonContainer:hover {
+        opacity: 100%;
+    }
+
+    .backButtonContainer {
+        position: absolute;
+        width: auto;
+        left: 0px;
+        top: calc(50% - 32px);
+        background-color: gray;
+        height: 64px;
+        z-index: 1;
+        opacity: 50%;
+    }
+
+    .backButtonContainer i {
+        color: white;
+        font-size: 4em;
+        transform: rotate(180deg);
+    }
+
+    .backButtonContainer:hover {
+        opacity: 100%;
     }
 
 

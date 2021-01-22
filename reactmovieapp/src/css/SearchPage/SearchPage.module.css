@@ -105,26 +105,6 @@
         transition: transform 2s;
     }
 
-    .forwardButton {
-        position: absolute;
-        width: 40px;
-        right: 10px;
-        top: 45%;
-        background-color: blue;
-        height: 30px;
-        z-index: 1;
-    }
-
-    .backButton {
-        position: absolute;
-        width: 40px;
-        left: 10px;
-        top: 45%;
-        background-color: red;
-        height: 30px;
-        z-index: 1;
-    }
-
 }
 
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
@@ -141,6 +121,50 @@
         margin-bottom: 20px;
         background: white;
         min-height: 600px;
+    }
+
+    .searchBarContainer {
+        display: grid;
+        padding-left: 10%;
+        padding-right: 10%;
+        padding-top: 30px;
+        grid-template-columns: 100%;
+        width: 100%;
+        height: 50px;
+    }
+
+    .resultsContainer {
+        width: 80%;
+        padding-left: 10%;
+        padding-right: 10%;
+        padding-top: 20px;
+    }
+
+    .resultType {
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+
+    .movieDisplayContainer {
+        display: flex;
+        flex-flow: row nowrap;
+        overflow: hidden;
+        min-width: 100%;
+        max-width: 100%;
+        position: relative;
+        z-index: 0;
+        /*
+        display: inline-grid;
+        grid-template-columns: 33.33% 33.33% 33.33%;
+        grid-template-rows: 100%;
+        */
+    }
+
+    .movieContainer {
+        min-width: 20%;
+        margin: 2.5%;
+        margin-bottom: 5%;
+        transition: transform 2s;
     }
 }
 
