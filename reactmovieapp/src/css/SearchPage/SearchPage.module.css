@@ -99,9 +99,8 @@
     }
 
     .movieContainer {
-        min-width: 20%;
-        margin: 2.5%;
-        margin-bottom: 5%;
+        min-width: calc(86%/7);
+        padding: 1%;
         transition: transform 2s;
     }
 
@@ -161,9 +160,8 @@
     }
 
     .movieContainer {
-        min-width: 20%;
-        margin: 2.5%;
-        margin-bottom: 5%;
+        min-width: calc(90%/5);
+        padding: 1%;
         transition: transform 2s;
     }
 }

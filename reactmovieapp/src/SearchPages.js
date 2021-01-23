@@ -139,6 +139,7 @@ class SearchPage extends React.Component {
         for(let movie of this.state.movies)
         {
             let html = (
+                <div className={style.movieContainer}>
                     <MovieDisplay
                         movie={movie}
                         type={""}
@@ -150,8 +151,9 @@ class SearchPage extends React.Component {
                         currentUser={this.state.currentUser}
                         key={counter}
                         showMovieInfo={false}
-                        moviePosterStyle={{"min-height":"300px"}}
+                        moviePosterStyle={{"min-height":"0px"}}
                     />
+                </div>
             );
             movies.push(html);
             counter = counter + 1;
@@ -173,54 +175,21 @@ class SearchPage extends React.Component {
         let carousel = "";
         if(movies.length > 0)
         {
-            carousel = <CarouselDisplay items={movies} />;
+            carousel = <CarouselDisplay
+                            items={movies}
+                            id={"movieCarousel1"}
+                            itemContainerClass={style.movieContainer}
+                        />;
         }
-        /*
-        return (
-            <div className={style.mainBodyContainer}>
-                <div className={style.searchBarContainer}>
-                    <SearchDropDown
-                        showSearchIcon={true}
-                        allowNoSuggestion={true}
-                        getSuggestions={this.getSearchSuggestions}
-                        multipleTypes={true}
-                        valueKeys={{Movies:"title", Users: "username"}}
-                        redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
-                    />
-                </div>
-                <div className={style.typeContainer}>
-                    <div className={style.typeButtonContainer}>
-                        <button className={`${style.typeButton} ${style.selectedType}`}>All</button>
-                    </div>
-                    <div className={style.typeButtonContainer}>
-                        <button className={`${style.typeButton} ${style.unselectedType}`}>Movies</button>
-                    </div>
-                    <div className={style.typeButtonContainer}>
-                        <button className={`${style.typeButton} ${style.unselectedType}`}>Users</button>
-                    </div>
-                    <div className={style.typeButtonContainer}>
-                        <button className={`${style.typeButton} ${style.unselectedType}`}>Genres</button>
-                    </div>
-                    <div className={style.typeButtonContainer}>
-                        <button className={`${style.typeButton} ${style.unselectedType}`}>Directors</button>
-                    </div>
-                    <div className={style.typeButtonContainer}>
-                        <button className={`${style.typeButton} ${style.unselectedType}`}>Actors</button>
-                    </div>
-                </div>
-                <div className={style.resultsContainer}>
-                    <div className={style.resultType}>
-                        Movies
-                    </div>
-                    <div className={style.movieDisplayContainer} id="movieDisplayContainer">
-                        <div className={style.forwardButton} onClick={this.forwardButtonHandler}/>
-                        <div className={style.backButton} onClick={this.backwardButtonHandler}/>
-                        {movies}
-                    </div>
-                </div>
-            </div>
-        );
-        */
+        let carousel2 = "";
+        if(movies.length > 0)
+        {
+            carousel2 = <CarouselDisplay
+                            items={movies}
+                            id={"movieCarousel2"}
+                            itemContainerClass={style.movieContainer}
+                        />;
+        }
         return (
             <div className={style.mainBodyContainer}>
                 <div className={style.searchBarContainer}>
@@ -259,6 +228,14 @@ class SearchPage extends React.Component {
                     </div>
                     <div className={style.movieDisplayContainer} id="movieDisplayContainer">
                         {carousel}
+                    </div>
+                </div>
+                <div className={style.resultsContainer}>
+                    <div className={style.resultType}>
+                        Movies
+                    </div>
+                    <div className={style.movieDisplayContainer} id="movieDisplayContainer">
+                        {carousel2}
                     </div>
                 </div>
             </div>

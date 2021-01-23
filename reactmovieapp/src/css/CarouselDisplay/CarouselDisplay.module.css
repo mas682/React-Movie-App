@@ -3,9 +3,9 @@
 @media screen and (min-width: 1400px) {
 
     .itemContainer {
-        min-width: calc(80% / 4);
+        min-width: calc(88% / 6);
         /*margin: 2.5%;*/
-        padding: 2.5%;
+        padding: 1.0%;
         transition: transform 2s;
     }
 
