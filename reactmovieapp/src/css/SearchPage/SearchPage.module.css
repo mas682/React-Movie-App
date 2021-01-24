@@ -45,6 +45,24 @@
     border: 1px solid red;
 }
 
+/* for movie only search */
+.allMoviesDisplayContainer {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+}
+
+
+.movieContainer2 {
+    width: calc(86% / 7);
+    margin: 1%;
+    margin-bottom: 5%;
+}
+
+
+/* for movie only search */
+
 @media screen and (min-width: 1400px) {
     .mainBodyContainer {
         width: 70%;
@@ -78,9 +96,37 @@
         padding-top: 20px;
     }
 
+    .resultsHeader
+    {
+        display: grid;
+        grid-template-columns: calc(100% - 110px) 110px;
+    }
+
+    .resultsShowAllButton
+    {
+        justify-self: end;
+        font-size: 1.2em;
+        font-weight: 500;
+        display: grid;
+        grid-template-columns: calc(100% - 20px) 20px;
+    }
+
+    .resultsShowAllButton div {
+        align-self: center;
+    }
+
+    .showMoreIcon
+    {
+        justify-self: flex-end;
+        align-self: flex-end;
+        font-size: 1.4em;
+        padding-bottom: 1px;
+    }
+
     .resultType {
         font-size: 1.5em;
         font-weight: bold;
+        align-self: center;
     }
 
     .movieDisplayContainer {
@@ -100,6 +146,7 @@
 
     .movieContainer {
         min-width: calc(86%/7);
+        max-width: calc(86%/7);
         padding: 1%;
         transition: transform 2s;
     }
@@ -139,9 +186,38 @@
         padding-top: 20px;
     }
 
+
+    .resultsHeader
+    {
+        display: grid;
+        grid-template-columns: calc(100% - 110px) 110px;
+    }
+
+    .resultsShowAllButton
+    {
+        justify-self: end;
+        font-size: 1.2em;
+        font-weight: 500;
+        display: grid;
+        grid-template-columns: calc(100% - 20px) 20px;
+    }
+
+    .resultsShowAllButton div {
+        align-self: center;
+    }
+
+    .showMoreIcon
+    {
+        justify-self: flex-end;
+        align-self: flex-end;
+        font-size: 1.4em;
+        padding-bottom: 1px;
+    }
+
     .resultType {
         font-size: 1.5em;
         font-weight: bold;
+        align-self: center;
     }
 
     .movieDisplayContainer {
@@ -160,7 +236,15 @@
     }
 
     .movieContainer {
-        min-width: calc(90%/5);
+        min-width: calc(92%/4);
+        max-width: calc(92%/4);
+        padding: 1%;
+        transition: transform 2s;
+    }
+
+    .userContainer {
+        min-width: calc(92%/4);
+        max-width: calc(92%/4);
         padding: 1%;
         transition: transform 2s;
     }

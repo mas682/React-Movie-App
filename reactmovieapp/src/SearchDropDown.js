@@ -66,7 +66,9 @@ class SearchDropDown extends React.Component {
             dropDownContentStyle: (this.props.dropDownContentStyle === undefined) ? {} : this.props.dropDownContentStyle,
             suggestionStyle: (this.props.suggestionStyle === undefined) ? {} : this.props.suggestionStyle,
             keyStyle: (this.props.keyStyle === undefined) ? {} : this.props.keyStyle,
-            searchIconStyle: (this.props.searchIconStyle === undefined) ? {} : this.props.searchIconStyle
+            searchIconStyle: (this.props.searchIconStyle === undefined) ? {} : this.props.searchIconStyle,
+            // boolean to show the drop down from the search bar or not, if true, allowNoSuggestion should also be true
+            showSuggestions: (this.props.showSuggestions === undefined) ? true : this.props.showSuggestions
         }
         this.changeHandler = this.changeHandler.bind(this);
         this.onFocusHandler = this.onFocusHandler.bind(this);
@@ -194,6 +196,8 @@ class SearchDropDown extends React.Component {
         // if the key pushed is down or up
         if(event.keyCode === 40 || event.keyCode === 38)
         {
+            // if showing suggestions is not allowed, do nothing
+            if(!this.state.showSuggestions) return;
             let result;
             let currentKey = this.state.currentHashKey;
             let currentIndex = this.state.suggestionIndex;
@@ -228,7 +232,7 @@ class SearchDropDown extends React.Component {
             event.target.blur();
 
             // if a suggestion is highlighted
-            if(this.state.suggestionIndex !== -1)
+            if(this.state.suggestionIndex !== -1 && this.state.showSuggestions)
             {
                 // if there are paths to redirect to
                 if(this.state.redirectPaths !== undefined)
@@ -596,7 +600,7 @@ class SearchDropDown extends React.Component {
                 </div>
             );
         }
-        let suggestions = this.generateSuggestionBox();
+        let suggestions = (this.state.showSuggestions) ? this.generateSuggestionBox() : "";
         let placeHolder = (this.state.locked) ? this.state.lockedMessage : this.state.placeHolder;
         return (
               <div className={style.searchDropDownContainer} style={this.state.searchDropDownContainterStyle}>
@@ -682,7 +686,6 @@ class SearchDropDown extends React.Component {
             redirect = <Redirect to={url} />;
         }
         let inputbox = this.generateInputBox();
-        let suggestionBox = this.generateSuggestionBox();
         return (
             <React.Fragment>
                 {inputbox}

@@ -4,6 +4,7 @@ import Alert from './Alert.js';
 import SearchDropDown from './SearchDropDown.js';
 import MovieDisplay from './MovieDisplay.js';
 import CarouselDisplay from './CarouselDisplay.js';
+import UserDisplay from './UserDisplay.js';
 import style from './css/SearchPage/SearchPage.module.css';
 import queryString from "query-string";
 import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
@@ -15,6 +16,7 @@ class SearchPage extends React.Component {
         this.state = {
             loading: false,
             movies: [],
+            users: [],
             currentUser: this.props.currentUser,
             movieIndex: 0
         };
@@ -22,6 +24,9 @@ class SearchPage extends React.Component {
         this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
         this.forwardButtonHandler = this.forwardButtonHandler.bind(this);
         this.backwardButtonHandler = this.backwardButtonHandler.bind(this);
+        this.getAllSearchSuggestions = this.getAllSearchSuggestions.bind(this);
+        this.generateMovieSearchResults = this.generateMovieSearchResults.bind(this);
+        this.generateUserDisplays = this.generateUserDisplays.bind(this);
     }
 
     forwardButtonHandler()
@@ -90,7 +95,50 @@ class SearchPage extends React.Component {
                   let result = await res.json();
                   console.log(result);
                   this.setState({movies: result.movies});
-                  return {"Movies": result.movies};
+                  return {};
+              }
+              else
+              {
+                  return res.text();
+              }
+          }).then(result=> {
+              if(status !== 200)
+              {
+                return {};
+              }
+              else
+              {
+                  return result;
+              }
+          });
+    }
+
+    // function to get suggestions for search bar
+    // for now, just getting users
+    // will eventually get users and movies..
+    getAllSearchSuggestions(value)
+    {
+      // Simple POST request with a JSON body using fetch
+      const requestOptions = {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+      };
+
+      let status = 0;
+      let url = "http://localhost:9000/search/query_all/?value=" + value;
+      return fetch(url, requestOptions)
+          .then(async(res) => {
+              status = res.status;
+              if(status === 200)
+              {
+                  let result = await res.json();
+                  console.log(result);
+                  this.setState({
+                      movies: result.Movies,
+                      users: result.Users
+                  });
+                  return {};
               }
               else
               {
@@ -112,30 +160,6 @@ class SearchPage extends React.Component {
     {
         let movies = [];
         let counter = 0;
-        /*
-        for(let movie of this.state.movies)
-        {
-            let html = (
-                <div className={style.movieContainer}>
-                    <MovieDisplay
-                        movie={movie}
-                        type={""}
-                        index={counter}
-                        removeMovieDisplay={undefined}
-                        setMessages={this.props.setMessages}
-                        updateLoggedIn={this.props.updateLoggedIn}
-                        showLoginPopUp={this.props.showLoginPopUp}
-                        currentUser={this.state.currentUser}
-                        key={counter}
-                        showMovieInfo={false}
-                        moviePosterStyle={{"min-height":"300px"}}
-                    />
-                </div>
-            );
-            movies.push(html);
-            counter = counter + 1;
-        }
-        */
         for(let movie of this.state.movies)
         {
             let html = (
@@ -161,35 +185,175 @@ class SearchPage extends React.Component {
         return movies;
     }
 
+    generateMovieSearchResults()
+    {
+        let movies = [];
+        this.state.movies.forEach((movie, index) => {
+            console.log(movie);
+            let html = (
+                <div className={style.movieContainer2}>
+                    <MovieDisplay
+                        movie={movie}
+                        type={""}
+                        index={index}
+                        removeMovieDisplay={undefined}
+                        setMessages={this.props.setMessages}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
+                        currentUser={this.state.currentUser}
+                        key={index}
+                        showMovieInfo={false}
+                        moviePosterStyle={{"min-height":"0px", "border-radius":"5px"}}
+                    />
+                </div>
+            );
+            movies.push(html);
+        });
+        return movies;
+    }
+
+    generateUserDisplays()
+    {
+        let users = [];
+        let counter = 0;
+        let user = {
+            id: 1,
+            poster: "",
+            username: "steelcity"
+        };
+        //for(let movie of this.state.movies)
+        while(counter < 15)
+        {
+            let html = (
+                <div className={style.userContainer}>
+                    <UserDisplay
+                        user={user}
+                        type={""}
+                        index={counter}
+                        setMessages={this.props.setMessages}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
+                        currentUser={this.state.currentUser}
+                        key={counter}
+                    />
+                </div>
+            );
+            users.push(html);
+            counter = counter + 1;
+        }
+        return users;
+    }
+
     render()
     {
-        /*
-        still working on the search page....
-        need to put a arrow overlay on top of movies at beginning/end
-        then transform as movies become visible
-        may be easier to do with a grid??
-        actually use transform: translate3d...
-        */
         if(this.state.loading) return null;
         let movies = this.generateMovieDisplays();
-        let carousel = "";
+        let movieCarousel = "";
         if(movies.length > 0)
         {
-            carousel = <CarouselDisplay
+            movieCarousel = (
+                <div className={style.resultsContainer}>
+                    <div className={style.resultsHeader}>
+                        <div className={style.resultType}>
+                            Movies
+                        </div>
+                        <div className={style.resultsShowAllButton}>
+                            <div>
+                                See More
+                            </div>
+                            <i className={`fas fa-angle-right ${style.showMoreIcon}`}/>
+                        </div>
+                    </div>
+                    <div className={style.movieDisplayContainer} id="movieDisplayContainer">
+                        <CarouselDisplay
                             items={movies}
                             id={"movieCarousel1"}
                             itemContainerClass={style.movieContainer}
-                        />;
+                            // used to make windowResizeEventHandler more efficint
+                            maxVisibleItems={7}
+                        />
+                    </div>
+                </div>
+            )
         }
-        let carousel2 = "";
+        let movieCarousel2 = "";
         if(movies.length > 0)
         {
-            carousel2 = <CarouselDisplay
+            movieCarousel2 = (
+                <div className={style.resultsContainer}>
+                    <div className={style.resultsHeader}>
+                        <div className={style.resultType}>
+                            Movies
+                        </div>
+                        <div className={style.resultsShowAllButton}>
+                            <div>
+                                See More
+                            </div>
+                            <i className={`fas fa-angle-right ${style.showMoreIcon}`}/>
+                        </div>
+                    </div>
+                    <div className={style.movieDisplayContainer} id="movieDisplayContainer">
+                        <CarouselDisplay
                             items={movies}
                             id={"movieCarousel2"}
                             itemContainerClass={style.movieContainer}
-                        />;
+                            // used to make windowResizeEventHandler more efficint
+                            maxVisibleItems={7}
+                        />
+                    </div>
+                </div>
+            );
         }
+
+        let allMovies = this.generateMovieSearchResults();
+        let moviesHTML = "";
+
+        /*
+        if(allMovies.length > 0)
+        {
+            movieCarousel = "";
+            movieCarousel2 = "";
+            moviesHTML = (
+            <div className={style.resultsContainer}>
+                <div className={style.resultsHeader}>
+                    <div className={style.resultType}>
+                        Movies
+                    </div>
+                </div>
+                <div className={style.allMoviesDisplayContainer} id="movieDisplayContainer">
+                    {allMovies}
+                </div>
+            </div>);
+        }
+        */
+
+        let users = this.generateUserDisplays();
+        let userHTML = (
+            <div className={style.resultsContainer}>
+                <div className={style.resultsHeader}>
+                    <div className={style.resultType}>
+                        Users
+                    </div>
+                    <div className={style.resultsShowAllButton}>
+                        <div>
+                            See More
+                        </div>
+                        <i className={`fas fa-angle-right ${style.showMoreIcon}`}/>
+                    </div>
+                </div>
+                <div className={style.movieDisplayContainer} id="userDisplayContainer">
+                    <CarouselDisplay
+                        items={users}
+                        id={"userCarousel"}
+                        itemContainerClass={style.userContainer}
+                        // used to make windowResizeEventHandler more efficint
+                        maxVisibleItems={7}
+                    />
+                </div>
+            </div>
+        )
+
+
         return (
             <div className={style.mainBodyContainer}>
                 <div className={style.searchBarContainer}>
@@ -200,6 +364,7 @@ class SearchPage extends React.Component {
                         multipleTypes={true}
                         valueKeys={{Movies:"title", Users: "username"}}
                         redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
+                        showSuggestions={false}
                     />
                 </div>
                 <div className={style.typeContainer}>
@@ -222,22 +387,10 @@ class SearchPage extends React.Component {
                         <button className={`${style.typeButton} ${style.unselectedType}`}>Actors</button>
                     </div>
                 </div>
-                <div className={style.resultsContainer}>
-                    <div className={style.resultType}>
-                        Movies
-                    </div>
-                    <div className={style.movieDisplayContainer} id="movieDisplayContainer">
-                        {carousel}
-                    </div>
-                </div>
-                <div className={style.resultsContainer}>
-                    <div className={style.resultType}>
-                        Movies
-                    </div>
-                    <div className={style.movieDisplayContainer} id="movieDisplayContainer">
-                        {carousel2}
-                    </div>
-                </div>
+                {movieCarousel}
+                {movieCarousel2}
+                {moviesHTML}
+                {userHTML}
             </div>
         );
     }
