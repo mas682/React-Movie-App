@@ -290,6 +290,7 @@ class UserDisplay extends React.Component {
         }
 
 
+
         return (
             <div className={style.main}>
                 <div className={style.userImageContainer} onClick={this.pictureClickedHandler}>
@@ -298,7 +299,7 @@ class UserDisplay extends React.Component {
                 <div className={style.bottomContainer} onClick={this.pictureClickedHandler}>
                     <div className={style.userDetailsContainer}>
                         <div className={style.userName}>
-                            STEELCITY
+                            steelCITY
                         </div>
                         <div className={style.actualName}>
                             Matt Stropkey Stropkey

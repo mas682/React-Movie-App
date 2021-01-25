@@ -1,4 +1,4 @@
-import {verifyLogin} from './globals.js';
+import {verifyLogin, validateStringParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 const Op = require('Sequelize').Op;
 
@@ -29,31 +29,34 @@ const searchHandler = (req, res, next) => {
 
 const selectPath = (cookie, req, res, cookieValid) =>
 {
-    // if here, the path is /movie/get_movie_titles
-		// only allowed to use this if logged in
-		//console.log(Object.keys(req.params).length);
-		console.log("Request params:");
-		console.log(req.params);
-    if(req.params.type === "query_all")
-    {
-        getAllRelatedItems(cookie, req, res, cookieValid);
-    }
-	else if(req.params.type === "movies")
+	let routeFound = false;
+	if(req.method === "GET")
 	{
-		getMovies(cookie, req, res, cookieValid);
+		if(req.params.type === "query_all")
+		{
+			getAllRelatedItems(cookie, req, res, cookieValid);
+			routeFound = true;
+		}
+		else if(req.params.type === "movies")
+		{
+			getMovies(cookie, req, res, cookieValid);
+			routeFound = true;
+		}
+		else if(req.params.type === "users")
+		{
+			getUsers(cookie, req, res, cookieValid);
+			routeFound = true;
+		}
 	}
-		/*
-    else if(!cookieValid)
-    {
-        res.status(401).send("No cookie or cookie invalid");
-    }
-		*/
-    // some unknow path given
-    else
-    {
-        console.log(req.params[0]);
-        res.status(404).send("Request not understood");
-    }
+
+	if(!routeFound)
+	{
+		let requester = cookieValid ? cookie.name : "";
+		res.status(404).send({
+			message: "The search path sent to the server does not exist",
+			requester: requester
+		});
+	}
 };
 
 // this function will return the movie titles, users, genres, etc.
@@ -61,31 +64,36 @@ const selectPath = (cookie, req, res, cookieValid) =>
 // limits the number returned to 5 per type
 const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 {
-		let value = req.query.value;
-		console.log("Value: " + value);
-		// find the movies containing the value
-		let movies = await models.Movies.findByTitle(models, value, 5);
+	let value = req.query.value;
+	console.log("Value: " + value);
+	// find the movies containing the value
+	let movies = await models.Movies.findByTitle(models, value, 5);
     let users = await models.User.findUsers(value, 5);
-		console.log("movies");
-		console.log(movies);
-		if(movies === undefined && users === undefined)
+	console.log("movies");
+	console.log(movies);
+	if(movies === undefined && users === undefined)
+	{
+		res.status(404).send("Unable to find any users or movies matching the search");
+	}
+	else
+	{
+		if(movies !== undefined && users !== undefined)
 		{
+			if(movies.length < 1 && users.length < 1)
+			{
 				res.status(404).send("Unable to find any users or movies matching the search");
+			}
+			else
+			{
+				res.status(200).send({
+					requester: (cookieValid) ? cookie.name : "",
+					message: "Search results successfully found",
+					Movies:movies,
+					Users:users
+				});
+			}
 		}
-		else
-		{
-				if(movies !== undefined && users !== undefined)
-				{
-						if(movies.length < 1 && users.length < 1)
-						{
-								res.status(404).send("Unable to find any users or movies matching the search");
-						}
-						else
-						{
-								res.status(200).send({"Movies":movies, "Users":users});
-						}
-				}
-		}
+	}
 };
 
 const getMovies = async (cookie, req, res, cookieValid) =>
@@ -112,6 +120,31 @@ const getMovies = async (cookie, req, res, cookieValid) =>
 		});
 	}
 };
+
+const getUsers = async (cookie, req, res, cookieValid) =>
+{
+	let requester = cookieValid ? cookie.name : "";
+	let userToFind = req.query.value;
+	// using this instead of validate username as the username does not have to be exact here
+	let valid = validateStringParameter(res, userToFind, 0, 20, requester, "Username invalid");
+	if(!valid) return;
+	let users = await models.User.findUsers(userToFind, 20);
+	if(users === undefined)
+	{
+		res.status(404).send({
+			message: "",
+			requester: requester
+		});
+	}
+	else
+	{
+		res.status(200).send({
+			message: "Users successfully found",
+			requester: requester,
+			users: users
+		});
+	}
+}
 
 
 export {searchHandler};

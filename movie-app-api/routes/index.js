@@ -82,7 +82,7 @@ router.get('/movie/:id', function(req, res, next) {
     movieHandler(req, res, next);
 });
 
-router.get('/search/:type/*', function(req, res, next) {
+router.get('/search/:type', function(req, res, next) {
     searchHandler(req, res, next);
 });
 

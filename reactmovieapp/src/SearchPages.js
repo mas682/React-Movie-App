@@ -86,7 +86,7 @@ class SearchPage extends React.Component {
       };
 
       let status = 0;
-      let url = "http://localhost:9000/search/movies/new_releases?release_date_gte=2021-12-18&release_date_lte=2021-01-18&sort=release_date_desc"
+      let url = "http://localhost:9000/search/movies?release_date_gte=2021-12-18&release_date_lte=2021-01-18&sort=release_date_desc"
       return fetch(url, requestOptions)
           .then(async (res) => {
               status = res.status;
@@ -126,7 +126,7 @@ class SearchPage extends React.Component {
       };
 
       let status = 0;
-      let url = "http://localhost:9000/search/query_all/?value=" + value;
+      let url = "http://localhost:9000/search/query_all?value=" + value;
       return fetch(url, requestOptions)
           .then(async(res) => {
               status = res.status;
@@ -189,7 +189,6 @@ class SearchPage extends React.Component {
     {
         let movies = [];
         this.state.movies.forEach((movie, index) => {
-            console.log(movie);
             let html = (
                 <div className={style.movieContainer2}>
                     <MovieDisplay
@@ -221,6 +220,25 @@ class SearchPage extends React.Component {
             poster: "",
             username: "steelcity"
         };
+        console.log(this.state.users);
+        this.state.users.forEach((user, index) => {
+            let html = (
+                <div className={style.userContainer}>
+                    <UserDisplay
+                        user={user}
+                        type={""}
+                        index={index}
+                        setMessages={this.props.setMessages}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
+                        currentUser={this.state.currentUser}
+                        key={index}
+                    />
+                </div>
+            );
+            users.push(html);
+        })
+        /*
         //for(let movie of this.state.movies)
         while(counter < 15)
         {
@@ -241,6 +259,7 @@ class SearchPage extends React.Component {
             users.push(html);
             counter = counter + 1;
         }
+        */
         return users;
     }
 
@@ -276,14 +295,16 @@ class SearchPage extends React.Component {
                 </div>
             )
         }
-        let movieCarousel2 = "";
-        if(movies.length > 0)
+
+        let users = this.generateUserDisplays();
+        let userHTML = "";
+        if(users.length > 0)
         {
-            movieCarousel2 = (
+            userHTML = (
                 <div className={style.resultsContainer}>
                     <div className={style.resultsHeader}>
                         <div className={style.resultType}>
-                            Movies
+                            Users
                         </div>
                         <div className={style.resultsShowAllButton}>
                             <div>
@@ -292,11 +313,11 @@ class SearchPage extends React.Component {
                             <i className={`fas fa-angle-right ${style.showMoreIcon}`}/>
                         </div>
                     </div>
-                    <div className={style.movieDisplayContainer} id="movieDisplayContainer">
+                    <div className={style.movieDisplayContainer} id="userDisplayContainer">
                         <CarouselDisplay
-                            items={movies}
-                            id={"movieCarousel2"}
-                            itemContainerClass={style.movieContainer}
+                            items={users}
+                            id={"userCarousel"}
+                            itemContainerClass={style.userContainer}
                             // used to make windowResizeEventHandler more efficint
                             maxVisibleItems={7}
                         />
@@ -305,54 +326,6 @@ class SearchPage extends React.Component {
             );
         }
 
-        let allMovies = this.generateMovieSearchResults();
-        let moviesHTML = "";
-
-        /*
-        if(allMovies.length > 0)
-        {
-            movieCarousel = "";
-            movieCarousel2 = "";
-            moviesHTML = (
-            <div className={style.resultsContainer}>
-                <div className={style.resultsHeader}>
-                    <div className={style.resultType}>
-                        Movies
-                    </div>
-                </div>
-                <div className={style.allMoviesDisplayContainer} id="movieDisplayContainer">
-                    {allMovies}
-                </div>
-            </div>);
-        }
-        */
-
-        let users = this.generateUserDisplays();
-        let userHTML = (
-            <div className={style.resultsContainer}>
-                <div className={style.resultsHeader}>
-                    <div className={style.resultType}>
-                        Users
-                    </div>
-                    <div className={style.resultsShowAllButton}>
-                        <div>
-                            See More
-                        </div>
-                        <i className={`fas fa-angle-right ${style.showMoreIcon}`}/>
-                    </div>
-                </div>
-                <div className={style.movieDisplayContainer} id="userDisplayContainer">
-                    <CarouselDisplay
-                        items={users}
-                        id={"userCarousel"}
-                        itemContainerClass={style.userContainer}
-                        // used to make windowResizeEventHandler more efficint
-                        maxVisibleItems={7}
-                    />
-                </div>
-            </div>
-        )
-
 
         return (
             <div className={style.mainBodyContainer}>
@@ -360,7 +333,7 @@ class SearchPage extends React.Component {
                     <SearchDropDown
                         showSearchIcon={true}
                         allowNoSuggestion={true}
-                        getSuggestions={this.getSearchSuggestions}
+                        getSuggestions={this.getAllSearchSuggestions}
                         multipleTypes={true}
                         valueKeys={{Movies:"title", Users: "username"}}
                         redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
@@ -388,8 +361,6 @@ class SearchPage extends React.Component {
                     </div>
                 </div>
                 {movieCarousel}
-                {movieCarousel2}
-                {moviesHTML}
                 {userHTML}
             </div>
         );

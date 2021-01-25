@@ -420,11 +420,11 @@ class MovieFilterPage extends React.Component {
         }
         else if(query === undefined)
         {
-            url = "http://localhost:9000/search/movies/" + this.state.queryString;
+            url = "http://localhost:9000/search/movies" + this.state.queryString;
         }
         else
         {
-            url = "http://localhost:9000/search/movies/" + query;
+            url = "http://localhost:9000/search/movies" + query;
         }
         return await apiGetJsonRequest(url);
     }

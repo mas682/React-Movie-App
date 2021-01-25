@@ -114,9 +114,6 @@ const user = (sequelize, DataTypes) => {
                 through: {attributes: []}
             }
         });
-        console.log("User found: ");
-        console.log(user);
-        console.log(user.dataValues.Following);
         let followers = await User.findOne({
             where: {id: userId},
         }).then((user) => {

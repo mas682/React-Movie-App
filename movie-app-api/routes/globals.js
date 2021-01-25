@@ -177,10 +177,13 @@ const validateEmailParameter = (res, email, requester, message) => {
 const validateStringParameter = (res, param, minLength, maxLength, requester, message) => {
     if(param === undefined)
     {
-        res.status(400).send({
-            message: message,
-            requester: requester
-        });
+        if(res !== undefined)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+        }
         return false;
     }
     if(minLength === undefined)
@@ -190,18 +193,24 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
     let paramLength = param.length;
     if(paramLength < minLength)
     {
-        res.status(400).send({
-            message: message,
-            requester: requester
-        });
+        if(res !== undefined)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+        }
         return false;
     }
     else if((maxLength !== undefined) && (paramLength > maxLength))
     {
-        res.status(400).send({
-            message: message,
-            requester: requester
-        });
+        if(res !== undefined)
+        {
+            res.status(400).send({
+                message: message,
+                requester: requester
+            });
+        }
         return false;
     }
     return true;

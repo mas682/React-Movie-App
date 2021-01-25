@@ -26,10 +26,19 @@ class CarouselDisplay extends React.Component {
         /**** DO NOT USE MARGINS ON EITHER THE outterItemContainer or the container for the items passed in ***/
         /*** use padding! ***/
 
-        
+
         this.directionalButtonHandler = this.directionalButtonHandler.bind(this);
         this.windowResizeEventHandler = this.windowResizeEventHandler.bind(this);
     };
+
+    componentDidUpdate(prevProps, prevState)
+    {
+
+        /*
+            
+
+        */
+    }
 
     directionalButtonHandler(type)
     {
@@ -134,6 +143,18 @@ class CarouselDisplay extends React.Component {
     componentDidMount()
     {
         window.addEventListener('resize', this.windowResizeEventHandler);
+        let outterItemContainer = document.querySelector("#" + this.state.id);
+        let itemContainers = document.querySelectorAll("#" + this.state.id + " ." + this.state.itemContainerClass);
+        let outterWidth = CarouselDisplay.getContainerWidth(outterItemContainer);
+        console.log(outterWidth);
+        let itemCount = 0;
+        if(itemContainers.length > 0)
+        {
+            let itemContainer = itemContainers[0];
+            let itemWidth = CarouselDisplay.getContainerWidth(itemContainer);
+            itemCount = Math.floor(outterWidth/itemWidth);
+        }
+        this.setState({itemsVisible: itemCount});
     }
 
 
@@ -151,7 +172,9 @@ class CarouselDisplay extends React.Component {
         }
 
         let forwardButton = "";
-        if(this.state.firstItemIndex < (this.state.items.length - this.state.itemsVisible))
+        console.log(this.state.items.length);
+        console.log(this.state.itemsVisible);
+        if(this.state.firstItemIndex < (this.state.items.length - this.state.itemsVisible) && (this.state.items.length - 1) > this.state.itemsVisible)
         {
             forwardButton = (
                 <div className={style.forwardButtonContainer} style={this.state.forwardButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("forward")}}>

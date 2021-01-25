@@ -16,7 +16,7 @@
 
 .userImageContainer {
     width: 100%;
-    margin: 0px;
+    padding-bottom: 5px;
     display:flex;
 }
 
@@ -57,8 +57,8 @@
     font-size: 0.8em;
     font-weight: 500;
     color:  #093145;
-    padding-bottom: 5px;
-    padding-left: 5px;
+    padding-bottom: 3px;
+    padding-left: 3px;
 }
 
 .followButton
@@ -73,9 +73,9 @@
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-    width: calc(100% - 10px);
-    margin-left: 5px;
-    margin-right: 5px;
+    width: calc(100% - 6px);
+    margin-left: 3px;
+    margin-right: 3px;
     margin-bottom: 5px;
 }
 

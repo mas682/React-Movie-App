@@ -145,8 +145,15 @@
     }
 
     .movieContainer {
-        min-width: calc(86%/7);
-        max-width: calc(86%/7);
+        min-width: calc(90%/5);
+        max-width: calc(90%/5);
+        padding: 1%;
+        transition: transform 2s;
+    }
+
+    .userContainer {
+        min-width: calc(90%/5);
+        max-width: calc(90%/5);
         padding: 1%;
         transition: transform 2s;
     }

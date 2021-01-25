@@ -354,13 +354,18 @@ class Header extends React.Component {
       };
 
       let status = 0;
-      let url = "http://localhost:9000/search/query_all/?value=" + value;
+      let url = "http://localhost:9000/search/query_all?value=" + value;
       return fetch(url, requestOptions)
-          .then(res => {
+          .then(async(res) => {
               status = res.status;
               if(status === 200)
               {
-                  return res.json();
+                  let result = await res.json();
+                  return {
+                      Movies: result.Movies,
+                      Users: result.Users
+                  };
+                  //return res.json();
               }
               else
               {
