@@ -299,7 +299,7 @@ class UserDisplay extends React.Component {
                 <div className={style.bottomContainer} onClick={this.pictureClickedHandler}>
                     <div className={style.userDetailsContainer}>
                         <div className={style.userName}>
-                            steelCITY
+                            {this.state.user.username}
                         </div>
                         <div className={style.actualName}>
                             Matt Stropkey Stropkey

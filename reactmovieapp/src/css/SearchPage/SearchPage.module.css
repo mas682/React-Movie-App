@@ -19,6 +19,7 @@
     padding-right: 10px;
     color: white;
     font-size: 1.3em;
+    outline: none;
 }
 
 .selectedType {
@@ -46,7 +47,7 @@
 }
 
 /* for movie only search */
-.allMoviesDisplayContainer {
+.displayAllContainer {
     width: 100%;
     display: flex;
     flex-flow: row wrap;
@@ -55,7 +56,13 @@
 
 
 .movieContainer2 {
-    width: calc(86% / 7);
+    width: calc(90% / 5);
+    margin: 1%;
+    margin-bottom: 5%;
+}
+
+.userContainer2 {
+    width: calc(90% / 5);
     margin: 1%;
     margin-bottom: 5%;
 }

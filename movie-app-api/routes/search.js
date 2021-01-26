@@ -65,12 +65,13 @@ const selectPath = (cookie, req, res, cookieValid) =>
 const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 {
 	let value = req.query.value;
+	// need to validate that this is a integer...
+	let count = (req.query.count === undefined) ? 5 : req.query.count;
 	console.log("Value: " + value);
 	// find the movies containing the value
-	let movies = await models.Movies.findByTitle(models, value, 5);
-    let users = await models.User.findUsers(value, 5);
-	console.log("movies");
-	console.log(movies);
+	let movies = await models.Movies.findByTitle(models, value, count);
+	let moviesTest = await models.Movies.findByTitle2(models, value, count);
+    let users = await models.User.findUsers(value, count);
 	if(movies === undefined && users === undefined)
 	{
 		res.status(404).send("Unable to find any users or movies matching the search");
@@ -88,7 +89,7 @@ const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 				res.status(200).send({
 					requester: (cookieValid) ? cookie.name : "",
 					message: "Search results successfully found",
-					Movies:movies,
+					Movies:moviesTest,
 					Users:users
 				});
 			}
@@ -125,10 +126,11 @@ const getUsers = async (cookie, req, res, cookieValid) =>
 {
 	let requester = cookieValid ? cookie.name : "";
 	let userToFind = req.query.value;
+	let count = (req.query.count === undefined) ? 5 : req.query.count;
 	// using this instead of validate username as the username does not have to be exact here
 	let valid = validateStringParameter(res, userToFind, 0, 20, requester, "Username invalid");
 	if(!valid) return;
-	let users = await models.User.findUsers(userToFind, 20);
+	let users = await models.User.findUsers(userToFind, count);
 	if(users === undefined)
 	{
 		res.status(404).send({

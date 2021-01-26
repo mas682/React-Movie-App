@@ -982,6 +982,41 @@ const movie = (sequelize, DataTypes) => {
         return movies;
     }
 
+    // function to get movies for the review form
+    // only want title, id, and picture
+    Movie.findByTitle2= async (models, title, count) =>
+    {
+        let endsWith = "%" + title;
+        let contains = "%" + title + "%";
+        let startsWith = title + "%";
+        /*
+        left off here...need to replace findByTitle with this
+        also do this on user side...
+        also have to mess with movie api to maybe do this...
+        */
+        let movies = await Movie.findAll({
+            limit: count,
+            where: {
+                title: {
+                    [Op.or]: [title, {[Op.iLike]: startsWith}, {[Op.iLike]: contains},  {[Op.iLike]: endsWith}]
+                }
+            },
+            order:[
+                sequelize.literal(`CASE
+                  WHEN upper("movie"."title") = upper('${title}') then 0
+                  WHEN upper("movie"."title") LIKE upper('${startsWith}') then 1
+                  WHEN upper("movie"."title") LIKE upper('${contains}') then 2
+                  ELSE 3
+                  END ASC`),
+                ['title', 'ASC']
+            ],
+            attributes: ["id", "title", "poster"]
+        });
+        console.log("movies 2:");
+        console.log(movies);
+        return movies;
+    }
+
     return Movie;
 };
 

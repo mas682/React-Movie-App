@@ -33,10 +33,11 @@ class CarouselDisplay extends React.Component {
 
     componentDidUpdate(prevProps, prevState)
     {
-
         /*
-            
-
+            this will need to update itemsVisible when the items change...
+            also need to fix api to let it query for 20 items at a time for users and movies
+            then do ones that are unlimited for users/movies?
+            add some more fake users
         */
     }
 

@@ -203,7 +203,7 @@ const createBadTags = async () => {
 const createUsers = async () => {
     await models.User.create(
         {
-            username: 'admin',
+            username: 'admin1',
             email: 'admin@email.com',
             password: 'password',
             firstName: 'admin',
@@ -218,7 +218,7 @@ const createUsers = async () => {
             firstName: 'Matt',
             lastName: 'Stropkey',
         },
-        );
+    );
 
     await models.User.create(
         {
@@ -226,10 +226,101 @@ const createUsers = async () => {
             email: 'theonenonly@email.com',
             password: 'password',
             firstName: 'Shawn',
-            lastName: 'Talbert',
+            lastName: 'Talb',
+        },);
+    await models.User.create(
+        {
+            username: 'CenturyUnited',
+            email: 'CenturyUnited@email.com',
+            password: 'password',
+            firstName: 'Troy',
+            lastName: 'admin',
         },
+    );
+    await models.User.create(
+        {
+            username: 'exlegend',
+            email: 'exlegend@email.com',
+            password: 'password',
+            firstName: 'Dan',
+            lastName: 'Jack',
+        },
+    );
+
+    await models.User.create(
+        {
+            username: 'sjsgalactus',
+            email: 'sjsgalactus@email.com',
+            password: 'password',
+            firstName: 'Mike',
+            lastName: 'P',
+        },
+    );
+
+    await models.User.create(
+        {
+            username: 'dms807',
+            email: 'dms807@email.com',
+            password: 'password',
+            firstName: 'Dave',
+            lastName: 'Strop',
+        },
+    );
+
+    await models.User.create(
+        {
+            username: 'njg217',
+            email: 'njg217@email.com',
+            password: 'password',
+            firstName: 'Nathaniel',
+            lastName: 'G',
+        },
+    );
+
+    await models.User.create(
+        {
+            username: 'bmarsh',
+            email: 'bmarsh@email.com',
+            password: 'password',
+            firstName: 'Brandon',
+            lastName: 'Marshall',
+        },
+    );
+
+    await models.User.create(
+        {
+            username: 'nickwright',
+            email: 'nickwright@email.com',
+            password: 'password',
+            firstName: 'Nick',
+            lastName: 'Wright',
+        },
+    );
+
+    await models.User.create(
+        {
+            username: 'sbayless',
+            email: 'sbayless@email.com',
+            password: 'password',
+            firstName: 'Skip',
+            lastName: 'Bayless',
+        },
+    );
+
+    await models.User.create(
+        {
+            username: 'sasmith',
+            email: 'sasmith@email.com',
+            password: 'password',
+            firstName: 'Stephen',
+            lastName: 'Smith',
+        },
+    );
+
+
+
+
     //).then(addComment);
-  );
 };
 
 // for testing
