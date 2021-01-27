@@ -289,171 +289,31 @@ const user = (sequelize, DataTypes) => {
     // function to get a list of users who match the value passed in
     // username is the username to look for
     // count is the maximum number of users to return
-    User.findUsers = async (username, count) => {
-        // first get any username that matches exactly first
-        let users = await getUsersExact(username, count, []);
-        // hold the user id's that are already found
-        let idArray = [];
-        // if more results are still needed
-        if(users.length < count)
-        {
-            users.forEach((user) => {
-                idArray.push(user.id);
-            });
-            // update temporary count
-            let tempCount = count - users.length;
-            // query for usernames that start with the username sent in
-            let usersStartWith = await getUsersStartsWith(username, tempCount, idArray);
-            users = users.concat(usersStartWith);
-            // add the id's to the array to ignore if another query needed
-            if(users.length < count)
-            {
-                usersStartWith.forEach((user) => {
-                    idArray.push(user.id);
-                });
-            }
-        }
-        // if more results are still needed
-        if(users.length < count)
-        {
-            // update temporary count
-            let tempCount = count - users.length;
-            // query for usernames that end with the username sent in
-            let usersEndsWith = await getUsersEndsWith(username, tempCount, idArray);
-            users = users.concat(usersEndsWith);
-            // add the id's to the array to ignore if another query needed
-            if(users.length < count)
-            {
-                usersEndsWith.forEach((user) => {
-                    idArray.push(user.id);
-                });
-            }
-        }
-        // if more results are still needed
-        if(users.length < count)
-        {
-            // update temporary count
-            let tempCount = count - users.length;
-            // query for usernames that end with the username sent in
-            let usersContains = await getUsersContains(username, tempCount, idArray);
-            users = users.concat(usersContains);
-        }
+    User.findUsers = async (username, count, offset) => {
+        //let endsWith = "%" + username;
+        let contains = "%" + username + "%";
+        let startsWith = username + "%";
+        let users = await User.findAll({
+            limit: count,
+            offset: offset,
+            where: {
+                username: {
+                    [Op.or]: [username, {[Op.iLike]: startsWith}, {[Op.iLike]: contains}]
+                }
+            },
+            order: [
+                sequelize.literal(`CASE
+                    WHEN upper("user"."username") = upper('${username}') then 0
+                    ELSE 1
+                    END ASC`),
+                ['username', 'ASC']
+            ],
+            attributes: ["id", "username", "firstName", "lastName"]
+        });
         return users;
-
     };
 
-    // function to get users whose username is the exact same as the one passed in
-    const getUsersExact = async(username, count, excluded) =>
-    {
-        let exactUsers = await User.findAll({
-            limit: count,
-            where: {
-                [Op.and]: [
-                    {
-                      username: username
-                    },
-                    {
-                        id: {
-                            [Op.notIn]: excluded
-                        }
-                    }
-                  ]
-            },
-            order: [
-                ['username', 'ASC']
-            ],
-            attributes: ["id", "username", "firstName", "lastName"]
-        });
-        return exactUsers;
-    }
 
-    // function to get users whose username starts with the username passed in
-    const getUsersStartsWith = async(username, count, excluded) =>
-    {
-        // replace underscores with \\_
-        let tempUser = username.replace(/_/g, "\\_");
-        let usersStartWith = await User.findAll({
-            limit: count,
-            where: {
-                [Op.and]: [
-                    {
-                        username: {
-                            [Op.iLike]: tempUser + "%"
-                        }
-                    },
-                    {
-                        id: {
-                            [Op.notIn]: excluded
-                        }
-                    }
-                ]
-            },
-            order: [
-                ['username', 'ASC']
-            ],
-            attributes: ["id", "username", "firstName", "lastName"]
-        });
-        return usersStartWith;
-    }
-
-    // function to get users whose username ends with the username passed in
-    const getUsersEndsWith = async(username, count, excluded) =>
-    {
-        // replace underscores
-        let tempUser = username.replace(/_/g, "\\_");
-        let usersEndsWith = await User.findAll({
-            limit: count,
-            where: {
-                [Op.and]: [
-                    {
-                        username: {
-                            [Op.iLike]: "%" + tempUser
-                        }
-                    },
-                    {
-                        id: {
-                            [Op.notIn]: excluded
-                        }
-                    }
-                ]
-            },
-            order: [
-                ['username', 'ASC']
-            ],
-            attributes: ["id", "username", "firstName", "lastName"]
-        });
-        return usersEndsWith
-    }
-
-    // function to get users whose username contains the username passed in
-    const getUsersContains = async(username, count, excluded) =>
-    {
-
-      // replace underscores
-      let tempUser = username.replace(/_/g, "\\_");
-      let usersContains = await User.findAll({
-          limit: count,
-          where: {
-              [Op.and]: [
-                  {
-                      username: {
-                          [Op.iLike]: "%" + tempUser + "%"
-                      }
-                  },
-                  {
-                      id: {
-                          [Op.notIn]: excluded
-                      }
-                  }
-              ]
-          },
-          order: [
-              ['username', 'ASC']
-          ],
-          attributes: ["id", "username", "firstName", "lastName"]
-      });
-      return usersContains;
-    }
 
     return User;
 };

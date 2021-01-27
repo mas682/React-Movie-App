@@ -13,16 +13,34 @@ import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js
 class SearchPage extends React.Component {
     constructor(props){
         super(props);
+        // may want to do this in getDerivedStateFromProps
+        //let queryParams = SearchPage.updateSearchFilter(props);
         this.state = {
-            loading: false,
+            loading: true,
+            loadingData: false,
+            offset: 0,
+            // boolean to indicate if more data to be pulled from api still
+            // false if on last pull, less than max records were returned from api
+            moreData: true,
             movies: [],
             users: [],
             query: "",
-            type: "all",
+            type: "",
             searchValue: "",
             currentUser: this.props.currentUser,
-            movieIndex: 0
+            // need to rename this...
+            movieIndex: 0,
+            // if bad type
+            redirect404: false
         };
+        /*console.log(queryParams);
+        if(queryParams.updated)
+        {
+            props.history.replace({
+                pathname: props.location.pathname,
+                search: queryParams.query
+            });
+        }*/
         this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
         this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
         this.forwardButtonHandler = this.forwardButtonHandler.bind(this);
@@ -30,6 +48,196 @@ class SearchPage extends React.Component {
         this.generateUserDisplays = this.generateUserDisplays.bind(this);
         this.typeHandler = this.typeHandler.bind(this);
         this.generateTypes = this.generateTypes.bind(this);
+        this.scrollEventHandler = this.scrollEventHandler.bind(this);
+        this.getAllResultsHandler = this.getAllResultsHandler.bind(this);
+        this.getMoviesResultsHandler = this.getMoviesResultsHandler.bind(this);
+        this.getUsersResultsHandler = this.getUsersResultsHandler.bind(this);
+    }
+
+    componentDidMount()
+    {
+        document.addEventListener('scroll', this.scrollEventHandler, {passive: true});
+        if(this.state.searchValue !== "")
+        {
+            this.getSearchSuggestions(this.state.searchValue);
+        }
+        else
+        {
+            this.setState({
+                loading: false
+            });
+        }
+    }
+
+    static getDerivedStateFromProps(nextProps, prevState)
+    {
+        console.log("Get derived state from props");
+        console.log("next props: ");
+        console.log(nextProps);
+        console.log("prev state: ");
+        console.log(prevState);
+
+        // if the search type changed
+        if(queryString.parse(nextProps.location.search).type !== prevState.type)
+        {
+            console.log("New query string");
+            let queryParams = SearchPage.updateSearchFilter(nextProps);
+            let state = {
+                query: queryParams.query,
+                type: queryParams.type,
+                searchValue: queryParams.value,
+                redirect404: queryParams.redirect
+            };
+            if(queryParams.updated)
+            {
+                nextProps.history.replace({
+                    pathname: nextProps.location.pathname,
+                    search: state.query
+                });
+            }
+            return state;
+        }
+        else if(queryString.parse(nextProps.location.search).value !== prevState.searchValue)
+        {
+            console.log("New search value");
+            let queryParams = SearchPage.updateSearchFilter(nextProps);
+            let state = {
+                query: queryParams.query,
+                type: queryParams.type,
+                searchValue: queryParams.value,
+                redirect404: queryParams.redirect
+            };
+        
+            //return state;
+        }
+        return null;
+    }
+
+    shouldComponentUpdate(nextProps, nextState)
+    {
+        /*console.log("Should componenet update");
+        console.log(this.props);
+        console.log(nextProps);
+        console.log(this.state);
+        console.log(nextState);
+        */
+        if(queryString.parse(nextProps.location.search).type !== queryString.parse(this.props.location.search).type)
+        {
+            console.log("New type in props");
+            return true;
+        }
+        else if(this.state.type !== nextState.type)
+        {
+            console.log("New type in state");
+            return true;
+        }
+        else if(this.state.query !== nextState.query)
+        {
+            console.log("new query string in state");
+            return true;
+        }
+        else if(this.state.loadingData !== nextState.loadingData)
+        {
+            console.log("Loading new data changed");
+            return true;
+        }
+        else if(this.state.loading !== nextState.loading)
+        {
+            console.log("Loading changed");
+            return true;
+        }
+        else if(this.state.currentUser !== this.props.currentUser)
+        {
+            console.log("User changed");
+            return true;
+        }
+        return false;
+    }
+
+    componentDidUpdate(prevProps, prevState)
+    {
+        console.log("Component did update");
+        /*
+        console.log("Old props: ");
+        console.log(prevProps);
+        console.log("New props: ");
+        console.log(this.props);
+        console.log("Old state: ");
+        console.log(prevState);
+        console.log("New state: ");
+        console.log(this.state);
+        */
+        if(prevState.loading)
+        {
+            return;
+        }
+        // don't think this is needed? but think about it
+        // else if(this.props.currentUser !== prevProps.currentUser...)
+        else if(prevState.type !== this.state.type)
+        {
+            console.log("Type changed in update");
+            this.getSearchSuggestions(this.state.searchValue);
+        }
+    }
+
+    static updateSearchFilter(props) {
+        let query = props.location.search;
+        let queryParams = queryString.parse(query);
+        let type = queryParams["type"];
+        let value = queryParams["value"];
+        let updated = false;
+        if(type === undefined || type === "")
+        {
+            type = "all";
+            updated = true;
+        }
+        else if(type !== "all" && type !== "movies" && type !== "users")
+        {
+            // redirect to 404 page
+            return {
+                updated: true,
+                query: "",
+                type: "",
+                value: "",
+                redirect: true
+            }
+        }
+        if(updated)
+        {
+            let queryValue = (value === undefined) ? "" : "&value=" + value;
+            query = "?type=" + type + queryValue;
+        }
+        return {
+            updated: updated,
+            query: query,
+            type: type,
+            value: (value === undefined) ? "" : value,
+            redirect: false
+        };
+    }
+
+    scrollEventHandler(event)
+    {
+        // if there is no more data to load return
+        if(!this.state.moreData) return;
+        let element = document.querySelector("." + style.mainBodyContainer);
+        let mainElementHeight = parseFloat(getComputedStyle(document.querySelector("main")).height);
+        let headerHeight = parseFloat(document.body.offsetHeight);
+        // get the total height of the page
+        let pageHeight = headerHeight + mainElementHeight;
+        // if scrolled to 75% of the page, start loading new data
+        if((pageHeight * .75) < parseFloat(window.pageYOffset))
+        {
+            // if already loading data, do nothing
+            if(!this.state.loadingData)
+            {
+                this.setState({
+                    loadingData: true
+                });
+                console.log("Get new data");
+                this.getSearchSuggestions(this.state.searchValue, this.state.type);
+            }
+        }
     }
 
     forwardButtonHandler()
@@ -76,103 +284,124 @@ class SearchPage extends React.Component {
         this.setState({movieIndex: this.state.movieIndex - 1});
     }
 
-    typeHandler(value)
+    typeHandler(type)
     {
-        if(this.state.type !== value)
+        if(this.state.type !== type)
         {
             this.setState({
-                type: value
+                type: type,
+                offset: 0,
+                moreData: true
             });
         }
-        this.getSearchSuggestions(this.state.searchValue, value);
     }
 
     // function to get suggestions for search bar
     // for now, just getting users
     // will eventually get users and movies..
-    getSearchSuggestions(value, type)
+    async getSearchSuggestions(value)
     {
-        type = (type === undefined) ? this.state.type : type;
+        let type = this.state.type;
+        // need to fix this to only do a replace when the value or type changes...
+
         this.props.history.replace({
             pathname: this.props.location.pathname,
             search: "?type=" + type + "&value=" + value
         });
+
         if(value.length < 1)
         {
             this.setState({
                 movies: [],
                 users: [],
-                searchValue: value
+                searchValue: value,
+                offset: 0
             });
             return {};
         }
-      // Simple POST request with a JSON body using fetch
-      const requestOptions = {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-      };
+        // if the searchValue has changed, reset the offset
+        let offset = (value === this.state.searchValue) ? this.state.offset : 0;
+        let url = "";
+        let max = 0;
+        if(type === "all")
+        {
+            max = 20;
+            url = "http://localhost:9000/search/query_all?value=" + value + "&offset=0&max=" + max;
+        }
+        else if(type === "movies")
+        {
+            max = 20;
+            url = "http://localhost:9000/search/movies_title?value=" + value + "&offset=" + offset + "&max=" + max;
+        }
+        else if(type === "users")
+        {
+            max = 20;
+            url = "http://localhost:9000/search/users?value=" + value + "&offset=" + offset + "&max=" + max;
+        }
+        let result = await apiGetJsonRequest(url);
+        let status = result.[0];
+        let message = result[1].message;
+        let requester = result[1].requester;
+        if(type === "movies")
+        {
+            return this.getMoviesResultsHandler(status, message, result[1], offset, max, value);
+        }
+        else if(type === "users")
+        {
+            return this.getUsersResultsHandler(status, message, result[1], offset, max, value);
+        }
+        else
+        {
+            // type = all
+            return this.getAllResultsHandler(status, message, result[1], offset, max, value);
+        }
+    }
 
-      let status = 0;
-      let url = "";
-      if(type === "all")
-      {
-          url = "http://localhost:9000/search/query_all?value=" + value + "&count=20";
-      }
-      else if(type === "movies")
-      {
-          url = "http://localhost:9000/search/movies?title_contains=" + value;
-      }
-      else if(type === "users")
-      {
-          url = "http://localhost:9000/search/users?value=" + value + "&count=20";
-      }
-      return fetch(url, requestOptions)
-          .then(async(res) => {
-              status = res.status;
-              if(status === 200)
-              {
-                  let result = await res.json();
-                  if(type === "all")
-                  {
-                      this.setState({
-                          movies: result.Movies,
-                          users: result.Users,
-                          searchValue: value
-                      });
-                  }
-                  else if(type === "movies")
-                  {
-                      this.setState({
-                          movies: result.movies,
-                          users: [],
-                          searchValue: value
-                      });
-                  }
-                  else if(type === "users")
-                  {
-                      this.setState({
-                          movies: [],
-                          users: result.users,
-                          searchValue: value
-                      });
-                  }
-                  return {};
-              }
-              else
-              {
-                  return res.text();
-              }
-          }).then(result=> {
-              if(status !== 200)
-              {
-                return {};
-              }
-              else
-              {
-                  return result;
-              }
-          });
+    getAllResultsHandler(status, message, result, offset, max, value)
+    {
+        if(status === 200)
+        {
+            this.setState({
+                movies: result.Movies,
+                users: result.Users,
+                searchValue: value,
+                loading: false
+            });
+            return {};
+        }
+    }
+
+    getMoviesResultsHandler(status, message, result, offset, max, value)
+    {
+        if(status === 200)
+        {
+            let movies = [...this.state.movies];
+            this.setState({
+                movies: movies.concat(result.Movies),
+                users: [],
+                offset: offset + max,
+                searchValue: value,
+                // if the number of movies returned = max requested, there may be more
+                moreData: (result.Movies.length === max) ? true : false,
+                loadingData: false,
+                loading: false
+            });
+            return {};
+        }
+    }
+
+    getUsersResultsHandler(status, message, result, offset, max, value)
+    {
+        if(status === 200)
+        {
+            this.setState({
+                movies: [],
+                users: result.Users,
+                searchValue: value,
+                loading: false
+            });
+            return {};
+        }
     }
 
     generateTypes()
@@ -381,6 +610,7 @@ class SearchPage extends React.Component {
 
     render()
     {
+        console.log("Redering search page");
         if(this.state.loading) return null;
         let movies = this.generateMovieDisplays();
         let users = this.generateUserDisplays();

@@ -41,6 +41,11 @@ class CarouselDisplay extends React.Component {
         */
     }
 
+    static getDerivedStateFromProps(props, prevState)
+    {
+        return {items: props.items};
+    }
+
     directionalButtonHandler(type)
     {
         let outterItemContainer = document.querySelector("#" + this.state.id);
@@ -147,7 +152,6 @@ class CarouselDisplay extends React.Component {
         let outterItemContainer = document.querySelector("#" + this.state.id);
         let itemContainers = document.querySelectorAll("#" + this.state.id + " ." + this.state.itemContainerClass);
         let outterWidth = CarouselDisplay.getContainerWidth(outterItemContainer);
-        console.log(outterWidth);
         let itemCount = 0;
         if(itemContainers.length > 0)
         {
@@ -173,8 +177,8 @@ class CarouselDisplay extends React.Component {
         }
 
         let forwardButton = "";
-        console.log(this.state.items.length);
-        console.log(this.state.itemsVisible);
+        //console.log(this.state.items.length);
+        //console.log(this.state.itemsVisible);
         if(this.state.firstItemIndex < (this.state.items.length - this.state.itemsVisible) && (this.state.items.length - 1) > this.state.itemsVisible)
         {
             forwardButton = (

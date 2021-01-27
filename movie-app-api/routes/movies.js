@@ -152,7 +152,7 @@ const getMovieTitles = async (cookie, req, res, cookieValid) =>
 	let value = req.query.title;
 	let requester = (cookieValid) ? cookie.name : "";
 	// find the movies containing the value
-	let movies = await models.Movies.findByTitle(models, value, 10);
+	let movies = await models.Movies.findByTitle(value, 10);
 	if(movies === undefined)
 	{
 		res.status(404).send({

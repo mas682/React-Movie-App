@@ -1,4 +1,4 @@
-import {verifyLogin, validateStringParameter} from './globals.js';
+import {verifyLogin, validateStringParameter, validateIntegerParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 const Op = require('Sequelize').Op;
 
@@ -47,6 +47,11 @@ const selectPath = (cookie, req, res, cookieValid) =>
 			getUsers(cookie, req, res, cookieValid);
 			routeFound = true;
 		}
+		else if(req.params.type === "movies_title")
+		{
+			queryMoviesByTitle(cookie, req, res, cookieValid);
+			routeFound = true;
+		}
 	}
 
 	if(!routeFound)
@@ -64,14 +69,18 @@ const selectPath = (cookie, req, res, cookieValid) =>
 // limits the number returned to 5 per type
 const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 {
+	let defaultMax = 25;
+	let requester = cookieValid ? cookie.name : "";
 	let value = req.query.value;
-	// need to validate that this is a integer...
-	let count = (req.query.count === undefined) ? 5 : req.query.count;
-	console.log("Value: " + value);
+	let count = (req.query.max === undefined) ? defaultMax : req.query.max;
+	let valid = validateStringParameter(res, value, 0, 250, requester, "The value to search for is invalid");
+	if(!valid) return;
+	valid = validateIntegerParameter(res, count, requester, "The maximum number of records to return per type is invalid", 0, undefined);
+	if(!valid) return;
+	count = (count > defaultMax) ? defaultMax : count;
 	// find the movies containing the value
-	let movies = await models.Movies.findByTitle(models, value, count);
-	let moviesTest = await models.Movies.findByTitle2(models, value, count);
-    let users = await models.User.findUsers(value, count);
+	let movies = await models.Movies.findByTitle(value, count, 0);
+    let users = await models.User.findUsers(value, count, 0);
 	if(movies === undefined && users === undefined)
 	{
 		res.status(404).send("Unable to find any users or movies matching the search");
@@ -87,15 +96,51 @@ const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 			else
 			{
 				res.status(200).send({
-					requester: (cookieValid) ? cookie.name : "",
+					requester: requester,
 					message: "Search results successfully found",
-					Movies:moviesTest,
+					Movies:movies,
 					Users:users
 				});
 			}
 		}
 	}
 };
+
+// function to query movies off title only
+// doing this as a seperate function as it will be faster than the function
+// with various parameters
+const queryMoviesByTitle = async (cookie, req, res, cookieValid) =>
+{
+	let requester = cookieValid ? cookie.name : "";
+	let title = req.query.value;
+	let count = (req.query.max === undefined) ? 50 : req.query.max;
+	let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
+	let valid = validateStringParameter(res, title, 0, 250, requester, "The movie title is invalid.  It must be between 0-250 characters");
+	if(!valid) return;
+	valid = validateIntegerParameter(res, count, requester, "The maximum number of movies to return is invalid",
+			0, undefined);
+	if(!valid) return;
+	valid = validateIntegerParameter(res, offset, requester, "The offset for the movies to return is invalid", 0, undefined);
+	if(!valid) return;
+	// if the count is a integer, make sure it is not larger than the max value
+	count = (count > 50) ? 50 : count;
+	let movies = await models.Movies.findByTitle(title, count, offset);
+	if(movies === undefined)
+	{
+		res.status(404).send({
+			requester: requester,
+			message: "Unable to find any movies matching the title provided"
+		});
+	}
+	else
+	{
+		res.status(200).send({
+			requester: requester,
+			message: "Search results successfully found",
+			Movies:movies,
+		});
+	}
+}
 
 const getMovies = async (cookie, req, res, cookieValid) =>
 {
@@ -122,19 +167,30 @@ const getMovies = async (cookie, req, res, cookieValid) =>
 	}
 };
 
+
 const getUsers = async (cookie, req, res, cookieValid) =>
 {
+	let defaultMax = 25;
+	let defaultOffset = 0;
 	let requester = cookieValid ? cookie.name : "";
 	let userToFind = req.query.value;
-	let count = (req.query.count === undefined) ? 5 : req.query.count;
+	let offset = (req.query.offset === undefined) ? defaultOffset : req.query.offset;
+	let count = (req.query.max === undefined) ? defaultMax : req.query.max;
 	// using this instead of validate username as the username does not have to be exact here
 	let valid = validateStringParameter(res, userToFind, 0, 20, requester, "Username invalid");
 	if(!valid) return;
-	let users = await models.User.findUsers(userToFind, count);
+	valid = validateIntegerParameter(res, count, requester, "The maximum number of users to return is invalid",
+			0, undefined);
+	if(!valid) return;
+	valid = validateIntegerParameter(res, offset, requester, "The offset for the users to return is invalid", 0, undefined);
+	if(!valid) return;
+	// if the count is a integer, make sure it is not larger than the max value
+	count = (count > defaultMax) ? defaultMax : count;
+	let users = await models.User.findUsers(userToFind, count, offset);
 	if(users === undefined)
 	{
 		res.status(404).send({
-			message: "",
+			message: "Unable to find any users mathcing the username provided",
 			requester: requester
 		});
 	}
@@ -143,7 +199,7 @@ const getUsers = async (cookie, req, res, cookieValid) =>
 		res.status(200).send({
 			message: "Users successfully found",
 			requester: requester,
-			users: users
+			Users: users
 		});
 	}
 }

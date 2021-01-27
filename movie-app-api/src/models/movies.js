@@ -556,6 +556,7 @@ const movie = (sequelize, DataTypes) => {
         let lessThanTime = [];
         let greaterThanTime = [];
         let result = false;
+        let titleToSearchForFound = false;
         while(counter < numKeys)
         {
             key = keys[counter];
@@ -574,6 +575,10 @@ const movie = (sequelize, DataTypes) => {
                 if(!result[0])
                 {
                     return result;
+                }
+                else
+                {
+                    titleToSearchForFound = true;
                 }
             }
             else if(key.startsWith("director"))
@@ -639,7 +644,7 @@ const movie = (sequelize, DataTypes) => {
         {
             filters.push(runTimeFilters);
         }
-        return [true,filters];
+        return [true,filters, titleToSearchForFound];
     }
 
     // function to generate the where values to get the movies
@@ -668,11 +673,12 @@ const movie = (sequelize, DataTypes) => {
         return containsFilters;
     }
 
-    const sortGenerator = (query) =>
+    const sortGenerator = (query, valueFound) =>
     {
         let sortingArray = [];
         let valueString = decodeURIComponent(query["sort"]);
         let values = valueString.split(",");
+        let bestMatch = false;
         for(let value of values) {
             if(value === "release_date_asc")
             {
@@ -714,12 +720,25 @@ const movie = (sequelize, DataTypes) => {
             {
                 sortingArray.push(['director', 'DESC']);
             }
+            else if(value === "title_best_match")
+            {
+                // sort by exact match, starts with, contains, and then ends with
+                // if string was passed in to search for
+                if(valueFound)
+                {
+                    bestMatch = true;
+                }
+                else
+                {
+                    return [false,"Sorting value invalid: " + value + " as no value to search for found"];
+                }
+            }
             else
             {
                 return [false,"Sorting value invalid: " + value];
             }
         };
-        return [true,sortingArray];
+        return [true,sortingArray, bestMatch];
     }
 
     Movie.queryMovies = async (models, query, user) =>
@@ -770,7 +789,8 @@ const movie = (sequelize, DataTypes) => {
         let sortOrder = [];
         if(query["sort"] !== undefined)
         {
-            let sort = sortGenerator(query);
+            // also passing a boolean for if a title was found to search for
+            let sort = sortGenerator(query, whereQueries[2]);
             if(!sort[0])
             {
                 return sort;
@@ -857,163 +877,37 @@ const movie = (sequelize, DataTypes) => {
 
     // function to get movies for the review form
     // only want title, id, and picture
-    Movie.findByTitle= async (models, title, count) =>
+    Movie.findByTitle= async (title, count, offset) =>
     {
-        // get any movie that matches exactly first
-        let movies = await Movie.findAll({
-            limit: count,
-            where: {
-                title: title
-            },
-            order: [
-              ['title', 'ASC'],
-              // doing this as movies that were added last are newer
-              ['id', 'DESC']
-            ],
-            attributes: ["id", "title", "poster"]
-        });
-        // holds the movie id's that are already found
-        let idArray = [];
-        // if more results still needed
-        if(movies.length < count)
-        {
-            movies.forEach((movie) => {
-                idArray.push(movie.id);
-            });
-            // set new temporary query limit
-            let tempCount = count - movies.length;
-            // get the movies that start with the title
-            let movieStartsWith = await Movie.findAll({
-                limit: tempCount,
-                where: {
-                  [Op.and]: [
-                    {
-                      title: {
-                          [Op.iLike]: title + "%",
-                      }
-                    },
-                    {
-                      id: {
-                        [Op.notIn]: idArray
-                      }
-                    }
-                  ]
-                },
-                order: [
-                  ['title', 'ASC'],
-                  ['id', 'DESC']
-                ],
-                attributes: ["id", "title", "poster"]
-            });
-            movies = movies.concat(movieStartsWith);
-            // add the id's to ignore if another query needed
-            if(movies.length < count)
-            {
-                movieStartsWith.forEach((movie) => {
-                    idArray.push(movie.id);
-                });
-            }
-        }
-        // if more results still needed
-        if(movies.length < count)
-        {
-            // set new temporary query limit
-            let tempCount = count - movies.length;
-            // get the movies that end with the value
-            let movieEndsWith = await Movie.findAll({
-                limit: tempCount,
-                where: {
-                    [Op.and]: [
-                      {
-                        title: {
-                          [Op.iLike]: "%" + title
-                        }
-                      },
-                      {
-                        id: {
-                          [Op.notIn]: idArray
-                        }
-                      }
-                    ]
-                },
-                order: [
-                  ['title', 'ASC'],
-                  ['id', 'DESC']
-                ],
-                attributes: ["id", "title", "poster"]
-            });
-            movies = movies.concat(movieEndsWith);
-            // add the id's to ignore if another query needed
-            if(movies.length < count)
-            {
-                movieEndsWith.forEach((movie) => {
-                    idArray.push(movie.id);
-                });
-            }
-        }
-        // get any movie that contains the value last
-        if(movies.length < count)
-        {
-            let tempCount = count - movies.length;
-            let movieContains = await Movie.findAll({
-                limit: tempCount,
-                where: {
-                    [Op.and]: [
-                      {
-                        title: {
-                          [Op.iLike]: "%" + title + "%"
-                        }
-                      },
-                      {
-                        id: {
-                          [Op.notIn]: idArray
-                        }
-                      }
-                    ]
-                },
-                order: [
-                  ['title', 'ASC'],
-                  ['id', 'DESC']
-                ],
-                attributes: ["id", "title", "poster"]
-            });
-            movies = movies.concat(movieContains);
-        }
-        return movies;
-    }
-
-    // function to get movies for the review form
-    // only want title, id, and picture
-    Movie.findByTitle2= async (models, title, count) =>
-    {
+        // ends with probably not needed
         let endsWith = "%" + title;
         let contains = "%" + title + "%";
         let startsWith = title + "%";
-        /*
-        left off here...need to replace findByTitle with this
-        also do this on user side...
-        also have to mess with movie api to maybe do this...
-        */
         let movies = await Movie.findAll({
             limit: count,
+            offset: offset,
             where: {
                 title: {
                     [Op.or]: [title, {[Op.iLike]: startsWith}, {[Op.iLike]: contains},  {[Op.iLike]: endsWith}]
                 }
             },
             order:[
+                /*
                 sequelize.literal(`CASE
                   WHEN upper("movie"."title") = upper('${title}') then 0
                   WHEN upper("movie"."title") LIKE upper('${startsWith}') then 1
                   WHEN upper("movie"."title") LIKE upper('${contains}') then 2
                   ELSE 3
                   END ASC`),
+                */
+                sequelize.literal(`CASE
+                  WHEN upper("movie"."title") = upper('${title}') then 0
+                  ELSE 1
+                  END ASC`),
                 ['title', 'ASC']
             ],
             attributes: ["id", "title", "poster"]
         });
-        console.log("movies 2:");
-        console.log(movies);
         return movies;
     }
 
