@@ -123,6 +123,15 @@ class SearchDropDown extends React.Component {
 
     searchIconClickHandler()
     {
+        // when the icon is clicked, call the parent function that handles redirects
+        if(this.props.redirectHandler !== undefined)
+        {
+            this.props.redirectHandler();
+            return;
+        }
+
+        /* this shouldn't be needed there should be a redirect handler function if
+        the icon is showing
         // if there are no suggestions or the suggestions was a empty {} object
         if(this.state.suggestions === undefined || (Object.keys(this.state.suggestions)).length < 1)
         {
@@ -159,6 +168,7 @@ class SearchDropDown extends React.Component {
         {
             this.suggestionFocusHandler();
         }
+        */
     }
 
     // function is ran on all key presses
@@ -594,9 +604,15 @@ class SearchDropDown extends React.Component {
         let searchIcon = "";
         if(this.state.showSearchIcon)
         {
+            let params = {};
+            if(this.props.generateSearchClickURL !== undefined)
+            {
+                params = this.props.generateSearchClickURL(this.state.value);
+            }
+            console.log(params);
             searchIcon = (
                 <div className={style.searchButtonContainer}>
-                    <i class={`fas fa-search`} style={this.state.searchIconStyle} onClick={this.searchIconClickHandler}/>
+                    <Link to={params}><i class={`fas fa-search`} style={this.state.searchIconStyle} onClick={this.searchIconClickHandler}/></Link>
                 </div>
             );
         }

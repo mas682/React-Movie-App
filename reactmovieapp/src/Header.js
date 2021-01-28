@@ -48,6 +48,7 @@ class Header extends React.Component {
         this.generateSettingsButton = this.generateSettingsButton.bind(this);
         this.generateLogoutButton = this.generateLogoutButton.bind(this);
         this.generatePostReviewButton = this.generatePostReviewButton.bind(this);
+        this.generateSearchClickURL = this.generateSearchClickURL.bind(this);
     }
 
     signUpRemoveFunction = (username) =>
@@ -203,6 +204,13 @@ class Header extends React.Component {
             let element = document.querySelector("main");
             element.style.removeProperty("position");
         }
+    }
+
+    // function to generate the parameters to use in the link when the search
+    // icon is clicked when the SearchDropDown is visible
+    generateSearchClickURL(value)
+    {
+        return {pathname: "/search", search: "?type=all&value=" + value};
     }
 
     windowResizeEventHandler(event)
@@ -585,6 +593,7 @@ class Header extends React.Component {
                             allowNoSuggestion={true}
                             getSuggestions={this.getSearchSuggestions}
                             showSearchIcon={true}
+                            generateSearchClickURL={this.generateSearchClickURL}
                             multipleTypes={true}
                             valueKeys={{Movies:"title", Users: "username"}}
                             redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
