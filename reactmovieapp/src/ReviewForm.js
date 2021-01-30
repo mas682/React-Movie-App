@@ -635,6 +635,7 @@ class ReviewPopUp extends React.Component {
                             updateOnChange={true}
                             allowNoSuggestion={false}
                             clearOnSubmit={false}
+                            form={"MovieTitle"}
                         />
                     </div>
                 </React.Fragment>
@@ -652,6 +653,7 @@ class ReviewPopUp extends React.Component {
                     updateOnChange={true}
                     allowNoSuggestion={false}
                     clearOnSubmit={false}
+                    form={"MovieTitle"}
                 />
             </React.Fragment>
         );
@@ -813,6 +815,7 @@ class ReviewPopUp extends React.Component {
                                                 clearOnSubmit={true}
                                                 locked={this.state.lockGoodTags}
                                                 lockedMessage={"5 tags are selected"}
+                                                form={"GoodTags"}
                                             />
                                         </div>
                                     </div>
@@ -838,6 +841,7 @@ class ReviewPopUp extends React.Component {
                                                 locked = {this.state.lockBadTags}
                                                 lockedMessage = {"5 tags are selected"}
                                                 clearOnSubmit={true}
+                                                form={"BadTags"}
                                             />
                                         </div>
                                     </div>

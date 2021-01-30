@@ -6,8 +6,16 @@ class SearchDropDown extends React.Component {
     constructor(props)
     {
         super(props);
-        // props:
-        // updateFunction - function to call to return either the object associated with the
+        // prop functions:
+        // updateFunction - function to call to return either the object associated with the value in the input box
+        // or the text within the input box
+        // searchEnterHandler - function to call when enter pressed on input box and no suggestions highlighted
+        // up to parent function on what to do but should handle redirects if doing one
+        // redirectHandler - function to call when a SearchDropDown is going to redirect to another page if provided
+        // to pass info to the parent before it redirects
+        // getSuggestions - function to generate and return the search suggestions to display
+        // generateSearchClickURL - function to generate the "to" parameters to pass to a Link
+        // ex. <Link to={{pathname: "/search", search: "?type=all"}}...the parameters are the object returned inside the to
 
         // boolean to allow user to not select a suggested value
         let allowNoSuggestion = (this.props.allowNoSuggestion !== undefined) ? this.props.allowNoSuggestion : true;
@@ -17,6 +25,9 @@ class SearchDropDown extends React.Component {
         this.state = {
             // current value in search box, optional prop to preset value
             value: (this.props.value !== undefined) ? this.props.value : "",
+            // holds the value that was last typed in to save it when going through the
+            // suggestions
+            lastTypedValue: (this.props.value !== undefined) ? this.props.value : "",
             // suggestions, optional prop to preset values
             suggestions: (this.props.suggestionArray !== undefined) ? this.props.suggestionArray : {},
             // does the search bar have focus?
@@ -70,7 +81,13 @@ class SearchDropDown extends React.Component {
             // boolean to show the drop down from the search bar or not, if true, allowNoSuggestion should also be true
             showSuggestions: (this.props.showSuggestions === undefined) ? true : this.props.showSuggestions,
             // boolean to set the search value to the selected value on arrow key push
-            setValueOnKeyHover: (this.props.setValueOnKeyHover === undefined) ? false : this.props.setValueOnKeyHover
+            setValueOnKeyHover: (this.props.setValueOnKeyHover === undefined) ? false : this.props.setValueOnKeyHover,
+            // boolean to indicate if current up/down index is past all the suggestions
+            pastLastSuggestion: false,
+            // boolean to indicate if suggestion focused due to mouse hover
+            hoverFocused: false,
+            // name for input form, required
+            form: (this.props.form === undefined) ? "form2" : this.props.form
         }
         this.changeHandler = this.changeHandler.bind(this);
         this.onFocusHandler = this.onFocusHandler.bind(this);
@@ -81,6 +98,9 @@ class SearchDropDown extends React.Component {
         this.redirectHandler = this.redirectHandler.bind(this);
         this.suggestionFocusHandler = this.suggestionFocusHandler.bind(this);
         this.searchIconClickHandler = this.searchIconClickHandler.bind(this);
+        this.mouseHoverFocusLostHandler = this.mouseHoverFocusLostHandler.bind(this);
+        this.mouseHoverHashHandler = this.mouseHoverHashHandler.bind(this);
+        this.suggestionClickHandler = this.suggestionClickHandler.bind(this);
     }
 
     componentDidUpdate()
@@ -131,46 +151,6 @@ class SearchDropDown extends React.Component {
             this.props.redirectHandler();
             return;
         }
-
-        /* this shouldn't be needed there should be a redirect handler function if
-        the icon is showing
-        // if there are no suggestions or the suggestions was a empty {} object
-        if(this.state.suggestions === undefined || (Object.keys(this.state.suggestions)).length < 1)
-        {
-            // if the field value is accepted
-            if(this.state.allowNoSuggestion)
-            {
-                if(this.props.updateFunction !== undefined)
-                {
-                    this.props.updateFunction(this.state.value);
-                    if(this.state.clearOnSubmit)
-                    {
-                        this.setState({value: ""});
-                    }
-                }
-            }
-            return;
-        }
-        // if here, there are suggestions being displayed
-        // if a suggestion is highlighted
-        if(this.state.suggestionIndex !== -1)
-        {
-            // if there are paths to redirect to
-            if(this.state.redirectPaths !== undefined)
-            {
-                this.redirectHandler();
-            }
-            else
-            {
-                this.suggestionFocusHandler();
-            }
-        }
-        // if there are no suggestions highlighted
-        else
-        {
-            this.suggestionFocusHandler();
-        }
-        */
     }
 
     // function is ran on all key presses
@@ -201,13 +181,24 @@ class SearchDropDown extends React.Component {
                             this.setState({value: ""});
                         }
                     }
+                    if(this.props.searchEnterHandler !== undefined)
+                    {
+                        this.props.searchEnterHandler(this.state.value);
+                    }
                 }
+            }
+            else if(event.keyCode === 40 || event.keyCode === 38)
+            {
+                // prevent cursor from moving on up/down
+                event.preventDefault();
             }
             return;
         }
         // if the key pushed is down or up
         if(event.keyCode === 40 || event.keyCode === 38)
         {
+            // prevents cursor from going to beginning of word on up
+            event.preventDefault();
             // if showing suggestions is not allowed, do nothing
             if(!this.state.showSuggestions) return;
             let result;
@@ -244,9 +235,9 @@ class SearchDropDown extends React.Component {
             // if here, there are suggestions being displayed
             // remove focus from the input field
             event.target.blur();
-
+            console.log(this.state);
             // if a suggestion is highlighted
-            if(this.state.suggestionIndex !== -1 && this.state.showSuggestions)
+            if(!this.state.hoverFocused && this.state.suggestionIndex !== -1 && this.state.showSuggestions && !this.state.pastLastSuggestion)
             {
                 // if there are paths to redirect to
                 if(this.state.redirectPaths !== undefined)
@@ -272,8 +263,11 @@ class SearchDropDown extends React.Component {
     // keyIndex is the index of the key in the object
     downKeyHandler(currentKey, currentIndex, keyIndex, suggestions, allowNoSuggestion, multipleTypes, setValueOnKeyHover)
     {
+        console.log(this.state);
         let currentArray = suggestions[currentKey];
         let arrayLength = currentArray.length;
+        // boolean to indicate if current index is currentIndex + 1
+        let pastLastSuggestion = false;
         // if at the end of the current suggestion array
         if(currentIndex + 1 >= arrayLength)
         {
@@ -286,6 +280,7 @@ class SearchDropDown extends React.Component {
                 {
                     newValue = true;
                     currentIndex = arrayLength;
+                    pastLastSuggestion = true;
                 }
                 else
                 {
@@ -327,7 +322,7 @@ class SearchDropDown extends React.Component {
         {
             if(currentIndex === arrayLength)
             {
-                value = "";
+                value = this.state.lastTypedValue;
             }
             else
             {
@@ -338,8 +333,11 @@ class SearchDropDown extends React.Component {
             suggestionIndex: currentIndex,
             currentHashKey: currentKey,
             currentHashKeyIndex: keyIndex,
-            value: value
+            value: value,
+            pastLastSuggestion: pastLastSuggestion,
+            hoverFocused: false
         };
+
         /*
         left off here in up/down key handlers
             - made it so that the key presses cause a wrap around
@@ -456,15 +454,16 @@ class SearchDropDown extends React.Component {
             }
             else
             {
-                // should be set to original search value actually
-                value = "";
+                value = this.state.lastTypedValue;
             }
         }
         let newState = {
             suggestionIndex: currentIndex,
             currentHashKey: currentKey,
             currentHashKeyIndex: keyIndex,
-            value: value
+            value: value,
+            pastLastSuggestion: false,
+            hoverFocused: false
         };
         return {
             newState: true,
@@ -472,9 +471,7 @@ class SearchDropDown extends React.Component {
         };
     }
 
-
-
-    // this is used if there are multiple types of suggsestions
+    // function to handle hovering over suggestions
     mouseHoverHashHandler(index, key, keyIndex, event)
     {
         // if the current suggestionIndex hovered over is not the one stored in the state
@@ -485,12 +482,38 @@ class SearchDropDown extends React.Component {
             this.setState({
                 suggestionIndex: index,
                 currentHashKey: key,
-                currentHashKeyIndex: keyIndex
+                currentHashKeyIndex: keyIndex,
+                hoverFocused: true
             });
             if(this.props.updateFunction !== undefined && this.state.updateOnChange)
             {
                 this.props.updateFunction(this.state.suggestions[key][index]);
             }
+        }
+    }
+
+    mouseHoverFocusLostHandler(event)
+    {
+        let keys = Object.keys(this.state.suggestions);
+        // need to be careful if caused by change in value in input
+        if(this.state.allowNoSuggestion)
+        {
+            this.setState({
+                suggestionIndex: -1,
+                currentHashKey: keys[0],
+                currentHashKeyIndex: 0,
+                hoverFocused: false
+            });
+        }
+        else
+        {
+            let keys = Object.keys(this.state.suggestions);
+            this.setState({
+                suggestionIndex: 1,
+                currentHashKey: (keys.length > 0) ? keys[0] : "",
+                currentHashKeyIndex: 0,
+                hoverFocused: false
+            });
         }
     }
 
@@ -526,11 +549,13 @@ class SearchDropDown extends React.Component {
         }
     }
 
-    // called when the suggestions to click on do not cause redirects
+
     suggestionFocusHandler()
     {
+        console.log("suggestionFocusHandler");
+        console.log(this.state);
         // if a value is highlighted
-        if(this.state.suggestionIndex !== -1 && Object.keys(this.state.suggestions).length > 0 && this.state.valueKeys !== undefined)
+        if(!this.state.hoverFocused && this.state.suggestionIndex !== -1 && !this.state.pastLastSuggestion && Object.keys(this.state.suggestions).length > 0 && this.state.valueKeys !== undefined)
         {
             let value = (this.state.suggestions[this.state.currentHashKey][this.state.suggestionIndex][this.state.valueKeys[this.state.currentHashKey]]);
             let value2 = this.state.suggestions[this.state.currentHashKey][this.state.suggestionIndex];
@@ -541,15 +566,19 @@ class SearchDropDown extends React.Component {
             }
             if(this.state.clearOnSubmit)
             {
-                this.setState({value: ""});
+                this.setState({
+                    value: "",
+                    lastTypedValue: ""
+                });
             }
             else
             {
                 this.setState({value: value});
             }
         }
-        else if(this.state.suggestionIndex === -1)
+        else if(this.state.suggestionIndex === -1 || this.state.pastLastSuggestion || this.state.hoverFocused)
         {
+            // if no suggestions are selected
             // if there is a update function, call it with the value in the input
             if(this.props.updateFunction !== undefined && this.state.allowNoSuggestion)
             {
@@ -557,11 +586,19 @@ class SearchDropDown extends React.Component {
             }
             if(this.state.clearOnSubmit)
             {
-                this.setState({value: ""});
+                this.setState({
+                    value: "",
+                    lastTypedValue: ""
+                });
             }
             else
             {
                 this.setState({value: this.state.value});
+            }
+
+            if(this.props.searchEnterHandler !== undefined)
+            {
+                this.props.searchEnterHandler(this.state.value);
             }
         }
         else
@@ -579,6 +616,30 @@ class SearchDropDown extends React.Component {
               redirect: true,
               value: ""
             });
+        }
+    }
+
+    // function called when a suggestion is clicked on and there are no redirect paths
+    suggestionClickHandler()
+    {
+        // set the value to the value of the suggestion clicked
+        let value = (this.state.suggestions[this.state.currentHashKey][this.state.suggestionIndex][this.state.valueKeys[this.state.currentHashKey]]);
+        let value2 = this.state.suggestions[this.state.currentHashKey][this.state.suggestionIndex];
+        // if there is a update function, call it with the value in the input
+        if(this.props.updateFunction !== undefined)
+        {
+            this.props.updateFunction(value2);
+        }
+        if(this.state.clearOnSubmit)
+        {
+            this.setState({
+                value: "",
+                lastTypedValue: ""
+            });
+        }
+        else
+        {
+            this.setState({value: value});
         }
     }
 
@@ -625,10 +686,13 @@ class SearchDropDown extends React.Component {
         let suggestionIndex = (this.state.allowNoSuggestion) ? -1 : 0;
         this.setState({
             value: value,
+            lastTypedValue: value,
             suggestionIndex: suggestionIndex,
             currentHashKey: currentKey,
             currentHashKeyIndex: index,
-            suggestions: tempSuggestions
+            suggestions: tempSuggestions,
+            pastLastSuggestion: false,
+            hoverFocused: false
         });
     }
 
@@ -717,7 +781,7 @@ class SearchDropDown extends React.Component {
                           autocomplete="off"
                           type="text"
                           name="value"
-                          form = "form2"
+                          form = {this.state.form}
                           className={`${style.inputFieldBoxLong} ${style.inputBoxWithIcon} validInputBox`}
                           onChange={this.changeHandler}
                           onFocus={this.onFocusHandler}
@@ -742,6 +806,7 @@ class SearchDropDown extends React.Component {
         if(this.state.focused || this.state.focused && this.state.value.length > 0 && (Object.keys(this.state.suggestions)).length > 0)
         {
             let keys = Object.keys(this.state.suggestions);
+            console.log(keys);
             let counter = 0;
             let suggestionHTML = [];
             while(counter < keys.length)
@@ -752,20 +817,26 @@ class SearchDropDown extends React.Component {
                 {
                     suggestionHTML.push(<a style={this.state.keyStyle}>{key}</a>);
                 }
-                tempArr.forEach((value, index) => {
-                    // get the value of the suggestion
+                let ind = 0;
+                for(let value of tempArr)
+                {
+                    // set the index and counter to new variables as they will get overwritten on the
+                    // on MouseHover function if not
+                    let index = ind;
+                    let counter2 = counter;
                     let searchValue = value[this.state.valueKeys[key]];
-                    let html = <a style={this.state.suggestionStyle} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
+                    let html = <a style={this.state.suggestionStyle} onMouseDown={this.suggestionClickHandler} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter2, e)} onMouseOut={this.mouseHoverFocusLostHandler}>{searchValue}</a>;
                     if(index === this.state.suggestionIndex && key === this.state.currentHashKey && this.state.redirectPaths !== undefined)
                     {
-                        html = <a style={this.state.suggestionStyle} className={style.selectedSuggestion} onMouseDown={(e) => this.redirectHandler()} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
+                        html = <a style={this.state.suggestionStyle} className={style.selectedSuggestion} onMouseDown={(e) => this.redirectHandler()} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter2, e)} onMouseOut={this.mouseHoverFocusLostHandler}>{searchValue}</a>;
                     }
                     else if(index === this.state.suggestionIndex && key === this.state.currentHashKey)
                     {
-                        html = <a style={this.state.suggestionStyle} className={style.selectedSuggestion} onMouseDown={(e) => this.suggestionFocusHandler()} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter, e)}>{searchValue}</a>;
+                        html = <a style={this.state.suggestionStyle} className={style.selectedSuggestion} onMouseDown={this.suggestionClickHandler} onMouseOver={(e) => this.mouseHoverHashHandler(index, key, counter2, e)} onMouseOut={this.mouseHoverFocusLostHandler}>{searchValue}</a>;
                     }
                     suggestionHTML.push(html);
-                });
+                    ind = index + 1;
+                }
                 counter = counter + 1;
             }
             // if no suggestions after loop, return null

@@ -646,6 +646,7 @@ class SearchPage extends React.Component {
                         redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
                         showSuggestions={false}
                         placeHolder={"Find a movie or user"}
+                        form={"searchPage"}
                     />
                 </div>
                 {types}

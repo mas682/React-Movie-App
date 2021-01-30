@@ -24,7 +24,9 @@ class Header extends React.Component {
             // new review
             redirectToProfile: false,
             showDropdown: false,
-            showSearchDropDown: false
+            showSearchDropDown: false,
+            redirectToSearch: false,
+            searchParameters: {}
         };
         this.generateReviewForm = this.generateReviewForm.bind(this);
         this.removeReviewForm = this.removeReviewForm.bind(this);
@@ -49,6 +51,7 @@ class Header extends React.Component {
         this.generateLogoutButton = this.generateLogoutButton.bind(this);
         this.generatePostReviewButton = this.generatePostReviewButton.bind(this);
         this.generateSearchClickURL = this.generateSearchClickURL.bind(this);
+        this.searchEnterHandler = this.searchEnterHandler.bind(this);
     }
 
     signUpRemoveFunction = (username) =>
@@ -183,6 +186,20 @@ class Header extends React.Component {
             let element = document.querySelector("main");
             element.style.removeProperty("position");
         }
+    }
+
+
+    // function called by SearchDropDown when enter pressed on the value
+    // in the input box
+    searchEnterHandler(value)
+    {
+        this.setState({
+            redirectToSearch: true,
+            searchParameters: this.generateSearchClickURL(value),
+            showSearchDropDown: false
+        });
+        let element = document.querySelector("main");
+        element.style.removeProperty("position");
     }
 
     searchClickHandler()
@@ -346,6 +363,13 @@ class Header extends React.Component {
         if(this.state.redirectToProfile)
         {
             this.setState({redirectToProfile: false});
+        }
+        else if(this.state.redirectToSearch)
+        {
+            this.setState({
+                redirectToSearch: false,
+                searchParameters: {}
+            });
         }
     }
 
@@ -569,6 +593,11 @@ class Header extends React.Component {
                 redirect = <Redirect to={{pathname: path, state: {newReview: true}}}/>;
             }
         }
+        let redirectToSearch = "";
+        if(this.state.redirectToSearch)
+        {
+            redirectToSearch = <Redirect to={this.state.searchParameters}/>;
+        }
         let homePath = (this.state.currentUser !== "") ? "/feed" : "/";
 
         let menuIcon = (
@@ -604,6 +633,8 @@ class Header extends React.Component {
                             keyStyle={{"font-size":"1.25em", "color":"red", "border-bottom":"1px solid gray"}}
                             suggestionStyle={{"color":"white", "font-size": "1em"}}
                             redirectHandler={this.searchClickHandler}
+                            searchEnterHandler={this.searchEnterHandler}
+                            form={"SearchBar"}
                         />
                     </div>
                 </div>
@@ -727,6 +758,7 @@ class Header extends React.Component {
         				</div>
                         {reviewForm}
                         {redirect}
+                        {redirectToSearch}
                         {addPostIcon}
                         {searchIcon}
                         {menuIcon}
@@ -796,6 +828,7 @@ class Header extends React.Component {
                     {signInForm}
                     {signUpForm}
                     {redirect}
+                    {redirectToSearch}
                 </div>
             );
         }
