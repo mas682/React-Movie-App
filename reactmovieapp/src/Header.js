@@ -594,6 +594,7 @@ class Header extends React.Component {
                             getSuggestions={this.getSearchSuggestions}
                             showSearchIcon={true}
                             generateSearchClickURL={this.generateSearchClickURL}
+                            setValueOnKeyHover={true}
                             multipleTypes={true}
                             valueKeys={{Movies:"title", Users: "username"}}
                             redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}

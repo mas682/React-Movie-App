@@ -637,6 +637,7 @@ class SearchPage extends React.Component {
             <div className={style.mainBodyContainer}>
                 <div className={style.searchBarContainer}>
                     <SearchDropDown
+                        value={this.state.searchValue}
                         showSearchIcon={true}
                         allowNoSuggestion={true}
                         getSuggestions={this.getSearchSuggestions}
@@ -644,6 +645,7 @@ class SearchPage extends React.Component {
                         valueKeys={{Movies:"title", Users: "username"}}
                         redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
                         showSuggestions={false}
+                        placeHolder={"Find a movie or user"}
                     />
                 </div>
                 {types}

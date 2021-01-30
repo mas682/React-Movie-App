@@ -68,7 +68,9 @@ class SearchDropDown extends React.Component {
             keyStyle: (this.props.keyStyle === undefined) ? {} : this.props.keyStyle,
             searchIconStyle: (this.props.searchIconStyle === undefined) ? {} : this.props.searchIconStyle,
             // boolean to show the drop down from the search bar or not, if true, allowNoSuggestion should also be true
-            showSuggestions: (this.props.showSuggestions === undefined) ? true : this.props.showSuggestions
+            showSuggestions: (this.props.showSuggestions === undefined) ? true : this.props.showSuggestions,
+            // boolean to set the search value to the selected value on arrow key push
+            setValueOnKeyHover: (this.props.setValueOnKeyHover === undefined) ? false : this.props.setValueOnKeyHover
         }
         this.changeHandler = this.changeHandler.bind(this);
         this.onFocusHandler = this.onFocusHandler.bind(this);
@@ -214,11 +216,13 @@ class SearchDropDown extends React.Component {
             let currentKeyIndex = this.state.currentHashKeyIndex;
             if(event.keyCode === 40)
             {
-                result = this.downKeyHandler(currentKey, currentIndex, currentKeyIndex, this.state.suggestions, this.state.allowNoSuggestion, this.state.multipleTypes);
+                result = this.downKeyHandler(currentKey, currentIndex, currentKeyIndex, this.state.suggestions,
+                     this.state.allowNoSuggestion, this.state.multipleTypes, this.state.setValueOnKeyHover);
             }
             else
             {
-                result = this.upKeyHandler(currentKey, currentIndex, currentKeyIndex, this.state.suggestions, this.state.allowNoSuggestion, this.state.multipleTypes);
+                result = this.upKeyHandler(currentKey, currentIndex, currentKeyIndex, this.state.suggestions,
+                     this.state.allowNoSuggestion, this.state.multipleTypes, this.state.setValueOnKeyHover);
             }
             if(result.newState)
             {
@@ -266,27 +270,46 @@ class SearchDropDown extends React.Component {
     // ex. {movies: [], users: [], genres: []}...the key could be movies
     // currentIndex is the index into whatever array is currently being used, ex. movies[1]
     // keyIndex is the index of the key in the object
-    downKeyHandler(currentKey, currentIndex, keyIndex, suggestions, allowNoSuggestion, multipleTypes)
+    downKeyHandler(currentKey, currentIndex, keyIndex, suggestions, allowNoSuggestion, multipleTypes, setValueOnKeyHover)
     {
         let currentArray = suggestions[currentKey];
         let arrayLength = currentArray.length;
         // if at the end of the current suggestion array
-        if(currentIndex + 1 === arrayLength)
+        if(currentIndex + 1 >= arrayLength)
         {
             let newValue = false;
             // need to go to next array if multiple types
             if(multipleTypes)
             {
-                let result = this.getCurrentKeyAndIndex(suggestions, keyIndex + 1, true);
-                // if there was another array in the suggestion object to go to
-                if(result.nextKeyFound)
+                // if at the end of the last array in suggestions
+                if(currentIndex + 1 === arrayLength && keyIndex === Object.keys(suggestions).length -1)
                 {
                     newValue = true;
-                    // new key into suggestions object
-                    currentKey = result.currentKey;
-                    currentIndex = 0;
-                    keyIndex = result.index;
+                    currentIndex = arrayLength;
                 }
+                else
+                {
+                    if(currentIndex + 1 > arrayLength)
+                    {
+                        // set the keyIndex 1 more than the last index of the keys
+                        keyIndex = -1;
+                    }
+                    let result = this.getCurrentKeyAndIndex(suggestions, keyIndex + 1, true);
+                    // if there was another array in the suggestion object to go to
+                    if(result.nextKeyFound)
+                    {
+                        newValue = true;
+                        // new key into suggestions object
+                        currentKey = result.currentKey;
+                        currentIndex = 0;
+                        keyIndex = result.index;
+                    }
+                }
+            }
+            else
+            {
+                newValue = true;
+                currentIndex = 0;
             }
             if(!newValue)
             {
@@ -299,11 +322,40 @@ class SearchDropDown extends React.Component {
         {
             currentIndex = currentIndex + 1;
         }
+        let value = this.state.value;
+        if(setValueOnKeyHover)
+        {
+            if(currentIndex === arrayLength)
+            {
+                value = "";
+            }
+            else
+            {
+                value = suggestions[currentKey][currentIndex][this.state.valueKeys[currentKey]];
+            }
+        }
         let newState = {
             suggestionIndex: currentIndex,
             currentHashKey: currentKey,
-            currentHashKeyIndex: keyIndex
+            currentHashKeyIndex: keyIndex,
+            value: value
         };
+        /*
+        left off here in up/down key handlers
+            - made it so that the key presses cause a wrap around
+            - need more error testing though
+        need to make it so that if setValue on key hover is true:
+            1. on enter sends to that value
+            1.2. make it keep track of last entered text value
+                - if loop around to top with up/down, set value to
+                last entered value instead of empty string
+                - can just set 2 values at the same time
+                - if index = -1 or at end, set value to that value
+                    - be careful with it doing search again...ideally want to avoid?
+                    - see google
+            2. on ones that don't show suggestion...
+                - on enter search for the value that is in the text box
+        */
         return {
             newState: true,
             state: newState
@@ -315,33 +367,49 @@ class SearchDropDown extends React.Component {
     // currentIndex is the index into whatever array is currently being used, ex. movies[1]
     // keyIndex is the index of the key in the object
     // allowNoSuggestion is a boolean value indiating if no suggestion can be selected
-    upKeyHandler(currentKey, currentIndex, keyIndex, suggestions, allowNoSuggestion, multipleTypes)
+    upKeyHandler(currentKey, currentIndex, keyIndex, suggestions, allowNoSuggestion, multipleTypes, setValueOnKeyHover)
     {
         // if at the beginning of the current suggestion array
-        if(currentIndex === 0)
+        if(currentIndex <= 0)
         {
             let newValues = false;
             // need to go to next array if multiple types
             if(multipleTypes)
             {
-                // get the next key/index of the key
-                let result = this.getCurrentKeyAndIndex(suggestions, keyIndex - 1, false);
-                // if there was another array in the suggestion object to go to
-                if(result.nextKeyFound)
+                // if at the beginning of the first array in suggestions
+                if(currentIndex === 0 && keyIndex === 0)
                 {
-                    // new key into suggestions object
-                    currentKey = result.currentKey;
-                    // index into arrays values
-                    currentIndex = suggestions[currentKey].length -1;
-                    keyIndex = result.index;
+                    console.log(Object.keys(suggestions));
                     newValues = true;
+                    currentIndex = -1;
                 }
                 else
                 {
-                    // if no result found, no suggestions to go up to so if allowNoSuggestion
-                    // is true, deselect the top suggestion
-                    currentIndex = (allowNoSuggestion) ? -1 : 0;
-                    newValues = (currentIndex === -1) ? true : false;
+                    if(currentIndex < 0)
+                    {
+                        let suggestionKeys = Object.keys(suggestions);
+                        // set the keyIndex 1 more than the last index of the keys
+                        keyIndex = suggestionKeys.length;
+                    }
+                    // get the next key/index of the key
+                    let result = this.getCurrentKeyAndIndex(suggestions, keyIndex - 1, false);
+                    // if there was another array in the suggestion object to go to
+                    if(result.nextKeyFound)
+                    {
+                        // new key into suggestions object
+                        currentKey = result.currentKey;
+                        // index into arrays values
+                        currentIndex = suggestions[currentKey].length -1;
+                        keyIndex = result.index;
+                        newValues = true;
+                    }
+                    else
+                    {
+                        // if no result found, no suggestions to go up to so if allowNoSuggestion
+                        // is true, deselect the top suggestion
+                        currentIndex = (allowNoSuggestion) ? -1 : 0;
+                        newValues = (currentIndex === -1) ? true : false;
+                    }
                 }
             }
             // if only 1 type of suggestions
@@ -352,6 +420,11 @@ class SearchDropDown extends React.Component {
                 {
                     newValues = true;
                     currentIndex = -1;
+                }
+                else
+                {
+                    newValues = true;
+                    currentIndex = suggestions[currentKey].length -1;
                 }
             }
             if(!newValues)
@@ -373,10 +446,25 @@ class SearchDropDown extends React.Component {
                 return {newState: false};
             }
         }
+        let value = this.state.value;
+        if(setValueOnKeyHover)
+        {
+            // should only be -1 when allowNoSuggestion is true
+            if(currentIndex > -1)
+            {
+                value = suggestions[currentKey][currentIndex][this.state.valueKeys[currentKey]];
+            }
+            else
+            {
+                // should be set to original search value actually
+                value = "";
+            }
+        }
         let newState = {
             suggestionIndex: currentIndex,
             currentHashKey: currentKey,
-            currentHashKeyIndex: keyIndex
+            currentHashKeyIndex: keyIndex,
+            value: value
         };
         return {
             newState: true,
@@ -601,6 +689,11 @@ class SearchDropDown extends React.Component {
 
     generateInputBox()
     {
+        /*
+        make sure you didn't break anything...such as the search
+        bar on the search page
+        also make sure not causing too many renders
+        */
         let searchIcon = "";
         if(this.state.showSearchIcon)
         {
@@ -609,7 +702,6 @@ class SearchDropDown extends React.Component {
             {
                 params = this.props.generateSearchClickURL(this.state.value);
             }
-            console.log(params);
             searchIcon = (
                 <div className={style.searchButtonContainer}>
                     <Link to={params}><i class={`fas fa-search`} style={this.state.searchIconStyle} onClick={this.searchIconClickHandler}/></Link>
