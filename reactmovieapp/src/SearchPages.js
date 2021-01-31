@@ -30,6 +30,8 @@ class SearchPage extends React.Component {
             query: queryParams.query,
             type: queryParams.type,
             searchValue: queryParams.value,
+            // boolean indicating if the search value changed due to new props coming in
+            newValue: false,
             currentUser: this.props.currentUser,
             // need to rename this...
             movieIndex: 0,
@@ -41,7 +43,8 @@ class SearchPage extends React.Component {
         {
             props.history.replace({
                 pathname: props.location.pathname,
-                search: queryParams.query
+                search: queryParams.query,
+                state: {newValue: false}
             });
         }
         this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
@@ -55,6 +58,7 @@ class SearchPage extends React.Component {
         this.getAllResultsHandler = this.getAllResultsHandler.bind(this);
         this.getMoviesResultsHandler = this.getMoviesResultsHandler.bind(this);
         this.getUsersResultsHandler = this.getUsersResultsHandler.bind(this);
+        this.setNewValue = this.setNewValue.bind(this);
     }
 
     componentDidMount()
@@ -74,13 +78,29 @@ class SearchPage extends React.Component {
 
     static getDerivedStateFromProps(nextProps, nextState)
     {
-        console.log("Get derived state from props");
+        console.log("Get derived state from props: ");
         /*
         console.log("next props: ");
         console.log(nextProps);
         console.log("prev state: ");
         console.log(nextState);
+        console.log(queryString.parse(nextProps.location.search).value);
         */
+        let newSearchValue = queryString.parse(nextProps.location.search).value;
+        let newType = queryString.parse(nextProps.location.search).type;
+        if(nextState.searchValue !== newSearchValue || nextState.type !== newType)
+        {
+            console.log("Search value or type change found");
+            let newValue = (nextProps.location.state === undefined) ? false : nextProps.location.state.newValue;
+            return {
+                searchValue: newSearchValue,
+                offset: 0,
+                moreData: true,
+                newValue: newValue,
+                loadingNewData: true,
+                type: queryString.parse(nextProps.location.search).type
+            };
+        }
         return null;
     }
 
@@ -91,20 +111,18 @@ class SearchPage extends React.Component {
         console.log(nextProps);
         console.log(this.state);
         console.log(nextState);
-
-        if(queryString.parse(nextProps.location.search).type !== queryString.parse(this.props.location.search).type)
+        let newSearchValue = queryString.parse(nextProps.location.search).value;
+        let oldSearchValue = this.state.type;
+        let newType = queryString.parse(nextProps.location.search).type;
+        let oldType = this.state.type;
+        if(this.state.type !== nextState.type)
         {
-            console.log("New type in props");
-            return false;
+            console.log("New type in state");
+            return true;
         }
         else if(this.state.searchValue !== nextState.searchValue)
         {
-            console.log("new query string in state");
-            return true;
-        }
-        else if(this.state.type !== nextState.type)
-        {
-            console.log("New type in state");
+            console.log("New search value detected in state");
             return true;
         }
         else if(this.state.loadingData !== nextState.loadingData)
@@ -127,13 +145,18 @@ class SearchPage extends React.Component {
             console.log("New data loaded from type change");
             return true;
         }
+        else if(this.state.newValue !== nextState.newValue)
+        {
+            console.log("New value state changed");
+            return true;
+        }
         return false;
     }
 
     componentDidUpdate(prevProps, prevState)
     {
         console.log("Component did update");
-
+        /*
         console.log("Old props: ");
         console.log(prevProps);
         console.log("New props: ");
@@ -142,40 +165,24 @@ class SearchPage extends React.Component {
         console.log(prevState);
         console.log("New state: ");
         console.log(this.state);
+        */
 
         if(prevState.loading)
         {
             return;
         }
-        // don't think this is needed? but think about it
-        // else if(this.props.currentUser !== prevProps.currentUser...)
+        if(prevState.searchValue !== this.state.searchValue)
+        {
+            console.log("Search value in state changed");
+            this.getSearchSuggestions(this.state.searchValue, undefined, this.state.newValue);
+        }
         else if(prevState.type !== this.state.type)
         {
-            console.log("Type changed in update");
-            this.getSearchSuggestions(this.state.searchValue);
+            console.log("Type in state changed");
+            this.getSearchSuggestions(this.state.searchValue, undefined, this.state.newValue);
         }
-        else if(prevState.searchValue !== this.state.searchValue)
-        {
-            let queryString = "?type=" + this.state.type + "&value=" + this.state.searchValue;
-            /*
-            this.props.history.replace({
-                pathname: this.props.location.pathname,
-                search: queryString
-            });
-            */
-            // don't think I even need to keep track of the query
-            // if keeping track of values in it...
-        }
-        else if(queryString.parse(this.props.location.search).type !== this.state.type)
-        {
-            /*
-            let queryString = "?type=" + this.state.type + "&value=" + this.state.searchValue;
-            this.props.history.replace({
-                pathname: this.props.location.pathname,
-                search: queryString
-            });
-            */
-        }
+        // don't think this is needed? but think about it
+        // else if(this.props.currentUser !== prevProps.currentUser...)
     }
 
     static updateSearchFilter(props) {
@@ -282,39 +289,47 @@ class SearchPage extends React.Component {
         this.setState({movieIndex: this.state.movieIndex - 1});
     }
 
+    // function to change the type to search for
     typeHandler(type)
     {
         if(this.state.type !== type)
         {
-            this.setState({
-                type: type,
-                offset: 0,
-                moreData: true,
-                loadingNewData: true
+            this.props.history.replace({
+                pathname: this.props.location.pathname,
+                search: "?type=" + type + "&value=" + this.state.searchValue,
+                state: {newValue: false}
             });
         }
     }
 
+    // function called by SearchDropDown to set the value to search for
+    setNewValue(value)
+    {
+        if(this.state.searchValue !== value)
+        {
+            this.props.history.replace({
+                pathname: this.props.location.pathname,
+                search: "?type=" + this.state.type + "&value=" + value,
+                state: {newValue: false}
+            });
+        }
+        return {};
+    }
+
     // function to get suggestions for search bar
-    // for now, just getting users
-    // will eventually get users and movies..
-    async getSearchSuggestions(value)
+    async getSearchSuggestions(value, newValue)
     {
         let type = this.state.type;
-        // need to fix this to only do a replace when the value or type changes...
-
-        this.props.history.replace({
-            pathname: this.props.location.pathname,
-            search: "?type=" + type + "&value=" + value
-        });
-
         if(value.length < 1)
         {
             this.setState({
                 movies: [],
                 users: [],
                 searchValue: value,
-                offset: 0
+                type: type,
+                offset: 0,
+                newValue: (newValue === undefined) ? false : newValue,
+                loadingNewData: false
             });
             return {};
         }
@@ -341,6 +356,7 @@ class SearchPage extends React.Component {
         let status = result.[0];
         let message = result[1].message;
         let requester = result[1].requester;
+        let res;
         if(type === "movies")
         {
             return this.getMoviesResultsHandler(status, message, result[1], offset, max, value);
@@ -351,7 +367,6 @@ class SearchPage extends React.Component {
         }
         else
         {
-            // type = all
             return this.getAllResultsHandler(status, message, result[1], offset, max, value);
         }
     }
@@ -365,10 +380,17 @@ class SearchPage extends React.Component {
                 users: result.Users,
                 searchValue: value,
                 loading: false,
-                loadingNewData: false
+                loadingNewData: false,
+                newValue: false
             });
-            return {};
         }
+        else
+        {
+            this.setState({
+                searchValue: value
+            });
+        }
+        return {};
     }
 
     getMoviesResultsHandler(status, message, result, offset, max, value)
@@ -637,10 +659,11 @@ class SearchPage extends React.Component {
             <div className={style.mainBodyContainer}>
                 <div className={style.searchBarContainer}>
                     <SearchDropDown
+                        newValue={this.state.newValue}
                         value={this.state.searchValue}
                         showSearchIcon={true}
                         allowNoSuggestion={true}
-                        getSuggestions={this.getSearchSuggestions}
+                        getSuggestions={this.setNewValue}
                         multipleTypes={true}
                         valueKeys={{Movies:"title", Users: "username"}}
                         redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}

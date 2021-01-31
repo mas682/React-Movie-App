@@ -490,6 +490,10 @@ class ReviewPopUp extends React.Component {
     // substring that the user has already entered
     async getTitleSuggestions(value)
     {
+        if(value.length < 1)
+        {
+            return {};
+        }
         let url = "http://localhost:9000/movie/get_movie_titles/?title=" + value;
         let result = await apiGetJsonRequest(url);
         let status = result[0];
@@ -519,6 +523,10 @@ class ReviewPopUp extends React.Component {
     // function to get a tag suggesion based off the substring that the user has entered
     async getTagSuggestions(value)
     {
+        if(value.length < 1)
+        {
+            return {};
+        }
         let url = "http://localhost:9000/movie/get_movie_tags/?tag=" + value;
         let result = await apiGetJsonRequest(url);
         let status = result[0];

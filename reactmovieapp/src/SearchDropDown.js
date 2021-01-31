@@ -120,9 +120,15 @@ class SearchDropDown extends React.Component {
     // or a different user logged in
     static getDerivedStateFromProps(nextProps, prevState)
     {
+        //console.log(nextProps);
         if(prevState.locked !== nextProps.locked)
         {
             return {locked: nextProps.locked, lockedMessage: nextProps.lockedMessage};
+        }
+        if(nextProps.newValue !== undefined && nextProps.newValue
+            && (prevState.value !== nextProps.value || prevState.lastTypedValue !== nextProps.value))
+        {
+            return {value: nextProps.value, lastTypedValue: nextProps.value};
         }
         else
         {
@@ -235,7 +241,6 @@ class SearchDropDown extends React.Component {
             // if here, there are suggestions being displayed
             // remove focus from the input field
             event.target.blur();
-            console.log(this.state);
             // if a suggestion is highlighted
             if(!this.state.hoverFocused && this.state.suggestionIndex !== -1 && this.state.showSuggestions && !this.state.pastLastSuggestion)
             {
@@ -263,7 +268,6 @@ class SearchDropDown extends React.Component {
     // keyIndex is the index of the key in the object
     downKeyHandler(currentKey, currentIndex, keyIndex, suggestions, allowNoSuggestion, multipleTypes, setValueOnKeyHover)
     {
-        console.log(this.state);
         let currentArray = suggestions[currentKey];
         let arrayLength = currentArray.length;
         // boolean to indicate if current index is currentIndex + 1
@@ -377,7 +381,6 @@ class SearchDropDown extends React.Component {
                 // if at the beginning of the first array in suggestions
                 if(currentIndex === 0 && keyIndex === 0)
                 {
-                    console.log(Object.keys(suggestions));
                     newValues = true;
                     currentIndex = -1;
                 }
@@ -520,13 +523,8 @@ class SearchDropDown extends React.Component {
     // called when search box gains focus
     async onFocusHandler()
     {
-        // reset the suggestions
-        let tempSuggestions = {};
         // if a value is in the search box, get suggestions for it
-        if(this.state.value.length > 0)
-        {
-            tempSuggestions = await this.props.getSuggestions(this.state.value);
-        }
+        let tempSuggestions = await this.props.getSuggestions(this.state.value);
         let suggestionIndex = (this.state.allowNoSuggestion) ? -1 : 0;
         let result = this.getCurrentKeyAndIndex(tempSuggestions, 0, true);
         this.setState({
@@ -552,8 +550,6 @@ class SearchDropDown extends React.Component {
 
     suggestionFocusHandler()
     {
-        console.log("suggestionFocusHandler");
-        console.log(this.state);
         // if a value is highlighted
         if(!this.state.hoverFocused && this.state.suggestionIndex !== -1 && !this.state.pastLastSuggestion && Object.keys(this.state.suggestions).length > 0 && this.state.valueKeys !== undefined)
         {
@@ -649,12 +645,7 @@ class SearchDropDown extends React.Component {
     {
         let name = event.target.name;
         let value = event.target.value;
-        let tempSuggestions = {};
-        // if the value entered is not a empty string
-        if(value.length > 0)
-        {
-            tempSuggestions = await this.props.getSuggestions(value);
-        }
+        let tempSuggestions = await this.props.getSuggestions(value);
         let currentKey = "";
         // index into keys array
         let index = 0;
@@ -728,7 +719,7 @@ class SearchDropDown extends React.Component {
                 if(increment)
                 {
                     // if the array has no entries, try the next key
-                    while(tempArray.length < 1 && index <= keys.length -1)
+                    while(tempArray.length < 1 && (index + 1) <= keys.length -1)
                     {
                         index = index + 1;
                         currentKey = keys[index];
@@ -806,7 +797,6 @@ class SearchDropDown extends React.Component {
         if(this.state.focused || this.state.focused && this.state.value.length > 0 && (Object.keys(this.state.suggestions)).length > 0)
         {
             let keys = Object.keys(this.state.suggestions);
-            console.log(keys);
             let counter = 0;
             let suggestionHTML = [];
             while(counter < keys.length)

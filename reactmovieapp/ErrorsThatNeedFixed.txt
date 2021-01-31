@@ -1,0 +1,13 @@
+issues:
+	1. when doing search from search page, does not rerender '
+		- works from search bar
+		- issue is when going directly to localhost:3000/search
+			- does not fully render...
+    2. searchDropDown not working on search page...due to presetting value?
+		- works now, api issue
+		- but need to be careful as it can be very slow to type since it is waiting for api response
+		- may have to change to not due api calls every time a letter changes in real world
+    3. Make sure all searchDropDowns work as expected, don't crash, etc.
+		- in progress
+	4. when value cleared in search bar on search page, still holds old value in url
+	5. when you change the type in the url doesn't work?

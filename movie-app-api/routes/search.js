@@ -83,26 +83,21 @@ const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
     let users = await models.User.findUsers(value, count, 0);
 	if(movies === undefined && users === undefined)
 	{
-		res.status(404).send("Unable to find any users or movies matching the search");
+		res.status(404).send({
+			requester: requester,
+			message: "Unable to find any users or movies matching the search",
+			Movies: [],
+			Users: []
+		});
 	}
 	else
 	{
-		if(movies !== undefined && users !== undefined)
-		{
-			if(movies.length < 1 && users.length < 1)
-			{
-				res.status(404).send("Unable to find any users or movies matching the search");
-			}
-			else
-			{
-				res.status(200).send({
-					requester: requester,
-					message: "Search results successfully found",
-					Movies:movies,
-					Users:users
-				});
-			}
-		}
+		res.status(200).send({
+			requester: requester,
+			message: "Search results successfully found",
+			Movies:movies,
+			Users:users
+		});
 	}
 };
 

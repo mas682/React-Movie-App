@@ -227,7 +227,8 @@ class Header extends React.Component {
     // icon is clicked when the SearchDropDown is visible
     generateSearchClickURL(value)
     {
-        return {pathname: "/search", search: "?type=all&value=" + value};
+        // state is used if already on search page
+        return {pathname: "/search", search: "?type=all&value=" + value, state: {newValue: true}};
     }
 
     windowResizeEventHandler(event)

@@ -40,6 +40,10 @@
         display: none;
     }
 
+    .addPostCloseIcon {
+        display: none;
+    }
+
     /* style for the search icon */
     .searchIcon {
         color: gray;
