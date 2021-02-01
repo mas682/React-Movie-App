@@ -3,9 +3,9 @@ import Popup from 'reactjs-popup';
 import style from './css/Movies/MovieDisplayPopUp.module.css'
 import './css/Movies/MovieDisplayPopUp.css'
 import {Redirect, withRouter} from 'react-router-dom';
-import {generateWatchListButton, generateWatchedListButton, generateMovieTrailer,
+import {generateWatchListButton, generateWatchedListButton, generateMovieTrailer, checkMovieOnWatchList, checkMovieOnWatchedList,
 generateMovieInfo, generateOverview, generateDirector, generateGenres, generateMoviePoster} from './StaticFunctions/MovieHtmlFunctions.js';
-import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {apiPostJsonRequest, apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import {addMovieToWatchListResultsHandler, removeWatchListMovieResultsHandler,
     addMovieToWatchedListResultsHandler, removeWatchedListMovieResultsHandler}
      from './StaticFunctions/UserResultsHandlers.js';
@@ -19,6 +19,13 @@ import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js
 class MovieDisplayPopUp extends React.Component {
 	constructor(props) {
 		super(props);
+        /* props
+        - loadData - boolean indicating if api call should be sent on component did mount to get movie data
+
+
+
+        */
+
 		this.state = MovieDisplayPopUp.generateState(this.props);
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
@@ -47,10 +54,95 @@ class MovieDisplayPopUp extends React.Component {
 		}
 	}
 
+    async componentDidMount()
+    {
+        // if all the data was not passed in
+        if(this.props.loadData)
+        {
+            this.updateMovieInfo(this.state.movie.id);
+        }
+    }
+
+
+    // function to handle call to api and result
+    async updateMovieInfo(value)
+    {
+        let url = "http://localhost:9000/movie/" + value;
+        let movieData = await apiGetJsonRequest(url)
+        let status = movieData[0];
+        let requester = movieData[1].requester;
+        let message = movieData[1].message;
+        this.movieInfoResultsHandler(status, message, requester, movieData[1]);
+    }
+
+    left off here...need to make sure this is doing everything it should
+    also make sure it is receiving the right prop functions
+    also probably need a function to remove the movie if it's info cannot be found
+    on the search page that is passed in here..
+    movieInfoResultsHandler(status, message, requester, result)
+    {
+        if(status === 200)
+        {
+            let movie = result.movie;
+            let movieInfo = generateMovieInfo(movie);
+            let watchList = checkMovieOnWatchList(movie, requester);
+            let watched = checkMovieOnWatchedList(movie, requester);
+
+            this.setState({
+              movie: movie,
+              poster: movie.poster,
+              headerImage: movie.backgroundImage,
+              trailer: movie.trailer,
+              posterPopup: false,
+              movie: movie,
+              movieInfoString: movieInfo,
+              currentUser: requester,
+              watchList: watchList,
+              watched: watched,
+              loading: false,
+              errorMessage: ""
+            });
+            this.props.updateLoggedIn(requester);
+        }
+        else
+        {
+            this.props.updateLoggedIn(requester);
+            // movie id invalid format
+            if(status === 400)
+            {
+                // redirect to 400 page?
+                this.setState({
+                    movie: undefined,
+                    //errorMessage: message,
+                    loading: false
+                });
+            }
+            else if(status === 404)
+            {
+                // movie could not be found
+                // show error message
+                this.setState({
+                    movie: undefined,
+                    errorMessage: message,
+                    loading: false
+                });
+            }
+            else
+            {
+                this.setState({
+                    movie: undefined,
+                    errorMessage: message,
+                    loading: false
+                });
+            }
+        }
+    }
+
 	static generateState(props, prevState)
 	{
 		return {
 			open: true,
+            loading: false,
 			movie: props.movie,
 			poster: props.movie.poster,
 			headerImage: props.movie.backgroundImage,

@@ -290,24 +290,26 @@ class UserDisplay extends React.Component {
         }
 
 
-
+        let path = "/profile/" + this.state.user.username;
         return (
-            <div className={style.main}>
-                <div className={style.userImageContainer} onClick={this.pictureClickedHandler}>
-                    <img className={style.userImage} style={this.state.userPictureStyle} src={require("./images/profile-pic.jpg")}/>
-                </div>
-                <div className={style.bottomContainer} onClick={this.pictureClickedHandler}>
-                    <div className={style.userDetailsContainer}>
-                        <div className={style.userName}>
-                            {this.state.user.username}
-                        </div>
-                        <div className={style.actualName}>
-                            Matt Stropkey Stropkey
-                        </div>
+            <Link to={path} className={style.link}>
+                <div className={style.main}>
+                    <div className={style.userImageContainer} onClick={this.pictureClickedHandler}>
+                        <img className={style.userImage} style={this.state.userPictureStyle} src={require("./images/profile-pic.jpg")}/>
                     </div>
-                    {followButton}
+                    <div className={style.bottomContainer} onClick={this.pictureClickedHandler}>
+                        <div className={style.userDetailsContainer}>
+                            <div className={style.userName}>
+                                {this.state.user.username}
+                            </div>
+                            <div className={style.actualName}>
+                                Matt Stropkey Stropkey
+                            </div>
+                        </div>
+                        {followButton}
+                    </div>
                 </div>
-            </div>
+            </Link>
         )
     }
 

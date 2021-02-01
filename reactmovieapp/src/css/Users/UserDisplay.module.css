@@ -37,6 +37,10 @@
     position: relative;
 }
 
+.link {
+    text-decoration: none;
+}
+
 .userDetailsContainer {
     position: static;
     color: #093145;

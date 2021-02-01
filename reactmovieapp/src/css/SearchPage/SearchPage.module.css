@@ -109,25 +109,43 @@
         grid-template-columns: calc(100% - 110px) 110px;
     }
 
-    .resultsShowAllButton
+    .resultsShowAllButtonContainer
     {
         justify-self: end;
-        font-size: 1.2em;
-        font-weight: 500;
         display: grid;
-        grid-template-columns: calc(100% - 20px) 20px;
+        grid-template-columns: auto;
     }
 
-    .resultsShowAllButton div {
+
+    .resultsShowAllButton {
+        align-self: end;
+        background: white;
+        border: none;
+        width: 110px;
+        padding: 0px;
+        display: grid;
+        grid-template-columns: calc(100% - 17px) 17px;
+        font: inherit;
+    }
+
+    .resultsShowAllButton:focus {
+        outline: none;
+    }
+
+    .resultsShowAllButton div
+    {
         align-self: center;
+        justify-self: end;
+        font-weight: 500;
+        height: 100%;
     }
 
     .showMoreIcon
     {
         justify-self: flex-end;
-        align-self: flex-end;
-        font-size: 1.4em;
-        padding-bottom: 1px;
+        align-self: center;
+        font-size: 1.6em;
+        padding-bottom: 0px;
     }
 
     .resultType {
@@ -207,25 +225,43 @@
         grid-template-columns: calc(100% - 110px) 110px;
     }
 
-    .resultsShowAllButton
+    .resultsShowAllButtonContainer
     {
         justify-self: end;
-        font-size: 1.2em;
-        font-weight: 500;
         display: grid;
-        grid-template-columns: calc(100% - 20px) 20px;
+        grid-template-columns: auto;
     }
 
-    .resultsShowAllButton div {
+
+    .resultsShowAllButton {
+        align-self: end;
+        background: white;
+        border: none;
+        width: 110px;
+        padding: 0px;
+        display: grid;
+        grid-template-columns: calc(100% - 17px) 17px;
+        font: inherit;
+    }
+
+    .resultsShowAllButton:focus {
+        outline: none;
+    }
+
+    .resultsShowAllButton div
+    {
         align-self: center;
+        justify-self: end;
+        font-weight: 500;
+        height: 100%;
     }
 
     .showMoreIcon
     {
         justify-self: flex-end;
-        align-self: flex-end;
-        font-size: 1.4em;
-        padding-bottom: 1px;
+        align-self: center;
+        font-size: 1.6em;
+        padding-bottom: 0px;
     }
 
     .resultType {

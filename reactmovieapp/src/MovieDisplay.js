@@ -105,10 +105,17 @@ class MovieDisplay extends React.Component {
 
     posterClickHandler()
     {
-        let opened = this.state.moviePopup;
-        this.setState({
-            moviePopup: !opened
-        });
+        if(this.props.posterClickHandler !== undefined)
+        {
+            this.props.posterClickHandler(this.state.movie)
+        }
+        else
+        {
+            let opened = this.state.moviePopup;
+            this.setState({
+                moviePopup: !opened
+            });
+        }
     }
 
     async buttonHandler(event, type)

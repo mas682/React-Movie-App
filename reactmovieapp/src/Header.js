@@ -37,7 +37,6 @@ class Header extends React.Component {
         this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
         this.reviewSuccessFunction = this.reviewSuccessFunction.bind(this);
         this.menuClickHandler = this.menuClickHandler.bind(this);
-        this.windowResizeEventHandler = this.windowResizeEventHandler.bind(this);
         this.showMovieOptionsEventHandler = this.showMovieOptionsEventHandler.bind(this);
         this.searchClickHandler = this.searchClickHandler.bind(this);
         this.generateMovieOptions = this.generateMovieOptions.bind(this);
@@ -231,27 +230,9 @@ class Header extends React.Component {
         return {pathname: "/search", search: "?type=all&value=" + value, state: {newValue: true}};
     }
 
-    windowResizeEventHandler(event)
-    {
-        if(event.target.innerWidth >= 800)
-        {
-            if(this.state.showDropdown)
-            {
-                this.setState({
-                    showDropdown: false,
-                });
-            }
-            let element = document.querySelector("main");
-            if(element.style.position === "fixed")
-            {
-                element.style.removeProperty("position");
-            }
-        }
-    }
-
     componentDidMount()
     {
-        window.addEventListener('resize', this.windowResizeEventHandler);
+
     }
 
     signInRemoveFunction = (username) =>
@@ -379,41 +360,46 @@ class Header extends React.Component {
     // will eventually get users and movies..
     getSearchSuggestions(value)
     {
-      // Simple POST request with a JSON body using fetch
-      const requestOptions = {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-      };
+        if(value.length < 1)
+        {
+            return {};
+        }
 
-      let status = 0;
-      let url = "http://localhost:9000/search/query_all?value=" + value;
-      return fetch(url, requestOptions)
-          .then(async(res) => {
-              status = res.status;
-              if(status === 200)
-              {
-                  let result = await res.json();
-                  return {
-                      Movies: result.Movies,
-                      Users: result.Users
-                  };
-                  //return res.json();
-              }
-              else
-              {
-                  return res.text();
-              }
-          }).then(result=> {
-              if(status !== 200)
-              {
-                return {};
-              }
-              else
-              {
-                  return result;
-              }
-          });
+          // Simple POST request with a JSON body using fetch
+          const requestOptions = {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+          };
+
+          let status = 0;
+          let url = "http://localhost:9000/search/query_all?value=" + value + "&max=10";
+          return fetch(url, requestOptions)
+              .then(async(res) => {
+                  status = res.status;
+                  if(status === 200)
+                  {
+                      let result = await res.json();
+                      return {
+                          Movies: result.Movies,
+                          Users: result.Users
+                      };
+                      //return res.json();
+                  }
+                  else
+                  {
+                      return res.text();
+                  }
+              }).then(result=> {
+                  if(status !== 200)
+                  {
+                    return {};
+                  }
+                  else
+                  {
+                      return result;
+                  }
+              });
     }
 
 
@@ -630,7 +616,7 @@ class Header extends React.Component {
                             redirectPaths={{Movies: {path:"/movie/", key:"id"}, Users: {path:"/profile/",key:"username"}}}
                             searchDropDownContainterStyle={{"display":"flex", "flex-flow":"column"}}
                             inputBoxStyle={{"border-radius":"0px"}}
-                            dropDownContentStyle={{"border-radius": "0px", "background-color":"#333", "height":"100%", "position":"static"}}
+                            dropDownContentStyle={{"border-radius": "0px", "background-color":"#333", "height":"93%", "position":"static"}}
                             keyStyle={{"font-size":"1.25em", "color":"red", "border-bottom":"1px solid gray"}}
                             suggestionStyle={{"color":"white", "font-size": "1em"}}
                             redirectHandler={this.searchClickHandler}

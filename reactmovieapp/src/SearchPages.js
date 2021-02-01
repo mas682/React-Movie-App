@@ -9,12 +9,14 @@ import style from './css/SearchPage/SearchPage.module.css';
 import queryString from "query-string";
 import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
+import MovieDisplayPopUp from './MovieDisplayPopUp.js';
 
 class SearchPage extends React.Component {
     constructor(props){
         super(props);
         // may want to do this in getDerivedStateFromProps
         let queryParams = SearchPage.updateSearchFilter(props);
+        console.log(queryParams)
         this.state = {
             loading: true,
             // boolean for loading data on type change
@@ -36,7 +38,11 @@ class SearchPage extends React.Component {
             // need to rename this...
             movieIndex: 0,
             // if bad type
-            redirect404: queryParams.redirect
+            redirect404: queryParams.redirect,
+            // show movie popup display
+            moviePopup: false,
+            // the movie whose pop up should be displayed
+            popupMovie: {}
         };
         console.log(queryParams);
         if(queryParams.updated)
@@ -59,6 +65,8 @@ class SearchPage extends React.Component {
         this.getMoviesResultsHandler = this.getMoviesResultsHandler.bind(this);
         this.getUsersResultsHandler = this.getUsersResultsHandler.bind(this);
         this.setNewValue = this.setNewValue.bind(this);
+
+        this.movieClickHandler = this.movieClickHandler.bind(this);
     }
 
     componentDidMount()
@@ -87,7 +95,9 @@ class SearchPage extends React.Component {
         console.log(queryString.parse(nextProps.location.search).value);
         */
         let newSearchValue = queryString.parse(nextProps.location.search).value;
+        newSearchValue = (newSearchValue === undefined) ? "" : newSearchValue;
         let newType = queryString.parse(nextProps.location.search).type;
+        newType = (newType === undefined) ? "" : newType;
         if(nextState.searchValue !== newSearchValue || nextState.type !== newType)
         {
             console.log("Search value or type change found");
@@ -107,10 +117,12 @@ class SearchPage extends React.Component {
     shouldComponentUpdate(nextProps, nextState)
     {
         console.log("Should componenet update:");
+        /*
         console.log(this.props);
         console.log(nextProps);
         console.log(this.state);
         console.log(nextState);
+        */
         let newSearchValue = queryString.parse(nextProps.location.search).value;
         let oldSearchValue = this.state.type;
         let newType = queryString.parse(nextProps.location.search).type;
@@ -150,6 +162,11 @@ class SearchPage extends React.Component {
             console.log("New value state changed");
             return true;
         }
+        else if(this.state.moviePopup !== nextState.moviePopup)
+        {
+            console.log("Movie display click caused render");
+            return true;
+        }
         return false;
     }
 
@@ -183,6 +200,16 @@ class SearchPage extends React.Component {
         }
         // don't think this is needed? but think about it
         // else if(this.props.currentUser !== prevProps.currentUser...)
+    }
+
+    movieClickHandler(movie)
+    {
+        console.log(movie);
+        let opened = this.state.moviePopup;
+        this.setState({
+            moviePopup: !opened,
+            popupMovie: movie
+        });
     }
 
     static updateSearchFilter(props) {
@@ -417,12 +444,16 @@ class SearchPage extends React.Component {
     {
         if(status === 200)
         {
+            let users = [...this.state.users];
             this.setState({
                 movies: [],
-                users: result.Users,
+                users: (this.state.loadingData) ? users.concat(result.Users) : result.Users,
+                offset: offset + max,
+                moreData: (result.Users.length === max) ? true : false,
                 searchValue: value,
                 loading: false,
-                loadingNewData: false
+                loadingNewData: false,
+                loadingData: false
             });
             return {};
         }
@@ -506,6 +537,7 @@ class SearchPage extends React.Component {
                             key={counter}
                             showMovieInfo={false}
                             moviePosterStyle={{"min-height":"0px", "border-radius":"5px"}}
+                            posterClickHandler={this.movieClickHandler}
                         />
                     </div>
                 );
@@ -520,11 +552,13 @@ class SearchPage extends React.Component {
                             <div className={style.resultType}>
                                 Movies
                             </div>
-                            <div className={style.resultsShowAllButton} onClick={()=> {this.typeHandler("movies")}}>
+                            <div className={style.resultsShowAllButtonContainer} onClick={()=> {this.typeHandler("movies")}}>
+                                <button className={style.resultsShowAllButton}>
                                 <div>
                                     See More
                                 </div>
                                 <i className={`fas fa-angle-right ${style.showMoreIcon}`}/>
+                                </button>
                             </div>
                         </div>
                         <div className={style.movieDisplayContainer} id="movieDisplayContainer">
@@ -593,11 +627,13 @@ class SearchPage extends React.Component {
                             <div className={style.resultType}>
                                 Users
                             </div>
-                            <div className={style.resultsShowAllButton} onClick={()=> {this.typeHandler("users")}}>
+                            <div className={style.resultsShowAllButtonContainer} onClick={()=> {this.typeHandler("users")}}>
+                                <button className={style.resultsShowAllButton}>
                                 <div>
                                     See More
                                 </div>
                                 <i className={`fas fa-angle-right ${style.showMoreIcon}`}/>
+                                </button>
                             </div>
                         </div>
                         <div className={style.movieDisplayContainer} id="userDisplayContainer">
@@ -640,20 +676,25 @@ class SearchPage extends React.Component {
         let users = this.generateUserDisplays();
         let types = this.generateTypes();
 
-        /*
-        set up client side as far as you can first
-            - need to do component did update/getDerivedStateFromProps
-            - also do pagination behind the scenes by appending it to query string
-            - fix see more to be a button
-            - try to set it up to eventually handle advanced querying but don't go too far
-            - fix resposive views/css, avoid duplication
-        then fix api
-            - need to do pagination
-            - fix movies to query in order of values
-            - users will eventually need fixed to like movies to
-            pass various parameters
-            - also do error handing on query values passed
-        */
+        let moviePopup = "";
+        if(this.state.moviePopup)
+        {
+            moviePopup = <MovieDisplayPopUp
+                            movie={this.state.popupMovie}
+                            removeFunction={this.movieClickHandler}
+                            currentUser = {this.state.currentUser}
+                            watched = {this.state.popupMovie.watched}
+                            watchList = {this.state.popupMovie.watchList}
+                            removeMovieDisplay = {this.props.removeMovieDisplay}
+                            updateLoggedIn = {this.props.updateLoggedIn}
+                            index = {this.state.index}
+                            showLoginPopUp = {this.props.showLoginPopUp}
+                            type = {this.state.type}
+                            updateParentState = {this.updateState}
+                            setMessages={this.props.setMessages}
+                            loadData={true}
+                        />;
+        }
 
         return (
             <div className={style.mainBodyContainer}>
@@ -675,6 +716,7 @@ class SearchPage extends React.Component {
                 {types}
                 {movies}
                 {users}
+                {moviePopup}
             </div>
         );
     }
