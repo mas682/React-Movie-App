@@ -107,7 +107,7 @@ class MovieDisplay extends React.Component {
     {
         if(this.props.posterClickHandler !== undefined)
         {
-            this.props.posterClickHandler(this.state.movie)
+            this.props.posterClickHandler({movie: this.state.movie, index: this.state.index})
         }
         else
         {

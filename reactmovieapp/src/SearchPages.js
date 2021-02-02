@@ -14,6 +14,7 @@ import MovieDisplayPopUp from './MovieDisplayPopUp.js';
 class SearchPage extends React.Component {
     constructor(props){
         super(props);
+        console.log(props);
         // may want to do this in getDerivedStateFromProps
         let queryParams = SearchPage.updateSearchFilter(props);
         console.log(queryParams)
@@ -67,10 +68,12 @@ class SearchPage extends React.Component {
         this.setNewValue = this.setNewValue.bind(this);
 
         this.movieClickHandler = this.movieClickHandler.bind(this);
+        this.removeMovieDisplay = this.removeMovieDisplay.bind(this);
     }
 
     componentDidMount()
     {
+        alert("Mounting");
         document.addEventListener('scroll', this.scrollEventHandler, {passive: true});
         if(this.state.searchValue !== "")
         {
@@ -87,13 +90,13 @@ class SearchPage extends React.Component {
     static getDerivedStateFromProps(nextProps, nextState)
     {
         console.log("Get derived state from props: ");
-        /*
+
         console.log("next props: ");
         console.log(nextProps);
         console.log("prev state: ");
         console.log(nextState);
         console.log(queryString.parse(nextProps.location.search).value);
-        */
+
         let newSearchValue = queryString.parse(nextProps.location.search).value;
         newSearchValue = (newSearchValue === undefined) ? "" : newSearchValue;
         let newType = queryString.parse(nextProps.location.search).type;
@@ -108,8 +111,15 @@ class SearchPage extends React.Component {
                 moreData: true,
                 newValue: newValue,
                 loadingNewData: true,
-                type: queryString.parse(nextProps.location.search).type
+                type: queryString.parse(nextProps.location.search).type,
+                currentUser: nextProps.currentUser
             };
+        }
+        else if(nextState.currentUser !== nextProps.currentUser)
+        {
+            return {
+                currentUser: nextProps.currentUser
+            }
         }
         return null;
     }
@@ -117,12 +127,12 @@ class SearchPage extends React.Component {
     shouldComponentUpdate(nextProps, nextState)
     {
         console.log("Should componenet update:");
-        /*
+
         console.log(this.props);
         console.log(nextProps);
         console.log(this.state);
         console.log(nextState);
-        */
+
         let newSearchValue = queryString.parse(nextProps.location.search).value;
         let oldSearchValue = this.state.type;
         let newType = queryString.parse(nextProps.location.search).type;
@@ -147,7 +157,7 @@ class SearchPage extends React.Component {
             console.log("Loading changed");
             return true;
         }
-        else if(this.state.currentUser !== this.props.currentUser)
+        else if(this.state.currentUser !== nextState.currentUser)
         {
             console.log("User changed");
             return true;
@@ -209,6 +219,19 @@ class SearchPage extends React.Component {
         this.setState({
             moviePopup: !opened,
             popupMovie: movie
+        });
+    }
+
+    // remove a movie being displayed from the array of movies
+    // used for watch list and movies watched
+    removeMovieDisplay(index)
+    {
+        let updatedMovies = [...this.state.movies];
+        updatedMovies.splice(index, 1);
+        this.setState({
+            movies: updatedMovies,
+            moviePopup: false,
+            popupMovie: undefined
         });
     }
 
@@ -567,7 +590,7 @@ class SearchPage extends React.Component {
                                 id={"movieCarousel"}
                                 itemContainerClass={style.movieContainer}
                                 // used to make windowResizeEventHandler more efficint
-                                maxVisibleItems={7}
+                                maxVisibleItems={5}
                             />
                         </div>
                     </div>
@@ -642,7 +665,7 @@ class SearchPage extends React.Component {
                                 id={"userCarousel"}
                                 itemContainerClass={style.userContainer}
                                 // used to make windowResizeEventHandler more efficint
-                                maxVisibleItems={7}
+                                maxVisibleItems={5}
                             />
                         </div>
                     </div>
@@ -680,17 +703,14 @@ class SearchPage extends React.Component {
         if(this.state.moviePopup)
         {
             moviePopup = <MovieDisplayPopUp
-                            movie={this.state.popupMovie}
+                            movie={this.state.popupMovie.movie}
                             removeFunction={this.movieClickHandler}
                             currentUser = {this.state.currentUser}
-                            watched = {this.state.popupMovie.watched}
-                            watchList = {this.state.popupMovie.watchList}
-                            removeMovieDisplay = {this.props.removeMovieDisplay}
+                            removeMovieDisplay = {this.removeMovieDisplay}
                             updateLoggedIn = {this.props.updateLoggedIn}
-                            index = {this.state.index}
+                            index = {this.state.popupMovie.index}
                             showLoginPopUp = {this.props.showLoginPopUp}
                             type = {this.state.type}
-                            updateParentState = {this.updateState}
                             setMessages={this.props.setMessages}
                             loadData={true}
                         />;

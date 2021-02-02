@@ -801,12 +801,12 @@ class Header extends React.Component {
                         <div class="home">
                             <Link class="homeButton" onClick={() => {this.props.showLoginPopUpFunction()}}>About</Link>
                         </div>
-                        <div class="home">
-                            <Link class="homeButton" onClick={() => {this.props.showLoginPopUpFunction()}}>Login</Link>
-                        </div>
-                        <div class="home">
-                            <Link class="homeButton" onClick={this.showSignUpForm}>Sign Up</Link>
-                        </div>
+                        <button class="actionButton"  onClick={this.props.showLoginPopUpFunction}>
+                            <div>Login</div>
+                        </button>
+                        <button class="actionButton"  onClick={this.showSignUpForm}>
+                            <div>Sign Up</div>
+                        </button>
                     </div>
                     {addPostIcon}
                     {searchIcon}
@@ -819,6 +819,11 @@ class Header extends React.Component {
                 </div>
             );
         }
+        /*
+        <div class="home">
+            <button class="homeButton" onClick={() => {this.props.showLoginPopUpFunction()}}>Login</button>
+        </div>
+        */
 	}
 }
 

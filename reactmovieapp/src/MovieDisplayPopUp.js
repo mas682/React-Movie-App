@@ -68,6 +68,7 @@ class MovieDisplayPopUp extends React.Component {
     async updateMovieInfo(value)
     {
         let url = "http://localhost:9000/movie/" + value;
+        url = "http://localhost:9000/movie/a"
         let movieData = await apiGetJsonRequest(url)
         let status = movieData[0];
         let requester = movieData[1].requester;
@@ -75,10 +76,54 @@ class MovieDisplayPopUp extends React.Component {
         this.movieInfoResultsHandler(status, message, requester, movieData[1]);
     }
 
+    static generateState(props, prevState)
+    {
+        // on first render, set to this value
+        let loading = (props.loadData === undefined) ? false : props.loadData;
+        // if not the first render, set to false
+        if(prevState !== undefined)
+        {
+            loading = false;
+        }
+        return {
+            open: true,
+            loading: loading,
+            movie: props.movie,
+            poster: props.movie.poster,
+            headerImage: props.movie.backgroundImage,
+            trailer: props.movie.trailer,
+            currentUser: props.currentUser,
+            movieInfoString: generateMovieInfo(props.movie),
+            watched: props.watched,
+            watchList: props.watchList,
+            // index into array of movies if on one of the movie filter pages
+            index: props.index,
+            // the type of page the pop up is called from
+            type: props.type,
+            // show the sign in pop up
+            displaySignIn: (prevState === undefined) ? false : prevState.displaySignIn,
+            displaySignUp: (prevState === undefined) ? false : prevState.displaySignUp,
+            messages: [],
+            messageId: -1,
+            clearMessages: false,
+            props: props
+        };
+    }
+
+    componentDidUpdate(prevProps, prevState)
+    {
+        if(prevState.currentUser !== this.state.currentUser)
+        {
+            this.updateMovieInfo(this.state.movie.id);
+        }
+    }
+
+    /*
     left off here...need to make sure this is doing everything it should
     also make sure it is receiving the right prop functions
     also probably need a function to remove the movie if it's info cannot be found
     on the search page that is passed in here..
+    */
     movieInfoResultsHandler(status, message, requester, result)
     {
         if(status === 200)
@@ -93,7 +138,6 @@ class MovieDisplayPopUp extends React.Component {
               poster: movie.poster,
               headerImage: movie.backgroundImage,
               trailer: movie.trailer,
-              posterPopup: false,
               movie: movie,
               movieInfoString: movieInfo,
               currentUser: requester,
@@ -110,10 +154,11 @@ class MovieDisplayPopUp extends React.Component {
             // movie id invalid format
             if(status === 400)
             {
+                this.props.setMessages({messages: [{type: "failure", message: message}]});
+                this.props.removeMovieDisplay(this.state.index);
                 // redirect to 400 page?
                 this.setState({
                     movie: undefined,
-                    //errorMessage: message,
                     loading: false
                 });
             }
@@ -121,49 +166,23 @@ class MovieDisplayPopUp extends React.Component {
             {
                 // movie could not be found
                 // show error message
+                this.props.setMessages({messages: [{type: "failure", message: message}]});
+                this.props.removeMovieDisplay(this.state.index);
                 this.setState({
                     movie: undefined,
-                    errorMessage: message,
                     loading: false
                 });
             }
             else
             {
+                this.props.setMessages({messages: [{type: "failure", message: message}]});
                 this.setState({
                     movie: undefined,
-                    errorMessage: message,
                     loading: false
                 });
             }
         }
     }
-
-	static generateState(props, prevState)
-	{
-		return {
-			open: true,
-            loading: false,
-			movie: props.movie,
-			poster: props.movie.poster,
-			headerImage: props.movie.backgroundImage,
-			trailer: props.movie.trailer,
-			currentUser: props.currentUser,
-			movieInfoString: generateMovieInfo(props.movie),
-			watched: props.watched,
-			watchList: props.watchList,
-			// index into array of movies if on one of the movie filter pages
-			index: props.index,
-			// the type of page the pop up is called from
-			type: props.type,
-			// show the sign in pop up
-			displaySignIn: (prevState === undefined) ? false : prevState.displaySignIn,
-            displaySignUp: (prevState === undefined) ? false : prevState.displaySignUp,
-            messages: [],
-            messageId: -1,
-            clearMessages: false,
-            props: props
-		};
-	}
 
 	openModal() {
 		this.setState({ open: true });
@@ -337,7 +356,10 @@ class MovieDisplayPopUp extends React.Component {
 				// if the pop up was caused because of a movie review, do not call this
 				if(this.state.type !== "Review")
 				{
-					this.props.updateParentState(result.state);
+                    if(this.props.updateParentState !== undefined)
+                    {
+					    this.props.updateParentState(result.state);
+                    }
 				}
                 this.props.updateLoggedIn(requester);
             }
@@ -345,6 +367,7 @@ class MovieDisplayPopUp extends React.Component {
 	}
 
     render() {
+            if(this.state.loading || this.state.movie === undefined) return null;
             let poster = generateMoviePoster(style, this.state.poster, this.state.movie.id);
             let trailer = generateMovieTrailer(style, this.state.trailer);
             let overview = generateOverview(style, this.state.movie.overview);
@@ -382,8 +405,6 @@ class MovieDisplayPopUp extends React.Component {
                                 showLoginPopUp={this.showSignInForm}
                             />
             }
-            console.log(this.state.messages);
-            console.log(style.contentStyle);
     		return (
         			<div>
                         <Popup

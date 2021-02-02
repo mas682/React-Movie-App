@@ -346,6 +346,32 @@
   position: relative;
 }
 
+
+.actionButton {
+    display: grid;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    z-index: 2;
+    position: relative;
+    background-color: inherit;
+    outline: none;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0px;
+    margin: 0;
+}
+
+.actionButton div {
+    align-self: center;
+    justify-self: cetner;
+}
+
+.actionButton:hover {
+    background-color: red;
+}
+
 .movieDropdown, .movieButton, .showDropdown, .showButton, .profileDropdown, .profileButton {
   font-size: 16px;
   border: none;
