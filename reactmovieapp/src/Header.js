@@ -710,38 +710,46 @@ class Header extends React.Component {
         					<h1 href="#">Logo</h1>
         				</div>
         				<div className="navButtons">
-        					<div class="home"><Link class="homeButton" to={homePath}>Home</Link></div>
-        					<div class="movieDropdown">
-        						<button class="movieButton">Movies</button>
-        						<div class="movieDropdownContent">
+                            <Link className="actionButton" to={homePath}>
+                                <div>Home</div>
+                            </Link>
+                            <div class="menuDropDownContainer">
+                                <div className="menuText">
+                                    Movies
+                                </div>
+                                <div class="menuDropContent">
                                     <Link to="/watch_list">My Watch List</Link>
                                     <Link to="/watched_list">My Watched Movies</Link>
-        							<Link to="/movie">Top Rated</Link>
-        							<Link to="/upcoming">Upcoming</Link>
+                                    <Link to="/movie">Top Rated</Link>
+                                    <Link to="/upcoming">Upcoming</Link>
                                     <Link to="/new_releases">New Releases</Link>
-        						</div>
-        					</div>
-                            <div class="showDropdown">
-                                <button class="showButton">Shows</button>
-                                <div class="showDropdownContent">
+                                </div>
+                            </div>
+                            <div class="menuDropDownContainer">
+                                <div className="menuText">
+                                    Shows
+                                </div>
+                                <div class="menuDropContent">
                                     <Link to="/">Top Rated</Link>
                                     <Link to="/">Schedule</Link>
                                 </div>
                             </div>
-        					<div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
-        					<div class="profileDropdown">
-                                <button class="profileButton">Profile</button>
-                                <div class="profileDropdownContent">
-                                    <Link class="profileButton" to="/feed">My Feed</Link>
-                                    <Link class="profileButton" to={profilePath}>My Profile</Link>
+        					<button class="addButton" onClick={this.generateReviewForm}>+</button>
+                            <div class="menuDropDownContainer">
+                                <div className="menuText">
+                                    Profile
                                 </div>
-        					</div>
-                            <div class="home">
-                                <Link to="/settings" class="homeButton">Settings</Link>
+                                <div class="menuDropContent">
+                                    <Link to="/feed">My Feed</Link>
+                                    <Link to={profilePath}>My Profile</Link>
+                                </div>
                             </div>
-                            <div class="home">
-                                <Link to="#" class="homeButton" onClick={this.logout}>Logout</Link>
-                            </div>
+                            <Link className="actionButton" to={"/settings"}>
+                                <div>Settings</div>
+                            </Link>
+                            <button class="actionButton"  onClick={this.logout}>
+                                <div>Logout</div>
+                            </button>
         				</div>
                         {reviewForm}
                         {redirect}
@@ -780,27 +788,33 @@ class Header extends React.Component {
                         <h1 href="#">Logo</h1>
                     </div>
                     <div className="navButtons">
-                        <div class="home"><Link class="homeButton" to={homePath}>Home</Link></div>
-                        <div class="movieDropdown">
-                            <button class="movieButton">Movies</button>
-                            <div class="movieDropdownContent">
+                        <Link className="actionButton" to={homePath}>
+                            <div>Home</div>
+                        </Link>
+                        <div class="menuDropDownContainer">
+                            <div className="menuText">
+                                Movies
+                            </div>
+                            <div class="menuDropContent">
                                 <Link to="/movie">Top Rated</Link>
                                 <Link to="/upcoming">Upcoming</Link>
                                 <Link to="/movie">In Theaters</Link>
                                 <Link to="/new_releases">New Releases</Link>
                             </div>
                         </div>
-                        <div class="showDropdown">
-                            <button class="showButton">Shows</button>
-                            <div class="showDropdownContent">
+                        <div class="menuDropDownContainer">
+                            <div className="menuText">
+                                Shows
+                            </div>
+                            <div class="menuDropContent">
                                 <Link to="/">Top Rated</Link>
                                 <Link to="/">Schedule</Link>
                             </div>
                         </div>
-                        <div class="add"><button class="addButton" onClick={this.generateReviewForm}>+</button></div>
-                        <div class="home">
-                            <Link class="homeButton" onClick={() => {this.props.showLoginPopUpFunction()}}>About</Link>
-                        </div>
+                        <button class="addButton" onClick={this.generateReviewForm}>+</button>
+                        <button class="actionButton"  onClick={this.props.showLoginPopUpFunction}>
+                            <div>About</div>
+                        </button>
                         <button class="actionButton"  onClick={this.props.showLoginPopUpFunction}>
                             <div>Login</div>
                         </button>
@@ -819,11 +833,6 @@ class Header extends React.Component {
                 </div>
             );
         }
-        /*
-        <div class="home">
-            <button class="homeButton" onClick={() => {this.props.showLoginPopUpFunction()}}>Login</button>
-        </div>
-        */
 	}
 }
 
