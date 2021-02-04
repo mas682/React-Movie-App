@@ -81,24 +81,12 @@ const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 	// find the movies containing the value
 	let movies = await models.Movies.findByTitle(value, count, 0);
     let users = await models.User.findUsers(value, count, 0);
-	if(movies === undefined && users === undefined)
-	{
-		res.status(404).send({
-			requester: requester,
-			message: "Unable to find any users or movies matching the search",
-			Movies: [],
-			Users: []
-		});
-	}
-	else
-	{
-		res.status(200).send({
-			requester: requester,
-			message: "Search results successfully found",
-			Movies:movies,
-			Users:users
-		});
-	}
+	res.status(200).send({
+		requester: requester,
+		message: "Search results successfully found",
+		Movies: (movies === undefined) ? [] : movies,
+		Users: (users === undefined) ? [] : users
+	});
 };
 
 // function to query movies off title only
@@ -120,21 +108,11 @@ const queryMoviesByTitle = async (cookie, req, res, cookieValid) =>
 	// if the count is a integer, make sure it is not larger than the max value
 	count = (count > 50) ? 50 : count;
 	let movies = await models.Movies.findByTitle(title, count, offset);
-	if(movies === undefined)
-	{
-		res.status(404).send({
-			requester: requester,
-			message: "Unable to find any movies matching the title provided"
-		});
-	}
-	else
-	{
-		res.status(200).send({
-			requester: requester,
-			message: "Search results successfully found",
-			Movies:movies,
-		});
-	}
+	res.status(200).send({
+		requester: requester,
+		message: "Search results successfully found",
+		Movies:(movies === undefined) ? [] : movies
+	});
 }
 
 const getMovies = async (cookie, req, res, cookieValid) =>
@@ -182,21 +160,11 @@ const getUsers = async (cookie, req, res, cookieValid) =>
 	// if the count is a integer, make sure it is not larger than the max value
 	count = (count > defaultMax) ? defaultMax : count;
 	let users = await models.User.findUsers(userToFind, count, offset);
-	if(users === undefined)
-	{
-		res.status(404).send({
-			message: "Unable to find any users mathcing the username provided",
-			requester: requester
-		});
-	}
-	else
-	{
-		res.status(200).send({
-			message: "Users successfully found",
-			requester: requester,
-			Users: users
-		});
-	}
+	res.status(200).send({
+		message: "Search results successfully found",
+		requester: requester,
+		Users: (users === undefined) ? [] : users
+	});
 }
 
 

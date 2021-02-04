@@ -68,7 +68,6 @@ class MovieDisplayPopUp extends React.Component {
     async updateMovieInfo(value)
     {
         let url = "http://localhost:9000/movie/" + value;
-        url = "http://localhost:9000/movie/a"
         let movieData = await apiGetJsonRequest(url)
         let status = movieData[0];
         let requester = movieData[1].requester;

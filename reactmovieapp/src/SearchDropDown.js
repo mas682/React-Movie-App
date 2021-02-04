@@ -756,12 +756,20 @@ class SearchDropDown extends React.Component {
             if(this.props.generateSearchClickURL !== undefined)
             {
                 params = this.props.generateSearchClickURL(this.state.value);
+                searchIcon = (
+                    <div className={style.searchButtonContainer}>
+                        <Link to={params}><i class={`fas fa-search`} style={this.state.searchIconStyle} onClick={this.searchIconClickHandler}/></Link>
+                    </div>
+                );
             }
-            searchIcon = (
-                <div className={style.searchButtonContainer}>
-                    <Link to={params}><i class={`fas fa-search`} style={this.state.searchIconStyle} onClick={this.searchIconClickHandler}/></Link>
-                </div>
-            );
+            else
+            {
+                searchIcon = (
+                    <div className={style.searchButtonContainer}>
+                        <button><i class={`fas fa-search`} style={this.state.searchIconStyle} onClick={this.searchIconClickHandler}/></button>
+                    </div>
+                );
+            }
         }
         let suggestions = (this.state.showSuggestions) ? this.generateSuggestionBox() : "";
         let placeHolder = (this.state.locked) ? this.state.lockedMessage : this.state.placeHolder;

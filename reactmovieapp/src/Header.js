@@ -51,6 +51,7 @@ class Header extends React.Component {
         this.generatePostReviewButton = this.generatePostReviewButton.bind(this);
         this.generateSearchClickURL = this.generateSearchClickURL.bind(this);
         this.searchEnterHandler = this.searchEnterHandler.bind(this);
+        this.searchCloseHandler = this.searchCloseHandler.bind(this);
     }
 
     signUpRemoveFunction = (username) =>
@@ -213,6 +214,19 @@ class Header extends React.Component {
             elm.style.position = "fixed";
         }
         else
+        {
+            this.setState({
+                showSearchDropDown: false
+            });
+            let element = document.querySelector("main");
+            element.style.removeProperty("position");
+        }
+    }
+
+    // function to close search drop down if showing full menu
+    searchCloseHandler()
+    {
+        if(this.state.showSearchDropDown)
         {
             this.setState({
                 showSearchDropDown: false
@@ -710,7 +724,7 @@ class Header extends React.Component {
         					<h1 href="#">Logo</h1>
         				</div>
         				<div className="navButtons">
-                            <Link className="actionButton" to={homePath}>
+                            <Link className="actionButton" to={homePath} onClick={this.searchCloseHandler}>
                                 <div>Home</div>
                             </Link>
                             <div class="menuDropDownContainer">
@@ -718,11 +732,11 @@ class Header extends React.Component {
                                     Movies
                                 </div>
                                 <div class="menuDropContent">
-                                    <Link to="/watch_list">My Watch List</Link>
-                                    <Link to="/watched_list">My Watched Movies</Link>
-                                    <Link to="/movie">Top Rated</Link>
-                                    <Link to="/upcoming">Upcoming</Link>
-                                    <Link to="/new_releases">New Releases</Link>
+                                    <Link to="/watch_list" onClick={this.searchCloseHandler}>My Watch List</Link>
+                                    <Link to="/watched_list" onClick={this.searchCloseHandler}>My Watched Movies</Link>
+                                    <Link to="/movie" onClick={this.searchCloseHandler}>Top Rated</Link>
+                                    <Link to="/upcoming" onClick={this.searchCloseHandler}>Upcoming</Link>
+                                    <Link to="/new_releases" onClick={this.searchCloseHandler}>New Releases</Link>
                                 </div>
                             </div>
                             <div class="menuDropDownContainer">
@@ -730,24 +744,24 @@ class Header extends React.Component {
                                     Shows
                                 </div>
                                 <div class="menuDropContent">
-                                    <Link to="/">Top Rated</Link>
-                                    <Link to="/">Schedule</Link>
+                                    <Link to="/" onClick={this.searchCloseHandler}>Top Rated</Link>
+                                    <Link to="/" onClick={this.searchCloseHandler}>Schedule</Link>
                                 </div>
                             </div>
-        					<button class="addButton" onClick={this.generateReviewForm}>+</button>
+        					<button class="addButton" onClick={()=>{this.searchCloseHandler(); this.generateReviewForm();}}>+</button>
                             <div class="menuDropDownContainer">
                                 <div className="menuText">
                                     Profile
                                 </div>
                                 <div class="menuDropContent">
-                                    <Link to="/feed">My Feed</Link>
-                                    <Link to={profilePath}>My Profile</Link>
+                                    <Link to="/feed" onClick={this.searchCloseHandler}>My Feed</Link>
+                                    <Link to={profilePath} onClick={this.searchCloseHandler}>My Profile</Link>
                                 </div>
                             </div>
-                            <Link className="actionButton" to={"/settings"}>
+                            <Link className="actionButton" to={"/settings"} onClick={this.searchCloseHandler}>
                                 <div>Settings</div>
                             </Link>
-                            <button class="actionButton"  onClick={this.logout}>
+                            <button class="actionButton"  onClick={()=>{this.searchCloseHandler(); this.logout();}}>
                                 <div>Logout</div>
                             </button>
         				</div>
@@ -788,7 +802,7 @@ class Header extends React.Component {
                         <h1 href="#">Logo</h1>
                     </div>
                     <div className="navButtons">
-                        <Link className="actionButton" to={homePath}>
+                        <Link className="actionButton" to={homePath} onClick={this.searchCloseHandler}>
                             <div>Home</div>
                         </Link>
                         <div class="menuDropDownContainer">
@@ -796,10 +810,10 @@ class Header extends React.Component {
                                 Movies
                             </div>
                             <div class="menuDropContent">
-                                <Link to="/movie">Top Rated</Link>
-                                <Link to="/upcoming">Upcoming</Link>
-                                <Link to="/movie">In Theaters</Link>
-                                <Link to="/new_releases">New Releases</Link>
+                                <Link to="/movie" onClick={this.searchCloseHandler}>Top Rated</Link>
+                                <Link to="/upcoming" onClick={this.searchCloseHandler}>Upcoming</Link>
+                                <Link to="/movie" onClick={this.searchCloseHandler}>In Theaters</Link>
+                                <Link to="/new_releases" onClick={this.searchCloseHandler}>New Releases</Link>
                             </div>
                         </div>
                         <div class="menuDropDownContainer">
@@ -807,18 +821,18 @@ class Header extends React.Component {
                                 Shows
                             </div>
                             <div class="menuDropContent">
-                                <Link to="/">Top Rated</Link>
-                                <Link to="/">Schedule</Link>
+                                <Link to="/" onClick={this.searchCloseHandler}>Top Rated</Link>
+                                <Link to="/" onClick={this.searchCloseHandler}>Schedule</Link>
                             </div>
                         </div>
-                        <button class="addButton" onClick={this.generateReviewForm}>+</button>
-                        <button class="actionButton"  onClick={this.props.showLoginPopUpFunction}>
+                        <button class="addButton" onClick={() => {this.searchCloseHandler(); this.generateReviewForm()}}>+</button>
+                        <button class="actionButton"  onClick={()=>{this.searchCloseHandler(); this.props.showLoginPopUpFunction()}}>
                             <div>About</div>
                         </button>
-                        <button class="actionButton"  onClick={this.props.showLoginPopUpFunction}>
+                        <button class="actionButton"  onClick={()=>{this.searchCloseHandler(); this.props.showLoginPopUpFunction();}}>
                             <div>Login</div>
                         </button>
-                        <button class="actionButton"  onClick={this.showSignUpForm}>
+                        <button class="actionButton"  onClick={()=>{this.searchCloseHandler(); this.showSignUpForm()}}>
                             <div>Sign Up</div>
                         </button>
                     </div>

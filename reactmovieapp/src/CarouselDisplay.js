@@ -179,7 +179,7 @@ class CarouselDisplay extends React.Component {
         let forwardButton = "";
         //console.log(this.state.items.length);
         //console.log(this.state.itemsVisible);
-        if(this.state.firstItemIndex < (this.state.items.length - this.state.itemsVisible) && (this.state.items.length - 1) > this.state.itemsVisible)
+        if(this.state.firstItemIndex < (this.state.items.length - this.state.itemsVisible) && (this.state.items.length) > this.state.itemsVisible)
         {
             forwardButton = (
                 <div className={style.forwardButtonContainer} style={this.state.forwardButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("forward")}}>

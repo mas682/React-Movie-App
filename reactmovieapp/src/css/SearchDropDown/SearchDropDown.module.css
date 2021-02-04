@@ -23,6 +23,17 @@
     align-items: center;
 }
 
+.searchButtonContainer button {
+    border: none;
+    background: white;
+    padding: 0px;
+    font-size: 1.0em;
+}
+
+.searchButtonContainer button:focus {
+    outline: none;
+}
+
 .searchButtonContainer i:hover {
     color: red;
 }

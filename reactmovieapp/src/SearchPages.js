@@ -73,7 +73,6 @@ class SearchPage extends React.Component {
 
     componentDidMount()
     {
-        alert("Mounting");
         document.addEventListener('scroll', this.scrollEventHandler, {passive: true});
         if(this.state.searchValue !== "")
         {
@@ -85,17 +84,22 @@ class SearchPage extends React.Component {
                 loading: false
             });
         }
+        // clear the messages on mount
+        this.props.setMessages({
+            message: undefined,
+            clearMessages: true
+        });
     }
 
     static getDerivedStateFromProps(nextProps, nextState)
     {
         console.log("Get derived state from props: ");
-
+        /*
         console.log("next props: ");
         console.log(nextProps);
         console.log("prev state: ");
         console.log(nextState);
-        console.log(queryString.parse(nextProps.location.search).value);
+        */
 
         let newSearchValue = queryString.parse(nextProps.location.search).value;
         newSearchValue = (newSearchValue === undefined) ? "" : newSearchValue;
@@ -127,12 +131,12 @@ class SearchPage extends React.Component {
     shouldComponentUpdate(nextProps, nextState)
     {
         console.log("Should componenet update:");
-
+        /*
         console.log(this.props);
         console.log(nextProps);
         console.log(this.state);
         console.log(nextState);
-
+        */
         let newSearchValue = queryString.parse(nextProps.location.search).value;
         let oldSearchValue = this.state.type;
         let newType = queryString.parse(nextProps.location.search).type;
@@ -201,11 +205,21 @@ class SearchPage extends React.Component {
         if(prevState.searchValue !== this.state.searchValue)
         {
             console.log("Search value in state changed");
+            // clear the messages on value change
+            this.props.setMessages({
+                message: undefined,
+                clearMessages: true
+            });
             this.getSearchSuggestions(this.state.searchValue, undefined, this.state.newValue);
         }
         else if(prevState.type !== this.state.type)
         {
             console.log("Type in state changed");
+            // clear the messages on type change
+            this.props.setMessages({
+                message: undefined,
+                clearMessages: true
+            });
             this.getSearchSuggestions(this.state.searchValue, undefined, this.state.newValue);
         }
         // don't think this is needed? but think about it
@@ -409,19 +423,19 @@ class SearchPage extends React.Component {
         let res;
         if(type === "movies")
         {
-            return this.getMoviesResultsHandler(status, message, result[1], offset, max, value);
+            return this.getMoviesResultsHandler(status, message, result[1], requester, offset, max, value);
         }
         else if(type === "users")
         {
-            return this.getUsersResultsHandler(status, message, result[1], offset, max, value);
+            return this.getUsersResultsHandler(status, message, result[1], requester, offset, max, value);
         }
         else
         {
-            return this.getAllResultsHandler(status, message, result[1], offset, max, value);
+            return this.getAllResultsHandler(status, message, result[1], requester, offset, max, value);
         }
     }
 
-    getAllResultsHandler(status, message, result, offset, max, value)
+    getAllResultsHandler(status, message, result, requester, offset, max, value)
     {
         if(status === 200)
         {
@@ -433,9 +447,46 @@ class SearchPage extends React.Component {
                 loadingNewData: false,
                 newValue: false
             });
+            this.props.updateLoggedIn(requester);
         }
         else
         {
+            this.props.updateLoggedIn(requester);
+            if(status === 404)
+            {
+                // message: "The search path sent to the server does not exist",
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false
+                });
+                this.props.setMessages({
+                    messages: [{type: "failure", message: message}]
+                });
+            }
+            else if(status === 400)
+            {
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false
+                });
+                if(message === "The maximum number of records to return per type is invalid")
+                {
+                    this.props.setMessages({
+                        messages: [{type: "warning", message: message}]
+                    });
+                }
+                // message: "The value to search for is invalid"
+                    // in this scenario, could be invalid as string too long or no value provided
+                    // so nothing is really wrong
+            }
             this.setState({
                 searchValue: value
             });
@@ -459,8 +510,21 @@ class SearchPage extends React.Component {
                 loading: false,
                 loadingNewData: false
             });
-            return {};
         }
+        else
+        {
+            if(status === 404)
+            {
+                // message: "The search path sent to the server does not exist",
+            }
+            else if(status === 400)
+            {
+                // message: "The movie title is invalid.  It must be between 0-250 characters"
+                // messsage: "The maximum number of movies to return is invalid"
+                // message: "The offset for the movies to return is invalid"
+            }
+        }
+        return {};
     }
 
     getUsersResultsHandler(status, message, result, offset, max, value)
@@ -478,8 +542,30 @@ class SearchPage extends React.Component {
                 loadingNewData: false,
                 loadingData: false
             });
-            return {};
         }
+        else
+        {
+            if(status === 404)
+            {
+                // message: "The search path sent to the server does not exist",
+            }
+            else if(status === 400)
+            {
+                // "Username invalid"
+                    // in this scenario, username more than 20 characters
+                    // not necessarily wrong but won't return anything
+                // "The maximum number of users to return is invalid"
+                // "The offset for the users to return is invalid"
+            }
+        }
+    }
+
+    // function to generate the parameters to use in the link when the search
+    // icon is clicked when the SearchDropDown is visible
+    generateSearchClickURL(value)
+    {
+        // state is used if already on search page
+        return {pathname: "/search", search: "?type=all&value=" + value, state: {newValue: true}};
     }
 
     generateTypes()
