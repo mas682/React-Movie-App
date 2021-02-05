@@ -5,9 +5,11 @@ issues:
 		- may have to change to not due api calls every time a letter changes in real world
     2. Make sure all searchDropDowns work as expected, don't crash, etc.
 		- in progress
-    3. Alerts not getting cleared on search page
-	4. when changing pages from the header and the search bar is open, it does not close the
-	search screen
-    5. potential bug when logging in/out from search page
-    6. error messages prevent you from clicking anything on search page
-    7. top of menu buttons not clickable...
+    3. . potential bug when logging in/out from search page
+    4. error messages prevent you from the see more buttons on search page
+    5. fix input on search inputs to max at 250
+    left off:
+        - fix the above items
+        - Make sure everything on search page works as expected.....
+        - then fix css for different screen sizes
+    6. make sure search page child componenets not rendering too much...

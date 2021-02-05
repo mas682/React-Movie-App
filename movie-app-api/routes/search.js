@@ -98,7 +98,7 @@ const queryMoviesByTitle = async (cookie, req, res, cookieValid) =>
 	let title = req.query.value;
 	let count = (req.query.max === undefined) ? 50 : req.query.max;
 	let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
-	let valid = validateStringParameter(res, title, 0, 250, requester, "The movie title is invalid.  It must be between 0-250 characters");
+	let valid = validateStringParameter(res, title, 0, 250, requester, "The movie title is invalid.  Movie title must be between 0-250 characters");
 	if(!valid) return;
 	valid = validateIntegerParameter(res, count, requester, "The maximum number of movies to return is invalid",
 			0, undefined);
@@ -150,7 +150,7 @@ const getUsers = async (cookie, req, res, cookieValid) =>
 	let offset = (req.query.offset === undefined) ? defaultOffset : req.query.offset;
 	let count = (req.query.max === undefined) ? defaultMax : req.query.max;
 	// using this instead of validate username as the username does not have to be exact here
-	let valid = validateStringParameter(res, userToFind, 0, 20, requester, "Username invalid");
+	let valid = validateStringParameter(res, userToFind, 0, 20, requester, "Username invalid.  Username must be between 0-20 characters.");
 	if(!valid) return;
 	valid = validateIntegerParameter(res, count, requester, "The maximum number of users to return is invalid",
 			0, undefined);

@@ -636,6 +636,7 @@ class Header extends React.Component {
                             redirectHandler={this.searchClickHandler}
                             searchEnterHandler={this.searchEnterHandler}
                             form={"SearchBar"}
+                            maxLength={250}
                         />
                     </div>
                 </div>

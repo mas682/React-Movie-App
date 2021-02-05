@@ -55,6 +55,11 @@
     align-content: flex-start;
 }
 
+.noResultsText {
+    word-break: break-all;
+    hyphens: auto;
+}
+
 
 .movieContainer2 {
     width: calc(90% / 5);

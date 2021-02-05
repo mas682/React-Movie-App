@@ -9,15 +9,14 @@ import style from './css/SearchPage/SearchPage.module.css';
 import queryString from "query-string";
 import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
+import {getErrorDisplay} from './StaticFunctions/ErrorHtmlFunctions.js';
 import MovieDisplayPopUp from './MovieDisplayPopUp.js';
 
 class SearchPage extends React.Component {
     constructor(props){
         super(props);
-        console.log(props);
         // may want to do this in getDerivedStateFromProps
         let queryParams = SearchPage.updateSearchFilter(props);
-        console.log(queryParams)
         this.state = {
             loading: true,
             // boolean for loading data on type change
@@ -30,7 +29,6 @@ class SearchPage extends React.Component {
             moreData: true,
             movies: [],
             users: [],
-            query: queryParams.query,
             type: queryParams.type,
             searchValue: queryParams.value,
             // boolean indicating if the search value changed due to new props coming in
@@ -43,7 +41,8 @@ class SearchPage extends React.Component {
             // show movie popup display
             moviePopup: false,
             // the movie whose pop up should be displayed
-            popupMovie: {}
+            popupMovie: {},
+            errorMessage: ""
         };
         console.log(queryParams);
         if(queryParams.updated)
@@ -103,8 +102,17 @@ class SearchPage extends React.Component {
 
         let newSearchValue = queryString.parse(nextProps.location.search).value;
         newSearchValue = (newSearchValue === undefined) ? "" : newSearchValue;
+        if(newSearchValue.length > 250)
+        {
+            newSearchValue = newSearchValue.substring(0, 250);
+        }
         let newType = queryString.parse(nextProps.location.search).type;
         newType = (newType === undefined) ? "" : newType;
+        let errorMessage = "";
+        if(newType !== "all" && newType !== "movies" && newType !== "users")
+        {
+            errorMessage = "The search type \"" + newType + "\" does not exist";
+        }
         if(nextState.searchValue !== newSearchValue || nextState.type !== newType)
         {
             console.log("Search value or type change found");
@@ -116,13 +124,21 @@ class SearchPage extends React.Component {
                 newValue: newValue,
                 loadingNewData: true,
                 type: queryString.parse(nextProps.location.search).type,
-                currentUser: nextProps.currentUser
+                currentUser: nextProps.currentUser,
+                errorMessage: errorMessage
             };
         }
         else if(nextState.currentUser !== nextProps.currentUser)
         {
             return {
-                currentUser: nextProps.currentUser
+                currentUser: nextProps.currentUser,
+                errorMessage: errorMessage
+            }
+        }
+        else if(errorMessage !== nextState.errorMessage)
+        {
+            return {
+                errorMessage: errorMessage
             }
         }
         return null;
@@ -143,42 +159,42 @@ class SearchPage extends React.Component {
         let oldType = this.state.type;
         if(this.state.type !== nextState.type)
         {
-            console.log("New type in state");
+            //console.log("New type in state");
             return true;
         }
         else if(this.state.searchValue !== nextState.searchValue)
         {
-            console.log("New search value detected in state");
+            //console.log("New search value detected in state");
             return true;
         }
         else if(this.state.loadingData !== nextState.loadingData)
         {
-            console.log("Loading new data changed");
+            //console.log("Loading new data changed");
             return true;
         }
         else if(this.state.loading !== nextState.loading)
         {
-            console.log("Loading changed");
+            //console.log("Loading changed");
             return true;
         }
         else if(this.state.currentUser !== nextState.currentUser)
         {
-            console.log("User changed");
+            //console.log("User changed");
             return true;
         }
         else if(this.state.loadingNewData !== nextState.loadingNewData)
         {
-            console.log("New data loaded from type change");
+            //console.log("New data loaded from type change");
             return true;
         }
         else if(this.state.newValue !== nextState.newValue)
         {
-            console.log("New value state changed");
+            //console.log("New value state changed");
             return true;
         }
         else if(this.state.moviePopup !== nextState.moviePopup)
         {
-            console.log("Movie display click caused render");
+            //console.log("Movie display click caused render");
             return true;
         }
         return false;
@@ -186,7 +202,7 @@ class SearchPage extends React.Component {
 
     componentDidUpdate(prevProps, prevState)
     {
-        console.log("Component did update");
+        //console.log("Component did update");
         /*
         console.log("Old props: ");
         console.log(prevProps);
@@ -204,7 +220,7 @@ class SearchPage extends React.Component {
         }
         if(prevState.searchValue !== this.state.searchValue)
         {
-            console.log("Search value in state changed");
+            //console.log("Search value in state changed");
             // clear the messages on value change
             this.props.setMessages({
                 message: undefined,
@@ -214,7 +230,7 @@ class SearchPage extends React.Component {
         }
         else if(prevState.type !== this.state.type)
         {
-            console.log("Type in state changed");
+            //console.log("Type in state changed");
             // clear the messages on type change
             this.props.setMessages({
                 message: undefined,
@@ -260,27 +276,27 @@ class SearchPage extends React.Component {
             type = "all";
             updated = true;
         }
-        else if(type !== "all" && type !== "movies" && type !== "users")
+        if(value === undefined)
         {
-            // redirect to 404 page
-            return {
-                updated: true,
-                query: "",
-                type: "",
-                value: "",
-                redirect: true
-            }
+            value = "";
+            updated = true;
+        }
+        if(value.length > 250)
+        {
+            value = value.substring(0, 250);
+            updated = true;
         }
         if(updated)
         {
-            let queryValue = (value === undefined) ? "" : "&value=" + value;
+            let queryValue = "&value=" + value;
             query = "?type=" + type + queryValue;
         }
+
         return {
             updated: updated,
             query: query,
             type: type,
-            value: (value === undefined) ? "" : value,
+            value: value,
             redirect: false
         };
     }
@@ -384,8 +400,10 @@ class SearchPage extends React.Component {
     async getSearchSuggestions(value, newValue)
     {
         let type = this.state.type;
-        if(value.length < 1)
+        if(value.length < 1 || value.length > 250)
         {
+            alert(value.length);
+            alert(value);
             this.setState({
                 movies: [],
                 users: [],
@@ -415,6 +433,31 @@ class SearchPage extends React.Component {
         {
             max = 20;
             url = "http://localhost:9000/search/users?value=" + value + "&offset=" + offset + "&max=" + max;
+            if(value.length > 20)
+            {
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false
+                });
+                return;
+            }
+        }
+        else if(type !== "")
+        {
+            this.setState({
+                movies: [],
+                users: [],
+                searchValue: value,
+                loading: false,
+                loadingNewData: false,
+                newValue: false,
+                errorMessage: "The search type \"" + type + "\" does not exist"
+            });
+            return;
         }
         let result = await apiGetJsonRequest(url);
         let status = result.[0];
@@ -461,10 +504,8 @@ class SearchPage extends React.Component {
                     searchValue: value,
                     loading: false,
                     loadingNewData: false,
-                    newValue: false
-                });
-                this.props.setMessages({
-                    messages: [{type: "failure", message: message}]
+                    newValue: false,
+                    errorMessage: message
                 });
             }
             else if(status === 400)
@@ -487,14 +528,24 @@ class SearchPage extends React.Component {
                     // in this scenario, could be invalid as string too long or no value provided
                     // so nothing is really wrong
             }
-            this.setState({
-                searchValue: value
-            });
+            else {
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false
+                });
+                this.props.setMessages({
+                    messages: [{type: "failure", message: message}]
+                });
+            }
         }
         return {};
     }
 
-    getMoviesResultsHandler(status, message, result, offset, max, value)
+    getMoviesResultsHandler(status, message, result, requester, offset, max, value)
     {
         if(status === 200)
         {
@@ -513,21 +564,58 @@ class SearchPage extends React.Component {
         }
         else
         {
+            this.props.updateLoggedIn(requester);
             if(status === 404)
             {
                 // message: "The search path sent to the server does not exist",
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false,
+                    errorMessage: message
+                });
             }
             else if(status === 400)
             {
-                // message: "The movie title is invalid.  It must be between 0-250 characters"
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false
+                });
                 // messsage: "The maximum number of movies to return is invalid"
                 // message: "The offset for the movies to return is invalid"
+                if(message !== "The movie title is invalid.  Movie title be between 0-250 characters")
+                {
+                    this.props.setMessages({
+                        messages: [{type: "warning", message: message}]
+                    });
+                }
+            }
+            else
+            {
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false
+                });
+                this.props.setMessages({
+                    messages: [{type: "failure", message: message}]
+                });
             }
         }
         return {};
     }
 
-    getUsersResultsHandler(status, message, result, offset, max, value)
+    getUsersResultsHandler(status, message, result, requester, offset, max, value)
     {
         if(status === 200)
         {
@@ -548,14 +636,49 @@ class SearchPage extends React.Component {
             if(status === 404)
             {
                 // message: "The search path sent to the server does not exist",
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false,
+                    errorMessage: message
+                });
             }
             else if(status === 400)
             {
-                // "Username invalid"
-                    // in this scenario, username more than 20 characters
-                    // not necessarily wrong but won't return anything
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false
+                });
                 // "The maximum number of users to return is invalid"
                 // "The offset for the users to return is invalid"
+                if(message !== "Username invalid.  Username must be between 0-20 characters.")
+                {
+                    this.props.setMessages({
+                        messages: [{type: "warning", message: message}]
+                    });
+                }
+
+            }
+            else
+            {
+                this.setState({
+                    movies: [],
+                    users: [],
+                    searchValue: value,
+                    loading: false,
+                    loadingNewData: false,
+                    newValue: false
+                });
+                this.props.setMessages({
+                    messages: [{type: "failure", message: message}]
+                });
             }
         }
     }
@@ -698,6 +821,21 @@ class SearchPage extends React.Component {
                 );
             }
         }
+        else if((this.state.type === "movies" || this.state.type === "all") && this.state.movies.length < 1 && this.state.searchValue.length > 0)
+        {
+            movies = (
+                <div className={style.resultsContainer}>
+                    <div className={style.resultsHeader}>
+                        <div className={style.resultType}>
+                            Movies
+                        </div>
+                    </div>
+                    <div className={`${style.displayAllContainer} ${style.noResultsText}`}>
+                        No results to display for "{this.state.searchValue}"
+                    </div>
+                </div>
+            );
+        }
         return movies;
     }
 
@@ -774,6 +912,21 @@ class SearchPage extends React.Component {
             }
 
         }
+        else if((this.state.type === "users" || this.state.type === "all") && this.state.users.length < 1 && this.state.searchValue.length > 0)
+        {
+            users = (
+                <div className={style.resultsContainer}>
+                    <div className={style.resultsHeader}>
+                        <div className={style.resultType}>
+                            Users
+                        </div>
+                    </div>
+                    <div className={`${style.displayAllContainer} ${style.noResultsText}`}>
+                        No results to display for "{this.state.searchValue}"
+                    </div>
+                </div>
+            );
+        }
         return users;
     }
 
@@ -781,6 +934,10 @@ class SearchPage extends React.Component {
     {
         console.log("Redering search page");
         if(this.state.loading) return null;
+        if(this.state.errorMessage !== "")
+        {
+            return getErrorDisplay(this.state.errorMessage);
+        }
         let movies = this.generateMovieDisplays();
         let users = this.generateUserDisplays();
         let types = this.generateTypes();
@@ -817,6 +974,7 @@ class SearchPage extends React.Component {
                         showSuggestions={false}
                         placeHolder={"Find a movie or user"}
                         form={"searchPage"}
+                        maxLength={250}
                     />
                 </div>
                 {types}
