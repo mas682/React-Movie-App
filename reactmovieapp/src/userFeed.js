@@ -66,15 +66,6 @@ class UserFeed extends React.Component {
         }
     }
 
-    /*
-    left off finishing this...
-    next off:
-    1. fix header
-    2. want pages to determine what to do on logout like user feed does
-    3. may want to do that for login too?
-    4. for showSignInPopUP....remove redirect option...pages should control that..
-    */
-
     checkApiResults(status, message, requester, result)
     {
         if(status === 200)
@@ -104,13 +95,6 @@ class UserFeed extends React.Component {
             }
         }
     }
-
-    /*
-    left off here....
-    fix reroute to feed page
-    found error when logging in from movie filter pages by clicking
-    add to watchlist button on movie dipslay
-    */
 
     render()
     {

@@ -1,20 +1,4 @@
 
-
-.mainBodyContainer {
-    width: 70%;
-    height: auto;
-    margin-left: 15%;
-    margin-right: 15%;
-    margin-top: 20px;
-    position: static;
-    display: flex;
-    flex-flow: row wrap;
-    align-content: flex-start;
-    margin-bottom: 20px;
-    background: white;
-    min-height: 600px;
-}
-
 .headerContainer {
     width: 97.5%;
     margin-left: 2.5%;
@@ -27,60 +11,41 @@
     align-content: flex-start;
 }
 
-.movieContainer {
-    width: 20%;
-    margin: 2.5%;
-    margin-bottom: 5%;
-}
-
 @media screen and (min-width: 1400px) {
     .mainBodyContainer {
         width: 70%;
         height: auto;
         margin-left: 15%;
         margin-right: 15%;
-        margin-top: 20px;
         position: static;
         display: flex;
         flex-flow: row wrap;
         align-content: flex-start;
         margin-bottom: 20px;
         background: white;
-        min-height: 600px;
+        min-height: calc(100vh - 125px);
+    }
+
+    .movieContainer {
+        width: 20%;
+        margin: 2.5%;
+        margin-bottom: 5%;
     }
 }
 
-@media screen and (max-width: 1399px) {
+@media screen and (min-width: 1200px) and (max-width: 1399px) {
     .mainBodyContainer {
         width: 75%;
         height: auto;
         margin-left: 12.5%;
         margin-right: 12.5%;
-        margin-top: 20px;
         position: static;
         display: flex;
         flex-flow: row wrap;
         align-content: flex-start;
         margin-bottom: 20px;
         background: white;
-        min-height: 600px;
-    }
-}
-
-@media screen and (max-width: 1199px) {
-    .mainBodyContainer {
-        width: 80%;
-        height: auto;
-        margin-left: 10%;
-        margin-right: 10%;
-        margin-top: 20px;
-        position: static;
-        display: flex;
-        flex-flow: row wrap;
-        align-content: flex-start;
-        margin-bottom: 20px;
-        background: white;
-        min-height: 600px;
+        min-height: calc(100vh - 125px);
     }
 
     .movieContainer {
@@ -90,37 +55,63 @@
     }
 }
 
-@media screen and (max-width: 999px) {
+@media screen and (min-width: 1000px) and (max-width: 1199px) {
+    .mainBodyContainer {
+        width: 80%;
+        height: auto;
+        margin-left: 10%;
+        margin-right: 10%;
+        position: static;
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+        margin-bottom: 20px;
+        background: white;
+        min-height: calc(100vh - 125px);
+    }
+
+    .movieContainer {
+        width: 28.1%;
+        margin: 2.6%;
+        margin-bottom: 5%;
+    }
+}
+
+@media screen and (min-width: 800px) and (max-width: 999px) {
     .mainBodyContainer {
         width: 85%;
         height: auto;
         margin-left: 7.5%;
         margin-right: 7.5%;
-        margin-top: 20px;
         position: static;
         display: flex;
         flex-flow: row wrap;
         align-content: flex-start;
         margin-bottom: 20px;
         background: white;
-        min-height: 600px;
+        min-height: calc(100vh - 125px);
+    }
+
+    .movieContainer {
+        width: 45%;
+        margin: 2.5%;
+        margin-bottom: 5%;
     }
 }
 
-@media screen and (max-width: 799px) {
+@media screen and (min-width: 600px) and (max-width: 799px) {
     .mainBodyContainer {
         width: 90%;
         height: auto;
         margin-left: 5%;
         margin-right: 5%;
-        margin-top: 20px;
         position: static;
         display: flex;
         flex-flow: row wrap;
         align-content: flex-start;
         margin-bottom: 20px;
         background: white;
-        min-height: 600px;
+        min-height: calc(100vh - 85px);
     }
 
     .movieContainer {
@@ -136,14 +127,13 @@
         height: auto;
         margin-left: 2.5%;
         margin-right: 2.5%;
-        margin-top: 20px;
         position: static;
         display: flex;
         flex-flow: row wrap;
         align-content: flex-start;
         margin-bottom: 20px;
         background: white;
-        min-height: 600px;
+        min-height: calc(100vh - 85px);
     }
 
     .movieContainer {

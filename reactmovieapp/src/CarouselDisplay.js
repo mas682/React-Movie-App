@@ -31,16 +31,6 @@ class CarouselDisplay extends React.Component {
         this.windowResizeEventHandler = this.windowResizeEventHandler.bind(this);
     };
 
-    componentDidUpdate(prevProps, prevState)
-    {
-        /*
-            this will need to update itemsVisible when the items change...
-            also need to fix api to let it query for 20 items at a time for users and movies
-            then do ones that are unlimited for users/movies?
-            add some more fake users
-        */
-    }
-
     static getDerivedStateFromProps(props, prevState)
     {
         return {items: props.items};
@@ -106,7 +96,7 @@ class CarouselDisplay extends React.Component {
     windowResizeEventHandler(event)
     {
 
-        if(this.state.items.length < 1 || this.state.firstItemIndex === 0) return;
+        if(this.state.items.length < 1) return;
         if(this.state.maxVisibleItems !== undefined)
         {
             // if there is no way there will be empty spaces as there are too many items left, return
@@ -125,9 +115,8 @@ class CarouselDisplay extends React.Component {
         let itemCount = Math.floor(outterWidth/itemWidth);
 
         // may want to keep track of max visible items? to avoid all these calculations unless at end?
-        if(event.target.innerWidth > 1399 && this.state.itemsVisible !== itemCount && this.state.firstItemIndex > (this.state.items.length - itemCount))
+        if(this.state.itemsVisible !== itemCount && this.state.firstItemIndex > (this.state.items.length - itemCount))
         {
-            console.log(event.target.innerWidth);
             let counter = 0;
             let widthPercent = 0;
             let offset = this.state.items.length - itemCount;
@@ -141,6 +130,12 @@ class CarouselDisplay extends React.Component {
             }
             this.setState({
                 firstItemIndex: offset,
+                itemsVisible: itemCount
+            });
+        }
+        else if(this.state.itemsVisible !== itemCount)
+        {
+            this.setState({
                 itemsVisible: itemCount
             });
         }
@@ -177,8 +172,6 @@ class CarouselDisplay extends React.Component {
         }
 
         let forwardButton = "";
-        //console.log(this.state.items.length);
-        //console.log(this.state.itemsVisible);
         if(this.state.firstItemIndex < (this.state.items.length - this.state.itemsVisible) && (this.state.items.length) > this.state.itemsVisible)
         {
             forwardButton = (

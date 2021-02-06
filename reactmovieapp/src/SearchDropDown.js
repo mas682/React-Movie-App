@@ -341,23 +341,7 @@ class SearchDropDown extends React.Component {
             pastLastSuggestion: pastLastSuggestion,
             hoverFocused: false
         };
-
-        /*
-        left off here in up/down key handlers
-            - made it so that the key presses cause a wrap around
-            - need more error testing though
-        need to make it so that if setValue on key hover is true:
-            1. on enter sends to that value
-            1.2. make it keep track of last entered text value
-                - if loop around to top with up/down, set value to
-                last entered value instead of empty string
-                - can just set 2 values at the same time
-                - if index = -1 or at end, set value to that value
-                    - be careful with it doing search again...ideally want to avoid?
-                    - see google
-            2. on ones that don't show suggestion...
-                - on enter search for the value that is in the text box
-        */
+        
         return {
             newState: true,
             state: newState

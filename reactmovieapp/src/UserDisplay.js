@@ -19,7 +19,7 @@ class UserDisplay extends React.Component {
 
     static getDerivedStateFromProps(nextProps, prevState)
     {
-        if(prevState.id !== nextProps.user.id)
+        if(prevState.user.id !== nextProps.user.id)
         {
             // do not display the popup as there was a change in the user id
             return UserDisplay.generateDisplayState(nextProps, false);
@@ -34,13 +34,6 @@ class UserDisplay extends React.Component {
             // if the popup was open, leave it open
             return UserDisplay.generateDisplayState(nextProps, userPopup);
         }
-        /* may need this when going from searching from just users to all ?
-        else if(prevState.type !== nextProps.type)
-        {
-            // do not display the popup as the page chanaged
-            return MovieDisplay.generateDisplayState(nextProps, false);
-        }
-        */
         else
         {
             return null;
@@ -50,7 +43,7 @@ class UserDisplay extends React.Component {
     shouldComponentUpdate(nextProps, nextState)
     {
         // if the user id changed
-        if(this.state.id !== nextState.id)
+        if(this.state.user.id !== nextState.user.id)
         {
             return true;
         }
@@ -59,15 +52,8 @@ class UserDisplay extends React.Component {
         {
             return true;
         }
-        /* may not need
-        // if the page the movie display is being shown on changed
-        else if(this.state.type !== nextState.type)
-        {
-            return true;
-        }
-        */
         // if the watchlist, watched, or moviepop up changed
-        else if((this.state.following !== nextState.follwing))
+        else if((this.state.following !== nextState.following))
         {
             return true;
         }
@@ -277,12 +263,6 @@ class UserDisplay extends React.Component {
     render()
     {
         let posterPath = "";
-        /*
-        if(this.state.poster !== null)
-        {
-            posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
-        }
-        */
         let followButton = <button className={`${style.followButton} ${style.notFollowingColor}`} onClick={(e)=> this.followHandler(e, "follow")}>Follow</button>
         if(this.state.following)
         {

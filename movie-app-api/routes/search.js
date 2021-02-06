@@ -117,7 +117,6 @@ const queryMoviesByTitle = async (cookie, req, res, cookieValid) =>
 
 const getMovies = async (cookie, req, res, cookieValid) =>
 {
-	console.log(req.query);
 	// consider limiting number of query keys or query length...
 	let username = cookieValid ? cookie.name : "";
 	// returns true, movies on success, false on failure

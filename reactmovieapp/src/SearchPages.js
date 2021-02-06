@@ -752,11 +752,10 @@ class SearchPage extends React.Component {
         {
             let movieDisplays = [];
             let counter = 0;
-            let className = (this.state.type === "all") ? style.movieContainer : style.movieContainer2;
             for(let movie of this.state.movies)
             {
                 let html = (
-                    <div className={className}>
+                    <div className={style.movieContainer}>
                         <MovieDisplay
                             movie={movie}
                             type={""}
@@ -799,7 +798,7 @@ class SearchPage extends React.Component {
                                 id={"movieCarousel"}
                                 itemContainerClass={style.movieContainer}
                                 // used to make windowResizeEventHandler more efficint
-                                maxVisibleItems={5}
+                                maxVisibleItems={6}
                             />
                         </div>
                     </div>
@@ -846,11 +845,10 @@ class SearchPage extends React.Component {
         {
             let userDisplays = [];
             let counter = 0;
-            let className = (this.state.type === "all") ? style.userContainer : style.userContainer2;
             for(let user of this.state.users)
             {
                 let html = (
-                    <div className={className}>
+                    <div className={style.userContainer}>
                         <UserDisplay
                             user={user}
                             type={""}
@@ -889,7 +887,7 @@ class SearchPage extends React.Component {
                                 id={"userCarousel"}
                                 itemContainerClass={style.userContainer}
                                 // used to make windowResizeEventHandler more efficint
-                                maxVisibleItems={5}
+                                maxVisibleItems={6}
                             />
                         </div>
                     </div>
