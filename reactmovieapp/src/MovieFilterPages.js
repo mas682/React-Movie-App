@@ -263,7 +263,7 @@ class MovieFilterPage extends React.Component {
             if(type === "Upcoming Movies")
             {
                 // these are for testing, will be removed
-                date.setMonth(9);
+                date.setMonth(8);
                 date.setDate(1);
                 date.setYear(2020);
             }
@@ -271,11 +271,7 @@ class MovieFilterPage extends React.Component {
             {
                 let month = date.getMonth();
                 // go back 1 month, set to 3 for testing
-                let newMonth = month - 3;
-                if(month === 0)
-                {
-                    newMonth = 11;
-                }
+                let newMonth = month - 6;
                 date.setMonth(newMonth);
             }
             startDate = moment(date).format('YYYY-MM-DD');

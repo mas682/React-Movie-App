@@ -402,8 +402,6 @@ class SearchPage extends React.Component {
         let type = this.state.type;
         if(value.length < 1 || value.length > 250)
         {
-            alert(value.length);
-            alert(value);
             this.setState({
                 movies: [],
                 users: [],

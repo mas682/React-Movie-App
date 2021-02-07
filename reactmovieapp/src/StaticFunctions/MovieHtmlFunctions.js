@@ -267,17 +267,35 @@ const generateMoviePoster = (style, poster, movieId) =>
 }
 
 // function to generate the background image for a movie's page or popup
-const generateMovieBackground = (style, headerImage, poster) =>
+const generateMovieBackground = (style, headerImage, poster, useGradient) =>
 {
-    let headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
-    if(headerImage !== null)
+    useGradient = (useGradient === undefined) ? true : useGradient;
+    let headerBackgroundCss;
+    if(useGradient)
     {
-        headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + headerImage};
+        headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
+        if(headerImage !== null)
+        {
+            headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + headerImage};
+        }
+        // if there is no background image, try to use the poster itself
+        else if(poster !== null)
+        {
+            headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + poster};
+        }
     }
-    // if there is no background image, try to use the poster itself
-    else if(poster !== null)
+    else
     {
-        headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)),url(\"https://image.tmdb.org/t/p/original" + poster};
+        headerBackgroundCss = {backgroundImage: "linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9)"};
+        if(headerImage !== null)
+        {
+            headerBackgroundCss = {backgroundImage: "url(\"https://image.tmdb.org/t/p/original" + headerImage};
+        }
+        // if there is no background image, try to use the poster itself
+        else if(poster !== null)
+        {
+            headerBackgroundCss = {backgroundImage: "url(\"https://image.tmdb.org/t/p/original" + poster};
+        }
     }
     return headerBackgroundCss;
 }
