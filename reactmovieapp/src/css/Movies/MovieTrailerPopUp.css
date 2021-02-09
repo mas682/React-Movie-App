@@ -1,0 +1,53 @@
+@media screen and (min-width: 1400px) {
+    .movieTrailer-content {
+        width: 60% !important;
+        border: 0px !important;
+        padding: 0px !important;
+        background: none !important;
+    }
+}
+
+@media screen and (min-width: 1200px) and (max-width: 1399px) {
+    .movieTrailer-content {
+        width: 65% !important;
+        border: 0px !important;
+        padding: 0px !important;
+        background: none !important;
+    }
+}
+
+@media screen and (min-width: 1000px) and (max-width: 1199px) {
+    .movieTrailer-content {
+        width: 70% !important;
+        border: 0px !important;
+        padding: 0px !important;
+        background: none !important;
+    }
+}
+
+@media screen and (min-width: 800px) and (max-width: 999px) {
+    .movieTrailer-content {
+        width: 75% !important;
+        border: 0px !important;
+        padding: 0px !important;
+        background: none !important;
+    }
+}
+
+@media screen and (min-width: 600px) and (max-width: 799px) {
+    .movieTrailer-content {
+        width: 80% !important;
+        border: 0px !important;
+        padding: 0px !important;
+        background: none!important;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .movieTrailer-content {
+        width: 90% !important;
+        border: 0px !important;
+        padding: 0px !important;
+        background: none !important;
+    }
+}

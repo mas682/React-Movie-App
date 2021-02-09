@@ -47,107 +47,139 @@ const getMovies = async () => {
 //  https://api.themoviedb.org/3/movie/577922?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US
   // with pg, pg13, r, etc. ratings
 //  https://api.themoviedb.org/3/movie/577922?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&append_to_response=release_dates
-
-    let response = await fetch("https://api.themoviedb.org/3/discover/movie?"
-    + "api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&region=US&sort_by=popularity.desc&"
-    + "certification_country=US&include_adult=false&include_video=false&page=1&"
-    + "release_date.gte=2020-09-03&release_date.lte=2020-09-05&with_original_language=en");
-    if(response.status === 200)
+    let counter = 0;
+    let startDate = "2020-09-03";
+    let endDate = "2020-09-05";
+    while(counter < 6)
     {
-        let data = await(response.json());
-        //console.log(data);
-        /*
-        may eventually want to get move info about each movie...
-        let movies = [];
-        data.results.forEach(movie) => {
-            let response =
-        });
-        */
-        data.results.forEach(async(movie) => {
-            //https://api.themoviedb.org/3/movie/577922?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc
-            //&language=en-US&append_to_response=videos%2Cimages%2Crelease_dates
-            // to get all pictures, do language=en-US%2Cnull and add images to the append_to_response
-            let url = "https://api.themoviedb.org/3/movie/" + movie.id + "?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US%2Cnull&append_to_response=videos%2Crelease_dates%2Ccredits";
-            let response = await fetch(url);
-            if(response.status === 200)
-            {
-                let movieData = await(response.json());
-                let rating = null;
-                if(movieData.release_dates.results !== undefined)
+        if(counter === 1)
+        {
+            startDate = "2020-09-10";
+            endDate = "2020-09-12";
+        }
+        if(counter === 2)
+        {
+            startDate = "2020-09-17";
+            endDate = "2020-09-19";
+        }
+        if(counter === 3)
+        {
+            startDate = "2020-09-24";
+            endDate = "2020-09-26";
+        }
+        if(counter === 4)
+        {
+            startDate = "2020-10-01";
+            endDate = "2020-10-03";
+        }
+        if(counter === 5)
+        {
+            startDate = "2020-10-08";
+            endDate = "2020-10-10";
+        }
+        let url = "https://api.themoviedb.org/3/discover/movie?"
+        + "api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&region=US&sort_by=popularity.desc&"
+        + "certification_country=US&include_adult=false&include_video=false&page=1&"
+        + "release_date.gte=" + startDate + "&release_date.lte=" + endDate + "&with_original_language=en"
+        let response = await fetch(url);
+        if(response.status === 200)
+        {
+            let data = await(response.json());
+            //console.log(data);
+            /*
+            may eventually want to get move info about each movie...
+            let movies = [];
+            data.results.forEach(movie) => {
+                let response =
+            });
+            */
+            data.results.forEach(async(movie) => {
+                //https://api.themoviedb.org/3/movie/577922?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc
+                //&language=en-US&append_to_response=videos%2Cimages%2Crelease_dates
+                // to get all pictures, do language=en-US%2Cnull and add images to the append_to_response
+                let url = "https://api.themoviedb.org/3/movie/" + movie.id + "?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US%2Cnull&append_to_response=videos%2Crelease_dates%2Ccredits";
+                let response = await fetch(url);
+                if(response.status === 200)
                 {
-                    let found = false;
-                    let counter = 0;
-                    while(!found && counter < movieData.release_dates.results.length)
+                    let movieData = await(response.json());
+                    let rating = null;
+                    if(movieData.release_dates.results !== undefined)
                     {
-                        let country = movieData.release_dates.results[counter].iso_3166_1;
-                        if(country === "US")
+                        let found = false;
+                        let counter = 0;
+                        while(!found && counter < movieData.release_dates.results.length)
                         {
-                            rating = movieData.release_dates.results[counter].release_dates[0].certification;
-                            if(rating === "")
+                            let country = movieData.release_dates.results[counter].iso_3166_1;
+                            if(country === "US")
                             {
-                                rating = null;
+                                rating = movieData.release_dates.results[counter].release_dates[0].certification;
+                                if(rating === "")
+                                {
+                                    rating = null;
+                                }
+                                found = true;
                             }
-                            found = true;
+                            counter = counter + 1;
                         }
-                        counter = counter + 1;
                     }
-                }
-              //  console.log(movieData);
-                let trailer = null;
-                if(movieData.videos.results !== undefined)
-                {
-                    if(movieData.videos.results.length > 0)
+                  //  console.log(movieData);
+                    let trailer = null;
+                    if(movieData.videos.results !== undefined)
                     {
-                        console.log(movieData.videos.results);
-                        trailer = movieData.videos.results[0].key;
+                        if(movieData.videos.results.length > 0)
+                        {
+                            console.log(movieData.videos.results);
+                            trailer = movieData.videos.results[0].key;
+                        }
                     }
-                }
-                let director = null;
-                if(movieData.credits.crew !== undefined)
-                {
-                    if(movieData.credits.crew.length > 0)
+                    let director = null;
+                    if(movieData.credits.crew !== undefined)
                     {
-                        director = movieData.credits.crew[0].name;
+                        if(movieData.credits.crew.length > 0)
+                        {
+                            director = movieData.credits.crew[0].name;
+                        }
                     }
-                }
-                // need to error check that everything is there...
-                // backdrop will show up as null
-                // runtime shows up as 0
-                // fix genres to be null
-                await models.Movies.create({
-                    id: movieData.id,
-                    title: movieData.title,
-                    releaseDate: movieData.release_date,
-                    poster: movieData.poster_path,
-                    overview: movieData.overview,
-                    runTime: movieData.runtime,
-                    backgroundImage: movieData.backdrop_path,
-                    trailer: trailer,
-                    director: director,
-                    revenue: movieData.revenue,
-                    //genres: genres,
-                    rating: rating
-                }).then((movie) =>{
-                    movieData.genres.forEach(async (genre) => {
-                        let tempGenre = await models.Genre.findOrCreate({
-                            where: {
-                              value: genre.name
-                            }
+                    // need to error check that everything is there...
+                    // backdrop will show up as null
+                    // runtime shows up as 0
+                    // fix genres to be null
+                    await models.Movies.create({
+                        id: movieData.id,
+                        title: movieData.title,
+                        releaseDate: movieData.release_date,
+                        poster: movieData.poster_path,
+                        overview: movieData.overview,
+                        runTime: movieData.runtime,
+                        backgroundImage: movieData.backdrop_path,
+                        trailer: trailer,
+                        director: director,
+                        revenue: movieData.revenue,
+                        //genres: genres,
+                        rating: rating
+                    }).then((movie) =>{
+                        movieData.genres.forEach(async (genre) => {
+                            let tempGenre = await models.Genre.findOrCreate({
+                                where: {
+                                  value: genre.name
+                                }
+                            });
+                            await movie.addGenre(tempGenre[0].dataValues.id);
                         });
-                        await movie.addGenre(tempGenre[0].dataValues.id);
-                    });
-                   if(movie.id === 577922)
-                   {
-                     //sampleReview();
-                   }
+                       if(movie.id === 577922)
+                       {
+                         //sampleReview();
+                       }
 
-                });
-            }
-        });
-    }
-    else
-    {
-        console.log("Failed to get movies");
+                    });
+                }
+            });
+        }
+        else
+        {
+            console.log("Failed to get movies");
+        }
+        counter = counter + 1;
     }
 }
 

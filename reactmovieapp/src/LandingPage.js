@@ -1,10 +1,12 @@
 import React from 'react';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Link } from 'react-router-dom';
 import style from './css/LandingPage/landingPage.module.css';
 import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import CarouselDisplay from './CarouselDisplay.js';
 import MovieDisplay from './MovieDisplay.js';
+import MovieTrailerPopUp from './MovieTrailerPopUp.js';
 import {generateMovieBackground} from './StaticFunctions/MovieHtmlFunctions.js';
+const moment = require('moment');
 
 
 class Landing extends React.Component {
@@ -21,11 +23,16 @@ class Landing extends React.Component {
 		this.state = {
 			loading: true,
 			currentUser: this.props.currentUser,
-			featuredMovies: []
+			featuredMovies: [],
+			newReleases: [],
+			upcomingMovies: [],
+			showTrailer: false,
+			trailerIndex: undefined
 		};
 		this.getMovies = this.getMovies.bind(this);
 		this.generateFeaturedMovies = this.generateFeaturedMovies.bind(this);
 		this.generateMovieDisplays = this.generateMovieDisplays.bind(this);
+		this.showTrailerHandler = this.showTrailerHandler.bind(this);
 	}
 
 	componentDidMount() {
@@ -33,9 +40,6 @@ class Landing extends React.Component {
 		this.props.setMessages({
 			messages: undefined,
 			clearMessages: true
-		});
-		this.setState({
-			loading: false
 		});
 		this.getMovies();
 	}
@@ -62,9 +66,36 @@ class Landing extends React.Component {
         let message = result[1].message;
         let requester = result[1].requester;
 		this.setState({
-			featuredMovies: result[1].movies
+			featuredMovies: result[1].movies,
 		});
-		console.log(result[1].movies);
+		let date = new Date();
+		let month = date.getMonth();
+		// go back 1 month, set to 3 for testing
+		let newMonth = month - 4;
+		date.setMonth(newMonth);
+		let startDate = moment(date).format('YYYY-MM-DD');
+		date = new Date();
+		let endDate = moment(date).format('YYYY-MM-DD');
+		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&release_date_lte=" + endDate + "&sort=release_date_desc";
+		result = await apiGetJsonRequest(url);
+		status = result.[0];
+		message = result[1].message;
+		requester = result[1].requester;
+		this.setState({
+			newReleases: result[1].movies
+		});
+		date = new Date();
+		// for testing just use start date
+		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&sort=release_date_asc";
+		result = await apiGetJsonRequest(url);
+		status = result.[0];
+		message = result[1].message;
+		requester = result[1].requester;
+		this.setState({
+			upcomingMovies: result[1].movies,
+			loading: false
+		});
+
 	}
 
 
@@ -72,38 +103,43 @@ class Landing extends React.Component {
 	{
 		let movies = "";
 		let movieDisplays = [];
-		let outterCount = 0;
-		while(outterCount < 2)
+		let counter = 0;
+		while(counter < 20 && counter < this.state.featuredMovies.length)
 		{
-			let counter = 0;
-			while(counter < 20 && counter < this.state.featuredMovies.length)
+			let movie = this.state.featuredMovies[counter];
+			if(movie.backgroundImage === null)
 			{
-				let movie = this.state.featuredMovies[counter];
-				if(movie.backgroundImage === null)
-				{
-					counter = counter + 1;
-					continue;
-				}
-				let headerBackgroundCss = generateMovieBackground(style, movie.backgroundImage, movie.poster, false);
-				let html = (
-					<div className={style.featuredMovieContainer} style={headerBackgroundCss}>
-						<div className={style.infoContainer}>
-							<div className={style.moviePosterContainer}>
-								<img src={"https://image.tmdb.org/t/p/original/" + movie.poster}/>
-							</div>
-							<div className={style.playTrailerButton}>
-								<i class="fas fa-play-circle"></i>
-							</div>
-							<div className={style.movieDetails}>
-								{movie.title}
-							</div>
+				counter = counter + 1;
+				continue;
+			}
+			let index = counter;
+			let headerBackgroundCss = generateMovieBackground(style, movie.backgroundImage, movie.poster, false);
+			let playTrailerButton = (
+				<div className={style.playTrailerButton}>
+					<i class="fas fa-play-circle" onClick={()=>{this.showTrailerHandler(index)}}></i>
+				</div>
+			);
+			let infoStyle = style.infoContainerTrailer;
+			if(movie.trailer === null)
+			{
+				playTrailerButton = "";
+				infoStyle = style.infoContainerNoTrailer;
+			}
+			let html = (
+				<div className={style.featuredMovieContainer} style={headerBackgroundCss}>
+					<div className={`${style.infoContainer} ${infoStyle}`}>
+						<div className={style.moviePosterContainer}>
+							<Link to={"/movie/" + movie.id}><img src={"https://image.tmdb.org/t/p/original/" + movie.poster}/></Link>
+						</div>
+						{playTrailerButton}
+						<div className={style.movieDetails}>
+							{movie.title}
 						</div>
 					</div>
-				);
-				movieDisplays.push(html);
-				counter = counter + 1;
-			}
-			outterCount = outterCount + 1;
+				</div>
+			);
+			movieDisplays.push(html);
+			counter = counter + 1;
 		}
 		movies = (
 				<div className={style.featuredMovieDisplayContainer} id="featuredMovieDisplayContainer">
@@ -119,12 +155,23 @@ class Landing extends React.Component {
 		return movies;
 	}
 
-	generateMovieDisplays()
+
+
+	generateMovieDisplays(type)
 	{
 		let movies;
 		let movieDisplays = [];
 		let counter = 0;
-		for(let movie of this.state.featuredMovies)
+		let movieArray = [];
+		if(type === "Upcoming")
+		{
+			movieArray = this.state.upcomingMovies;
+		}
+		else
+		{
+			 movieArray = this.state.newReleases;
+		}
+		for(let movie of movieArray)
 		{
 			let html = (
 				<div className={style.movieContainer}>
@@ -147,25 +194,42 @@ class Landing extends React.Component {
 			movieDisplays.push(html);
 			counter = counter + 1;
 		}
+		let itemId = "";
+		let displayId = "";
+		let path = "";
+		if(type === "Upcoming")
+		{
+			itemId = "upcomingCarousel";
+			displayId = "upcomingDisplayContainer";
+			// may want to pass dates you already generated?
+			path = "/upcoming";
+		}
+		else
+		{
+			itemId = "newReleasesCarousel";
+			displayId = "newReleasesDisplayContainer";
+			// may want to pass dates you already generated?
+			path = "/new_releases";
+		}
 		movies = (
 			<div className={style.resultsContainer}>
 				<div className={style.resultsHeader}>
 					<div className={style.resultType}>
-						New Releases
+						{type}
 					</div>
-					<div className={style.resultsShowAllButtonContainer} onClick={()=> {this.typeHandler("movies")}}>
-						<button className={style.resultsShowAllButton}>
-						<div>
-							See More
-						</div>
-						<i className={`fas fa-angle-right ${style.showMoreIcon}`}/>
-						</button>
+					<div className={style.resultsShowAllButtonContainer}>
+						<Link className={style.resultsShowAllButton} to={path}>
+							<div>
+								See More
+							</div>
+							<i className={`fas fa-angle-right ${style.showMoreIcon}`}/>
+						</Link>
 					</div>
 				</div>
-				<div className={style.movieDisplayContainer} id="movieDisplayContainer">
+				<div className={style.movieDisplayContainer} id={displayId}>
 					<CarouselDisplay
 						items={movieDisplays}
-						id={"newReleasesCarousel"}
+						id={itemId}
 						itemContainerClass={style.movieContainer}
 						// used to make windowResizeEventHandler more efficint
 						maxVisibleItems={6}
@@ -174,6 +238,14 @@ class Landing extends React.Component {
 			</div>
 		);
 		return movies;
+	}
+
+	showTrailerHandler(index)
+	{
+		this.setState({
+			showTrailer: !this.state.showTrailer,
+			trailerIndex: index
+		});
 	}
 
 
@@ -185,13 +257,30 @@ class Landing extends React.Component {
 		else
 		{
 			let movies = this.generateFeaturedMovies();
-			let newReleses = this.generateMovieDisplays();
+			let newReleases = this.generateMovieDisplays("New Releases");
+			let upcomingMovies = this.generateMovieDisplays("Upcoming");
+			let trendingMovies = this.generateMovieDisplays("Trending");
+			let popularMovies = this.generateMovieDisplays("Popular");
+			let playingNearMe = this.generateMovieDisplays("Playing near you");
+			let trailer = "";
+			if(this.state.showTrailer)
+			{
+				trailer = <MovieTrailerPopUp
+								trailerPath={this.state.featuredMovies[this.state.trailerIndex].trailer}
+								removeFunction={this.showTrailerHandler}
+							/>;
+			}
+			console.log(this.state.featuredMovies);
 			return (
 				<div className={style.landingPage}>
 					<div className={style.mainBodyContainer}>
 						{movies}
-						{newReleses}
-						{newReleses}
+						{newReleases}
+						{upcomingMovies}
+						{trendingMovies}
+						{popularMovies}
+						{playingNearMe}
+						{trailer}
 						This product uses the TMDb API but is not endorsed or certified by TMDb.
 					</div>
 				</div>

@@ -105,7 +105,7 @@
 @media screen and (min-width: 1400px) {
     .mainBodyContainer {
         width: 70%;
-        min-height: (100vh - 125px);
+        min-height: calc(100vh - 125px);
         height: auto;
         margin-left: 15%;
         margin-right: 15%;
@@ -115,13 +115,14 @@
         align-content: flex-start;
         background-color: white;
         margin-bottom: 20px;
+        margin-top: 20px;
     }
 }
 
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
     .mainBodyContainer {
         width: 70%;
-        min-height: (100vh - 125px);
+        min-height: calc(100vh - 125px);
         height: auto;
         margin-left: 15%;
         margin-right: 15%;
@@ -131,13 +132,14 @@
         align-content: flex-start;
         background-color: white;
         margin-bottom: 20px;
+        margin-top: 20px;
     }
 }
 
 @media screen and (min-width: 1000px) and (max-width: 1199px) {
     .mainBodyContainer {
         width: 70%;
-        min-height: (100vh - 125px);
+        min-height: calc(100vh - 125px);
         height: auto;
         margin-left: 15%;
         margin-right: 15%;
@@ -147,13 +149,14 @@
         align-content: flex-start;
         background-color: white;
         margin-bottom: 20px;
+        margin-top: 20px;
     }
 }
 
 @media screen and (min-width: 800px) and (max-width: 999px) {
     .mainBodyContainer {
         width: 70%;
-        min-height: (100vh - 125px);
+        min-height: calc(100vh - 125px);
         height: auto;
         margin-left: 15%;
         margin-right: 15%;
@@ -163,13 +166,14 @@
         align-content: flex-start;
         background-color: white;
         margin-bottom: 20px;
+        margin-top: 20px;
     }
 }
 
 @media screen and (min-width: 600px) and (max-width: 799px) {
     .mainBodyContainer {
         width: 70%;
-        min-height: (100vh - 85px);
+        min-height: calc(100vh - 85px);
         height: auto;
         margin-left: 15%;
         margin-right: 15%;
@@ -179,6 +183,7 @@
         align-content: flex-start;
         background-color: white;
         margin-bottom: 20px;
+        margin-top: 20px;
     }
 }
 
@@ -195,5 +200,6 @@
         align-content: flex-start;
         background-color: white;
         margin-bottom: 20px;
+        margin-top: 20px;
     }
 }

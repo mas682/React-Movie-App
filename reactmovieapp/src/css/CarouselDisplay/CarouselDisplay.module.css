@@ -20,6 +20,7 @@
         z-index: 1;
         background-color: gray;
         opacity: 50%;
+        border-radius: 5px;
     }
 
     .forwardButtonContainer i {
@@ -28,7 +29,7 @@
     }
 
     .forwardButtonContainer:hover {
-        opacity: 100%;
+        opacity: 90%;
     }
 
     .backButtonContainer {
@@ -40,6 +41,7 @@
         height: 64px;
         z-index: 1;
         opacity: 50%;
+        border-radius: 5px;
     }
 
     .backButtonContainer i {
@@ -49,7 +51,7 @@
     }
 
     .backButtonContainer:hover {
-        opacity: 100%;
+        opacity: 90%;
     }
 }
 
