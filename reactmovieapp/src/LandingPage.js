@@ -71,12 +71,12 @@ class Landing extends React.Component {
 		let date = new Date();
 		let month = date.getMonth();
 		// go back 1 month, set to 3 for testing
-		let newMonth = month - 4;
+		let newMonth = month - 5;
 		date.setMonth(newMonth);
 		let startDate = moment(date).format('YYYY-MM-DD');
 		date = new Date();
 		let endDate = moment(date).format('YYYY-MM-DD');
-		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&release_date_lte=" + endDate + "&sort=release_date_desc";
+		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&release_date_lte=" + endDate + "&sort=release_date_desc&offset=0&max=24";
 		result = await apiGetJsonRequest(url);
 		status = result.[0];
 		message = result[1].message;
@@ -86,7 +86,7 @@ class Landing extends React.Component {
 		});
 		date = new Date();
 		// for testing just use start date
-		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&sort=release_date_asc";
+		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&sort=release_date_asc&offset=0&max=24";
 		result = await apiGetJsonRequest(url);
 		status = result.[0];
 		message = result[1].message;
@@ -171,6 +171,7 @@ class Landing extends React.Component {
 		{
 			 movieArray = this.state.newReleases;
 		}
+		alert(movieArray.length);
 		for(let movie of movieArray)
 		{
 			let html = (

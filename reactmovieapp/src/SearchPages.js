@@ -304,14 +304,14 @@ class SearchPage extends React.Component {
     scrollEventHandler(event)
     {
         // if there is no more data to load return
-        if(!this.state.moreData) return;
+        if(!this.state.moreData || this.state.loadingData) return;
         let element = document.querySelector("." + style.mainBodyContainer);
         let mainElementHeight = parseFloat(getComputedStyle(document.querySelector("main")).height);
         let headerHeight = parseFloat(document.body.offsetHeight);
         // get the total height of the page
         let pageHeight = headerHeight + mainElementHeight;
         // if scrolled to 75% of the page, start loading new data
-        if((pageHeight * .75) < parseFloat(window.pageYOffset))
+        if((pageHeight * .75) < (parseFloat(window.pageYOffset) + parseFloat(window.innerHeight)))
         {
             // if already loading data, do nothing
             if(!this.state.loadingData)
@@ -424,12 +424,12 @@ class SearchPage extends React.Component {
         }
         else if(type === "movies")
         {
-            max = 20;
+            max = 30;
             url = "http://localhost:9000/search/movies_title?value=" + value + "&offset=" + offset + "&max=" + max;
         }
         else if(type === "users")
         {
-            max = 20;
+            max = 30;
             url = "http://localhost:9000/search/users?value=" + value + "&offset=" + offset + "&max=" + max;
             if(value.length > 20)
             {

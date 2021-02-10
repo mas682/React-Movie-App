@@ -119,8 +119,15 @@ const getMovies = async (cookie, req, res, cookieValid) =>
 {
 	// consider limiting number of query keys or query length...
 	let username = cookieValid ? cookie.name : "";
+	let max = (req.query.max === undefined) ? 50 : req.query.max;
+	let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
+	let valid = validateIntegerParameter(res, max, username, "The maximum number of movies to return is invalid");
+	if(!valid) return;
+	valid = validateIntegerParameter(res, offset, username, "The offset for the movies to return is invalid", 0, undefined);
+	if(!valid) return;
+	max = (max > 50) ? 50 : max;
 	// returns true, movies on success, false on failure
-	let movies = await models.Movies.queryMovies(models, req.query, username);
+	let movies = await models.Movies.queryMovies(models, req.query, username, max, offset);
 	if(!movies[0])
 	{
 		// send the error message

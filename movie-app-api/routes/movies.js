@@ -257,43 +257,39 @@ const getMovieInfo = async(cookie, req, res, cookieValid) =>
 const getWatchList = async(cookie, req, res) =>
 {
 	let username = cookie.name;
-	// may need an await here..
-	let movies = await models.User.getWatchList(cookie.id, models);
-	console.log(movies);
-	if(movies === null)
-	{
-		res.status(404).send({
-			message: "The user could not be found",
-			requester: username});
-	}
-	else
-	{
-		res.status(200).send({
-			message: "Users watch list successfully found",
-			requester: username,
-			movies: movies
-		});
-	}
+	let max = (req.query.max === undefined) ? 50 : req.query.max;
+	let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
+	let valid = validateIntegerParameter(res, max, username, "The maximum number of movies to return is invalid");
+	if(!valid) return;
+	valid = validateIntegerParameter(res, offset, username, "The offset for the movies to return is invalid", 0, undefined);
+	if(!valid) return;
+	max = (max > 50) ? 50 : max;
+	// returns an empty array if no movies found that are associted with the user even if the userId doesn't exist
+	let movies = await models.User.getWatchList(cookie.id, models, max, offset);
+	res.status(200).send({
+		message: "Users watch list successfully found",
+		requester: username,
+		movies: movies
+	});
 };
 
 const getWatchedList = async(cookie, req, res) =>
 {
 	let username = cookie.name;
-	let movies = await models.User.getWatchedList(cookie.id, models);
-	if(movies === null)
-	{
-		res.status(404).send({
-			message: "The user could not be found",
-			requester: username});
-	}
-	else
-	{
-		res.status(200).send({
-			message: "Users watched list successfully found",
-			requester: username,
-			movies: movies
-		});
-	}
+	let max = (req.query.max === undefined) ? 50 : req.query.max;
+	let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
+	let valid = validateIntegerParameter(res, max, username, "The maximum number of movies to return is invalid");
+	if(!valid) return;
+	valid = validateIntegerParameter(res, offset, username, "The offset for the movies to return is invalid", 0, undefined);
+	if(!valid) return;
+	max = (max > 50) ? 50 : max;
+	let movies = await models.User.getWatchedList(cookie.id, models, max, offset);
+	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
+	res.status(200).send({
+		message: "Users watched list successfully found",
+		requester: username,
+		movies: movies
+	});
 };
 
 const addToWatchList = async (cookie, req, res) =>

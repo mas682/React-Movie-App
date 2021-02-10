@@ -22,6 +22,11 @@ class MovieFilterPage extends React.Component {
             // and do not want to dismount all movieDisplay components
             // needed so that shouldComponentUpdate catches that the new movies were loaded
             loadingNewData: false,
+            // boolean for loading data on scroll
+            loadingData: false,
+            //boolean to indicate if more data to be pulled from api still
+            moreData: true,
+            offset: 0,
             startDate: undefined,
             queryString: "",
             currentUser: "",
@@ -34,6 +39,7 @@ class MovieFilterPage extends React.Component {
         this.usersMoviesResultsHandler = this.usersMoviesResultsHandler.bind(this);
         this.apiMovieResultsHandler = this.apiMovieResultsHandler.bind(this);
         this.generateNewState = this.generateNewState.bind(this);
+        this.scrollEventHandler = this.scrollEventHandler.bind(this);
     }
 
     static getDerivedStateFromProps(nextProps, prevState)
@@ -48,7 +54,7 @@ class MovieFilterPage extends React.Component {
             {
                 nextProps.history.replace({
                     pathname: nextProps.location.pathname,
-                    search: state.queryString
+                    search: state.queryString,
                 });
             }
             return state;
@@ -60,7 +66,6 @@ class MovieFilterPage extends React.Component {
             //console.log("new parameters found in movie filter page");
             let result = MovieFilterPage.getNewStateFromProps(nextProps, true);
             let state = result.state;
-            console.log(state);
             if(result.updated)
             {
                 nextProps.history.replace({
@@ -95,7 +100,11 @@ class MovieFilterPage extends React.Component {
             startDate: queryResult.startDate,
             // true if going from one movie filter page to another
             loadingNewData: loadingNewData,
-            currentUser: props.currentUser
+            currentUser: props.currentUser,
+            movies: [],
+            moreData: true,
+            offset: 0,
+            loadingData: false
         };
         return {state: state, updated: queryResult.updated};
     }
@@ -146,6 +155,10 @@ class MovieFilterPage extends React.Component {
             return true;
         }
         else if(nextProps.currentUser !== this.props.currentUser)
+        {
+            return true;
+        }
+        else if(this.state.loadingData !== nextState.loadingData)
         {
             return true;
         }
@@ -208,7 +221,8 @@ class MovieFilterPage extends React.Component {
     // called by componentDidUpdate when a change in the props is found
     async generateNewState()
     {
-        let result = await this.getMovies(this.state.queryString, this.state.header);
+        console.log(this.state);
+        let result = await this.getMovies(this.state.queryString, this.state.header, this.state.offset);
         let movies = (result.state.movies === undefined) ? [] : result.state.movies;
         let state = {...result.state};
         state.loadingNewData = false;
@@ -352,8 +366,35 @@ class MovieFilterPage extends React.Component {
         };
     }
 
+    async scrollEventHandler(event)
+    {
+        // if there is no more data to load return
+        if(!this.state.moreData || this.state.loadingData) return;
+        let element = document.querySelector("." + style.mainBodyContainer);
+        let mainElementHeight = parseFloat(getComputedStyle(document.querySelector("main")).height);
+        let headerHeight = parseFloat(document.body.offsetHeight);
+        // get the total height of the page
+        let pageHeight = headerHeight + mainElementHeight;
+        // if scrolled to 75% of the page, start loading new data
+        if((pageHeight * .75) < (parseFloat(window.pageYOffset) + parseFloat(window.innerHeight)))
+        {
+            // if already loading data, do nothing
+            if(!this.state.loadingData)
+            {
+                this.setState({
+                   loadingData: true
+                });
+                //console.log("Get new data");
+                let result = await this.getMovies(this.state.queryString, this.state.header, this.state.offset);
+                this.setState(result.state);
+                this.props.setMessages(result.messageState);
+            }
+        }
+    }
+
     async componentDidMount()
     {
+        document.addEventListener('scroll', this.scrollEventHandler, {passive: true});
         // if the new user is not logged in
         if(this.state.currentUser === "")
         {
@@ -369,7 +410,7 @@ class MovieFilterPage extends React.Component {
             }
             else
             {
-                let result = await this.getMovies(undefined, this.state.header);
+                let result = await this.getMovies(undefined, this.state.header, this.state.offset);
                 console.log(result);
                 this.setState(result.state);
                 this.props.setMessages(result.messageState);
@@ -377,7 +418,7 @@ class MovieFilterPage extends React.Component {
         }
         else
         {
-            let result = await this.getMovies(undefined, this.state.header);
+            let result = await this.getMovies(undefined, this.state.header, this.state.offset);
             console.log(result);
             this.setState(result.state);
             this.props.setMessages(result.messageState);
@@ -385,63 +426,63 @@ class MovieFilterPage extends React.Component {
     }
 
     // function to handle call to api and result
-    async getMovies(query, type)
+    async getMovies(query, type, offset)
     {
-        let movieData = await this.apiCall(query, type);
+        let movieData = await this.apiCall(query, type, offset);
         let status = movieData[0];
         let message = movieData[1].message;
         let username = movieData[1].requester;
         let result = movieData[1];
         if(type === "My Watch List" || type === "My Watched Movies")
         {
-            return await this.usersMoviesResultsHandler(status, message, username, result);
+            return await this.usersMoviesResultsHandler(status, message, username, result, offset);
         }
         else
         {
-            return await this.apiMovieResultsHandler(status, message, username, result);
+            return await this.apiMovieResultsHandler(status, message, username, result, offset);
         }
     }
 
-    async apiCall(query, type)
+    async apiCall(query, type, offset)
     {
         let url = "";
         // params: title, revenue, director, runtime, rating, trailer, releasedate
         if(type === "My Watch List")
         {
-            url = "http://localhost:9000/movies/my_watch_list";
+            url = "http://localhost:9000/movies/my_watch_list?offset=" + offset + "&max=30";
         }
         else if(type === "My Watched Movies")
         {
-            url = "http://localhost:9000/movies/my_watched_list";
+            url = "http://localhost:9000/movies/my_watched_list?offset=" + offset + "&max=30";
         }
         else if(query === undefined)
         {
-            url = "http://localhost:9000/search/movies" + this.state.queryString;
+            url = "http://localhost:9000/search/movies" + this.state.queryString + "&offset=" + offset + "&max=30";
         }
         else
         {
-            url = "http://localhost:9000/search/movies" + query;
+            url = "http://localhost:9000/search/movies" + query + "&offset=" + offset + "&max=30";;
         }
         return await apiGetJsonRequest(url);
     }
 
     // handles both the watch list page and watched list page
     // api results
-    usersMoviesResultsHandler(status, message, requester, result)
+    usersMoviesResultsHandler(status, message, requester, result, offset)
     {
         if(status === 200)
         {
             this.props.updateLoggedIn(requester);
+            let oldMovies = [...this.state.movies];
             return {
                 state: {
-                    movies: result.movies,
+                    movies: oldMovies.concat(result.movies),
                     currentUser: requester,
                     loading: false,
-                },
-                messageState:
-                {
-                    messages: [{message: message, type: "success"}],
-                    clearMessages: true
+                    offset: offset + result.movies.length,
+                    moreData: (result.movies.length === 30) ? true : false,
+                    loadingData: false
+
                 }
             };
         }
@@ -460,28 +501,14 @@ class MovieFilterPage extends React.Component {
                     }
                 };
             }
-            else if(status === 404)
-            {
-                // if this occurs, the user was not found but this should never
-                // really occur as a 401 should come instead I think
-                return {
-                    state: {
-                        currentUser: requester,
-                        loading: false,
-                    },
-                    messageState: {
-                        messages: [{message: message, type: "failure"}],
-                        // resetting message ID to 0 as right now this means page reset/reloaded
-                        clearMessages: true,
-                    }
-                };
-            }
             else
             {
                 return {
                     state: {
                         currentUser: requester,
                         loading: false,
+                        moreData: false,
+                        offset: 0
                     },
                     messageState: {
                         messages: [{message: message, type: "failure"}],
@@ -495,20 +522,20 @@ class MovieFilterPage extends React.Component {
     // funciton to handle api results for pages such as upcoming movies,
     // new releases, etc.
     // utilize the search api
-    apiMovieResultsHandler(status, message, requester, result)
+    apiMovieResultsHandler(status, message, requester, result, offset)
     {
         if(status === 200)
         {
+            let oldMovies = [...this.state.movies];
             this.props.updateLoggedIn(requester);
             return {
                 state: {
-                    movies: result.movies,
+                    movies: oldMovies.concat(result.movies),
                     currentUser: requester,
                     loading: false,
-                },
-                messageState: {
-                    messages: [{message: message, type: "success"}],
-                    clearMessages: true
+                    offset: offset + result.movies.length,
+                    moreData: (result.movies.length === 30) ? true : false,
+                    loadingData: false
                 }
             };
         }
@@ -525,6 +552,8 @@ class MovieFilterPage extends React.Component {
                     state: {
                         currentUser: requester,
                         loading: false,
+                        moreData: false,
+                        offset: 0
                     },
                     messageState: {
                         messages: [{message: message, type: "failure"}],

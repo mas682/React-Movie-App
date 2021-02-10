@@ -212,78 +212,61 @@ const user = (sequelize, DataTypes) => {
     }
 
     // function to return all of the movies on a users watch list
-    User.getWatchList = async (userId, models) => {
-        let user = await models.User.findOne({
-            attributes: ["username"],
-            where: {id: userId},
-            include: {
-                model: models.Movies,
-                as: "WatchList",
-                include: [
-                    {
-                        model: models.User,
-                        as: "UserWatchLists",
-                        required: false
-                    },
-                    {
-                        model: models.User,
-                        as: "UsersWhoWatched",
-                        required: false
-                    },
-                    {
-                        model: models.Genre,
-                        as: "Genres",
-                        attributes: ["id", "value"],
-                        through: {attributes: []}
-                    }
-                ]
-            }
+    User.getWatchList = async (userId, models, max, offset) => {
+        let movies = await models.Movies.findAll({
+            limit: max,
+            offset: offset,
+            include: [
+                {
+                    model: models.User,
+                    as: "UserWatchLists",
+                    required: true,
+                    where: {id: userId}
+                },
+                {
+                    model: models.User,
+                    as: "UsersWhoWatched",
+                    required: false,
+                    where: {id: userId}
+                },
+                {
+                    model: models.Genre,
+                    as: "Genres",
+                    attributes: ["id", "value"],
+                    through: {attributes: []}
+                }
+            ]
         });
-        if(user === null)
-        {
-            return null;
-        }
-        else
-        {
-            return user.WatchList;
-        }
+        return movies;
     }
 
     // function to return all of the movies on a users watched list
-    User.getWatchedList = async (userId, models) => {
-        let user = await models.User.findOne({
-            where: {id: userId},
-            include: {
-                model: models.Movies,
-                as: "WatchedMovie",
-                include: [
-                    {
-                        model: models.User,
-                        as: "UsersWhoWatched",
-                        required: false
-                    },
-                    {
-                        model: models.Genre,
-                        as: "Genres",
-                        attributes: ["id", "value"],
-                        through: {attributes: []}
-                    },
-                    {
-                        model: models.User,
-                        as: "UserWatchLists",
-                        required: false
-                    }
-                ]
-            }
+    User.getWatchedList = async (userId, models, max, offset) => {
+        let movies = await models.Movies.findAll({
+            limit: max,
+            offset: offset,
+            include: [
+                {
+                    model: models.User,
+                    as: "UserWatchLists",
+                    required: false,
+                    where: {id: userId}
+                },
+                {
+                    model: models.User,
+                    as: "UsersWhoWatched",
+                    required: true,
+                    where: {id: userId}
+                },
+                {
+                    model: models.Genre,
+                    as: "Genres",
+                    attributes: ["id", "value"],
+                    through: {attributes: []}
+                }
+            ]
         });
-        if(user === null)
-        {
-            return null;
-        }
-        else
-        {
-            return user.WatchedMovie;
-        }
+        return movies;
     }
 
     // function to get a list of users who match the value passed in

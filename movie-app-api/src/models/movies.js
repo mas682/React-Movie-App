@@ -611,7 +611,7 @@ const movie = (sequelize, DataTypes) => {
             }
             else
             {
-                if(!key.startsWith("genre_contains"))
+                if(!key.startsWith("genre_contains") && !key.startsWith("max") && !key.startsWith("offset"))
                 {
                     return [false, key + " is not a valid query parameter"];
                 }
@@ -741,7 +741,7 @@ const movie = (sequelize, DataTypes) => {
         return [true,sortingArray, bestMatch];
     }
 
-    Movie.queryMovies = async (models, query, user) =>
+    Movie.queryMovies = async (models, query, user, max, offset) =>
     {
         let sortKeys = [];
         // get the filters for the movies where variable
@@ -829,7 +829,9 @@ const movie = (sequelize, DataTypes) => {
         let params = {
             include: includeArray,
             order: sortOrder,
-            where: newquery
+            where: newquery,
+            limit: max,
+            offset: offset,
         };
 
         let movies2 = await Movie.findAll(params);
