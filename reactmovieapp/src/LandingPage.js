@@ -171,7 +171,6 @@ class Landing extends React.Component {
 		{
 			 movieArray = this.state.newReleases;
 		}
-		alert(movieArray.length);
 		for(let movie of movieArray)
 		{
 			let html = (
