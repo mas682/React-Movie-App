@@ -359,10 +359,7 @@ def parseMovieDetails(results, movieDetails):
         movieDetails.update({"status":results.get("status", "NULL")})
 
 if __name__ == '__main__':
-    #connect()
-    #callApi()
-    #getMovieDetails(str(577922))
     with open('C:/Users/mstro/Documents/React-Movie-App/test.json', encoding='utf-8') as f:
         data = json.load(f)
         result = parseMovieResults(data)
-        connect(result)
+        #connect(result)
