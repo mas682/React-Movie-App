@@ -1,4 +1,5 @@
 import psycopg2
+from psycopg2.extras import DictCursor
 import requests
 import json
 from datetime import date
@@ -15,7 +16,7 @@ def connect():
         connection = psycopg2.connect(**params)
         # automatically commit changes
         connection.autocommit = True
-        cur = connection.cursor()
+        cur = connection.cursor(cursor_factory=DictCursor)
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         if connection is not None:
@@ -26,73 +27,140 @@ def connect():
     return [connection, cur]
 
 
-def insertMovie(result):
+def insertMovie(cur, result):
     print("inserting movie")
+    id = -2
     try:
         cur.execute("""INSERT INTO public.movies(
                     id, revenue, title, director, "runTime", rating, trailer, "backgroundImage", "releaseDate", overview, poster)
-                    VALUES """ + result + """;""")
-        # not sure if cursor should always be open??
-        # cur.close?
+                    VALUES """ + result + """
+                    ON CONFLICT (id) DO NOTHING
+                    RETURNING id;""")
+        # need to fix the insert to do a update if conflict exists
+        records = cur.fetchall()
+        if len(records) < 1:
+            print("Failed to create movie")
+            # creation failed
+            return -1
+        else:
+            id = records[0]["id"]
+            print(id)
+            print("Movie successfully inserted")
     except (Exception, psycopg2.DatabaseError) as error:
+        print("Exception creating movie")
         print(error)
-        return False
+        return -2
 
+    return id
+
+def insertGenres(cur, result, movieId):
+    print("Inserting genres for movie id: " + str(movieId))
+    for genre in result:
+        print("Genre to insert: " + genre)
+        genre = genre.replace("'", "''")
+        try:
+            cur.execute("select * from public.\"Genres\" where value = '" + genre + "'")
+            records = cur.fetchall()
+            id = -1
+            if len(records) > 0:
+                id = records[0]["id"]
+            else:
+                # create the genre if it did not exist
+                cur.execute("""INSERT INTO public."Genres"(value)
+                               VALUES ('""" + genre + """')
+                               ON CONFLICT (value) DO NOTHING
+                               RETURNING id;""")
+                records = cur.fetchall()
+                if len(records) > 0:
+                    id = records[0]["id"]
+                else:
+                    print("Error occurred when attempting to create the genre: " + genre)
+                    continue
+            # associate the movie with the genre
+            cur.execute("""INSERT INTO public."MovieGenreTables"(
+	                       "GenreId", "movieId")
+	                       VALUES (""" + str(id) + """,""" + str(movieId) + """)
+                           ON CONFLICT("GenreId","movieId") DO NOTHING;""")
+        except (Exception, psycopg2.DatabaseError) as error:
+            print("An error occurred trying to associate the genre: " + genre + " with the movie ID: " + str(movieId))
+            print(error)
+            return False
     return True
 
-def insertGenres():
-    print("inserting genres")
+
+
+#left off:
+#    - need to figure out how to do insert genres and how to generate the string for it
+#    - need to test connect and disconnect
+#        - determine if cur.close should be called every time?
+#    - should try to find a way to insert genres with movie so you can do a single insert but not
+#    sure if possible
+#    - if insert fails for something like id already found, does that cause an exception?
+#        - if so, should not close connection as you are now
 
 def disconnect(connection, cur):
     print("Disconnectiong from database")
-        try:
-            # close the communication with the PostgreSQL
-            cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
-            print(error)
-        finally:
-            if connection is not None:
-                connection.close()
-                print('Database connection closed')
+    try:
+        # close the communication with the PostgreSQL
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if connection is not None:
+            connection.close()
+            print('Database connection closed')
 
 
 def controllerFunction():
     maxLoops = 5
-    page = 1
+    page = 0
     totalPages = 1
     error = False
+    totalPagesRead = 1
+    totalAPICalls = 0
+    totalResultCount = 0
+
     # try to connect to the database
     connectionResult = connect()
     connection = connectionResult[0]
     # if connection failed, return
     if connection is None:
         return;
-    curser = connection[1]
+    cursor = connectionResult[1]
 
-    while page < totalPages and page < maxLoops and not error:
+    while (page + 1) <= totalPages and (page + 1) <= maxLoops and not error:
+        page = page + 1
+        totalAPICalls = totalAPICalls + 1
+        totalPagesRead = totalPagesRead + 1
         movieListResult = getMovies(page)
         if movieListResult["success"]:
-            page = page + 1
             movieListResults = movieListResult.get("result")
             # get the total number of pages that there are
             totalPages = movieListResults.get("total_pages", 0)
             resultCount = movieListResults.get("total_results", 0)
+            totalResultCount = resultCount
             if resultCount > 0:
                 movies = movieListResults.get("results")
                 if movies is not None:
+                    print("MOVIES LENGTH " + str(len(movies)))
                     for movie in movies:
                         id = movie.get("id")
                         if id is not None:
+                            totalAPICalls = totalAPICalls + 1
                             movieDetails = getMovieDetails(id)
                             if movieDetails["success"]:
-                                movieDetailsResult = get("result")
+                                movieDetailsResult = movieDetails.get("result")
+                                # need to update this to be able to do a update string for movies
                                 parseResults = parseMovieResults(movieDetailsResult)
-                                insertResult = insertMovie(parseResults["movieValue"])
-                                if not insertResult:
+                                insertResult = insertMovie(cursor, parseResults["movieValue"])
+                                if insertResult == -1:
+                                    # conflict occurred inserting movie
+                                    continue
+                                elif insertResult == -2:
                                     # if some database error occurred
                                     error = True
                                     break
-                                genreResult = insertGenres(parseResults["genreValue"])
+                                genreResult = insertGenres(cursor,parseResults["genres"], insertResult)
                                 if not genreResult:
                                     # if some database error occurred
                                     error = True
@@ -102,8 +170,11 @@ def controllerFunction():
                                 error = True
                                 # break out of for loop
                                 break
+                        else:
+                            print("Movie id is none")
+                            print(movie)
                 else:
-                    print "No movies found in movie list"
+                    print("No movies found in movie list")
                     error = True
             else:
                 print("No movies found in movie list")
@@ -114,32 +185,34 @@ def controllerFunction():
     # after the loop
     if connection is not None:
         disconnect(connection, cursor)
+    print("\n\nTotal API Calls: " + str(totalAPICalls))
+    print("Number of movies returned by API: " + str(totalResultCount))
+    print("Total pages read: " + str(totalPagesRead))
 
 # function to send api call to get the list of movies
 def getMovies(page):
-        day = date.today().strftime("%Y-%m-%d")
+        #day = date.today()
+        day = date(2021, 2, 12)
+        day = day.strftime("%Y-%m-%d")
         print(day)
         startDate = day
         endDate = day
         url = ("https://api.themoviedb.org/3/discover/movie?"
             + "api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc&language=en-US&region=US&sort_by=popularity.desc&"
-            + "certification_country=US&with_release_type=3|2|1|5|4|6&include_adult=false&include_video=false&page=" + page + "&"
+            + "certification_country=US&with_release_type=3|2|1|5|4|6&include_adult=false&include_video=false&page=" + str(page) + "&"
             + "primary_release_date.gte=" + startDate + "&primary_release_date.lte=" + endDate + "&with_original_language=en")
+        print(url)
         success = False
         try:
             result = requests.get(url, timeout=1)
             status = result.status_code
             jsonResult = result.json()
             if status == 200:
-                succsess = True
+                success = True
             else:
                 print("Failed to get the list of movies to pull details for")
-                print("Status code: " + status)
-                if status == 401:
-                    print("Status message: " + jsonResult.get("status_message")
-                    # need to return some flag to say don't continue
-                elif status === 404:
-                    print("Status message: " + jsonResult.get("status_message"))
+                print("Status code: " + str(status))
+                print("Status message: " + jsonResult.get("status_message"))
         except(request.ConnectionError) as error:
             print("Failed to get the movie list due to a connection failure to API")
             print(error)
@@ -159,12 +232,12 @@ def getMovies(page):
             print("Done getting the movie list")
         if success:
             return {"success": True, "result":jsonResult}
-        else
+        else:
             return {"success":False}
 
 # function to send api call to get movie details
 def getMovieDetails(movieId):
-    url = ("https://api.themoviedb.org/3/movie/" + movieId + "?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc" +
+    url = ("https://api.themoviedb.org/3/movie/" + str(movieId) + "?api_key=9687aa5fa5dc35e0d5aa0c2a3c663fcc" +
            "&language=en-US&region=US&include_image_language=en&append_to_response=videos%2Crelease_dates%2C" +
            "credits%2Cimages%2Cwatch%2Fproviders%2Cexternal_ids")
     success = False
@@ -173,36 +246,34 @@ def getMovieDetails(movieId):
         status = result.status_code
         jsonResult = result.json()
         if status == 200:
-            succsess = True
+            success = True
         else:
             print("Failed to get movie details from API")
             print("Status code: " + status)
-            if status == 401:
-                print("Status message: " + jsonResult.get("status_message")
-            elif status === 404:
-                print("Status message: " + jsonResult.get("status_message"))
+            print("Status message: " + jsonResult.get("status_message"))
+            if status == 404:
                 # if here, request may have failed as movie does not exist so just continue
                 success = True
     except(request.ConnectionError) as error:
-        print("Failed to get movie details for movie id: " + movieId + " due to a connection failure to API")
+        print("Failed to get movie details for movie id: " + str(movieId) + " due to a connection failure to API")
         print(error)
     except(requests.Timeout) as error:
-        print("Failed to get movie details for movie id: " + movieId + " due to a timeout")
+        print("Failed to get movie details for movie id: " + str(movieId) + " due to a timeout")
         print(error)
     except (requests.exceptions.RequestException) as error:
-        print("Failed to get movie details for movie id: " + movieId)
+        print("Failed to get movie details for movie id: " + str(movieId))
         print(error)
     except (requests.ValueError) as error:
-        print("Failed to get movie details for movie id: " + movieId + " a JSON conversion failure")
+        print("Failed to get movie details for movie id: " + str(movieId) + " a JSON conversion failure")
         print(error)
     except(Exception) as error:
-        print("Some unexpected error occurred when getting the movie details for the movie id: " + movieId)
+        print("Some unexpected error occurred when getting the movie details for the movie id: " + str(movieId))
         print(error)
     finally:
-        print("Done getting movie details for movie id: " + movieId)
+        print("Done getting movie details for movie id: " + str(movieId))
     if success:
         return {"success": True, "result":jsonResult}
-    else
+    else:
         return {"success":False}
 
 def parseMovieResults(result):
@@ -225,26 +296,30 @@ def parseMovieResults(result):
     getGenres(genreList, genres)
     movieDetails = {}
     parseMovieDetails(result, movieDetails)
-    print(releaseDateByType)
-    print(rating)
-    print(trailer)
-    print(director)
-    print(rentProviders)
-    print(buyProviders)
-    print(externalIds)
-    print(genres)
-    print(movieDetails)
+    #print(releaseDateByType)
+    #print(rating)
+    #print(trailer)
+    #print(director)
+    #print(rentProviders)
+    #print(buyProviders)
+    #print(externalIds)
+    #print(genres)
+    #print(movieDetails)
     movieValue = generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buyProviders, externalIds, genres, movieDetails)
     #genreValue = ...
-    return {"movieValue":movieValue}
+    return {"movieValue":movieValue, "genres":genres}
 
 
 def generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buyProviders, externalIds, genres, movieDetails):
     movieTitle = movieDetails.get("title", "NULL")
     if movieTitle != "NULL":
+        if movieTitle is None:
+            movieTitle = "NULL"
+        movieTitle = movieTitle.replace("'", "''")
         movieTitle = "\'" + movieTitle + "\'"
     directorString = director
     if directorString != "NULL":
+        directorString = directorString.replace("'", "''")
         directorString = "\'" + director + "\'"
     ratingString = rating
     if ratingString != "NULL":
@@ -254,15 +329,24 @@ def generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buy
         trailerString = "\'" + trailer + "\'"
     backdrop = movieDetails.get("backdrop", "NULL")
     if backdrop != "NULL":
+        if backdrop is None:
+            backdrop = "NULL"
         backdrop = "\'" + backdrop + "\'"
     releaseDate = movieDetails.get("releaseDate", "NULL")
     if releaseDate != "NULL":
+        if releaseDate is None:
+            releaseDate = "NULL"
         releaseDate = "\'" + releaseDate + "\'"
     overview = movieDetails.get("overview", "NULL")
     if overview != "NULL":
+        if overview is None:
+            overview = "NULL"
+        overview = overview.replace("'", "''")
         overview = "\'" + overview + "\'"
     poster = movieDetails.get("poster", "NULL")
     if poster != "NULL":
+        if poster is None:
+            poster = "NULL"
         poster = "\'" + poster + "\'"
     result = ("(" + movieDetails.get("id", "NULL") + ", "+ movieDetails.get("revenue", "NULL") + ", " +  movieTitle + ", " +
              directorString + ", " + movieDetails.get("runtime", "NULL") + ", " + ratingString + ", " +
@@ -357,9 +441,27 @@ def parseMovieDetails(results, movieDetails):
         movieDetails.update({"revenue":str(results.get("revenue", "NULL"))})
         movieDetails.update({"runtime":str(results.get("runtime", "NULL"))})
         movieDetails.update({"status":results.get("status", "NULL")})
+        print(movieDetails)
 
 if __name__ == '__main__':
-    with open('C:/Users/mstro/Documents/React-Movie-App/test.json', encoding='utf-8') as f:
-        data = json.load(f)
-        result = parseMovieResults(data)
+    #with open('C:/Users/mstro/Documents/React-Movie-App/test.json', encoding='utf-8') as f:
+    #    data = json.load(f)
+    #    result = parseMovieResults(data)
+    #    # try to connect to the database
+    #    connectionResult = connect()
+    #    connection = connectionResult[0]
+    #    # if connection failed, return
+    #    if connection is not None:
+    #        cursor = connectionResult[1]
+    #        movieInsertResult = insertMovie(cursor,result["movieValue"])
+    #        if movieInsertResult != -1 and movieInsertResult != -2:
+    #            insertGenres(cursor, result["genres"], movieInsertResult)
+    #        else:
+    #            print("Movie insert failed")
+
+    #    disconnect(connection, cursor)
+    controllerFunction()
+    #d = {"a":"None"}
+    #print(d.get("a", "NULL"))
+
         #connect(result)
