@@ -18,18 +18,19 @@ sequelize.sync().then(() => {
 });
 */
 // restart db each time
+//! NEVER SET THIS TO TRUE, will remove triggers from tables
 const eraseDatabaseOnSync = false;
 
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
     if (eraseDatabaseOnSync) {
-        createUsers();
+        //createUsers();
         //createGoodTags();
         //createBadTags();
         //sampleReview2();
         //addComment();
         //addComment2();
         //addComment3();
-        getMovies();
+        //getMovies();
       //  sampleReview();
     //    getFriends();
     }
