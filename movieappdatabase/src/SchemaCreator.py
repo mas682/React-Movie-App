@@ -11,7 +11,7 @@ def controllerFunction(fileNames):
         return
     cursor = connectionResult[1]
     for file in fileNames:
-        print("Exucuting sql for: " + file)
+        print("Executing sql for: " + file)
         sql = getFile(file)
         if(sql is None):
             print("Failed to open file!")
@@ -87,6 +87,8 @@ if __name__ == '__main__':
         '../Sequences/movieTags_id_seq.sql',
         '../Sequences/reviews_id_seq.sql',
         '../Sequences/users_id_seq.sql',
+        '../Sequences/movies_id_seq.sql',
+        '../Sequences/Retailers_id_seq.sql',
         '../tables/Users.sql',
         '../tables/Movies.sql',
         '../tables/Reviews.sql',
@@ -99,6 +101,8 @@ if __name__ == '__main__':
         '../tables/UsersFriends.sql',
         '../tables/UsersWhoWathched.sql',
         '../tables/UserWatchLists.sql',
-        '../tables/Likes.sql'
+        '../tables/Likes.sql',
+        '../tables/Retailers.sql',
+        '../tables/MoviesProviders.sql'
     ]
     controllerFunction(fileNames)

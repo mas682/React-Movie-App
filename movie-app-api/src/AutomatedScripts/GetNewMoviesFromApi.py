@@ -118,7 +118,7 @@ def controllerFunction():
     except (Exception) as error:
         outputFile.write("Failed to get the API key from the config file\n")
         return
-    maxLoops = 5
+    maxLoops = 1
     page = 0
     totalPages = 1
     error = False
@@ -160,22 +160,22 @@ def controllerFunction():
                                 movieDetailsResult = movieDetails.get("result")
                                 # need to update this to be able to do a update string for movies
                                 parseResults = parseMovieResults(movieDetailsResult)
-                                insertResult = insertMovie(cursor, parseResults["movieInsert"], parseResults["movieUpdate"], successfulOutput, failedOutput)
-                                if insertResult == -1:
-                                    failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database due to it already existing\n")
-                                    # conflict occurred inserting movie
-                                    continue
-                                elif insertResult == -2:
+                                #insertResult = insertMovie(cursor, parseResults["movieInsert"], parseResults["movieUpdate"], successfulOutput, failedOutput)
+                                #if insertResult == -1:
+                                #    failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database due to it already existing\n")
+                                #    # conflict occurred inserting movie
+                                #    continue
+                                #elif insertResult == -2:
                                     # if some database error occurred
-                                    failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database due to an exception")
-                                    error = True
-                                    break
-                                genreResult = insertGenres(cursor,parseResults["genres"], insertResult, successfulOutput, failedOutput)
-                                genreInsertionErrors = genreInsertionErrors + genreResult[1]
-                                if not genreResult[0]:
+                                #    failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database due to an exception")
+                                #    error = True
+                                #    break
+                                #genreResult = insertGenres(cursor,parseResults["genres"], insertResult, successfulOutput, failedOutput)
+                                #genreInsertionErrors = genreInsertionErrors + genreResult[1]
+                                #if not genreResult[0]:
                                     # if some database error occurred
-                                    error = True
-                                    break
+                                #    error = True
+                                #    break
                             else:
                                 # request failed due to unknown cause or authentication error
                                 error = True
@@ -376,6 +376,74 @@ def generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buy
         if poster is None:
             poster = "NULL"
         poster = "\'" + poster + "\'"
+    # NEW
+    status = movieDetails.get("status", "NULL")
+    if status != "NULL":
+        if status is None:
+            status = "NULL"
+        status = "\'" + status + "\'"
+    homepage = movieDetails.get("homepage", "NULL")
+    if homepage != "NULL":
+        if homepage is None:
+            homepage = "NULL"
+        homepage = "\'" + homepage + "\'"
+    imdb_id = movieDetails.get("imdb_id", "NULL")
+    if imdb_id != "NULL":
+        if imdb_id is None:
+            imdb_id = "NULL"
+        imdb_id = "\'" + imdb_id + "\'"
+    original_language = movieDetails.get("original_language", "NULL")
+    if original_language != "NULL":
+        if original_language is None:
+            original_language = "NULL"
+        original_language = "\'" + original_language + "\'"
+    # premiereReleaseDate
+    # need to first check to see if any release dates even exist
+    premiereReleaseDate = releaseDateByType.get(1, "NULL")
+    if premiereReleaseDate != "NULL":
+        if premiereReleaseDate is None:
+            premiereReleaseDate = "NULL"
+        premiereReleaseDate = "\'" + premiereReleaseDate + "\'"
+    # theaterLimitedReleaseDate
+    theaterLimitedReleaseDate = releaseDateByType.get(2, "NULL")
+    if theaterLimitedReleaseDate != "NULL":
+        if theaterLimitedReleaseDate is None:
+            theaterLimitedReleaseDate = "NULL"
+        theaterLimitedReleaseDate = "\'" + theaterLimitedReleaseDate + "\'"
+    # theaterReleaseDate
+    theaterReleaseDate = releaseDateByType.get(3, "NULL")
+    if theaterReleaseDate != "NULL":
+        if theaterReleaseDate is None:
+            theaterReleaseDate = "NULL"
+        theaterReleaseDate = "\'" + theaterReleaseDate + "\'"
+    # digitalReleaseDate
+    digitalReleaseDate = releaseDateByType.get(4, "NULL")
+    if digitalReleaseDate != "NULL":
+        if digitalReleaseDate is None:
+            digitalReleaseDate = "NULL"
+        digitalReleaseDate = "\'" + digitalReleaseDate + "\'"
+    # physicalReleaseDate
+    physicalReleaseDate = releaseDateByType.get(5, "NULL")
+    if physicalReleaseDate != "NULL":
+        if physicalReleaseDate is None:
+            physicalReleaseDate = "NULL"
+        physicalReleaseDate = "\'" + physicalReleaseDate + "\'"
+    # tvReleaseDate
+    tvReleaseDate = releaseDateByType.get("1", "NULL")
+    if tvReleaseDate != "NULL":
+        if tvReleaseDate is None:
+            tvReleaseDate = "NULL"
+        tvReleaseDate = "\'" + tvReleaseDate + "\'"
+
+    print(movieDetails)
+    print("1. " + premiereReleaseDate)
+    print("2. " + theaterLimitedReleaseDate)
+    print("3. " + theaterReleaseDate)
+    print("4. " + digitalReleaseDate)
+    print("5. " + physicalReleaseDate)
+    print("6. " + tvReleaseDate)
+
+
     result = ("(" + movieDetails.get("id", "NULL") + ", "+ movieDetails.get("revenue", "NULL") + ", " +  movieTitle + ", " +
              directorString + ", " + movieDetails.get("runtime", "NULL") + ", " + ratingString + ", " +
              trailerString + ", " + backdrop + ", " + releaseDate + ", " + overview + ", " + poster + ")")
@@ -472,6 +540,8 @@ def parseMovieDetails(results, movieDetails):
         movieDetails.update({"revenue":str(results.get("revenue", "NULL"))})
         movieDetails.update({"runtime":str(results.get("runtime", "NULL"))})
         movieDetails.update({"status":results.get("status", "NULL")})
+        movieDetails.update({"imdb_id":results.get("imdb_id", "NULL")})
+        movieDetails.update({"original_language":results.get("original_language", "NULL")})
 
 if __name__ == '__main__':
     controllerFunction()

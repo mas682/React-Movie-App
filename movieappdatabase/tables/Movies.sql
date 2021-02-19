@@ -4,7 +4,7 @@
 
 CREATE TABLE public.movies
 (
-    id integer NOT NULL,
+	id integer NOT NULL DEFAULT nextval('movies_id_seq'::regclass),
     title character varying(255) COLLATE pg_catalog."default",
     revenue integer,
     director character varying(255) COLLATE pg_catalog."default",
@@ -17,6 +17,17 @@ CREATE TABLE public.movies
     poster character varying(255) COLLATE pg_catalog."default",
     "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "premiereReleaseDate" date,
+    "theaterLimitedReleaseDate" date,
+    "theaterReleaseDate" date,
+    "digitalReleaseDate" date,
+    "physicalReleaseDate" date,
+    "tvReleaseDate" date,
+    status character varying(255) COLLATE pg_catalog."default",
+    homepage character varying(255) COLLATE pg_catalog."default",
+    imdb_id character varying(100) COLLATE pg_catalog."default",
+	tmdb_id integer NOT NULL,
+    "originalLanguage" character varying(20) COLLATE pg_catalog."default",
     CONSTRAINT movies_pkey PRIMARY KEY (id)
 )
 
