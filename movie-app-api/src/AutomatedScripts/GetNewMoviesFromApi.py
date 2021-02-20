@@ -19,7 +19,7 @@ def connect(successfulOutput, failedOutput):
         cur = connection.cursor(cursor_factory=DictCursor)
     except (Exception, psycopg2.DatabaseError) as error:
         failedOutput.append("Failed to connect to the database with the following error:\n")
-        failedOutput.append(error)
+        failedOutput.append(str(error))
         failedOutput.append("\n")
         if connection is not None:
             connection.close()
@@ -33,9 +33,12 @@ def insertMovie(cur, insertValue, updateValue, successfulOutput, failedOutput):
     id = -2
     try:
         cur.execute("""INSERT INTO public.movies(
-                    id, revenue, title, director, "runTime", rating, trailer, "backgroundImage", "releaseDate", overview, poster)
+                    title, revenue, director, "runTime", rating, trailer, "backgroundImage",
+                    "releaseDate", overview, poster, "premiereReleaseDate", "theaterLimitedReleaseDate",
+                    "theaterReleaseDate", "digitalReleaseDate", "physicalReleaseDate", "tvReleaseDate",
+                    status, homepage, imdb_id, tmdb_id, "originalLanguage")
                     VALUES """ + insertValue + """
-                    ON CONFLICT (id) DO
+                    ON CONFLICT (tmdb_id) DO
                     UPDATE SET """ + updateValue + """
                     RETURNING id;""")
         records = cur.fetchall()
@@ -45,8 +48,8 @@ def insertMovie(cur, insertValue, updateValue, successfulOutput, failedOutput):
         else:
             id = records[0]["id"]
     except (Exception, psycopg2.DatabaseError) as error:
-        failedOutput.append("\nAn error occurred trying to insert the movie into the databse:\n")
-        failedOutput.append(error)
+        failedOutput.append("\nAn error occurred trying to insert the movie into the database:\n")
+        failedOutput.append(str(error))
         failedOutput.append("\n")
         return -2
 
@@ -82,7 +85,7 @@ def insertGenres(cur, result, movieId, successfulOutput, failedOutput):
                            ON CONFLICT("GenreId","movieId") DO NOTHING;""")
         except (Exception, psycopg2.DatabaseError) as error:
             failedOutput.append("An error occurred trying to associate the genre: " + genre + " with the movie ID: " + str(movieId) + "\n")
-            failedOutput.append(error)
+            failedOutput.append(str(error))
             failedOutput.append("\n")
             return [False, insertErrors]
     return [True, insertErrors]
@@ -94,7 +97,7 @@ def disconnect(connection, cur, successfulOutput, failedOutput):
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         failedOutput.append("An error occurred closing the cursor to the database: \n")
-        failedOutput.append(error)
+        failedOutput.append(str(error))
         failedOutput.append("\n")
     finally:
         if connection is not None:
@@ -118,7 +121,7 @@ def controllerFunction():
     except (Exception) as error:
         outputFile.write("Failed to get the API key from the config file\n")
         return
-    maxLoops = 1
+    maxLoops = 5
     page = 0
     totalPages = 1
     error = False
@@ -153,29 +156,31 @@ def controllerFunction():
                 if movies is not None:
                     for movie in movies:
                         id = movie.get("id")
+                        # use this release date as your primary
+                        releaseDate = movie.get("release_date", "NULL")
                         if id is not None:
                             totalAPICalls = totalAPICalls + 1
                             movieDetails = getMovieDetails(id, successfulOutput, failedOutput, apiKey)
                             if movieDetails["success"]:
                                 movieDetailsResult = movieDetails.get("result")
                                 # need to update this to be able to do a update string for movies
-                                parseResults = parseMovieResults(movieDetailsResult)
-                                #insertResult = insertMovie(cursor, parseResults["movieInsert"], parseResults["movieUpdate"], successfulOutput, failedOutput)
-                                #if insertResult == -1:
-                                #    failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database due to it already existing\n")
-                                #    # conflict occurred inserting movie
-                                #    continue
-                                #elif insertResult == -2:
+                                parseResults = parseMovieResults(movieDetailsResult, releaseDate)
+                                insertResult = insertMovie(cursor, parseResults["movieInsert"], parseResults["movieUpdate"], successfulOutput, failedOutput)
+                                if insertResult == -1:
+                                    failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database due to it already existing\n")
+                                    # conflict occurred inserting movie
+                                    continue
+                                elif insertResult == -2:
                                     # if some database error occurred
-                                #    failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database due to an exception")
-                                #    error = True
-                                #    break
-                                #genreResult = insertGenres(cursor,parseResults["genres"], insertResult, successfulOutput, failedOutput)
-                                #genreInsertionErrors = genreInsertionErrors + genreResult[1]
-                                #if not genreResult[0]:
+                                    failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database due to an exception")
+                                    error = True
+                                    break
+                                genreResult = insertGenres(cursor,parseResults["genres"], insertResult, successfulOutput, failedOutput)
+                                genreInsertionErrors = genreInsertionErrors + genreResult[1]
+                                if not genreResult[0]:
                                     # if some database error occurred
-                                #    error = True
-                                #    break
+                                    error = True
+                                    break
                             else:
                                 # request failed due to unknown cause or authentication error
                                 error = True
@@ -247,23 +252,23 @@ def getMovies(page, successfulOutput, failedOutput, apiKey):
                 failedOutput.append("Status message: " + jsonResult.get("status_message") + "\n")
         except(request.ConnectionError) as error:
             failedOutput.append("Failed to get the movie list due to a connection failure to API\n")
-            failedOutput.append(error)
+            failedOutput.append(str(error))
             failedOutput.append("\n")
         except(requests.Timeout) as error:
             failedOutput.append("Failed to get the movie list due to a timeout\n")
-            failedOutput.append(error)
+            failedOutput.append(str(error))
             failedOutput.append("\n")
         except (requests.exceptions.RequestException) as error:
             failedOutput.append("Failed to get the movie list\n")
-            failedOutput.append(error)
+            failedOutput.append(str(error))
             failedOutput.append("\n")
         except (requests.ValueError) as error:
             failedOutput.append("Failed to get the movie list due to a JSON conversion failure\n")
-            failedOutput.append(error)
+            failedOutput.append(str(error))
             failedOutput.append("\n")
         except(Exception) as error:
             failedOutput.append("Some unexpected error occurred when getting the movie list\n")
-            failedOutput.append(error)
+            failedOutput.append(str(error))
             failedOutput.append("\n")
         if success:
             return {"success": True, "result":jsonResult}
@@ -291,30 +296,30 @@ def getMovieDetails(movieId, successfulOutput, failedOutput, apiKey):
                 success = True
     except(request.ConnectionError) as error:
         failedOutput.append("\nFailed to get movie details for movie id: " + str(movieId) + " due to a connection failure to API\n")
-        failedOutput.append(error)
+        failedOutput.append(str(error))
         failedOutput.append("\n")
     except(requests.Timeout) as error:
         failedOutput.append("\nFailed to get movie details for movie id: " + str(movieId) + " due to a timeout\n")
-        failedOutput.append(error)
+        failedOutput.append(str(error))
         failedOutput.append("\n")
     except (requests.exceptions.RequestException) as error:
         failedOutput.append("\nFailed to get movie details for movie id: " + str(movieId) + "\n")
-        failedOutput.append(error)
+        failedOutput.append(str(error))
         failedOutput.append("\n")
     except (requests.ValueError) as error:
         failedOutput.append("\nFailed to get movie details for movie id: " + str(movieId) + " a JSON conversion failure\n")
-        failedOutput.append(error)
+        failedOutput.append(str(error))
         failedOutput.append("\n")
     except(Exception) as error:
         failedOutput.append("\nSome unexpected error occurred when getting the movie details for the movie id: " + str(movieId) + "\n")
-        failedOutput.append(error)
+        failedOutput.append(str(error))
         failedOutput.append("\n")
     if success:
         return {"success": True, "result":jsonResult}
     else:
         return {"success":False}
 
-def parseMovieResults(result):
+def parseMovieResults(result, releaseDate):
     # get the release dates, their types, and the rating of the movie
     releaseDates = result.get("release_dates")
     releaseDateByType = {}
@@ -334,123 +339,148 @@ def parseMovieResults(result):
     getGenres(genreList, genres)
     movieDetails = {}
     parseMovieDetails(result, movieDetails)
-    movieValue = generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buyProviders, externalIds, genres, movieDetails)
+    movieValue = generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buyProviders, externalIds, genres, movieDetails, releaseDate)
     return {"movieInsert":movieValue["insert"], "movieUpdate":movieValue["update"], "genres":genres}
 
 
-def generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buyProviders, externalIds, genres, movieDetails):
+def generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buyProviders, externalIds, genres, movieDetails, primaryReleaseDate):
+
+
+    make all these ifs into a reusable function to clean this up!!!
+
     movieTitle = movieDetails.get("title", "NULL")
     if movieTitle != "NULL":
-        if movieTitle is None:
+        if movieTitle is None or movieTitle == "":
             movieTitle = "NULL"
-        movieTitle = movieTitle.replace("'", "''")
-        movieTitle = "\'" + movieTitle + "\'"
+        else:
+            movieTitle = movieTitle.replace("'", "''")
+            movieTitle = "\'" + movieTitle + "\'"
     directorString = director
     if directorString != "NULL":
-        directorString = directorString.replace("'", "''")
-        directorString = "\'" + director + "\'"
+        if directorString is None or directorString == "":
+            directorString = "NULL"
+        else:
+            directorString = directorString.replace("'", "''")
+            directorString = "\'" + director + "\'"
     ratingString = rating
     if ratingString != "NULL":
-        ratingString = "\'" + rating + "\'"
+        if ratingString is None or ratingString == "":
+            ratingString = "NULL"
+        else:
+            ratingString = "\'" + rating + "\'"
     trailerString = trailer
     if trailerString != "NULL":
-        trailerString = "\'" + trailer + "\'"
+        if trailerString is None or trailerString == "":
+            trailerString = "NULL"
+        else:
+            trailerString = "\'" + trailer + "\'"
     backdrop = movieDetails.get("backdrop", "NULL")
     if backdrop != "NULL":
-        if backdrop is None:
+        if backdrop is None or backdrop == "":
             backdrop = "NULL"
-        backdrop = "\'" + backdrop + "\'"
-    releaseDate = movieDetails.get("releaseDate", "NULL")
+        else:
+            backdrop = "\'" + backdrop + "\'"
+    releaseDate = primaryReleaseDate
     if releaseDate != "NULL":
-        if releaseDate is None:
+        if releaseDate is None or releaseDate == "":
             releaseDate = "NULL"
-        releaseDate = "\'" + releaseDate + "\'"
+        else:
+            releaseDate = "\'" + releaseDate + "\'"
     overview = movieDetails.get("overview", "NULL")
     if overview != "NULL":
-        if overview is None:
+        if overview is None or overview == "":
             overview = "NULL"
-        overview = overview.replace("'", "''")
-        overview = "\'" + overview + "\'"
+        else:
+            overview = overview.replace("'", "''")
+            overview = "\'" + overview + "\'"
     poster = movieDetails.get("poster", "NULL")
     if poster != "NULL":
-        if poster is None:
+        if poster is None or poster == "":
             poster = "NULL"
-        poster = "\'" + poster + "\'"
-    # NEW
+        else:
+            poster = "\'" + poster + "\'"
     status = movieDetails.get("status", "NULL")
     if status != "NULL":
-        if status is None:
+        if status is None or status == "":
             status = "NULL"
-        status = "\'" + status + "\'"
+        else:
+            status = "\'" + status + "\'"
     homepage = movieDetails.get("homepage", "NULL")
     if homepage != "NULL":
-        if homepage is None:
+        if homepage is None or homepage == "":
             homepage = "NULL"
-        homepage = "\'" + homepage + "\'"
+        else:
+            homepage = "\'" + homepage + "\'"
     imdb_id = movieDetails.get("imdb_id", "NULL")
     if imdb_id != "NULL":
-        if imdb_id is None:
+        if imdb_id is None or imdb_id == "":
             imdb_id = "NULL"
-        imdb_id = "\'" + imdb_id + "\'"
+        else:
+            imdb_id = "\'" + imdb_id + "\'"
     original_language = movieDetails.get("original_language", "NULL")
     if original_language != "NULL":
-        if original_language is None:
+        if original_language is None or original_language == "":
             original_language = "NULL"
-        original_language = "\'" + original_language + "\'"
+        else:
+            original_language = "\'" + original_language + "\'"
     # premiereReleaseDate
-    # need to first check to see if any release dates even exist
     premiereReleaseDate = releaseDateByType.get(1, "NULL")
     if premiereReleaseDate != "NULL":
-        if premiereReleaseDate is None:
+        if premiereReleaseDate is None or premiereReleaseDate == "":
             premiereReleaseDate = "NULL"
-        premiereReleaseDate = "\'" + premiereReleaseDate + "\'"
+        else:
+            premiereReleaseDate = "\'" + premiereReleaseDate + "\'"
     # theaterLimitedReleaseDate
     theaterLimitedReleaseDate = releaseDateByType.get(2, "NULL")
     if theaterLimitedReleaseDate != "NULL":
-        if theaterLimitedReleaseDate is None:
+        if theaterLimitedReleaseDate is None or theaterLimitedReleaseDate == "":
             theaterLimitedReleaseDate = "NULL"
-        theaterLimitedReleaseDate = "\'" + theaterLimitedReleaseDate + "\'"
+        else:
+            theaterLimitedReleaseDate = "\'" + theaterLimitedReleaseDate + "\'"
     # theaterReleaseDate
     theaterReleaseDate = releaseDateByType.get(3, "NULL")
     if theaterReleaseDate != "NULL":
-        if theaterReleaseDate is None:
+        if theaterReleaseDate is None or theaterReleaseDate == "":
             theaterReleaseDate = "NULL"
-        theaterReleaseDate = "\'" + theaterReleaseDate + "\'"
+        else:
+            theaterReleaseDate = "\'" + theaterReleaseDate + "\'"
     # digitalReleaseDate
     digitalReleaseDate = releaseDateByType.get(4, "NULL")
     if digitalReleaseDate != "NULL":
-        if digitalReleaseDate is None:
+        if digitalReleaseDate is None or digitalReleaseDate == "":
             digitalReleaseDate = "NULL"
-        digitalReleaseDate = "\'" + digitalReleaseDate + "\'"
+        else:
+            digitalReleaseDate = "\'" + digitalReleaseDate + "\'"
     # physicalReleaseDate
     physicalReleaseDate = releaseDateByType.get(5, "NULL")
     if physicalReleaseDate != "NULL":
-        if physicalReleaseDate is None:
+        if physicalReleaseDate is None or physicalReleaseDate == "":
             physicalReleaseDate = "NULL"
-        physicalReleaseDate = "\'" + physicalReleaseDate + "\'"
+        else:
+            physicalReleaseDate = "\'" + physicalReleaseDate + "\'"
     # tvReleaseDate
     tvReleaseDate = releaseDateByType.get("1", "NULL")
-    if tvReleaseDate != "NULL":
+    if tvReleaseDate != "NULL" or tvReleaseDate == "":
         if tvReleaseDate is None:
             tvReleaseDate = "NULL"
-        tvReleaseDate = "\'" + tvReleaseDate + "\'"
+        else:
+            tvReleaseDate = "\'" + tvReleaseDate + "\'"
 
-    print(movieDetails)
-    print("1. " + premiereReleaseDate)
-    print("2. " + theaterLimitedReleaseDate)
-    print("3. " + theaterReleaseDate)
-    print("4. " + digitalReleaseDate)
-    print("5. " + physicalReleaseDate)
-    print("6. " + tvReleaseDate)
+    result = ("(" +  movieTitle + ", " + movieDetails.get("revenue", "NULL") + ", " + directorString
+              + ", " + movieDetails.get("runtime", "NULL") + ", " + ratingString + ", " + trailerString
+              + ", " + backdrop + ", " + releaseDate + ", " + overview + ", " + poster + ", " + premiereReleaseDate
+              + ", " + theaterLimitedReleaseDate + ", " + theaterReleaseDate + ", " + digitalReleaseDate
+              + ", " + physicalReleaseDate + ", " + tvReleaseDate + ", " + status + ", " + homepage + ", "
+              + imdb_id + ", " + movieDetails.get("id", "NULL") + ", " + original_language + ")")
 
+    updateResult = ("title=" +  movieTitle + ", revenue=" + movieDetails.get("revenue", "NULL") + ", director=" + directorString
+              + ", \"runTime\"=" + movieDetails.get("runtime", "NULL") + ", rating=" + ratingString + ", trailer=" + trailerString
+              + ", \"backgroundImage\"=" + backdrop + ", \"releaseDate\"=" + releaseDate + ", overview=" + overview + ", poster=" + poster
+              + ", \"premiereReleaseDate\"=" + premiereReleaseDate + ", \"theaterLimitedReleaseDate\"=" + theaterLimitedReleaseDate +
+               ", \"theaterReleaseDate\"=" + theaterReleaseDate + ", \"digitalReleaseDate\"=" + digitalReleaseDate
+              + ", \"physicalReleaseDate\"=" + physicalReleaseDate + ", \"tvReleaseDate\"=" + tvReleaseDate + ", status=" + status
+              + ", homepage=" + homepage + ", imdb_id=" + imdb_id + ", tmdb_id=" + movieDetails.get("id", "NULL") + ", \"originalLanguage\"=" + original_language)
 
-    result = ("(" + movieDetails.get("id", "NULL") + ", "+ movieDetails.get("revenue", "NULL") + ", " +  movieTitle + ", " +
-             directorString + ", " + movieDetails.get("runtime", "NULL") + ", " + ratingString + ", " +
-             trailerString + ", " + backdrop + ", " + releaseDate + ", " + overview + ", " + poster + ")")
-
-    updateResult = ("revenue=" + movieDetails.get("revenue", "NULL") + ",title=" + movieTitle + ",director=" +
-             directorString + ",\"runTime\"=" + movieDetails.get("runtime", "NULL") + ",rating=" + ratingString + ",trailer=" +
-             trailerString + ",\"backgroundImage\"=" + backdrop + ",\"releaseDate\"=" + releaseDate + ",overview=" + overview + ", poster=" + poster)
     return {"insert":result, "update":updateResult}
 
 

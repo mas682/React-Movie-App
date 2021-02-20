@@ -15,8 +15,6 @@ CREATE TABLE public.movies
     "releaseDate" date,
     overview text COLLATE pg_catalog."default",
     poster character varying(255) COLLATE pg_catalog."default",
-    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "premiereReleaseDate" date,
     "theaterLimitedReleaseDate" date,
     "theaterReleaseDate" date,
@@ -28,7 +26,11 @@ CREATE TABLE public.movies
     imdb_id character varying(100) COLLATE pg_catalog."default",
 	tmdb_id integer NOT NULL,
     "originalLanguage" character varying(20) COLLATE pg_catalog."default",
-    CONSTRAINT movies_pkey PRIMARY KEY (id)
+	"createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	"updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT movies_pkey PRIMARY KEY (id),
+	CONSTRAINT movies_imdb_id_key UNIQUE (imdb_id),
+	CONSTRAINT movies_tmdb_id_key UNIQUE (tmdb_id)
 )
 
 TABLESPACE pg_default;
