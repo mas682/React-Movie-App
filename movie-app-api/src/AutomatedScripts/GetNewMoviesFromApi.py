@@ -6,6 +6,7 @@ from datetime import date
 from datetime import datetime
 from config import config
 import time
+import sys
 
 def connect(successfulOutput, failedOutput):
     connection = None
@@ -229,7 +230,7 @@ def controllerFunction():
 # function to send api call to get the list of movies
 def getMovies(page, successfulOutput, failedOutput, apiKey):
         day = date.today()
-        #day = date(2021, 1, 22)
+        day = date(2020, 9, 4)
         day = day.strftime("%Y-%m-%d")
         startDate = day
         endDate = day
@@ -343,128 +344,44 @@ def parseMovieResults(result, releaseDate):
     return {"movieInsert":movieValue["insert"], "movieUpdate":movieValue["update"], "genres":genres}
 
 
+# dict is the object to pass in, or None
+# value is the value to get from the dict or the value to use if
+# dict is None
+# replaceQuotes is a boolean as to whether or not to replace single quotes with ''
+def generateSQLValue(dict, value, replaceQuotes):
+    result = value
+    # if passing in a dictionary, use it, otherwise use the value passed in
+    if dict is not None:
+        result = dict.get(value, "NULL")
+    if result != "NULL":
+        if result is None or result == "":
+            result = "NULL"
+        else:
+            if replaceQuotes:
+                result = result.replace("'", "''")
+            result = "\'" + result + "\'"
+    return result
+
+
 def generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buyProviders, externalIds, genres, movieDetails, primaryReleaseDate):
-
-
-    make all these ifs into a reusable function to clean this up!!!
-
-    movieTitle = movieDetails.get("title", "NULL")
-    if movieTitle != "NULL":
-        if movieTitle is None or movieTitle == "":
-            movieTitle = "NULL"
-        else:
-            movieTitle = movieTitle.replace("'", "''")
-            movieTitle = "\'" + movieTitle + "\'"
-    directorString = director
-    if directorString != "NULL":
-        if directorString is None or directorString == "":
-            directorString = "NULL"
-        else:
-            directorString = directorString.replace("'", "''")
-            directorString = "\'" + director + "\'"
-    ratingString = rating
-    if ratingString != "NULL":
-        if ratingString is None or ratingString == "":
-            ratingString = "NULL"
-        else:
-            ratingString = "\'" + rating + "\'"
-    trailerString = trailer
-    if trailerString != "NULL":
-        if trailerString is None or trailerString == "":
-            trailerString = "NULL"
-        else:
-            trailerString = "\'" + trailer + "\'"
-    backdrop = movieDetails.get("backdrop", "NULL")
-    if backdrop != "NULL":
-        if backdrop is None or backdrop == "":
-            backdrop = "NULL"
-        else:
-            backdrop = "\'" + backdrop + "\'"
-    releaseDate = primaryReleaseDate
-    if releaseDate != "NULL":
-        if releaseDate is None or releaseDate == "":
-            releaseDate = "NULL"
-        else:
-            releaseDate = "\'" + releaseDate + "\'"
-    overview = movieDetails.get("overview", "NULL")
-    if overview != "NULL":
-        if overview is None or overview == "":
-            overview = "NULL"
-        else:
-            overview = overview.replace("'", "''")
-            overview = "\'" + overview + "\'"
-    poster = movieDetails.get("poster", "NULL")
-    if poster != "NULL":
-        if poster is None or poster == "":
-            poster = "NULL"
-        else:
-            poster = "\'" + poster + "\'"
-    status = movieDetails.get("status", "NULL")
-    if status != "NULL":
-        if status is None or status == "":
-            status = "NULL"
-        else:
-            status = "\'" + status + "\'"
-    homepage = movieDetails.get("homepage", "NULL")
-    if homepage != "NULL":
-        if homepage is None or homepage == "":
-            homepage = "NULL"
-        else:
-            homepage = "\'" + homepage + "\'"
-    imdb_id = movieDetails.get("imdb_id", "NULL")
-    if imdb_id != "NULL":
-        if imdb_id is None or imdb_id == "":
-            imdb_id = "NULL"
-        else:
-            imdb_id = "\'" + imdb_id + "\'"
-    original_language = movieDetails.get("original_language", "NULL")
-    if original_language != "NULL":
-        if original_language is None or original_language == "":
-            original_language = "NULL"
-        else:
-            original_language = "\'" + original_language + "\'"
-    # premiereReleaseDate
-    premiereReleaseDate = releaseDateByType.get(1, "NULL")
-    if premiereReleaseDate != "NULL":
-        if premiereReleaseDate is None or premiereReleaseDate == "":
-            premiereReleaseDate = "NULL"
-        else:
-            premiereReleaseDate = "\'" + premiereReleaseDate + "\'"
-    # theaterLimitedReleaseDate
-    theaterLimitedReleaseDate = releaseDateByType.get(2, "NULL")
-    if theaterLimitedReleaseDate != "NULL":
-        if theaterLimitedReleaseDate is None or theaterLimitedReleaseDate == "":
-            theaterLimitedReleaseDate = "NULL"
-        else:
-            theaterLimitedReleaseDate = "\'" + theaterLimitedReleaseDate + "\'"
-    # theaterReleaseDate
-    theaterReleaseDate = releaseDateByType.get(3, "NULL")
-    if theaterReleaseDate != "NULL":
-        if theaterReleaseDate is None or theaterReleaseDate == "":
-            theaterReleaseDate = "NULL"
-        else:
-            theaterReleaseDate = "\'" + theaterReleaseDate + "\'"
-    # digitalReleaseDate
-    digitalReleaseDate = releaseDateByType.get(4, "NULL")
-    if digitalReleaseDate != "NULL":
-        if digitalReleaseDate is None or digitalReleaseDate == "":
-            digitalReleaseDate = "NULL"
-        else:
-            digitalReleaseDate = "\'" + digitalReleaseDate + "\'"
-    # physicalReleaseDate
-    physicalReleaseDate = releaseDateByType.get(5, "NULL")
-    if physicalReleaseDate != "NULL":
-        if physicalReleaseDate is None or physicalReleaseDate == "":
-            physicalReleaseDate = "NULL"
-        else:
-            physicalReleaseDate = "\'" + physicalReleaseDate + "\'"
-    # tvReleaseDate
-    tvReleaseDate = releaseDateByType.get("1", "NULL")
-    if tvReleaseDate != "NULL" or tvReleaseDate == "":
-        if tvReleaseDate is None:
-            tvReleaseDate = "NULL"
-        else:
-            tvReleaseDate = "\'" + tvReleaseDate + "\'"
+    movieTitle = generateSQLValue(movieDetails, "title", True)
+    directorString = generateSQLValue(None, director, True)
+    ratingString = generateSQLValue(None, rating, False)
+    trailerString = generateSQLValue(None, trailer, False)
+    backdrop = generateSQLValue(movieDetails, "backdrop", False)
+    releaseDate = generateSQLValue(None, primaryReleaseDate, False)
+    overview = generateSQLValue(movieDetails, "overview", True)
+    poster = generateSQLValue(movieDetails, "poster", False)
+    status = generateSQLValue(movieDetails, "status", False)
+    homepage = generateSQLValue(movieDetails, "homepage", False)
+    imdb_id = generateSQLValue(movieDetails, "imdb_id", False)
+    original_language = generateSQLValue(movieDetails, "original_language", False)
+    premiereReleaseDate = generateSQLValue(releaseDateByType, 1, False)
+    theaterLimitedReleaseDate = generateSQLValue(releaseDateByType, 2, False)
+    theaterReleaseDate = generateSQLValue(releaseDateByType, 3, False)
+    digitalReleaseDate = generateSQLValue(releaseDateByType, 4, False)
+    physicalReleaseDate = generateSQLValue(releaseDateByType, 5, False)
+    tvReleaseDate = generateSQLValue(releaseDateByType, 6, False)
 
     result = ("(" +  movieTitle + ", " + movieDetails.get("revenue", "NULL") + ", " + directorString
               + ", " + movieDetails.get("runtime", "NULL") + ", " + ratingString + ", " + trailerString
@@ -499,7 +416,7 @@ def getReleaseDates(releaseDates, releaseDateByType):
                             rating = str(item.get("certification", "NULL"))
                         #1.Premiere,2. Theatrical (limited),3. Theatrical,4. Digital,5. Physical,6. TV
                         type = item.get("type")
-                        releaseDate = item.get("release_date")
+                        releaseDate = item.get("release_date", "NULL")
                         releaseDateByType.update({type:releaseDate})
     return rating
 
@@ -574,7 +491,13 @@ def parseMovieDetails(results, movieDetails):
         movieDetails.update({"original_language":results.get("original_language", "NULL")})
 
 if __name__ == '__main__':
-    controllerFunction()
-    #with open('C:/Users/mstro/Documents/React-Movie-App/test.json', encoding='utf-8') as f:
-    #    data = json.load(f)
-    #    result = parseMovieResults(data)
+    type = ""
+    if len(sys.argv) > 1:
+        type = sys.argv[1]
+    if type == "":
+        controllerFunction()
+    else:
+        with open('C:/Users/mstro/Documents/React-Movie-App/test.json', encoding='utf-8') as f:
+            data = json.load(f)
+            result = parseMovieResults(data, None)
+            #print(result)
