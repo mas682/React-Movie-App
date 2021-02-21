@@ -20,7 +20,8 @@
 @media screen and (min-width: 1400px) {
     .mainBodyContainer {
         width: 70%;
-        height: calc(100vh - 125px);
+        min-height: calc(100vh - 125px);
+        height: auto;
         margin-left: 15%;
         margin-right: 15%;
         position: static;
@@ -28,6 +29,7 @@
         flex-flow: row wrap;
         align-content: center;
         justify-content: center;
+        margin-top: 20px;
         margin-bottom: 20px;
         background: white;
     }
@@ -44,6 +46,7 @@
         flex-flow: row wrap;
         align-content: center;
         justify-content: center;
+        margin-top: 20px;
         margin-bottom: 20px;
         background: white;
     }
@@ -60,6 +63,7 @@
         flex-flow: row wrap;
         align-content: center;
         justify-content: center;
+        margin-top: 20px;
         margin-bottom: 20px;
         background: white;
     }
@@ -76,6 +80,7 @@
         flex-flow: row wrap;
         align-content: center;
         justify-content: center;
+        margin-top: 20px;
         margin-bottom: 20px;
         background: white;
     }
@@ -92,6 +97,7 @@
         flex-flow: row wrap;
         align-content: center;
         justify-content: center;
+        margin-top: 20px;
         margin-bottom: 20px;
         background: white;
     }

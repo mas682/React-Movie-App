@@ -230,7 +230,7 @@ def controllerFunction():
 # function to send api call to get the list of movies
 def getMovies(page, successfulOutput, failedOutput, apiKey):
         day = date.today()
-        day = date(2020, 9, 4)
+        #day = date(2020, 9, 4)
         day = day.strftime("%Y-%m-%d")
         startDate = day
         endDate = day

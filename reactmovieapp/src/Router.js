@@ -1,7 +1,5 @@
 import React from 'react';
 import {BrowserRouter as Router, Route, Redirect, Switch} from 'react-router-dom';
-import Movie from './MovieReview.js';
-import MovieInfo from './MovieInfo.js';
 import Landing from './LandingPage.js';
 import MainPage from'./MainPage.js';
 import UserProfile from './userProfile.js';
@@ -14,6 +12,7 @@ import SearchPage from './SearchPages.js';
 import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
 import {generateMessageState} from './StaticFunctions/StateGeneratorFunctions.js';
+import {getErrorDisplay} from './StaticFunctions/ErrorHtmlFunctions.js';
 
 class Routes extends React.Component
 {
@@ -184,7 +183,8 @@ class Routes extends React.Component
                         <Route exact path="/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/> } />
                         <Route exact path="/settings" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn} setMessages={this.setMessages} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
                         <Route exact path="/movie/:id" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
-                        <Route path="/search*" render={(props)=> <SearchPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
+                        <Route exact path="/search" render={(props)=> <SearchPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
+                        <Route render={()=>getErrorDisplay("The requested page does not exist")} />
                     </Switch>
                 </main>
             </Router>
