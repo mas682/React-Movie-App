@@ -3,7 +3,7 @@ import models, { sequelize } from '../src/models';
 
 
 // function to run all the checks when a new review comes in or if a review update comes in
-const validateReviewParameters = (res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, checkReviewId, reviewId) =>
+const validateReviewParameters = (res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, checkReviewId, reviewId, updateReview) =>
 {
     // check to make sure the rating is a actual number
     let valid = validateIntegerParameter(res, rating, requester, "The rating for the review is invalid", 0, 5);
@@ -11,9 +11,12 @@ const validateReviewParameters = (res, requester, userId, rating, reviewText, go
     // check the review itself
     valid = validateStringParameter(res, reviewText, 0, 6000, requester, "The review field is invalid");
     if(!valid) return valid;
-    // check the movie id
-    valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
-    if(!valid) return valid;
+    if(!updateReview)
+    {
+        // check the movie id
+        valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
+        if(!valid) return valid;
+    }
     // check the number of tags provided
     let goodTagCount = goodTags.length + goodTagStrings.length;
     valid = validateReviewTagCount(res, goodTagCount, requester, "More than 5 good tags were found");
@@ -58,7 +61,7 @@ const createReview = async (cookie, req, res) =>
     let badTags = req.body.badTags;
     let badTagStrings = req.body.badTagStrings;
     let movieId = req.body.movie;
-    let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, false, undefined);
+    let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, false, undefined, false);
     if(!valid) return;
 
     console.log("Review rating: " + rating);
@@ -147,9 +150,8 @@ const updateReview = async (cookie, req, res) =>
     let goodTagStrings = req.body.goodTagStrings;
     let badTags = req.body.badTags;
     let badTagStrings = req.body.badTagStrings;
-    let movieId = req.body.movie;
     let reviewId = req.body.reviewId;
-    let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, true, reviewId);
+    let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, undefined, true, reviewId, true);
     if(!valid) return;
 
     let review = await models.Review.findByIdForUpdate(models, reviewId);
@@ -170,17 +172,15 @@ const updateReview = async (cookie, req, res) =>
         });
         return;
     }
-    let movieChange = (review.movieId === movieId) ? false : true;
     // may want to set a boolean client side to see if this changed at all for efficiency
     // otherwise, will just about always have to update..
     let reviewChange = (review.review.legnth === 0 && reviewText.length === 0) ? false : true;
     let result;
-    if(movieChange || reviewChange)
+    if(reviewChange)
     {
         try
         {
             result = await review.update({
-                movieId: movieId,
                 review: reviewText,
                 userId: userId,
                 rating: rating

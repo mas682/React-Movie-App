@@ -290,7 +290,6 @@ class ReviewPopUp extends React.Component {
         let badTags = this.getTagsForApi(this.state.badTags);
         let url = "http://localhost:9000/review/update";
         let params = {
-            movie: this.state.movie.id,
             rating: this.state.rating,
             goodTags: goodTags.ids,
             goodTagStrings: goodTags.strings,
@@ -644,6 +643,7 @@ class ReviewPopUp extends React.Component {
                             allowNoSuggestion={false}
                             clearOnSubmit={false}
                             form={"MovieTitle"}
+                            locked={this.state.edit}
                         />
                     </div>
                 </React.Fragment>
