@@ -268,12 +268,28 @@ class MovieInfoPage extends React.Component {
           if(this.state.poster !== null)
           {
               posterPath = "https://image.tmdb.org/t/p/original" + this.state.poster;
+              return (
+                  <div className={style.movieImageContainer}>
+                      <div className={style.innerMovieImageContainer}>
+                          <img className={style.moviePoster} src={posterPath} onClick={this.posterClickHandler}/>
+                      </div>
+                  </div>
+              );
           }
-          return (
-            <div className={style.movieImageContainer}>
-                <img className={style.moviePoster} src={posterPath} onClick={this.posterClickHandler}/>
-            </div>
-          );
+          else
+          {
+              return (
+                  <div className={style.movieImageContainer}>
+                      <div className={style.innerMovieImageContainer}>
+                          <div className={style.emptyMoviePoster}>
+                              <div>
+                                  No image to display
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              );
+          }
       }
 
 

@@ -3,13 +3,41 @@
     background: white;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    min-height: 350px;
+    position: absolute;
+    top: 0;
+    height: 100%;
 }
+
+.emptyMoviePoster {
+    width: 100%;
+    background: lightgray;
+    display: grid;
+    text-decoration: none;
+    color: black;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.emptyMoviePoster div {
+    justify-self: center;
+    align-self: center;
+    font-size: 2em;
+    font-weight: 500;
+    margin-left: 10%;
+    margin-right: 10%;
+    text-align: center;
+}
+
 
 .movieImageContainer {
     width: 100%;
     margin: 0px;
     display:flex;
+    position: relative;
+    padding-top: 177.77%;
 }
 
 

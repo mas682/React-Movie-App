@@ -765,7 +765,6 @@ class SearchPage extends React.Component {
                             currentUser={this.state.currentUser}
                             key={counter}
                             showMovieInfo={false}
-                            moviePosterStyle={{"min-height":"0px", "border-radius":"5px"}}
                             posterClickHandler={this.movieClickHandler}
                         />
                     </div>

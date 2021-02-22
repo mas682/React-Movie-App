@@ -99,7 +99,9 @@ class MovieDisplay extends React.Component {
             type: props.type,
             // boolean to show movie info or not
             showMovieInfo: showMovieInfo,
-            moviePosterStyle: (props.moviePosterStyle === undefined) ? {} : props.moviePosterStyle
+            moviePosterStyle: (props.moviePosterStyle === undefined) ? {} : props.moviePosterStyle,
+            movieImageContainerStyle: (props.movieImageContainerStyle === undefined) ? {} : props.movieImageContainerStyle,
+            mainStyle:(props.mainStyle === undefined) ? {} : props.mainStyle
         };
     }
 
@@ -272,15 +274,34 @@ class MovieDisplay extends React.Component {
                 </div>
             );
         }
-        return (
-            <div className={style.main}>
-                <div className={style.movieImageContainer} onClick={this.posterClickHandler}>
-                    <img className={style.moviePoster} style={this.state.moviePosterStyle} src={posterPath}/>
+        if(posterPath !== "")
+        {
+            return (
+                <div className={style.main} style={this.state.mainStyle}>
+                    <div className={style.movieImageContainer} onClick={this.posterClickHandler} style={this.state.movieImageContainerStyle}>
+                        <img className={style.moviePoster} style={this.state.moviePosterStyle} src={posterPath}/>
+                    </div>
+                    {movieInfo}
+                    {moviePopup}
                 </div>
-                {movieInfo}
-                {moviePopup}
-            </div>
-        )
+            )
+        }
+        else
+        {
+            return (
+                <div className={style.main}>
+                    <div className={style.movieImageContainer} onClick={this.posterClickHandler}>
+                        <div className={style.emptyMoviePoster}>
+                              <div>
+                                  No image to display
+                              </div>
+                        </div>
+                    </div>
+                    {movieInfo}
+                    {moviePopup}
+                </div>
+            )
+        }
     }
 
 }

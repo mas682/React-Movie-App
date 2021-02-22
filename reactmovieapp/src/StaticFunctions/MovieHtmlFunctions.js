@@ -254,16 +254,32 @@ const generateRatingStars = (style, id, rating, form) =>
 const generateMoviePoster = (style, poster, movieId) =>
 {
     let posterPath = "";
+    let moviePage = "movie/" + movieId;
     if(poster !== null)
     {
         posterPath = "https://image.tmdb.org/t/p/original" + poster;
+        return (
+          <div className={style.movieImageContainer}>
+              <div className={style.innerMovieImageContainer}>
+                  <Link to={moviePage}><img className={style.moviePoster} src={posterPath}/></Link>
+              </div>
+          </div>
+        );
     }
-    let moviePage = "movie/" + movieId;
-    return (
-      <div className={style.movieImageContainer}>
-          <Link to={moviePage}><img className={style.moviePoster} src={posterPath}/></Link>
-      </div>
-    );
+    else
+    {
+        return (
+            <div className={style.movieImageContainer}>
+                <div className={style.innerMovieImageContainer}>
+                    <Link to={moviePage} className={style.emptyMoviePoster}>
+                          <div>
+                              No image to display
+                          </div>
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 }
 
 // function to generate the background image for a movie's page or popup
