@@ -599,7 +599,7 @@ class Header extends React.Component {
         {
             redirectToSearch = <Redirect to={this.state.searchParameters}/>;
         }
-        let homePath = (this.state.currentUser !== "") ? "/feed" : "/";
+        let homePath = "/";
 
         let menuIcon = (
             <div className="menuIconContainer" onClick={this.menuClickHandler}>

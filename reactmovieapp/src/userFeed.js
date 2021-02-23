@@ -106,7 +106,7 @@ class UserFeed extends React.Component {
         {
             return <Redirect to="" />;
         }
-        let posts = []
+        let posts = [];
         // generate the posts
         this.state.posts.forEach((p) => {
             posts.push(<MoviePost
@@ -118,13 +118,22 @@ class UserFeed extends React.Component {
                  showLoginPopUp={this.props.showLoginPopUp}
                  />);
         });
-
-        return (
-
-            <div className={style.mainBodyContainer}>
-                {posts}
-            </div>
-        );
+        if(posts.length < 1)
+        {
+            return (
+                <div className={`${style.mainBodyContainer} ${style.userFeedEmpty}`}>
+                    <div>Follow more users to see posts on your feed!</div>
+                </div>
+            );
+        }
+        else
+        {
+            return (
+                <div className={style.mainBodyContainer}>
+                    {posts}
+                </div>
+            );
+        }
     }
 }
 

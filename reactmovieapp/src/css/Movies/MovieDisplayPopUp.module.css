@@ -401,10 +401,14 @@
 }
 
 .movieTitle {
+    margin-top: 0%;
+}
+
+.movieTitle a {
     font-size: 1.8em;
     font-weight: 500;
     color: #093145;
-    margin-top: 0%;
+    text-decoration: none;
 }
 
 .movieTrailerContainer {

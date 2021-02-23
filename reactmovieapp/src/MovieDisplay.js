@@ -288,13 +288,23 @@ class MovieDisplay extends React.Component {
         }
         else
         {
+            let message = (
+                <div>
+                    No message to display
+                </div>
+            );
+            if(this.state.type === "search")
+            {
+                message = (
+                    <div className={style.emptyMovieTitle}>
+                        {this.state.movie.title} aaaaaaaaadfasdfasdfasd sadfasdfasd
+                    </div>);
+            }
             return (
                 <div className={style.main}>
                     <div className={style.movieImageContainer} onClick={this.posterClickHandler}>
                         <div className={style.emptyMoviePoster}>
-                              <div>
-                                  No image to display
-                              </div>
+                            {message}
                         </div>
                     </div>
                     {movieInfo}

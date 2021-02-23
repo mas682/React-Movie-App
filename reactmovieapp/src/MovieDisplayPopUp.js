@@ -2,7 +2,7 @@ import React from 'react';
 import Popup from 'reactjs-popup';
 import style from './css/Movies/MovieDisplayPopUp.module.css'
 import './css/Movies/MovieDisplayPopUp.css'
-import {Redirect, withRouter} from 'react-router-dom';
+import {Redirect, Link, withRouter} from 'react-router-dom';
 import {generateWatchListButton, generateWatchedListButton, generateMovieTrailer, checkMovieOnWatchList, checkMovieOnWatchedList,
 generateMovieInfo, generateOverview, generateDirector, generateGenres, generateMoviePoster} from './StaticFunctions/MovieHtmlFunctions.js';
 import {apiPostJsonRequest, apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
@@ -404,6 +404,7 @@ class MovieDisplayPopUp extends React.Component {
                                 showLoginPopUp={this.showSignInForm}
                             />
             }
+            let moviePath = "/movie/" + this.state.movie.id;
     		return (
         			<div>
                         <Popup
@@ -424,7 +425,7 @@ class MovieDisplayPopUp extends React.Component {
                                         <div className={style.movieDetailsOutterContainer}>
                                             <div className={style.movieDetailsContainer}>
                                                 <div className={style.movieTitle}>
-                                                    {this.state.movie.title}
+                                                    <Link to={moviePath}>{this.state.movie.title}</Link>
                                                 </div>
 												<div className={style.infoContainer}>
 													{this.state.movieInfoString}

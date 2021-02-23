@@ -756,7 +756,7 @@ class SearchPage extends React.Component {
                     <div className={style.movieContainer}>
                         <MovieDisplay
                             movie={movie}
-                            type={""}
+                            type={"search"}
                             index={counter}
                             removeMovieDisplay={undefined}
                             setMessages={this.props.setMessages}

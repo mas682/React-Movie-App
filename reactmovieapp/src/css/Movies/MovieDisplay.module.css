@@ -29,6 +29,14 @@
     margin-left: 10%;
     margin-right: 10%;
     text-align: center;
+
+}
+
+/* formatting text when displaying title and no poster */
+.emptyMoviePoster .emptyMovieTitle {
+    font-size: 1em;
+    word-break: break-all;
+    word-wrap: break-word;
 }
 
 
