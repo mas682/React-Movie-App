@@ -341,7 +341,7 @@ class SearchDropDown extends React.Component {
             pastLastSuggestion: pastLastSuggestion,
             hoverFocused: false
         };
-        
+
         return {
             newState: true,
             state: newState
@@ -496,7 +496,7 @@ class SearchDropDown extends React.Component {
         {
             let keys = Object.keys(this.state.suggestions);
             this.setState({
-                suggestionIndex: 1,
+                suggestionIndex: 0,
                 currentHashKey: (keys.length > 0) ? keys[0] : "",
                 currentHashKeyIndex: 0,
                 hoverFocused: false

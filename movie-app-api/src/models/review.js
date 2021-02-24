@@ -60,7 +60,7 @@ const review = (sequelize, DataTypes) => {
     // can also be used to get a individual users reviews if passed a single id
     // this also checks to see if the reviews that are returned are
     // also liked by the requester
-    Review.findByIds = async (models, ids, requesterId) =>
+    Review.findByIds = async (models, ids, requesterId, max, offset) =>
     {
         let includeArray = [
             {
@@ -327,7 +327,7 @@ const review = (sequelize, DataTypes) => {
     // can also be used to get a individual users reviews if passed a single id
     // this also checks to see if the reviews that are returned are
     // also liked by the requester
-    Review.getUserReviewFeed = async (models, requesterId) =>
+    Review.getUserReviewFeed = async (models, requesterId, max, offset) =>
     {
         let includeArray = [
             {
@@ -341,8 +341,10 @@ const review = (sequelize, DataTypes) => {
                     attributes: ["id"],
                     through: {attributes: []},
                     where: {id: requesterId},
-                    required: true
-                }
+                    required: true,
+                    duplicating: false
+                },
+                duplicating: false
             },
             {
                 model: models.MovieTag,
@@ -350,26 +352,29 @@ const review = (sequelize, DataTypes) => {
                 // included the id to make one less query needed to find tag
                 attributes:["id", "value"],
                 // do not include the association table
-                through: {attributes: []}
+                through: {attributes: []},
+                duplicating: false
             },
             {
                 model: models.MovieTag,
                 as: "badTags",
                 // included the id to make one less query needed to find tag
                 attributes: ["id", "value"],
-                through: {attributes: []}
+                through: {attributes: []},
+                duplicating: false
             },
             {
                 model: models.User,
                 as: "likes",
                 required: false,
                 attributes: [],
-                through: {attributes: []}
+                through: {attributes: []},
+                duplicating: false
             },
             {
                     model: models.Movies,
                     as: "movie",
-                    attributes: ["title", "id", "poster"],
+                    attributes: ["title", "id", "poster"]
             }
 
         ];
@@ -390,6 +395,8 @@ const review = (sequelize, DataTypes) => {
         // may need to eventually sort by time stamps if not doing it already
         let reviews = await Review.findAll({
             order: [["updatedAt", 'DESC']],
+            offset: offset,
+            limit: max,
             // only get these attributes
             attributes: {
                 include: attributes
@@ -398,6 +405,14 @@ const review = (sequelize, DataTypes) => {
             include:includeArray,
             group: groupByArray
         });
+        console.log(max);
+        console.log(offset);
+
+        left off here...
+        need to fix duplicating to query for user pages like
+        here in user feed
+        then finish client side
+
 
         return reviews;
     }

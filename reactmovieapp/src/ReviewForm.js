@@ -589,8 +589,13 @@ class ReviewPopUp extends React.Component {
             // so new tag not added..
             // probably want to update still as the value could of changed but
             // display a warning/error message
+            let tag = value;
+            if(typeof(value) !== "string")
+            {
+                tag = value.value;
+            }
             this.setState({
-                messages: [{message: "You have already selected the tag: " + value, type: "info"}],
+                messages: [{message: "You have already selected the tag: " + tag, type: "info"}],
                 messageId: this.state.messageId + 1
             })
         }
@@ -671,12 +676,32 @@ class ReviewPopUp extends React.Component {
     {
         if(this.state.movie !== undefined)
         {
-            let path = 'https://image.tmdb.org/t/p/w500' + this.state.movie.poster;
-            return (
-              <div className = {`${style.centeredMaxWidthContainer} ${style.containerMarginBottom10}`}>
-                  <img className={style.moviePoster} src={path}/>
-              </div>
-            );
+            if(this.state.movie.poster === null)
+            {
+                return (
+                  <div className = {`${style.outterMovieImageContainer}`}>
+                      <div className={style.innerMovieImageContainer}>
+                          <div className={style.emptyMoviePoster}>
+                              <div>
+                                  No image to display
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                );
+            }
+            else
+            {
+                let path = 'https://image.tmdb.org/t/p/w500' + this.state.movie.poster;
+                return (
+                  <div className = {`${style.outterMovieImageContainer}`}>
+                      <div className={style.innerMovieImageContainer}>
+                          <img className={style.moviePoster} src={path}/>
+                      </div>
+                  </div>
+                );
+
+            }
         }
         return null;
     }

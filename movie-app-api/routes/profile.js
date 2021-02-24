@@ -1,4 +1,4 @@
-import {verifyLogin, validateUsernameParameter} from './globals.js';
+import {verifyLogin, validateUsernameParameter, validateIntegerParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 
 // function to get the reviews associated with a users profile
@@ -288,8 +288,15 @@ const getReviews = async (cookie, req, res, cookieValid) =>
     //let username = cookie.name;
     let username = req.params.userId;
     let requester = (cookieValid) ? cookie.name : "";
+    let max = (req.query.max === undefined) ? 50 : req.query.max;
+    let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
     let valid = validateUsernameParameter(res, username, requester, "Username is invalid");
     if(!valid) return;
+    valid = validateIntegerParameter(res, max, username, "The maximum number of reviews to return is invalid");
+    if(!valid) return;
+    valid = validateIntegerParameter(res, offset, username, "The offset for the reviews to return is invalid", 0, undefined);
+    if(!valid) return;
+    max = (max > 50) ? 50 : max;
     // find the user by their login
     models.User.findByLogin(username)
     .then(async (user)=>{
@@ -303,7 +310,7 @@ const getReviews = async (cookie, req, res, cookieValid) =>
         }
         if(cookieValid)
         {
-            models.Review.findByIds(models, [user.id], cookie.id)
+            models.Review.findByIds(models, [user.id], cookie.id, max, offset)
             .then((reviews)=>
             {
                 // send the reveiws associated with the user and their id
@@ -335,9 +342,16 @@ const getFeed = async (cookie, req, res) =>
 {
     let username = req.params.userId;
     let requester = cookie.name;
+    let max = (req.query.max === undefined) ? 50 : req.query.max;
+    let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
     // may want to just do /feed...?, no username?
     let valid = validateUsernameParameter(res, username, requester, "Username for the users feed is invalid");
     if(!valid) return;
+    valid = validateIntegerParameter(res, max, username, "The maximum number of reviews to return is invalid");
+    if(!valid) return;
+    valid = validateIntegerParameter(res, offset, username, "The offset for the reviews to return is invalid", 0, undefined);
+    if(!valid) return;
+    max = (max > 50) ? 50 : max;
     if(username !== cookie.name)
     {
         // unathorized
@@ -351,7 +365,7 @@ const getFeed = async (cookie, req, res) =>
     // this will always return an array, even if the user does not exist
     // if the user does not exist, it will just be a empty array
     // if verified the user is logged in, should not really be an issue
-    let reviews = await models.Review.getUserReviewFeed(models, cookie.id);
+    let reviews = await models.Review.getUserReviewFeed(models, cookie.id, max, offset);
 
     res.status(200).send({
         message: "Users feed successfully found",

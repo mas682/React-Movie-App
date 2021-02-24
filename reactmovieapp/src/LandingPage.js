@@ -277,9 +277,6 @@ class Landing extends React.Component {
 						{movies}
 						{newReleases}
 						{upcomingMovies}
-						{trendingMovies}
-						{popularMovies}
-						{playingNearMe}
 						{trailer}
 						This product uses the TMDb API but is not endorsed or certified by TMDb.
 					</div>
