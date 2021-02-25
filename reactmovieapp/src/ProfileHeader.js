@@ -77,9 +77,9 @@ class ProfileHeader extends React.Component {
 
     static getDerivedStateFromProps(nextProps, prevState)
     {
-        if(prevState.postCount !== nextProps.postCount)
+        if(nextProps.postCount === -1)
         {
-            return {postCount: nextProps.postCount};
+            return {postCount: (prevState.postCount - 1)};
         }
         else if(nextProps.updateFollowingCount !== 0)
         {
@@ -137,6 +137,7 @@ class ProfileHeader extends React.Component {
                     following: result[1].following,
                     followerCount: result[1].followerCount,
                     followingCount: result[1].followingCount,
+                    postCount: result[1].postCount,
                     displayFollowers: false,
                     displayFollowed: false,
                     loading: false,

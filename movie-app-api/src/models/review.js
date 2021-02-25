@@ -66,7 +66,8 @@ const review = (sequelize, DataTypes) => {
             {
                 model: models.User,
                 as: "user",
-                attributes: ["username", "id"]
+                attributes: ["username", "id"],
+                duplicating: false
             },
             {
                 model: models.MovieTag,
@@ -74,26 +75,29 @@ const review = (sequelize, DataTypes) => {
                 // included the id to make one less query needed to find tag
                 attributes:["id", "value"],
                 // do not include the association table
-                through: {attributes: []}
+                through: {attributes: []},
+                duplicating: false
             },
             {
                 model: models.MovieTag,
                 as: "badTags",
                 // included the id to make one less query needed to find tag
                 attributes: ["id", "value"],
-                through: {attributes: []}
+                through: {attributes: []},
+                duplicating: false
             },
             {
                 model: models.User,
                 as: "likes",
                 required: false,
                 attributes: [],
-                through: {attributes: []}
+                through: {attributes: []},
+                duplicating: false
             },
             {
-                    model: models.Movies,
-                    as: "movie",
-                    attributes: ["title", "id", "poster"],
+                model: models.Movies,
+                as: "movie",
+                attributes: ["title", "id", "poster"]
             }
 
         ];
@@ -112,7 +116,9 @@ const review = (sequelize, DataTypes) => {
             ]
         }
         // may need to eventually sort by time stamps if not doing it already
-        let reviews = await Review.findAll({
+        let reviews = await Review.findAndCountAll({
+            limit: max,
+            offset: offset,
             where: {
                 userId: ids
             },
@@ -125,9 +131,9 @@ const review = (sequelize, DataTypes) => {
             include:includeArray,
             group: groupByArray
         });
-        console.log(requesterId);
         console.log(reviews);
-        return reviews;
+        console.log(reviews.count.length);
+        return reviews.rows;
     }
 
 
@@ -372,9 +378,9 @@ const review = (sequelize, DataTypes) => {
                 duplicating: false
             },
             {
-                    model: models.Movies,
-                    as: "movie",
-                    attributes: ["title", "id", "poster"]
+                model: models.Movies,
+                as: "movie",
+                attributes: ["title", "id", "poster"]
             }
 
         ];
@@ -405,15 +411,6 @@ const review = (sequelize, DataTypes) => {
             include:includeArray,
             group: groupByArray
         });
-        console.log(max);
-        console.log(offset);
-
-        left off here...
-        need to fix duplicating to query for user pages like
-        here in user feed
-        then finish client side
-
-
         return reviews;
     }
 

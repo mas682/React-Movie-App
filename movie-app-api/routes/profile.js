@@ -255,6 +255,7 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
         let followerCount = (await user.getFollowers()).length;
         // get the number of following users the user has
         let followingCount = (await user.getFollowing()).length;
+        let postCount = (await user.getReviews()).length;
 
         // if the current user is looking at their own page
         if(cookieValid)
@@ -277,7 +278,8 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
             following: followed,
             followerCount: followerCount,
             followingCount: followingCount,
-            requester: loggedInUser
+            requester: loggedInUser,
+            postCount: postCount
         })
     });
 }

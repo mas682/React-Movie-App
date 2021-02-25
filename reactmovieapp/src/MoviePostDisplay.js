@@ -15,61 +15,100 @@ class MoviePostDisplay extends React.Component {
             posts: [],
             // the logged in users username or ""
             currentUser: this.props.currentUser,
-            loading: true
+            // the id of the main body container so to implment paging
+            mainBodyContainer: this.props.mainBodyContainer,
+            loading: true,
+            // boolean for loading data on scroll
+            loadingData: false,
+            offset: 0,
+            // boolean to indicate if more data to be pulle d from api still
+            // false if on last pull less than max records were returned from api
+            moreData: true
         }
         this.getData = this.getData.bind(this);
         this.checkApiResults = this.checkApiResults.bind(this);
+        this.scrollEventHandler = this.scrollEventHandler.bind(this);
     }
 
     async componentDidMount()
     {
-        this.getData(this.state.username);
+        document.addEventListener('scroll', this.scrollEventHandler, {passive: true});
+        this.getData(this.state.username, 0);
+    }
+
+    scrollEventHandler(event)
+    {
+        // if there is no more data to load return
+        if(!this.state.moreData || this.state.loadingData) return;
+        let element = document.querySelector("." + this.state.mainBodyContainer);
+        let mainElementHeight = parseFloat(getComputedStyle(document.querySelector("main")).height);
+        let headerHeight = parseFloat(document.body.offsetHeight);
+        // get the total height of the page
+        let pageHeight = headerHeight + mainElementHeight;
+        // if scrolled to 75% of the page, start loading new data
+        if((pageHeight * .75) < (parseFloat(window.pageYOffset) + parseFloat(window.innerHeight)))
+        {
+            // if already loading data, do nothing
+            if(!this.state.loadingData)
+            {
+                this.setState({
+                    loadingData: true
+                });
+                console.log("Get new data");
+                this.getData(this.state.username, this.state.offset);
+            }
+        }
     }
 
     // when the component receives new props, update the state here
     componentDidUpdate(prevProps, prevState) {
         if(!this.state.loading && (prevProps.username !== this.props.username))
         {
-            this.getData(this.props.username);
+            this.getData(this.props.username, 0);
         }
         else if(!this.state.loading && (this.props.currentUser !== prevProps.currentUser))
         {
-            this.getData(this.props.username);
+            this.getData(this.props.username, 0);
         }
         else if(!this.state.loading && (this.props.newReview !== prevProps.newReview))
         {
-            this.getData(this.props.username);
+            this.getData(this.props.username, 0);
         }
     }
 
     // handles calling api for componentDidMount and componentDidUpdate
-    getData(username)
+    getData(username, offset)
     {
-        let url = "http://localhost:9000/profile/" + username + "/reviews";
+        let max = 5;
+        let url = "http://localhost:9000/profile/" + username + "/reviews?offset=" + offset + "&max=" + max;
         apiGetJsonRequest(url).then(result =>{
             let status = result[0];
             let message = result[1].message;
             let user = result[1].requester;
-            this.checkApiResults(status, message, user, result, username);
+            this.checkApiResults(status, message, user, result, username, this.state.offset, max);
         });
     }
 
-    checkApiResults(status, message, user, result, username)
+    checkApiResults(status, message, user, result, username, offset, max)
     {
         if(status == 200)
         {
+            let oldReviews = [...this.state.posts];
             let reviews = result[1].reviews;
             this.props.updateLoggedIn(user);
-            this.props.setPostCount(reviews.length);
+            // this needs updated with paging now happening
             this.setState({
                 username: username,
-                posts: reviews,
+                posts: (this.state.loadingData) ? oldReviews.concat(reviews) : reviews,
                 currentUser: user,
-                loading: false
+                loading: false,
+                loadingData: false,
+                moreData: (reviews.length === max) ? true : false,
+                offset: offset + max
             });
-            this.props.setMessages({
+            /*this.props.setMessages({
                 messages: [{type: "success", message: message}],
-            });
+            });*/
         }
         else
         {
@@ -130,6 +169,7 @@ class MoviePostDisplay extends React.Component {
                             showLoginPopUp={this.props.showLoginPopUp}
                             updateLoggedIn={this.props.updateLoggedIn}
                             setMessages={this.props.setMessages}
+                            decrementPostCount={this.props.decrementPostCount}
                         />);
         });
         return (<React.Fragment>{posts}</React.Fragment>);

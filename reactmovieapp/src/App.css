@@ -16,8 +16,8 @@ main{
     /* needs to be absolute for Alert component */
     position: absolute;
     width: 100%;
-    background-image: linear-gradient(rgba(243, 0, 0, 0.8), rgba(0, 0, 0, 0.8));
-    background-repeat: no-repeat;
+    /*background-image: linear-gradient(rgba(243, 0, 0, 0.8), rgba(0, 0, 0, 0.8));
+    background-repeat: no-repeat;*/
 
 }
 

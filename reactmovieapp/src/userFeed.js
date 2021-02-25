@@ -26,12 +26,16 @@ class UserFeed extends React.Component {
             // false if on last pull less than max records were returned from api
             moreData: true
         }
+
+        this.scrollEventHandler = this.scrollEventHandler.bind(this);
+        this.callApi = this.callApi.bind(this);
     }
 
     async componentDidMount()
     {
         if(this.state.currentUser !== "")
         {
+            document.addEventListener('scroll', this.scrollEventHandler, {passive: true});
             this.callApi(this.state.currentUser);
         }
         else
@@ -44,14 +48,39 @@ class UserFeed extends React.Component {
         }
     }
 
+    scrollEventHandler(event)
+    {
+        // if there is no more data to load return
+        if(!this.state.moreData || this.state.loadingData) return;
+        let element = document.querySelector("." + style.mainBodyContainer);
+        let mainElementHeight = parseFloat(getComputedStyle(document.querySelector("main")).height);
+        let headerHeight = parseFloat(document.body.offsetHeight);
+        // get the total height of the page
+        let pageHeight = headerHeight + mainElementHeight;
+        // if scrolled to 75% of the page, start loading new data
+        if((pageHeight * .75) < (parseFloat(window.pageYOffset) + parseFloat(window.innerHeight)))
+        {
+            // if already loading data, do nothing
+            if(!this.state.loadingData)
+            {
+                this.setState({
+                    loadingData: true
+                });
+                console.log("Get new data");
+                this.callApi(this.state.currentUser);
+            }
+        }
+    }
+
     async callApi(username)
     {
-        let url = "http://localhost:9000/profile/" + username + "/feed?offset=" + this.state.offset + "&max=30";
+        let max = 10;
+        let url = "http://localhost:9000/profile/" + username + "/feed?offset=" + this.state.offset + "&max=" + max;
         let result = await apiGetJsonRequest(url);
         let status = result[0];
         let message = result[1].message;
         let requester = result[1].requester;
-        this.checkApiResults(status, message, requester, result, this.state.offset, 30);
+        this.checkApiResults(status, message, requester, result, this.state.offset, max);
     }
 
     componentDidUpdate(prevProps, prevState)

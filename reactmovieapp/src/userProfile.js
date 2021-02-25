@@ -2,7 +2,7 @@ import React from 'react';
 // should get rid of this eventually
 import {Redirect, withRouter} from 'react-router-dom';
 import MoviePost from './moviePost.js';
-import style5 from './css/userProfile.module.css';
+import style from './css/userProfile.module.css';
 import './css/forms.css'
 import ProfileHeader from './ProfileHeader.js';
 import MoviePostDisplay from './MoviePostDisplay.js';
@@ -31,9 +31,10 @@ class UserProfile extends React.Component {
             newReview: this.props.newReview,
             props: props
         };
-        this.setPostCount = this.setPostCount.bind(this);
+        this.decrementPostCount = this.decrementPostCount.bind(this);
         this.updateFollowingCount = this.updateFollowingCount.bind(this);
         this.updateFollowerCount = this.updateFollowerCount.bind(this);
+        this.updatePostCount = this.updatePostCount.bind(this);
         this.redirectToHome = this.redirectToHome.bind(this);
         this.showErrorPage = this.showErrorPage.bind(this);
     }
@@ -52,7 +53,6 @@ class UserProfile extends React.Component {
         }
         else if(prevState.newReview !== nextProps.newReview)
         {
-            alert("New review render");
             return {newReview: nextProps.newReview}
         }
         else
@@ -73,6 +73,10 @@ class UserProfile extends React.Component {
         else if(this.state.followerCountChange !== 0)
         {
             this.updateFollowerCount(0);
+        }
+        else if(this.state.postCount !== 0)
+        {
+            this.updatePostCount(0);
         }
         else if(prevState.username !== this.state.username)
         {
@@ -117,9 +121,9 @@ class UserProfile extends React.Component {
         // whose page we are currently on
         return (nextState.followingCountChange !== this.state.followingCountChange
              || nextState.followerCountChange !== this.state.followerCountChange
+             || nextState.postCount === -1
              || nextState.username !== this.state.username
              || nextState.currentUser !== this.state.currentUser
-             || nextState.postCount !== this.state.postCount
              || nextState.redirect === true
              || nextState.showErrorPage !== this.state.showErrorPage
              || nextState.newReview !== this.state.newReview
@@ -146,13 +150,16 @@ class UserProfile extends React.Component {
         this.setState({followerCountChange: value});
     }
 
-    // function to be utilized by MoviePostDisplay to update the count of the posts
-    setPostCount(value)
+    updatePostCount(value)
     {
-        if(value !== this.state.postCount)
-        {
-            this.setState({postCount:value});
-        }
+        this.setState({postCount: value});
+    }
+
+    // function to be utilized by MoviePostDisplay to decrement the post count when
+    // a user removes a post
+    decrementPostCount()
+    {
+        this.setState({postCount:-1});
     }
 
     // this only gets called by the above method to update the state on
@@ -189,7 +196,7 @@ class UserProfile extends React.Component {
 
         return (
             <React.Fragment>
-                <div className={style5.mainBodyContainer}>
+                <div className={style.mainBodyContainer}>
                     <ProfileHeader
                         username={this.state.username}
                         postCount={this.state.postCount}
@@ -205,7 +212,7 @@ class UserProfile extends React.Component {
                     />
                     <MoviePostDisplay
                         username={this.state.username}
-                        setPostCount={this.setPostCount}
+                        decrementPostCount={this.decrementPostCount}
                         updateFollowingFunction={this.updateFollowingCount}
                         updateFollowersFunction={this.updateFollowerCount}
                         updateLoggedIn={this.props.updateLoggedIn}
@@ -215,6 +222,7 @@ class UserProfile extends React.Component {
                         setMessages={this.props.setMessages}
                         showErrorPage={this.showErrorPage}
                         newReview={this.state.newReview}
+                        mainBodyContainer={style.mainBodyContainer}
                     />
                 </div>
             </React.Fragment>

@@ -193,6 +193,7 @@ class MoviePost extends React.Component {
 
     static newPropState(props)
     {
+        console.log(props);
         let moviePath = props.data.movie.title.replace(" ", "-");
         moviePath = "/movie/" + props.data.movie.id + "-" + moviePath;
         return {
@@ -201,7 +202,7 @@ class MoviePost extends React.Component {
             // boolean to open popup to comment on post
             openPopUp: false,
             // boolean indicating if logged in user liked post
-            liked: props.data.liked,
+            liked: (parseInt(props.data.liked) === 1) ? true : false,
             // count of likes on post
             likeCount: parseInt(props.data.likeCount),
             // title of post
@@ -569,6 +570,10 @@ class MoviePost extends React.Component {
         {
             this.removeFunction({messages: [{message: message, type: "success"}]});
             this.props.updateLoggedIn(user);
+            if(this.props.decrementPostCount !== undefined)
+            {
+                this.props.decrementPostCount();
+            }
         }
         else
         {
