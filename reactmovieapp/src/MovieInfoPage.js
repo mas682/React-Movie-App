@@ -30,7 +30,8 @@ class MovieInfoPage extends React.Component {
           }
           this.state = {
               id: id,
-              rating: 4.5,
+              rating: 0.0,
+              totalRatings: 0,
               poster: null,
               headerImage: null,
               trailer: null,
@@ -112,9 +113,11 @@ class MovieInfoPage extends React.Component {
               {
                   window.history.replaceState(null, movie.title, newUrl);
               }
+              console.log(movie);
               this.setState({
                 id: movie.id,
-                rating: 4.5,
+                rating: movie.userRating,
+                totalRatings: movie.totalUserRatings,
                 poster: movie.poster,
                 headerImage: movie.backgroundImage,
                 trailer: movie.trailer,
@@ -328,6 +331,7 @@ class MovieInfoPage extends React.Component {
             }
         }
         console.log(this.state);
+        let rating = String(this.state.totalRatings).replace(/(.)(?=(\d{3})+$)/g,'$1,')
     	return (
           <React.Fragment>
               <div className={style.mainBodyContainer}>
@@ -345,6 +349,9 @@ class MovieInfoPage extends React.Component {
                                   <fieldset className={style.rating}>
                                       {stars}
                                   </fieldset>
+                                  <div className={style.totalRatings}>
+                                    ({rating})
+                                  </div>
                               </div>
                               <div className={style.icons}>
                                     {watchedIcon}

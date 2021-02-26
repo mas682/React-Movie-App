@@ -89,6 +89,17 @@ const movie = (sequelize, DataTypes) => {
                 notEmpty: true,
             }
         },
+        userRating: {
+            type: DataTypes.DECIMAL(10,2),
+            allowNull: false,
+            default: 0
+        },
+        totalUserRatings: {
+            type: DataTypes.BIGINT(),
+            allowNull: false,
+            default: 0
+        },
+
         /*
         genres: {
             type: DataTypes.STRING,

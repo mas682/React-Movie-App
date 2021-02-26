@@ -82,6 +82,9 @@ if __name__ == '__main__':
     # order matters!
     fileNames = [
         '../triggerFunctions/Set_Timestamp.sql',
+        '../triggerFunctions/trigger_delete_movie_rating.sql',
+        '../triggerFunctions/trigger_set_movie_rating.sql',
+        '../triggerFunctions/trigger_update_movie_rating.sql',
         '../Sequences/comments_id_seq.sql',
         '../Sequences/Genres_id_seq.sql',
         '../Sequences/movieTags_id_seq.sql',
@@ -103,6 +106,7 @@ if __name__ == '__main__':
         '../tables/UserWatchLists.sql',
         '../tables/Likes.sql',
         '../tables/Retailers.sql',
-        '../tables/MoviesProviders.sql'
+        '../tables/MoviesProviders.sql',
+
     ]
     controllerFunction(fileNames)

@@ -26,6 +26,8 @@ CREATE TABLE public.movies
     imdb_id character varying(100) COLLATE pg_catalog."default",
 	tmdb_id integer NOT NULL,
     "originalLanguage" character varying(20) COLLATE pg_catalog."default",
+	"userRating" numeric(10, 2) NOT NULL DEFAULT 0,
+	"totalUserRatings"  bigint NOT NULL DEFAULT 0,
 	"createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	"updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT movies_pkey PRIMARY KEY (id),

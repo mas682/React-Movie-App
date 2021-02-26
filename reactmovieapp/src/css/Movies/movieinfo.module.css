@@ -493,6 +493,10 @@
     justify-content: center;
 }
 
+.totalRatings {
+    font-size: .9em;
+}
+
 .infoContainer {
     display: flex;
     flex-flow: row wrap;
