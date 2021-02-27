@@ -75,11 +75,6 @@ const selectPath = (cookie, req, res) =>
         {
             updateReview(cookie, req, res);
         }
-        // if the path is /review/delete
-        else if(req.params.type === "delete")
-        {
-            deleteReview(cookie, req, res);
-        }
         // if the path is /review/add_like
         else if(req.params.type === "addlike")
         {

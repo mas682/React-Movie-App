@@ -1,4 +1,4 @@
-import {verifyLogin, validateUsernameParameter, validateIntegerParameter} from './globals.js';
+import {verifyLogin, validateUsernameParameter, validateIntegerParameter, validateStringParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 
 // function to get the reviews associated with a users profile
@@ -134,6 +134,18 @@ const selectPath = (cookie, req, res, cookieValid) =>
             if(cookieValid)
             {
                 updatePassword(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
+        else if(req.params.type === "delete_user")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                removeUser(cookie, req, res);
             }
             else
             {
@@ -603,6 +615,91 @@ const updateInfo = (cookie, req, res) =>
             res.send(401).send(["Cannot update the profile of another user"]);
         }
     });
+}
+
+
+// function to handle updating a users password
+const removeUser = async (cookie, req, res) =>
+{
+    let requester = cookie.name;
+    let password = req.body.password;
+    let userNameToRemove = req.params.userId;
+    let valid = validateUsernameParameter(res, userNameToRemove, requester,
+         "Username for the user to remove is invalid");
+    if(!valid) return;
+    if(password === undefined || password.length < 8)
+    {
+        res.status(401).send({
+            message: "Incorrect password",
+            requester: requester
+        });
+    }
+    // get the requester
+    let user = await models.User.findByLogin(cookie.name);
+    let userToRemove = user;
+    let currentUser = (userNameToRemove === requester);
+    // if the password is not provided, automatically deny
+    if(!currentUser)
+    {
+        if(!user.admin)
+        {
+            res.status(401).send({
+                message: "You cannot remove another user",
+                requester: requester
+            });
+            return;
+        }
+        else
+        {
+            // update the user to remove to the correct user if the requester
+            // is an admin
+            userToRemove = await models.User.findByLogin(userNameToRemove);
+        }
+    }
+    if(userToRemove === null)
+    {
+        res.status(404).send({
+            message: "Could not find the user to remove",
+            requester: requester
+        });
+        return;
+    }
+    // check the users password against the requesters password
+    let passwordValid = (currentUser) ? (userToRemove.password === password) :
+        (user.password === password);
+    if(passwordValid)
+    {
+        let result = await userToRemove.destroy();
+        if(result === undefined)
+        {
+            res.status(500).send({
+                message: "Server failed to user for some unkown reason",
+                requester: requester
+            });
+        }
+        else
+        {
+            // if the user just deleted themself, return a empty cookie
+            if(currentUser)
+            {
+                res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+                res.cookie('MovieAppCookie', null, {domain: 'localhost', path: '/', maxAge: 0, signed: true});
+                requester = "";
+            }
+            res.status(200).send({
+                message: "User successfully removed",
+                requester: requester
+            });
+        }
+    }
+    else
+    {
+        res.status(401).send({
+            message: "Password incorrect",
+            requester: requester
+        });
+    }
+
 }
 
 export {profileHandler};

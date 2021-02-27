@@ -349,7 +349,8 @@ class ReviewPopUp extends React.Component {
             }
             else if(status === 400)
             {
-                // something formatted incorrectly
+                // something formatted incorrectly or a review for that movie already exists
+                // for the user
                 let movie = (message === "The movie ID is invalid") ? undefined : this.state.movie;
                 this.props.updateLoggedIn(requester);
                 this.setState({

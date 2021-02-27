@@ -395,6 +395,16 @@ class UserSettings extends React.Component {
 							>Change password
 						</button>
 					</div>
+					left off here...
+					<div className={style.submitButtonContainer}>
+						<button
+							form="form1"
+							value="submit_changes"
+							className={style.submitButton}
+							onClick={this.showPasswordResetPopUp}
+							>Delete Account
+						</button>
+					</div>
 					{passwordPopUp}
 		    </div>
 			);

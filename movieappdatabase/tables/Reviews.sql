@@ -12,6 +12,7 @@ CREATE TABLE public.reviews
     "userId" integer,
     "movieId" integer,
     CONSTRAINT reviews_pkey PRIMARY KEY (id),
+    CONSTRAINT "reviews_userId_movieId_key" UNIQUE ("userId", "movieId"),
     CONSTRAINT "reviews_movieId_fkey" FOREIGN KEY ("movieId")
         REFERENCES public.movies (id) MATCH SIMPLE
         ON UPDATE CASCADE

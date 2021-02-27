@@ -64,15 +64,28 @@ const createReview = async (cookie, req, res) =>
     let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, false, undefined, false);
     if(!valid) return;
 
-    console.log("Review rating: " + rating);
     let review;
     try {
-        review = await models.Review.create({
-            rating: rating,
-            userId: userId,
-            review: reviewText,
-            movieId: movieId
+        review = await models.Review.findOrCreate({
+            where: {
+                userId: userId,
+                movieId: movieId
+            },
+            defaults: {
+                rating: rating,
+                review: reviewText,
+            }
         });
+        // if the review was not created
+        if(!review[1])
+        {
+            res.status(400).send({
+                message: "A review for this movie by the current user already exists.",
+                requester: requester
+            });
+            return;
+        }
+        review = review[0];
     } catch(err)
     {
         let errorResult = reviewErrorHandler(err);
@@ -408,7 +421,22 @@ const reviewErrorHandler = (err) =>
         }
         else
         {
-            console.log("Some unexpected constraint error occurred: " + errorObject.original.constraint);
+            console.log("Some unexpected foreign key constraint error occurred: " + errorObject.original.constraint);
+            console.log(err);
+            status = 500;
+            message = "Some unexpected constraint error occurred on the server";
+        }
+    }
+    else if(errorObject.name === "SequelizeUniqueConstraintError")
+    {
+        if(errorObject.original.constraint === "reviews_userId_movieId_key")
+        {
+            status = 400;
+            message = "A review for this movie by the current user already exists."
+        }
+        else
+        {
+            console.log("Some unexpected unique key constraint error occurred: " + errorObject.original.constraint);
             console.log(err);
             status = 500;
             message = "Some unexpected constraint error occurred on the server";

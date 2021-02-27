@@ -191,6 +191,7 @@
     display: grid;
     position: absolute;
     top: 0;
+    left: 0;
 }
 
 .emptyMoviePoster div {
@@ -239,4 +240,5 @@
     height: 100%;
     position: absolute;
     top: 0;
+    left: 0;
 }
