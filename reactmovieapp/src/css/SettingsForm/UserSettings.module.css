@@ -72,6 +72,7 @@
     width: 90%;
     margin-left: 5%;
     margin-right: 5%;
+    position: relative;
 }
 
 .submitButtonContainer
@@ -86,7 +87,6 @@
 .submitButton {
     border-radius: 4px;
     border: none;
-    background-color: red; /* button blue */
     border: none;
     color: white;
     padding: 15px 32px;
@@ -94,6 +94,19 @@
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
+    position: relative;
+}
+
+.popupButton {
+    background-color: #008CBA;;
+}
+
+.submitButton:hover {
+    opacity: 70%;
+}
+
+.submitButtonColor {
+    background-color: red;
 }
 
 .submitButton:focus

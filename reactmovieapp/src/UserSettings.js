@@ -4,6 +4,7 @@ import './App.css';
 import style from './css/SettingsForm/UserSettings.module.css';
 import './css/forms.css';
 import PasswordResetPopUp from './PasswordResetPopUp.js';
+import DeleteAccountPopUp from './DeleteAccountPopUp.js';
 
 
 // left off here, need to make main page a class so it can have props
@@ -25,13 +26,15 @@ class UserSettings extends React.Component {
             email: "",
             emailError: "",
             oldEmail: "",
-            loaded: false,
+            loading: true,
             redirect: false,
             editFirst: false,
             editLast: false,
             editUser: false,
             editEmail: false,
-						displayPasswordResetPop: false
+			displayPasswordResetPop: false,
+			displayRemoveAccountPopUp: false,
+			currentUser: this.props.currentUser
         };
         this.setEdit = this.setEdit.bind(this);
         this.generateInput = this.generateInput.bind(this);
@@ -39,36 +42,70 @@ class UserSettings extends React.Component {
         this.callApi = this.callApi.bind(this);
         this.validateForm = this.validateForm.bind(this);
         this.sendData = this.sendData.bind(this);
-				this.showPasswordResetPopUp = this.showPasswordResetPopUp.bind(this);
-				this.removePasswordResetPopUp = this.removePasswordResetPopUp.bind(this);
-				this.generatePasswordPopUp = this.generatePasswordPopUp.bind(this);
+		this.showPasswordResetPopUp = this.showPasswordResetPopUp.bind(this);
+		this.removePasswordResetPopUp = this.removePasswordResetPopUp.bind(this);
+		this.showRemoveAccountPopUp = this.showRemoveAccountPopUp.bind(this);
+		this.generatePasswordPopUp = this.generatePasswordPopUp.bind(this);
 	}
 
 	async componentDidMount()
 	{
-        this.callApi().then(result =>{
-            // set status to result[0]
-            let status = result[0];
-            // see if request succeeded
-            if(status == 200)
-            {
-                this.setState({
-                    firstName: result[1][0],
-                    lastName: result[1][1],
-                    userName: result[1][2],
-                    email: result[1][3],
-                    loaded: true
-                });
-            }
-            else
-            {
-                alert(result[1]);
-                this.setState({
-                    loaded: true,
-                    redirect: true
-                });
-            }
-        });
+		// clear the messages on mount
+		this.props.setMessages({
+			messages: undefined,
+			clearMessages: true
+		});
+		if(this.state.currentUser === "")
+		{
+			this.setState({
+				loading: false,
+				redirect: true
+			});
+		}
+		else
+		{
+	        this.callApi().then(result =>{
+	            // set status to result[0]
+	            let status = result[0];
+	            // see if request succeeded
+	            if(status == 200)
+	            {
+	                this.setState({
+	                    firstName: result[1][0],
+	                    lastName: result[1][1],
+	                    userName: result[1][2],
+	                    email: result[1][3],
+	                    loading: false
+	                });
+	            }
+	            else
+	            {
+	                alert(result[1]);
+	                this.setState({
+	                    loading: false,
+	                    redirect: true
+	                });
+	            }
+	        });
+		}
+	}
+
+	componentDidUpdate(prevProps, prevState)
+	{
+		if(!this.state.loading && (this.props.currentUser !== prevProps.currentUser))
+		{
+			// if the user logged out, redirect to landing page
+			if(this.props.currentUser === "")
+			{
+				this.setState({
+					redirect: true
+				});
+			}
+			else
+			{
+				this.callApi(this.props.currentUser);
+			}
+		}
 	}
 
     async validateForm(event)
@@ -169,6 +206,11 @@ class UserSettings extends React.Component {
 	showPasswordResetPopUp()
 	{
 		this.setState({displayPasswordResetPop: true});
+	}
+
+	showRemoveAccountPopUp()
+	{
+		this.setState({displayRemoveAccountPopUp: !this.state.displayRemoveAccountPopUp});
 	}
 
     changeHandler(event) {
@@ -340,10 +382,20 @@ class UserSettings extends React.Component {
 		return "";
 	}
 
+	generateDeleteAccountPopUp()
+	{
+		if(this.state.displayRemoveAccountPopUp)
+		{
+			return <DeleteAccountPopUp username={this.state.userName} removeFunction={this.showRemoveAccountPopUp} updateLoggedIn={this.props.updateLoggedIn}/>;
+		}
+		return "";
+	}
+
+
 	render()
 	{
         // if the server response was not received yet, display nothing
-        if(!this.state.loaded)
+        if(this.state.loading)
         {
             return null;
         }
@@ -374,6 +426,7 @@ class UserSettings extends React.Component {
             );
         }
 		let passwordPopUp = this.generatePasswordPopUp();
+		let deleteAccountPopUp = this.generateDeleteAccountPopUp();
 
 		return (
 			<div className={style.mainBodyContainer}>
@@ -390,22 +443,22 @@ class UserSettings extends React.Component {
 						<button
 							form="form1"
 							value="submit_changes"
-							className={style.submitButton}
+							className={`${style.submitButton} ${style.popupButton}`}
 							onClick={this.showPasswordResetPopUp}
 							>Change password
 						</button>
 					</div>
-					left off here...
 					<div className={style.submitButtonContainer}>
 						<button
 							form="form1"
-							value="submit_changes"
-							className={style.submitButton}
-							onClick={this.showPasswordResetPopUp}
+							value="delete_account"
+							className={`${style.submitButton} ${style.popupButton}`}
+							onClick={this.showRemoveAccountPopUp}
 							>Delete Account
 						</button>
 					</div>
 					{passwordPopUp}
+					{deleteAccountPopUp}
 		    </div>
 			);
 	}

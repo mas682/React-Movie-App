@@ -47,6 +47,11 @@ class MovieFilterPage extends React.Component {
         // if the page type changed
         if(nextProps.type !== prevState.header)
         {
+            // clear the messages on mount
+            nextProps.setMessages({
+                messages: undefined,
+                clearMessages: true
+            });
             //console.log("new type found in movie filter page");
             let result = MovieFilterPage.getNewStateFromProps(nextProps, true);
             let state = result.state;
@@ -63,6 +68,11 @@ class MovieFilterPage extends React.Component {
         // checking the previous type as when going from one page to another, this will get hit if the type just changed
         else if((nextProps.location.search !== prevState.queryString) && (prevState.header === nextProps.type))
         {
+            // clear the messages on mount
+            nextProps.setMessages({
+                messages: undefined,
+                clearMessages: true
+            });
             //console.log("new parameters found in movie filter page");
             let result = MovieFilterPage.getNewStateFromProps(nextProps, true);
             let state = result.state;
@@ -395,6 +405,11 @@ class MovieFilterPage extends React.Component {
     async componentDidMount()
     {
         document.addEventListener('scroll', this.scrollEventHandler, {passive: true});
+        // clear the messages on mount
+        this.props.setMessages({
+            messages: undefined,
+            clearMessages: true
+        });
         // if the new user is not logged in
         if(this.state.currentUser === "")
         {

@@ -33,6 +33,11 @@ class UserFeed extends React.Component {
 
     async componentDidMount()
     {
+        // clear the messages on mount
+        this.props.setMessages({
+            messages: undefined,
+            clearMessages: true
+        });
         if(this.state.currentUser !== "")
         {
             document.addEventListener('scroll', this.scrollEventHandler, {passive: true});
@@ -142,7 +147,7 @@ class UserFeed extends React.Component {
         }
         if(this.state.redirect)
         {
-            return <Redirect to="" />;
+            return <Redirect to="/" />;
         }
         let posts = [];
         // generate the posts

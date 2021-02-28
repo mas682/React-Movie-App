@@ -73,6 +73,11 @@ class SearchPage extends React.Component {
     componentDidMount()
     {
         document.addEventListener('scroll', this.scrollEventHandler, {passive: true});
+        // clear the messages on mount
+        this.props.setMessages({
+            messages: undefined,
+            clearMessages: true
+        });
         if(this.state.searchValue !== "")
         {
             this.getSearchSuggestions(this.state.searchValue);
@@ -115,6 +120,11 @@ class SearchPage extends React.Component {
         }
         if(nextState.searchValue !== newSearchValue || nextState.type !== newType)
         {
+            // clear the messages on mount
+            this.props.setMessages({
+                messages: undefined,
+                clearMessages: true
+            });
             console.log("Search value or type change found");
             let newValue = (nextProps.location.state === undefined) ? false : nextProps.location.state.newValue;
             return {

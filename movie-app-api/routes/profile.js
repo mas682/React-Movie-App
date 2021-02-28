@@ -630,9 +630,10 @@ const removeUser = async (cookie, req, res) =>
     if(password === undefined || password.length < 8)
     {
         res.status(401).send({
-            message: "Incorrect password",
+            message: "Password incorrect",
             requester: requester
         });
+        return;
     }
     // get the requester
     let user = await models.User.findByLogin(cookie.name);
