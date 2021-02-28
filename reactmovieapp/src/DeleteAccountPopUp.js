@@ -109,8 +109,8 @@ class DeleteAccountPopUp extends React.Component {
         {
             if(!this.state.password)
             {
-                //this.setState({passwordError: "Your password is required"});
-                //error = true;
+                this.setState({passwordError: "Your password is required"});
+                error = true;
             }
             else
             {
@@ -227,7 +227,7 @@ class DeleteAccountPopUp extends React.Component {
                         <h3 className="inlineH3"> Delete account </h3>
                     </div>
                     <div className="content">
-                        <form id="form1" onSubmit={this.validateForm} noValidate/>
+                        <form id="form2" onSubmit={this.validateForm} noValidate/>
                         {passwordInput}
                     </div>
                     <div className="actions">

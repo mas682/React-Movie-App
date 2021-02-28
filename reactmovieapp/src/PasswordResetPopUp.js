@@ -213,7 +213,7 @@ class PasswordResetPopUp extends React.Component {
                         <input
                             type="password"
                             name={value}
-                            form="form1"
+                            form="form3"
                             value={this.state[value]}
                             className={`${style.inputFieldBoxLong} inputBoxError`}
                             onChange={this.changeHandler}
@@ -235,7 +235,7 @@ class PasswordResetPopUp extends React.Component {
                         <input
                             type="password"
                             name={value}
-                            form="form1"
+                            form="form3"
                             value={this.state[value]}
                             className={`${style.inputFieldBoxLong} validInputBox`}
                             onChange={this.changeHandler}
@@ -270,17 +270,17 @@ class PasswordResetPopUp extends React.Component {
                     &times;
                     </button>
                     <div className="header">
-                        <h3 className="inlineH3"> Reset Password </h3>
+                        <h3 className="inlineH3"> Change Password </h3>
                     </div>
                     <div className="content">
-                        <form id="form1" onSubmit={this.validateForm} noValidate/>
+                        <form id="form3" onSubmit={this.validateForm} noValidate/>
                         {oldPassInput}
                         {newPassInput}
                         {newPass2Input}
                     </div>
                     <div className="actions">
                         <button
-                            form="form1"
+                            form="form3"
                             value="update_password"
                             className="submitButton"
                             onClick={this.validateForm}
