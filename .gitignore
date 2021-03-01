@@ -6,3 +6,6 @@ database.ini
 test.json
 movieList.json
 GetNewMoviesOutput.txt
+
+emailInfo.txt
+EmailConfig.json
