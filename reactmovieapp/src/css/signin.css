@@ -21,25 +21,25 @@
     }
 }
 
-@media screen and (max-width: 1399px) {
+@media screen and (min-width: 1200px) and (max-width: 1399px) {
     .signIn-content {
         width: 40% !important;
     }
 }
 
-@media screen and (max-width: 1199px) {
+@media screen and (min-width: 1000px) and (max-width: 1199px) {
     .signIn-content {
         width: 45% !important;
     }
 }
 
-@media screen and (max-width: 999px) {
+@media screen and (min-width: 800px) and (max-width: 999px) {
     .signIn-content {
         width: 50% !important;
     }
 }
 
-@media screen and (max-width: 799px) {
+@media screen and (min-width: 600px) and (max-width: 799px) {
     .signIn-content {
         width: 55% !important;
     }

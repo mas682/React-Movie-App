@@ -3,52 +3,45 @@
    the default width is 50%
    !important overrides the html style */
 
-.logInLink:visited {
-    color: #4682B4;
-}
-
-.logInLink {
-    color: #4682B4;
-}
 
 @media screen and (min-width: 1400px) {
-    .signUp-content {
-        width: 50% !important;
+    .deleteAccount-content {
+        width: 30% !important;
     }
 }
 
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
-    .signUp-content {
-        width: 55% !important;
+    .deleteAccount-content {
+        width: 35% !important;
     }
 }
 
 @media screen and (min-width: 1000px) and (max-width: 1199px) {
-    .signUp-content {
-        width: 60% !important;
+    .deleteAccount-content {
+        width: 40% !important;
     }
 }
 
 @media screen and (min-width: 800px) and (max-width: 999px) {
-    .signUp-content {
-        width: 65% !important;
+    .deleteAccount-content {
+        width: 45% !important;
     }
 }
 
 @media screen and (min-width: 600px) and (max-width: 799px) {
-    .signUp-content {
-        width: 70% !important;
+    .deleteAccount-content {
+        width: 50% !important;
     }
 }
 
 @media screen and (max-width: 599px) {
-    .signUp-content {
-        width: 75% !important;
+    .deleteAccount-content {
+        width: 55% !important;
     }
 }
 
 @media screen and (max-width: 599px) {
-    .signUp-content {
-        width: 80% !important;
+    .deleteAccount-content {
+        width: 65% !important;
     }
 }

@@ -5,6 +5,7 @@ import style from './css/SettingsForm/UserSettings.module.css';
 import './css/forms.css';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
+import './css/SettingsForm/DeleteAccountPopUp.css';
 
 
 class DeleteAccountPopUp extends React.Component {
@@ -208,7 +209,7 @@ class DeleteAccountPopUp extends React.Component {
                     open={this.state.open}
                     closeOnDocumentClick
                     onClose={this.closeModal}
-                    contentStyle={{ width: "30%"}}
+                    className={"deleteAccount"}
                 >
                 <div className="modal">
                     {/* &times is the multiplication symbol (x) --> */}

@@ -4,6 +4,7 @@ import Popup from 'reactjs-popup';
 import style from './css/SettingsForm/UserSettings.module.css';
 import './css/forms.css';
 //import './css/signup.css';
+import './css/SettingsForm/PasswordResetPopUp.css';
 
 class PasswordResetPopUp extends React.Component {
     constructor(props) {
@@ -217,6 +218,7 @@ class PasswordResetPopUp extends React.Component {
                             value={this.state[value]}
                             className={`${style.inputFieldBoxLong} inputBoxError`}
                             onChange={this.changeHandler}
+                            maxlength={20}
                         />
                     </div>
                     <div className={style.errorTextContainer}>
@@ -239,6 +241,7 @@ class PasswordResetPopUp extends React.Component {
                             value={this.state[value]}
                             className={`${style.inputFieldBoxLong} validInputBox`}
                             onChange={this.changeHandler}
+                            maxlength={20}
                         />
                     </div>
                 </React.Fragment>);
@@ -263,6 +266,7 @@ class PasswordResetPopUp extends React.Component {
                     open={this.state.open}
                     closeOnDocumentClick
                     onClose={this.closeModal}
+                    className={"passwordReset"}
                 >
                 <div className="modal">
                     {/* &times is the multiplication symbol (x) --> */}
