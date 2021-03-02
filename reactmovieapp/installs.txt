@@ -44,3 +44,5 @@ for parsing query string of url
 npm install query-string --save
 
 npm install nodemailer
+
+npm install nanoid

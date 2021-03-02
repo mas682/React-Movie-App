@@ -90,7 +90,7 @@ router.get('/search/:type', function(req, res, next) {
 
 // for testing, remove later
 router.get('/sendemail', function(req, res, next) {
-
+    emailHandler(req, res, next);
 });
 
 module.exports = router;

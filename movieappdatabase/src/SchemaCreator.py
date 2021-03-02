@@ -92,6 +92,9 @@ if __name__ == '__main__':
         '../Sequences/users_id_seq.sql',
         '../Sequences/movies_id_seq.sql',
         '../Sequences/Retailers_id_seq.sql',
+        '../Sequences/userverificationcodes_id_seq.sql',
+        '../Sequences/UserVerificationQuestions_id_seq.sql',
+        '../Sequences/VerificationQuestions_id_seq.sql',
         '../tables/Users.sql',
         '../tables/Movies.sql',
         '../tables/Reviews.sql',
@@ -107,6 +110,9 @@ if __name__ == '__main__':
         '../tables/Likes.sql',
         '../tables/Retailers.sql',
         '../tables/MoviesProviders.sql',
+        '../tables/UserVerificationCodes.sql',
+        '../tables/UserVerificationQuestions.sql',
+        '../tables/VerificationQuestions.sql'
 
     ]
     controllerFunction(fileNames)
