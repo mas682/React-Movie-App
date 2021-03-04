@@ -44,5 +44,7 @@ for parsing query string of url
 npm install query-string --save
 
 npm install nodemailer
-
 npm install nanoid
+
+generate sequelize code from sql:
+npm install sequelize-auto

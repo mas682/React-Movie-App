@@ -5,17 +5,15 @@
 CREATE TABLE public."UserVerificationCodes"
 (
     id integer NOT NULL DEFAULT nextval('userverificationcodes_id_seq'::regclass),
-    "userId" integer NOT NULL,
-    code character varying(21) COLLATE pg_catalog."default" NOT NULL,
+    "userEmail" character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    username character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    code integer NOT NULL,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
     "expiresAt" timestamp with time zone NOT NULL,
     CONSTRAINT "UserVerificationCodes_pkey" PRIMARY KEY (id),
-    CONSTRAINT code_key UNIQUE (code),
-    CONSTRAINT "UserVerificationCodes_userId_fkey" FOREIGN KEY ("userId")
-        REFERENCES public.users (id) MATCH SIMPLE
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
+    CONSTRAINT "UserVerificationCodes_userEmail_key" UNIQUE ("userEmail"),
+    CONSTRAINT "UserVerificationCodes_username_key" UNIQUE (username)
 )
 
 TABLESPACE pg_default;

@@ -1,27 +1,29 @@
 import {verifyLogin} from './globals.js';
 import models, { sequelize } from '../src/models';
-import { nanoid } from 'nanoid';
+import {customAlphabet} from 'nanoid';
 var nodemailer = require('nodemailer');
 const config = require('../EmailConfig.json');
+const nanoid = customAlphabet('1234567890', 6);
+
 
 
 // function to get information associated with the user who has the cookie
 const emailHandler = (req, res, next) => {
     console.log(config);
     console.log(nanoid());
-    console.log(nanoid());
+    /*
     const transporter = nodemailer.createTransport({
-    //port: 465,               // true for 465, false for other ports
-    host: "smtp-mail.outlook.com",
-    secureConnection: true,
-    port: 587,
-    auth: {
-        user: config.email.username,
-        pass: config.email.password,
-    },
-    tls: {
-        ciphers: 'SSLv3'
-    }
+        //port: 465,               // true for 465, false for other ports
+        host: "smtp-mail.outlook.com",
+        secureConnection: true,
+        port: 587,
+        auth: {
+            user: config.email.username,
+            pass: config.email.password,
+        },
+        tls: {
+            ciphers: 'SSLv3'
+        }
     });
     // verify connection configuration
     transporter.verify(function(error, success) {
@@ -47,6 +49,7 @@ const emailHandler = (req, res, next) => {
         else
             console.log(info);
     });
+    */
     res.status(200).send("Email sent");
 };
 
