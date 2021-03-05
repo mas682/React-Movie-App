@@ -28,6 +28,17 @@ TABLESPACE pg_default;
 ALTER TABLE public."UserVerificationQuestions"
     OWNER to postgres;
 
+-- Trigger: set_createdAt
+
+-- DROP TRIGGER "set_createdAt" ON public."UserVerificationQuestions";
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public."UserVerificationQuestions"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
+
+
 -- Trigger: set_timestamp
 
 -- DROP TRIGGER set_timestamp ON public."UserVerificationQuestions";

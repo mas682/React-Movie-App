@@ -68,3 +68,13 @@ CREATE TRIGGER update_movie_rating
     FOR EACH ROW
     WHEN (new.rating <> old.rating)
     EXECUTE PROCEDURE public.trigger_update_movie_rating();
+
+    -- Trigger: set_createdAt
+
+    -- DROP TRIGGER "set_createdAt" ON public.reviews;
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public.reviews
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();

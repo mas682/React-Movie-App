@@ -34,3 +34,13 @@ CREATE TRIGGER set_timestamp
     ON public."MoviesProviders"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();
+
+-- Trigger: set_createdAt
+
+-- DROP TRIGGER "set_createdAt" ON public."MoviesProviders";
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public."MoviesProviders"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();

@@ -23,3 +23,23 @@ TABLESPACE pg_default;
 
 ALTER TABLE public."usersWhoWatcheds"
     OWNER to postgres;
+
+-- Trigger: set_createdAt
+
+-- DROP TRIGGER "set_createdAt" ON public."usersWhoWatcheds";
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public."usersWhoWatcheds"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
+
+-- Trigger: set_timestamp
+
+-- DROP TRIGGER set_timestamp ON public."usersWhoWatcheds";
+
+CREATE TRIGGER set_timestamp
+    BEFORE INSERT OR UPDATE 
+    ON public."usersWhoWatcheds"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_timestamp();

@@ -27,3 +27,13 @@ CREATE TRIGGER set_timestamp
     ON public."Retailers"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();
+
+-- Trigger: set_createdAt
+
+-- DROP TRIGGER "set_createdAt" ON public."Retailers";
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public."Retailers"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();

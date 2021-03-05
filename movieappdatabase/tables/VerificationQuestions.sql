@@ -25,3 +25,14 @@ CREATE TRIGGER set_timestamp
     ON public."VerificationQuestions"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();
+
+
+-- Trigger: set_createdAt
+
+-- DROP TRIGGER "set_createdAt" ON public."VerificationQuestions";
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public."VerificationQuestions"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();

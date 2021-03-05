@@ -28,3 +28,23 @@ TABLESPACE pg_default;
 
 ALTER TABLE public."ReviewGoodTags"
     OWNER to postgres;
+
+-- Trigger: set_createdAt
+
+-- DROP TRIGGER "set_createdAt" ON public."ReviewGoodTags";
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public."ReviewGoodTags"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
+
+-- Trigger: set_timestamp
+
+-- DROP TRIGGER set_timestamp ON public."ReviewGoodTags";
+
+CREATE TRIGGER set_timestamp
+    BEFORE INSERT OR UPDATE 
+    ON public."ReviewGoodTags"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_timestamp();

@@ -25,3 +25,24 @@ TABLESPACE pg_default;
 
 ALTER TABLE public.comments
     OWNER to postgres;
+
+
+-- Trigger: set_createdAt
+
+-- DROP TRIGGER "set_createdAt" ON public.comments;
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public.comments
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
+
+-- Trigger: set_timestamp
+
+-- DROP TRIGGER set_timestamp ON public.comments;
+
+CREATE TRIGGER set_timestamp
+    BEFORE INSERT OR UPDATE 
+    ON public.comments
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_timestamp();

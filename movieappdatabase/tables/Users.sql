@@ -27,7 +27,16 @@ TABLESPACE pg_default;
 ALTER TABLE public.users
     OWNER to postgres;
 
+-- Trigger: set_createdAt
 
+-- DROP TRIGGER "set_createdAt" ON public.users;
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public.users
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
+    
 CREATE TRIGGER set_timestamp
     BEFORE UPDATE
     ON public.users
