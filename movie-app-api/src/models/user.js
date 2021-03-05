@@ -3,49 +3,87 @@ const Op = require('Sequelize').Op;
 
 const user = (sequelize, DataTypes) => {
     const User = sequelize.define('user', {
-        // create a username field
+        id: {
+          autoIncrement: true,
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          primaryKey: true
+        },
         username: {
-            // set the data type to string
-            type: DataTypes.STRING,
-            // make the value be unique
-            unique: true,
-            // do not allow this to be empty
-            allowNull: false,
-            // validate that it is not empty
-            validate: {
-                notEmpty: true,
-            }
+          type: DataTypes.STRING(255),
+          allowNull: false,
+          unique: "users_username_key"
         },
         email: {
-            type: DataTypes.STRING,
-            unique: true,
-            allowNull: false,
-            validate: {
-                notEmpty: true,
-            }
+          type: DataTypes.STRING(255),
+          allowNull: false,
+          unique: "users_email_key"
         },
         password: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                notEmpty: true,
-            }
+          type: DataTypes.STRING(255),
+          allowNull: false
         },
         firstName: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                notEmpty: true,
-            }
+          type: DataTypes.STRING(255),
+          allowNull: false
         },
         lastName: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            validate: {
-                notEmpty: true,
-            }
+          type: DataTypes.STRING(255),
+          allowNull: false
         },
-    });
+        profileDescription: {
+          type: DataTypes.STRING(500),
+          allowNull: true
+        },
+        admin: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false
+        },
+        verified: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false,
+          defaultValue: false
+        },
+        lastLogin: {
+          type: DataTypes.DATE,
+          allowNull: false,
+          defaultValue: sequelize.literal('CURRENT_DATE')
+        },
+        passwordUpdatedAt: {
+          type: DataTypes.DATE,
+          allowNull: false,
+          defaultValue: sequelize.literal('CURRENT_DATE')
+        }
+      }, {
+        sequelize,
+        tableName: 'users',
+        schema: 'public',
+        timestamps: true,
+        indexes: [
+          {
+            name: "users_email_key",
+            unique: true,
+            fields: [
+              { name: "email" },
+            ]
+          },
+          {
+            name: "users_pkey",
+            unique: true,
+            fields: [
+              { name: "id" },
+            ]
+          },
+          {
+            name: "users_username_key",
+            unique: true,
+            fields: [
+              { name: "username" },
+            ]
+          },
+        ]
+      });
 
     // associate users with reviews
     // one to many relationship
@@ -55,11 +93,11 @@ const user = (sequelize, DataTypes) => {
         // messages associated with the user
         User.hasMany(models.Review, { onDelete: 'CASCADE' });
         User.hasMany(models.Comment,{ onDelete: 'CASCADE' });
-        User.hasMany(models.ReviewGoodTags, { foreignKey: { allowNull: false}});
-        User.hasMany(models.ReviewBadTags, { foreignKey: { allowNull: false}});
+        User.hasMany(models.ReviewGoodTags, { foreignKey: { allowNull: false}, foreignKey: "userId"});
+        User.hasMany(models.ReviewBadTags, { foreignKey: { allowNull: false}, foreignKey: "userId"});
         User.belongsToMany(models.Review, { as: "LikedPosts", through: models.Like, onDelete: 'CASCADE' });
-        User.belongsToMany(models.Movies, {as: "WatchList", through: models.UserWatchList, onDelete: 'CASCADE'});
-        User.belongsToMany(models.Movies, {as: "WatchedMovie", through: models.UsersWhoWatched, onDelete: 'CASCADE'});
+        User.belongsToMany(models.Movies, {as: "WatchList", through: models.UserWatchList, onDelete: 'CASCADE', foreignKey: "userId", otherKey: "movieId" });
+        User.belongsToMany(models.Movies, {as: "WatchedMovie", through: models.UsersWhoWatched, onDelete: 'CASCADE', foreignKey: "userId", otherKey: "movieId" });
         // Below is used to associate users together
         // this belongsToMany sets the followed users Id to the user being followed
         User.belongsToMany(User, {
@@ -72,6 +110,7 @@ const user = (sequelize, DataTypes) => {
                 plural: 'Followers'
             },
             foreignKey: 'followedId',
+            otherKey: "followerId"
         });
         // this belongsToMany sets the followerId to the currecnt user
         User.belongsToMany(User, {
@@ -84,7 +123,17 @@ const user = (sequelize, DataTypes) => {
                 plural: 'Following'
             },
             foreignKey: 'followerId',
+            otherKey: "followedId"
         });
+        User.belongsToMany(models.Review, { as: 'user', through: models.Like, foreignKey: "userId", otherKey: "reviewId" });
+        //User.hasMany(UserVerificationQuestions, { as: "UserVerificationQuestions", foreignKey: "userId"});
+        User.hasMany(models.UsersFriends, { as: "UsersFriends", foreignKey: "followedId"});
+        User.hasMany(models.UsersFriends, { as: "follower_UsersFriends", foreignKey: "followerId"});
+        User.hasMany(models.Comment, { as: "userComments", foreignKey: "userId"});
+        User.hasMany(models.Like, { as: "userLikes", foreignKey: "userId"});
+        User.hasMany(models.Review, { as: "userReviews", foreignKey: "userId"});
+        User.hasMany(models.UserWatchList, { as: "userWatchLists", foreignKey: "userId"});
+        User.hasMany(models.UsersWhoWatched, { as: "usersWhoWatcheds", foreignKey: "userId"});
     };
 
     // method to find a user by username or email if email were in the

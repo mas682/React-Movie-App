@@ -1,34 +1,46 @@
 const Op = require('Sequelize').Op;
 const movieTag = (sequelize, DataTypes) => {
     const MovieTag = sequelize.define('movieTag', {
-        // create a username field
-        value: {
-            // set the data type to string
-            type: DataTypes.STRING,
-            // make the value be unique
-            unique: true,
-            // do not allow this to be empty
-            allowNull: true,
-            // validate that it is not empty
-            validate: {
-                // prevent empty strings
-                notEmpty: true,
-                // limit length to 1-20 characters
-                len: [1,20]
-            }
+        id: {
+          autoIncrement: true,
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          primaryKey: true
         },
-        // may eventually want to keep track of the number of reviews that
-        // have this tag?
-    });
+        value: {
+          type: DataTypes.STRING(20),
+          allowNull: true,
+          unique: "movieTags_value_key"
+        }
+      }, {
+        sequelize,
+        tableName: 'movieTags',
+        schema: 'public',
+        timestamps: true,
+        indexes: [
+          {
+            name: "movieTags_pkey",
+            unique: true,
+            fields: [
+              { name: "id" },
+            ]
+          },
+          {
+            name: "movieTags_value_key",
+            unique: true,
+            fields: [
+              { name: "value" },
+            ]
+          },
+        ]
+      });
 
     // this will probably be changed to good/bad tags
     // associate bad tags with reviews
     // each tag can belong to many reviews
     MovieTag.associate = models => {
-        //MovieTag.belongsToMany(models.Review, { as: "goodTags", through: models.ReviewGoodTags, onDelete: 'CASCADE' });
-    //    MovieTag.hasMany(models.ReviewGoodTags, { foreignKey: { allowNull: false}, onDelete: 'CASCADE'});
-        MovieTag.belongsToMany(models.Review, {as: "goodReviews", through: models.ReviewGoodTags, onDelete: 'CASCADE'});
-        MovieTag.belongsToMany(models.Review, {as: "badReviews", through: models.ReviewBadTags, onDelete: 'CASCADE'});
+        MovieTag.belongsToMany(models.Review, {as: "goodReviews", through: models.ReviewGoodTags, foreignKey: "movieTagId", otherKey: "reviewId", onDelete: 'CASCADE'});
+        MovieTag.belongsToMany(models.Review, {as: "badReviews", through: models.ReviewBadTags, foreignKey: "movieTagId", otherKey: "reviewId",  onDelete: 'CASCADE'});
     };
 
     // function to find a tag or create one and include a review with it

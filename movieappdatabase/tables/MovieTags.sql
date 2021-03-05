@@ -5,7 +5,7 @@
 CREATE TABLE public."movieTags"
 (
     id integer NOT NULL DEFAULT nextval('"movieTags_id_seq"'::regclass),
-    value character varying(255) COLLATE pg_catalog."default",
+    value character varying(20) COLLATE pg_catalog."default",
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
     CONSTRAINT "movieTags_pkey" PRIMARY KEY (id),

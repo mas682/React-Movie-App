@@ -1,17 +1,35 @@
 let moment = require('moment');
 const comment = (sequelize, DataTypes) => {
-    const Comment = sequelize.define('comment', {
+    const Comment = sequelize.define('comment',
+    {
+        id: {
+          autoIncrement: true,
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          primaryKey: true
+        },
         // create a username field
         value: {
             // set the data type to string
             type: DataTypes.TEXT,
             // do not allow this to be empty
-            allowNull: true,
-            // validate that it is not empty
-            // will probably want to set limit on comment length
-            validate: {
-                notEmpty: true,
-            }
+            allowNull: true
+        },
+        userId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          references: {
+            model: 'users',
+            key: 'id'
+          }
+        },
+        reviewId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          references: {
+            model: 'reviews',
+            key: 'id'
+          }
         },
         createdAt: {
             // this is done to format the date on return
@@ -42,13 +60,28 @@ const comment = (sequelize, DataTypes) => {
             },
             allowNull: false
         },
+    },
+    {
+        sequelize,
+        tableName: 'comments',
+        schema: 'public',
+        timestamps: true,
+        indexes: [
+          {
+            name: "comments_pkey",
+            unique: true,
+            fields: [
+              { name: "id" },
+            ]
+          },
+        ]
     });
 
     // associate bad tags with reviews
     // each tag can belong to many reviews
     Comment.associate = models => {
-        Comment.belongsTo(models.Review, {onDelete: 'CASCADE'});
-        Comment.belongsTo(models.User, {onDelete: 'CASCADE'});
+        Comment.belongsTo(models.Review, {onDelete: 'CASCADE', foreignKey: "reviewId"});
+        Comment.belongsTo(models.User, {onDelete: 'CASCADE', foreignKey: "userId"});
     };
 
     // function to get comments for a review post

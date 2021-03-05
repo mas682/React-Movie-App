@@ -14,7 +14,7 @@ CREATE TABLE public.comments
     CONSTRAINT "comments_reviewId_fkey" FOREIGN KEY ("reviewId")
         REFERENCES public.reviews (id) MATCH SIMPLE
         ON UPDATE CASCADE
-        ON DELETE SET NULL,
+        ON DELETE CASCADE,
     CONSTRAINT "comments_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public.users (id) MATCH SIMPLE
         ON UPDATE CASCADE

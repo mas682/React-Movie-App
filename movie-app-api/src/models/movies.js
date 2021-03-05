@@ -2,119 +2,153 @@ let moment = require('moment');
 const Op = require('Sequelize').Op;
 const movie = (sequelize, DataTypes) => {
     const Movie = sequelize.define('movie', {
-        // create a username field
         id: {
-            // set the data type to string
-            type: DataTypes.INTEGER,
-            // make the value be unique
-            unique: true,
-            // do not allow this to be empty
-            allowNull: true,
-            primaryKey: true,
-            // validate that it is not empty
-            validate: {
-                notEmpty: true,
-            }
+          autoIncrement: true,
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          primaryKey: true
         },
         title: {
-            // set the data type to string
-            type: DataTypes.STRING,
-            // do not allow this to be empty
-            allowNull: true,
-            // validate that it is not empty
-            validate: {
-                notEmpty: true,
-            }
+          type: DataTypes.STRING(255),
+          allowNull: true
         },
         revenue: {
-            type: DataTypes.INTEGER,
-            allowNull: true
+          type: DataTypes.INTEGER,
+          allowNull: true
         },
         director: {
-          // set the data type to string
-          type: DataTypes.STRING,
-          // do not allow this to be empty
-          allowNull: true,
-          // validate that it is not empty
-          validate: {
-              notEmpty: true,
-          }
+          type: DataTypes.STRING(255),
+          allowNull: true
         },
         runTime: {
-            type: DataTypes.INTEGER,
-            allowNull: true
+          type: DataTypes.INTEGER,
+          allowNull: true
         },
         rating: {
-            type: DataTypes.STRING,
-            allowNull: true
+          type: DataTypes.STRING(255),
+          allowNull: true
         },
         trailer: {
-            // set the data type to string
-            type: DataTypes.STRING,
-            // do not allow this to be empty
-            allowNull: true,
+          type: DataTypes.STRING(255),
+          allowNull: true
         },
         backgroundImage: {
-            // set the data type to string
-            type: DataTypes.STRING,
-            // do not allow this to be empty
-            allowNull: true,
+          type: DataTypes.STRING(255),
+          allowNull: true
         },
         releaseDate: {
-            type: DataTypes.DATEONLY,
-            allowNull: true,
-            get() {
-                return moment(this.getDataValue('releaseDate')).format('MMMM D, YYYY');
-            }
+          type: DataTypes.DATEONLY,
+          allowNull: true,
+          get() {
+              return moment(this.getDataValue('releaseDate')).format('MMMM D, YYYY');
+          }
         },
         overview: {
-            // set the data type to string
-            type: DataTypes.TEXT,
-            // do not allow this to be empty
-            allowNull: true,
-            // validate that it is not empty
-            validate: {
-                notEmpty: true,
-            }
+          type: DataTypes.TEXT,
+          allowNull: true
         },
         poster: {
-            // set the data type to string
-            type: DataTypes.STRING,
-            // make the value be unique
-            unique: true,
-            // do not allow this to be empty
-            allowNull: true,
-            // validate that it is not empty
-            validate: {
-                notEmpty: true,
-            }
+          type: DataTypes.STRING(255),
+          allowNull: true
+        },
+        premiereReleaseDate: {
+          type: DataTypes.DATEONLY,
+          allowNull: true
+        },
+        theaterLimitedReleaseDate: {
+          type: DataTypes.DATEONLY,
+          allowNull: true
+        },
+        theaterReleaseDate: {
+          type: DataTypes.DATEONLY,
+          allowNull: true
+        },
+        digitalReleaseDate: {
+          type: DataTypes.DATEONLY,
+          allowNull: true
+        },
+        physicalReleaseDate: {
+          type: DataTypes.DATEONLY,
+          allowNull: true
+        },
+        tvReleaseDate: {
+          type: DataTypes.DATEONLY,
+          allowNull: true
+        },
+        status: {
+          type: DataTypes.STRING(255),
+          allowNull: true
+        },
+        homepage: {
+          type: DataTypes.STRING(255),
+          allowNull: true
+        },
+        imdb_id: {
+          type: DataTypes.STRING(100),
+          allowNull: true,
+          unique: "movies_imdb_id_key"
+        },
+        tmdb_id: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          unique: "movies_tmdb_id_key"
+        },
+        originalLanguage: {
+          type: DataTypes.STRING(20),
+          allowNull: true
         },
         userRating: {
-            type: DataTypes.DECIMAL(10,2),
-            allowNull: false,
-            default: 0
+          type: DataTypes.DECIMAL,
+          allowNull: false,
+          defaultValue: 0.0
         },
         totalUserRatings: {
-            type: DataTypes.BIGINT(),
-            allowNull: false,
-            default: 0
-        },
+          type: DataTypes.BIGINT,
+          allowNull: false,
+          defaultValue: 0
+        }
+      }, {
+        sequelize,
+        tableName: 'movies',
+        schema: 'public',
+        hasTrigger: true,
+        timestamps: true,
+        indexes: [
+          {
+            name: "movies_imdb_id_key",
+            unique: true,
+            fields: [
+              { name: "imdb_id" },
+            ]
+          },
+          {
+            name: "movies_pkey",
+            unique: true,
+            fields: [
+              { name: "id" },
+            ]
+          },
+          {
+            name: "movies_tmdb_id_key",
+            unique: true,
+            fields: [
+              { name: "tmdb_id" },
+            ]
+          },
+        ]
+      });
 
-        /*
-        genres: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
-        */
-    });
 
     Movie.associate = models => {
         // each movie can be associated with many reviews
-        Movie.hasMany(models.Review);
+        Movie.hasMany(models.Review, {foreignKey: "movieId"});
         // each movie can have many genres
-        Movie.belongsToMany(models.Genre, {through: models.MovieGenreTable});
-        Movie.belongsToMany(models.User, {as: "UserWatchLists", through: models.UserWatchList, onDelete: 'CASCADE'});
-        Movie.belongsToMany(models.User, {as: "UsersWhoWatched", through: models.UsersWhoWatched, onDelete: 'CASCADE'});
+        Movie.belongsToMany(models.Genre, {through: models.MovieGenreTable, foreignKey: "movieId", otherKey: "GenreId" });
+        Movie.belongsToMany(models.User, {as: "UserWatchLists", through: models.UserWatchList, foreignKey: "movieId", otherKey: "userId", onDelete: 'CASCADE'});
+        Movie.belongsToMany(models.User, {as: "UsersWhoWatched", through: models.UsersWhoWatched, foreignKey: "movieId", otherKey: "userId", onDelete: 'CASCADE'});
+        Movie.hasMany(models.MovieGenreTable, { as: "MovieGenreTables", foreignKey: "movieId"});
+        Movie.hasMany(models.UserWatchList, {foreignKey: "movieId"});
+        Movie.hasMany(models.UsersWhoWatched, {foreignKey: "movieId"});
     };
 
     // function to get a movie and include a specific user who has it on their watch list
