@@ -50,3 +50,14 @@ CREATE TRIGGER set_timestamp
     ON public."UserVerificationCodes"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();
+
+
+-- Trigger: valide_user_not_found
+
+-- DROP TRIGGER valide_user_not_found ON public."UserVerificationCodes";
+
+CREATE TRIGGER valide_user_not_found
+    BEFORE INSERT
+    ON public."UserVerificationCodes"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_validate_user_not_found();

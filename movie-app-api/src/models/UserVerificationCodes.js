@@ -7,18 +7,17 @@ const userVerificationCodes = (sequelize, DataTypes) => {
           primaryKey: true
         },
         expiresAt: {
-          type: DataTypes.DATE,
-          allowNull: false
+          type: DataTypes.DATE
         },
         userEmail: {
           type: DataTypes.STRING(30),
           allowNull: false,
-          unique: "UserVerificationCodes_userEmail_key"
+          //unique: "UserVerificationCodes_userEmail_key"
         },
         username: {
           type: DataTypes.STRING(20),
           allowNull: false,
-          unique: "UserVerificationCodes_username_key"
+          //unique: "UserVerificationCodes_username_key"
         },
         code: {
           type: DataTypes.INTEGER,
@@ -30,7 +29,7 @@ const userVerificationCodes = (sequelize, DataTypes) => {
         tableName: 'UserVerificationCodes',
         schema: 'public',
         hasTrigger: true,
-        timestamps: true,
+        timestamps: false,
         indexes: [
           {
             name: "UserVerificationCodes_pkey",
@@ -39,7 +38,7 @@ const userVerificationCodes = (sequelize, DataTypes) => {
               { name: "id" },
             ]
           },
-          {
+          /*{
             name: "UserVerificationCodes_userEmail_key",
             unique: true,
             fields: [
@@ -53,6 +52,7 @@ const userVerificationCodes = (sequelize, DataTypes) => {
               { name: "username" },
             ]
           },
+          */
         ]
     });
 

@@ -42,7 +42,7 @@ router.get('/review/:reviewId/:type', function(req, res, next) {
 })
 
 // used to create a account
-router.post('/signup', function(req, res, next) {
+router.post('/signup/:type', function(req, res, next) {
     signUp(req, res, next);
 });
 

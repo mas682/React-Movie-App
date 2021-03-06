@@ -1,0 +1,26 @@
+do $$
+declare
+   counter    integer := 1;
+   first_name varchar(50) := 'John';
+   last_name  varchar(50) := 'Doe';
+   payment    numeric(11,2) := 20.5;
+   u varchar(50);
+   e varchar(50);
+begin
+  select
+  	into u, e
+	username, email
+  FROM public.users
+  WHERE username = '_theonenonly' or email = 'test'
+  --into u = username, e = email
+  limit 1;
+  raise notice 'username: %', u;
+end $$;
+  	test public.users.username%type;
+  declare email varchar;
+  select @username = username, @email = email from FROM public.users WHERE username = new.username or email = new."userEmail" limit 1;
+  select @username
+  select @email
+
+
+  -- fix this to compare u and e to the values passed into trigger_validate_user_not_found

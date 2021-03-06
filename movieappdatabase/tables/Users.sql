@@ -6,7 +6,7 @@ CREATE TABLE public.users
 (
     id integer NOT NULL DEFAULT nextval('users_id_seq'::regclass),
     username character varying(20) COLLATE pg_catalog."default" NOT NULL,
-    email character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    email character varying(50) COLLATE pg_catalog."default" NOT NULL,
     password character varying(20) COLLATE pg_catalog."default" NOT NULL,
     "firstName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
     "lastName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
@@ -36,7 +36,7 @@ CREATE TRIGGER "set_createdAt"
     ON public.users
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-    
+
 CREATE TRIGGER set_timestamp
     BEFORE UPDATE
     ON public.users

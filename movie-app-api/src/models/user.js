@@ -10,25 +10,25 @@ const user = (sequelize, DataTypes) => {
           primaryKey: true
         },
         username: {
-          type: DataTypes.STRING(255),
+          type: DataTypes.STRING(20),
           allowNull: false,
           unique: "users_username_key"
         },
         email: {
-          type: DataTypes.STRING(255),
+          type: DataTypes.STRING(100),
           allowNull: false,
           unique: "users_email_key"
         },
         password: {
-          type: DataTypes.STRING(255),
+          type: DataTypes.STRING(20),
           allowNull: false
         },
         firstName: {
-          type: DataTypes.STRING(255),
+          type: DataTypes.STRING(20),
           allowNull: false
         },
         lastName: {
-          type: DataTypes.STRING(255),
+          type: DataTypes.STRING(20),
           allowNull: false
         },
         profileDescription: {

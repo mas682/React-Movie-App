@@ -1,6 +1,8 @@
 import models, { sequelize } from '../src/models';
 import {verifyLogin} from './globals.js';
+import {customAlphabet} from 'nanoid';
 const Op = require('Sequelize').Op;
+const nanoid = customAlphabet('1234567890', 6);
 import {validateStringParameter, validateUsernameParameter, validateEmailParameter} from './globals.js';
 
 
@@ -9,7 +11,7 @@ const signUp = (req, res, next) => {
     // get the signed cookies in the request if there are any
     let cookie = req.signedCookies.MovieAppCookie;
     // if there is a signed cookie in the request
-    if(cookie != undefined)
+    if(cookie !== undefined)
     {
         // see if the cookie has a valid user
         verifyLogin(cookie).then((cookieValid) =>
@@ -24,19 +26,82 @@ const signUp = (req, res, next) => {
             // cookie not valid
             else
             {
-                createUser(req, res);
+                selectPath(undefined, req, res, cookieValid);
             }
         });
     }
     // if no cookie was found
     else
     {
-        createUser(req, res);
+        selectPath(undefined, req, res, false);
     }
 };
 
-// function to create a user
-const createUser =(req, res) =>
+const selectPath = (cookie, req, res, cookieValid) =>
+{
+    console.log("Select path sign up");
+    let routeFound = false;
+    if(req.method === "POST")
+    {
+        // if the path is profile/username/follow
+        if(req.params.type === "authenticate")
+        {
+            routeFound = true;
+            createTempUser(cookie, req, res);
+        }
+        // if the path is profile/username/follow
+        else if(req.params.type === "create_account")
+        {
+            routeFound = true;
+            createUser(cookie, req, res);
+        }
+    }
+    // if the route did not match any of the above
+    if(!routeFound)
+    {
+        let requester = cookieValid ? cookie.name : "";
+        res.status(404).send({
+            message:"The signup path sent to the server does not exist",
+            requester: requester
+        });
+    }
+};
+
+
+// function to create a temp user before their email is verified
+const createTempUser = async (cookie, req, res) =>
+{
+    let username = req.body.username;
+    let email = req.body.email;
+    let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
+    if(!valid) return;
+    valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
+    if(!valid) return;
+    let result;
+    try
+    {
+    result = await models.UserVerificationCodes.create({
+        userEmail: email,
+        username: username,
+        code: nanoid()
+    });
+    }
+    catch (err)
+    {
+        let errorObject = JSON.parse(JSON.stringify(err));
+        console.log(errorObject);
+    }
+    console.log(result._);
+    res.status(400).send({
+        message: "Verification email sent",
+        requester: ""
+    });
+
+}
+
+
+// function to create a user once their email is verified
+const createUser =(cookie, req, res) =>
 {
     let username = req.body.username;
     let email = req.body.email;

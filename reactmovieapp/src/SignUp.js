@@ -120,7 +120,9 @@ class SignUpPopup extends React.Component {
                 email: this.state.email,
                 password: this.state.password
             };
-            let url = "http://localhost:9000/signup";
+            // temporarily using authenticat
+            // let url = "http://localhost:9000/signup/create_account";
+            let url = "http://localhost:9000/signup/authenticate";
             let result = await apiPostJsonRequest(url, params);
             let status = result[0];
             let message = result[1].message;
@@ -133,6 +135,7 @@ class SignUpPopup extends React.Component {
     {
         if(status === 201)
         {
+            alert(message);
             // redirect to either homepage
             this.props.setMessages({
                 messages: [{type: "success", message: "Account successfully created!"}],
