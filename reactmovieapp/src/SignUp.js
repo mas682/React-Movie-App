@@ -27,7 +27,8 @@ class SignUpPopup extends React.Component {
             showVerificationPage: false,
             verificationCode: "",
             verificationError: "",
-            verificationAttemps: 0
+            verificationAttemps: 0,
+            awaitingResults: false
         };
 
         this.closeModal = this.closeModal.bind(this);
@@ -46,6 +47,7 @@ class SignUpPopup extends React.Component {
 
         this.validateVerification = this.validateVerification.bind(this);
         this.authenticateResultsHandler = this.authenticateResultsHandler.bind(this);
+        this.resendVerificationCode = this.resendVerificationCode.bind(this);
     }
 
     closeModal() {
@@ -138,11 +140,19 @@ class SignUpPopup extends React.Component {
             // temporarily using authenticat
             // let url = "http://localhost:9000/signup/create_account";
             let url = "http://localhost:9000/signup/authenticate";
-            let result = await apiPostJsonRequest(url, params);
+            /*let result = await apiPostJsonRequest(url, params);
             let status = result[0];
             let message = result[1].message;
             let requester = result[1].requester;
             this.authenticateResultsHandler(status, message, requester);
+            */
+            this.setState({awaitingResults: true});
+            apiPostJsonRequest(url, params).then((result)=>{
+                let status = result[0];
+                let message = result[1].message;
+                let requester = result[1].requester;
+                this.authenticateResultsHandler(status, message, requester);
+            });
         }
     }
 
@@ -151,9 +161,8 @@ class SignUpPopup extends React.Component {
         if(status === 201)
         {
             this.setState({
-                messageId: this.state.messageId + 1,
-                messages: [{type: "success", message: message}],
-                showVerificationPage: true
+                showVerificationPage: true,
+                awaitingResults: false
             });
             this.props.updateLoggedIn(requester);
             // set the state to redirect so render will redirect to landing on success
@@ -179,7 +188,8 @@ class SignUpPopup extends React.Component {
                     emailError: "",
                     passwordError: "",
                     firstNameError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
             else
@@ -189,7 +199,8 @@ class SignUpPopup extends React.Component {
                     usernameError: "",
                     passwordError: "",
                     firstNameError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
         }
@@ -203,7 +214,8 @@ class SignUpPopup extends React.Component {
                     emailError: "",
                     passwordError: "",
                     firstNameError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
             else if(message === "The email provided is not a valid email address")
@@ -213,7 +225,8 @@ class SignUpPopup extends React.Component {
                     usernameError: "",
                     passwordError: "",
                     firstNameError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
         }
@@ -226,7 +239,8 @@ class SignUpPopup extends React.Component {
                 passwordError: "",
                 firstNameError: "",
                 messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: message}]
+                messages: [{type: "failure", message: message}],
+                awaitingResults: false
             });
             this.props.updateLoggedIn(requester);
         }
@@ -239,7 +253,8 @@ class SignUpPopup extends React.Component {
                 passwordError: "",
                 firstNameError: "",
                 messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: "An unexpected error occurred on the server when trying to create the account"}]
+                messages: [{type: "failure", message: "An unexpected error occurred on the server when trying to create the account"}],
+                awaitingResults: false
             });
             this.props.updateLoggedIn(requester);
         }
@@ -332,39 +347,83 @@ class SignUpPopup extends React.Component {
                 lastName: this.state.lastName,
                 email: this.state.email,
                 password: this.state.password,
-                verificationCode: Number(this.state.verificationCode)
+                verificationCode: this.state.verificationCode
             };
             // temporarily using authenticat
             let url = "http://localhost:9000/signup/create_account";
             //let url = "http://localhost:9000/signup/authenticate";
+            /*
             let result = await apiPostJsonRequest(url, params);
             let status = result[0];
             let message = result[1].message;
             let requester = result[1].requester;
             this.signUpResultsHandler(status, message, requester);
+            */
+            this.setState({awaitingResults: true});
+            apiPostJsonRequest(url, params).then((result)=>{
+                let status = result[0];
+                let message = result[1].message;
+                let requester = result[1].requester;
+                this.signUpResultsHandler(status, message, requester, "creation");
+            });
         }
     }
 
-    signUpResultsHandler(status, message, requester)
+    async resendVerificationCode(event) {
+        event.preventDefault();
+        let error = false;
+
+        if(!error)
+        {
+            let params = {
+                username: this.state.username,
+                email: this.state.email,
+            };
+            let url = "http://localhost:9000/signup/resend_verification_code";
+            this.setState({awaitingResults: true});
+            apiPostJsonRequest(url, params).then((result)=>{
+                let status = result[0];
+                let message = result[1].message;
+                let requester = result[1].requester;
+                this.signUpResultsHandler(status, message, requester, "resend");
+            });
+        }
+    }
+
+    signUpResultsHandler(status, message, requester, type)
     {
-        alert(message);
         if(status === 201)
         {
-            alert(message);
-            // redirect to either homepage
-            this.props.setMessages({
-                messages: [{type: "success", message: "Account successfully created!"}],
-                clearMessages: true
-            });
-            this.props.updateLoggedIn(requester);
-            this.closeModal();
-            // set the state to redirect so render will redirect to landing on success
-            // actually want to redirect to a page to customize profile....
-            // this.setState({redirect: true});
+            if(type === "creation")
+            {
+                // redirect to either homepage
+                this.props.setMessages({
+                    messages: [{type: "success", message: "Account successfully created!"}],
+                    clearMessages: true
+                });
+                this.props.updateLoggedIn(requester);
+                this.closeModal();
+                // set the state to redirect so render will redirect to landing on success
+                // actually want to redirect to a page to customize profile....
+                // this.setState({redirect: true});
+            }
+            else
+            {
+                alert("Passcode resent")
+                this.setState({
+                    usernameError: "",
+                    emailError: "",
+                    passwordError: "",
+                    firstNameError: "",
+                    lastNameError: "",
+                    awaitingResults: false
+                });
+            }
         }
         else if(status === 401)
         {
-            if(message !== "Verification code is invalid")
+            alert(message);
+            if(message === "You are already logged in so you must have an account")
             {
                 this.props.setMessages({
                     messages: [{type: "info", message: "You are already logged in"}],
@@ -372,10 +431,17 @@ class SignUpPopup extends React.Component {
                 });
                 this.closeModal();
             }
+            else
+            {
+                this.setState({
+                    awaitingResults: false
+                })
+            }
             this.props.updateLoggedIn(requester);
         }
         else if(status === 409)
         {
+            alert(message);
             this.props.updateLoggedIn(requester);
             if(message === "Username already exists")
             {
@@ -384,7 +450,8 @@ class SignUpPopup extends React.Component {
                     emailError: "",
                     passwordError: "",
                     firstNameError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
             else
@@ -394,12 +461,14 @@ class SignUpPopup extends React.Component {
                     usernameError: "",
                     passwordError: "",
                     firstNameError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
         }
         else if(status === 400)
         {
+            alert(message);
             this.props.updateLoggedIn(requester);
             if(message === "Username must be between 6-20 characters")
             {
@@ -408,7 +477,8 @@ class SignUpPopup extends React.Component {
                     emailError: "",
                     passwordError: "",
                     firstNameError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
             else if(message === "The email provided is not a valid email address")
@@ -418,7 +488,8 @@ class SignUpPopup extends React.Component {
                     usernameError: "",
                     passwordError: "",
                     firstNameError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
             else if(message === "Password must be betweeen 6-15 characters")
@@ -428,7 +499,8 @@ class SignUpPopup extends React.Component {
                     usernameError: "",
                     emailError: "",
                     firstNameError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
             else if(message === "First name must be between 1-20 characters")
@@ -438,7 +510,8 @@ class SignUpPopup extends React.Component {
                     usernameError: "",
                     emailError: "",
                     passwordError: "",
-                    lastNameError: ""
+                    lastNameError: "",
+                    awaitingResults: false
                 });
             }
             else if(message === "Last name must be between 1-20 characters")
@@ -449,8 +522,21 @@ class SignUpPopup extends React.Component {
                     emailError: "",
                     passwordError: "",
                     firstNameError: "",
+                    awaitingResults: false
                 });
             }
+        }
+        else if(status === 404)
+        {
+            alert(message);
+            this.setState({
+                lastNameError: "",
+                usernameError: "",
+                emailError: "",
+                passwordError: "",
+                firstNameError: "",
+                awaitingResults: false
+            });
         }
         else if(status === 500)
         {
@@ -461,7 +547,8 @@ class SignUpPopup extends React.Component {
                 passwordError: "",
                 firstNameError: "",
                 messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: message}]
+                messages: [{type: "failure", message: message}],
+                awaitingResults: false
             });
             this.props.updateLoggedIn(requester);
         }
@@ -474,7 +561,8 @@ class SignUpPopup extends React.Component {
                 passwordError: "",
                 firstNameError: "",
                 messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: "An unexpected error occurred on the server when trying to create the account"}]
+                messages: [{type: "failure", message: "An unexpected error occurred on the server when trying to create the account"}],
+                awaitingResults: false
             });
             this.props.updateLoggedIn(requester);
         }
@@ -725,6 +813,7 @@ class SignUpPopup extends React.Component {
         let lastNameInput = this.generateLastNameInput();
         let emailInput = this.generateEmailInput();
         let passwordInput = this.generatePasswordInput();
+
         return (
             <React.Fragment>
                 <div className="content">
@@ -760,6 +849,30 @@ class SignUpPopup extends React.Component {
             </React.Fragment>);
     }
 
+    generateLoadingContent(message)
+    {
+        //if(this.state.awaitingResults)
+        let content =  (
+            <React.Fragment>
+                <div className="content">
+                    <div className={style.infoTextContainer}>
+                        {message}<br/>
+                    </div>
+                    <div className={style.loadingContainer}>
+                        <div className={style.loader}></div>
+                    </div>
+                </div>
+                <div className="actions">
+                    <div className={style.verificationButtonContainer}>
+                        Close the pop up to cancel account creation
+                    </div>
+                </div>
+            </React.Fragment>
+        );
+
+        return content;
+    }
+
     generateVerificationForm()
     {
         let verificationInput = this.generateVerificationInput();
@@ -768,10 +881,10 @@ class SignUpPopup extends React.Component {
             <React.Fragment>
                 <div className="content">
                     <form id="form1" onSubmit={this.validateForm} noValidate/>
-                    <div className={style.verificationTextContainer}>
+                    <div className={`${style.infoTextContainer} ${style.verificationTextMargins}`}>
                         Verification email sent to:<br/>
                         <div className={style.emailText}>
-                            matthew.stropkey@pnc.com
+                            {this.state.email}
                         </div>
                     </div>
                     <div className={style.verificationContainer}>
@@ -789,49 +902,46 @@ class SignUpPopup extends React.Component {
                         </button>
                     </div>
                     <div className={style.verificationButtonContainer}>
+                        <button
+                            form="form1"
+                            value="create_account"
+                            className="submitButton"
+                            onClick={this.resendVerificationCode}
+                        >Resend Verification Code
+                        </button>
+                    </div>
+                    <div className={style.verificationButtonContainer}>
                         Close the pop up to cancel account creation
                     </div>
                 </div>
             </React.Fragment>);
-            return (
-                <div>
-                    <Popup
-                        open={this.state.open}
-                        closeOnDocumentClick
-                        onClose={this.closeModal}
-                        className={"verification"}
-                        >
-                        <div className="modal">
-                            {/* &times is the multiplication symbol (x) --> */}
-                            <a className="close" onClick={this.closeModal}>
-                            &times;
-                            </a>
-                            <Alert
-                                messages={this.state.messages}
-                                messageId={this.state.messageId}
-                                innerContainerStyle={{"z-index": "2", "font-size": "1.25em"}}
-                                symbolStyle={{"width": "5%", "margin-top": "3px"}}
-                                messageBoxStyle={{width: "86%"}}
-                                closeButtonStyle={{width: "5%", "margin-top": "3px"}}
-                                />
-                            <div className="header">
-                                <h3 className="inlineH3"> Sign Up! </h3>
-                            </div>
-                            {content}
-                        </div>
-                    </Popup>
-                </div>
-            );
+        return content;
     }
 
 
     render() {
-        let content = this.generateCreateUserForm();
-        if(this.state.showVerificationPage)
+        let content;
+        let className = "signUp";
+        if(!this.state.showVerificationPage && !this.state.awaitingResults)
         {
-            content = this.generateVerificationForm();
-            return content;
+            content = this.generateCreateUserForm();
         }
+        else if(!this.state.showVerificationPage && this.state.awaitingResults)
+        {
+            className = "verification";
+            content = this.generateLoadingContent("Processing request...");
+        }
+        else if(this.state.showVerificationPage && !this.state.awaitingResults)
+        {
+            className = "verification";
+            content = this.generateVerificationForm();
+        }
+        else if(this.state.showVerificationPage && this.state.awaitingResults)
+        {
+            className = "verification";
+            content = this.generateLoadingContent("Creating account...");
+        }
+
 
         return (
             <div>
@@ -839,7 +949,7 @@ class SignUpPopup extends React.Component {
                     open={this.state.open}
                     closeOnDocumentClick
                     onClose={this.closeModal}
-                    className={"signUp"}
+                    className={className}
                     >
                     <div className="modal">
                         {/* &times is the multiplication symbol (x) --> */}

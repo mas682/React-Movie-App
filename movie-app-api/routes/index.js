@@ -10,8 +10,6 @@ import {homePage} from './homePage.js';
 import {getUserInfo} from './getUserInfo.js';
 import {movieHandler} from './movies.js';
 import {searchHandler} from './search.js';
-// for testing, remove later
-import {emailHandler} from './emailHandler.js';
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -86,11 +84,6 @@ router.get('/movie/:id', function(req, res, next) {
 
 router.get('/search/:type', function(req, res, next) {
     searchHandler(req, res, next);
-});
-
-// for testing, remove later
-router.get('/sendemail', function(req, res, next) {
-    emailHandler(req, res, next);
 });
 
 module.exports = router;

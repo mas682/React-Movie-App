@@ -3,13 +3,8 @@ import models, { sequelize } from '../src/models';
 var nodemailer = require('nodemailer');
 const config = require('../EmailConfig.json');
 
-
-
-
 // function to get information associated with the user who has the cookie
 const emailHandler = async (recipient, subject, text, html) => {
-    console.log(config);
-
     const transporter = nodemailer.createTransport({
         //port: 465,
         host: "smtp-mail.outlook.com",
@@ -38,11 +33,11 @@ const emailHandler = async (recipient, subject, text, html) => {
     {
         connected = false;
     }
-    console.log("Connected: " + connected);
+    console.log("Connected to email server: " + connected);
     let result = connected;
     //
-
-    /* temporarily blocked out as met quoata for emails
+    /*
+    //temporarily blocked out as met quoata for emails
     // change the TO value to the recipient eventually
     const message = {
         from: config.email.username,  // sender address
@@ -61,7 +56,7 @@ const emailHandler = async (recipient, subject, text, html) => {
     }
     catch (err)
     {
-        console.log("ERROR CAUGHT");
+        console.log("Error caught when sending email to: " + recipient);
         let errorObject = JSON.parse(JSON.stringify(err));
         console.log(errorObject);
         result = false;
@@ -70,7 +65,10 @@ const emailHandler = async (recipient, subject, text, html) => {
     }
     */
 
+
     return result;
 };
+
+
 
 export {emailHandler};

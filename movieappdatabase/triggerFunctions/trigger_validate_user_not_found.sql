@@ -17,7 +17,8 @@ begin
 		username, "userEmail"
 	from public."UserVerificationCodes"
 	where (username = new.username or "userEmail" = new."userEmail")
-	and "expiresAt" > CURRENT_TIMESTAMP;
+	and "expiresAt" > CURRENT_TIMESTAMP
+	and (("verificationAttempts" < 3 and "codesResent" = 2) or ("codesResent" < 2));
 	if (uName = new.username) then
 		RAISE unique_violation
 	 		USING CONSTRAINT='UserVerificationCodes_username_key'

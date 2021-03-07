@@ -42,7 +42,6 @@ const signUp = (req, res, next) => {
 
 const selectPath = (cookie, req, res, cookieValid) =>
 {
-    console.log("Select path sign up");
     let routeFound = false;
     if(req.method === "POST")
     {
@@ -57,6 +56,11 @@ const selectPath = (cookie, req, res, cookieValid) =>
         {
             routeFound = true;
             createUser(cookie, req, res);
+        }
+        else if(req.params.type === "resend_verification_code")
+        {
+            routeFound = true;
+            resendVerificationCode(cookie, req, res);
         }
     }
     // if the route did not match any of the above
@@ -132,20 +136,109 @@ const createTempUser = async (cookie, req, res) =>
     // then send email to user
     let emailResult = await sendVerificationEmail(result.code, result.userEmail);
     console.log("Code: " + result.code);
-    if(emailResult)
+    console.log("Adding 5 second delay");
+    setTimeout(() =>{
+        if(emailResult)
+        {
+            res.status(201).send({
+                message: "Verification email sent",
+                requester: ""
+            });
+        }
+        else
+        {
+            res.status(500).send({
+                message: "Verification email not sent",
+                requester: ""
+            });
+        }
+    }, 5000);
+}
+
+// function to create a temp user before their email is verified
+const resendVerificationCode = async (cookie, req, res) =>
+{
+    let username = req.body.username;
+    let email = req.body.email;
+    let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
+    if(!valid) return;
+    valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
+    if(!valid) return;
+    let result;
+    let tempUser = await models.UserVerificationCodes.findOne({
+        where: {
+            userEmail: email,
+            username: username,
+            expiresAt: {[Op.gte]: moment()},
+            [Op.or]: [
+                {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
+                {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
+            ]
+        }
+    });
+    if(tempUser === null)
     {
-        res.status(201).send({
-            message: "Verification email sent",
+        res.status(404).send({
+            message: "Could not find a user with the given email and username that has a valid active verification code",
             requester: ""
         });
+        return;
     }
-    else
+    else if(tempUser.codesResent >= 2 && tempUser.verificationAttempts < 3)
     {
+        res.status(404).send({
+            message: "Could not send another verification code as the maximum number of codes to send out (3) has been met",
+            requester: ""
+        });
+        return;
+    }
+
+    try
+    {
+        result = await tempUser.update({
+            code: nanoid(),
+            codesResent: tempUser.codesResent + 1,
+            verificationAttempts: 0
+        });
+    }
+    catch (err)
+    {
+        let errorObject = JSON.parse(JSON.stringify(err));
         res.status(500).send({
-            message: "Verification email not sent",
-            requester: ""
+                message: "A unknown error occurred trying to update the users verification code",
+                requester: ""
+            });
+        console.log("Some unknown error occurred: " + errorObject.name);
+        return;
+    }
+    if(result === undefined || result === null)
+    {
+        // if undefined, tempUser cannot be found
+        res.status(404).send({
+            message: "User could not be found",
+            requester: requester
         });
     }
+
+    let emailResult = await sendVerificationEmail(result.code, result.userEmail);
+    console.log("Code: " + result.code);
+    console.log("Adding 5 second delay");
+    setTimeout(() =>{
+        if(emailResult)
+        {
+            res.status(201).send({
+                message: "Verification email sent",
+                requester: ""
+            });
+        }
+        else
+        {
+            res.status(500).send({
+                message: "Verification email not sent",
+                requester: ""
+            });
+        }
+    }, 5000);
 }
 
 
@@ -168,17 +261,21 @@ const createUser = async (cookie, req, res) =>
     if(!valid) return;
     valid = validateStringParameter(res, lastName, 1, 20, "", "Last name must be between 1-20 characters");
     if(!valid) return;
-    valid = validateIntegerParameter(res, verificationCode, "", "Verification code invalid", 100000, 999999);
+    valid = validateStringParameter(res, verificationCode, 6, 6, "", "Verification code invalid");
     if(!valid) return;
-    // convert to integer if code is a string
-    verificationCode = Number(verificationCode);
+    // validate the value passed does not contain any characters, only numbers
+    valid = validateIntegerParameter(res, verificationCode, "", "Verification code invalid", undefined, undefined);
+    if(!valid) return;
 
     let tempUser = await models.UserVerificationCodes.findOne({
         where: {
             userEmail: email,
             username: username,
             expiresAt: {[Op.gte]: moment()},
-            verificationAttempts: {[Op.lt]: 3}
+            [Op.or]: [
+                {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
+                {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
+            ]
         }
     });
     if(tempUser === null)
@@ -189,31 +286,67 @@ const createUser = async (cookie, req, res) =>
         });
         return;
     }
-    if(tempUser.code !== verificationCode)
+    else if(tempUser.verificationAttempts >= 3 && tempUser.codesResent < 2)
     {
-        try
-        {
-            let attempts = tempUser.verificationAttempts + 1;
-            await tempUser.update({
-                verificationAttempts: attempts
-            });
-        }
-        catch (err)
-        {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            console.log("Error updating a users verification attempts");
-            console.log(errorObject);
-        }
-        // increment count number of verification attempts
-        res.status(401).send({
-            message: "Verification code is invalid",
+        res.status(404).send({
+            message: "Could not verify user as a maximum of 3 attempts have been tried for the pass code.",
             requester: ""
         });
         return;
     }
-    else
+
+    if(tempUser.code !== verificationCode)
     {
-        console.log("Verification code matches");
+        // if the account will become locked, remove it
+        if(tempUser.codesResent >= 2 && (tempUser.verificationAttempts + 1) >= 3)
+        {
+            // delete the user out of the UserVerificationCodes table
+            try {
+                tempUser.destroy();
+            }
+            catch (err)
+            {
+                console.log("Some error occurred deleting a temp user: " + username);
+                console.log(JSON.parse(JSON.stringify(err)));
+            }
+            res.status(401).send({
+                message: "Verification code is invalid.  Maximum verification attempts met",
+                requester: ""
+            });
+            return;
+        }
+        else
+        {
+            // update the verification attempts as account not locked out
+            try
+            {
+                await tempUser.update({
+                    verificationAttempts: tempUser.verificationAttempts + 1
+                });
+            }
+            catch (err)
+            {
+                let errorObject = JSON.parse(JSON.stringify(err));
+                console.log("Error updating a users verification attempts");
+                console.log(errorObject);
+            }
+            if(tempUser.verificationAttempts >= 3)
+            {
+                // increment count number of verification attempts
+                res.status(401).send({
+                    message: "Verification code is invalid.  The maximum of 3 verification attempts met for " +
+                    "the current code",
+                    requester: ""
+                });
+                return;
+            }
+            // increment count number of verification attempts
+            res.status(401).send({
+                message: "Verification code is invalid",
+                requester: ""
+            });
+            return;
+        }
     }
 
     // find the a user with the username or email sent
@@ -242,10 +375,13 @@ const createUser = async (cookie, req, res) =>
             let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
-            res.status(201).send({
-                message: "User has been created",
-                requester: username
-            });
+            console.log("Adding 5 second delay");
+            setTimeout(() =>{
+                res.status(201).send({
+                    message: "User has been created",
+                    requester: username
+                });
+            }, 5000);
         }
         // the user existed
         else

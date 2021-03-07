@@ -20,10 +20,15 @@ const userVerificationCodes = (sequelize, DataTypes) => {
           //unique: "UserVerificationCodes_username_key"
         },
         code: {
-          type: DataTypes.INTEGER,
-          allowNull: false
+            type: DataTypes.STRING(6),
+            allowNull: false,
         },
         verificationAttempts: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
+        },
+        codesResent: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
