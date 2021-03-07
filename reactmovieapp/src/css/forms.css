@@ -68,6 +68,10 @@
     position: relative;
 }
 
+.submitButton:focus {
+    outline: none;
+}
+
 /* make a h3 header inline */
 .inlineH3 {
     display: inline;

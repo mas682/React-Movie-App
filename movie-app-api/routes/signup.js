@@ -3,7 +3,10 @@ import {verifyLogin} from './globals.js';
 import {customAlphabet} from 'nanoid';
 const Op = require('Sequelize').Op;
 const nanoid = customAlphabet('1234567890', 6);
-import {validateStringParameter, validateUsernameParameter, validateEmailParameter} from './globals.js';
+const moment = require('moment');
+import {validateStringParameter, validateUsernameParameter, validateEmailParameter,
+        validateIntegerParameter} from './globals.js';
+import {emailHandler} from './EmailHandler.js';
 
 
 // function to create an account
@@ -90,36 +93,128 @@ const createTempUser = async (cookie, req, res) =>
     {
         let errorObject = JSON.parse(JSON.stringify(err));
         console.log(errorObject);
+        if(errorObject.name === "SequelizeUniqueConstraintError")
+        {
+            if(errorObject.original.constraint === "UserVerificationCodes_username_key")
+            {
+                res.status(409).send({
+                    message: "Username already exists",
+                    requester: ""
+                });
+            }
+            else if(errorObject.original.constraint === "UserVerificationCodes_userEmail_key")
+            {
+                res.status(409).send({
+                    message: "Email already associated with a user",
+                    requester: ""
+                });
+            }
+            else
+            {
+                res.status(500).send({
+                    message: "A unknown constraint error occurred trying to create the user",
+                    requester: ""
+                });
+                console.log("Some unknown constraint error occurred: " + errorObject.original.constraint);
+            }
+        }
+        else
+        {
+            res.status(500).send({
+                message: "A unknown error occurred trying to create the user",
+                requester: ""
+            });
+            console.log("Some unknown error occurred: " + errorObject.name);
+        }
+        return;
     }
-    console.log(result._);
-    res.status(400).send({
-        message: "Verification email sent",
-        requester: ""
-    });
-
+    // may want to verify result not null? or undefined?
+    // then send email to user
+    let emailResult = await sendVerificationEmail(result.code, result.userEmail);
+    console.log("Code: " + result.code);
+    if(emailResult)
+    {
+        res.status(201).send({
+            message: "Verification email sent",
+            requester: ""
+        });
+    }
+    else
+    {
+        res.status(500).send({
+            message: "Verification email not sent",
+            requester: ""
+        });
+    }
 }
 
 
 // function to create a user once their email is verified
-const createUser =(cookie, req, res) =>
+const createUser = async (cookie, req, res) =>
 {
     let username = req.body.username;
     let email = req.body.email;
     let password = req.body.password;
     let firstName = req.body.firstName;
     let lastName = req.body.lastName;
+    let verificationCode = req.body.verificationCode;
     let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
     if(!valid) return;
     valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
     if(!valid) return;
     valid = validateStringParameter(res, password, 6, 15, "", "Password must be betweeen 6-15 characters");
     if(!valid) return;
-    console.log(firstName);
     valid = validateStringParameter(res, firstName, 1, 20, "", "First name must be between 1-20 characters");
     if(!valid) return;
     valid = validateStringParameter(res, lastName, 1, 20, "", "Last name must be between 1-20 characters");
     if(!valid) return;
+    valid = validateIntegerParameter(res, verificationCode, "", "Verification code invalid", 100000, 999999);
+    if(!valid) return;
+    // convert to integer if code is a string
+    verificationCode = Number(verificationCode);
 
+    let tempUser = await models.UserVerificationCodes.findOne({
+        where: {
+            userEmail: email,
+            username: username,
+            expiresAt: {[Op.gte]: moment()},
+            verificationAttempts: {[Op.lt]: 3}
+        }
+    });
+    if(tempUser === null)
+    {
+        res.status(404).send({
+            message: "Could not find a user with the given email and username that has a valid active verification code",
+            requester: ""
+        });
+        return;
+    }
+    if(tempUser.code !== verificationCode)
+    {
+        try
+        {
+            let attempts = tempUser.verificationAttempts + 1;
+            await tempUser.update({
+                verificationAttempts: attempts
+            });
+        }
+        catch (err)
+        {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            console.log("Error updating a users verification attempts");
+            console.log(errorObject);
+        }
+        // increment count number of verification attempts
+        res.status(401).send({
+            message: "Verification code is invalid",
+            requester: ""
+        });
+        return;
+    }
+    else
+    {
+        console.log("Verification code matches");
+    }
 
     // find the a user with the username or email sent
     models.User.findOrCreate({where: {[Op.or]: [{username: username}, {email: email}]},
@@ -129,11 +224,21 @@ const createUser =(cookie, req, res) =>
             password: password,
             firstName: firstName,
             lastName: lastName,
+            verified: true
         }}
     ).then(([user, created]) => {
         // if the user did not already exist and was successfully created
         if(created)
         {
+            // delete the user out of the UserVerificationCodes table
+            try {
+                tempUser.destroy();
+            }
+            catch (err)
+            {
+                console.log("Some error occurred deleting a temp user: " + username);
+                console.log(JSON.parse(JSON.stringify(err)));
+            }
             let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
@@ -145,6 +250,15 @@ const createUser =(cookie, req, res) =>
         // the user existed
         else
         {
+            // delete the user out of the UserVerificationCodes table
+            try {
+                tempUser.destroy();
+            }
+            catch (err)
+            {
+                console.log("Some error occurred deleting a temp user: " + username);
+                console.log(JSON.parse(JSON.stringify(err)));
+            }
             if(user.username == req.body.username)
             {
                 res.status(409).send({
@@ -168,7 +282,16 @@ const createUser =(cookie, req, res) =>
             }
         }
     });
-
 };
+
+const sendVerificationEmail = async (verificationCode, email) =>
+{
+    let html = "<b>Welcome to Movie Fantatics!</b>" +
+               "<br> Your verification code is: " + verificationCode;
+    let text = "If you did not sign up for Movie Fanatics, please disregard";
+    let header = "Movie Fanatics Verification Code";
+    let result = await emailHandler(email, header, text, html);
+    return result;
+}
 
 export {signUp};

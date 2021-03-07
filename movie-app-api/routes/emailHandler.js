@@ -1,56 +1,76 @@
 import {verifyLogin} from './globals.js';
 import models, { sequelize } from '../src/models';
-import {customAlphabet} from 'nanoid';
 var nodemailer = require('nodemailer');
 const config = require('../EmailConfig.json');
-const nanoid = customAlphabet('1234567890', 6);
+
 
 
 
 // function to get information associated with the user who has the cookie
-const emailHandler = (req, res, next) => {
+const emailHandler = async (recipient, subject, text, html) => {
     console.log(config);
-    console.log(nanoid());
-    /*
+
     const transporter = nodemailer.createTransport({
-        //port: 465,               // true for 465, false for other ports
+        //port: 465,
         host: "smtp-mail.outlook.com",
         secureConnection: true,
+        // this only allows you to send one email at a time
+        // when in real scenario, need to set this to 465
         port: 587,
         auth: {
             user: config.email.username,
-            pass: config.email.password,
+            pass: config.email.password
         },
         tls: {
             ciphers: 'SSLv3'
         }
     });
-    // verify connection configuration
-    transporter.verify(function(error, success) {
-      if (error) {
-        console.log("Error with connection");
-        console.log(error);
-      } else {
-        console.log("Server is ready to take our messages");
-      }
-    });
 
+    // to test connection:
+    // block out usually
+    let connected;
+    try {
+        connected = await transporter.verify().then(function(success){
+            return success
+        });
+    }
+    catch (err)
+    {
+        connected = false;
+    }
+    console.log("Connected: " + connected);
+    let result = connected;
+    //
+
+    /* temporarily blocked out as met quoata for emails
+    // change the TO value to the recipient eventually
     const message = {
-      from: config.email.username,  // sender address
-      to: config.email.username,   // list of receivers
-      subject: 'Sending Email using Node.js',
-      text: 'That was easy!',
-      html: "<b>Hey there! </b>" +
-             "<br> This is our first message sent with Nodemailer<br/>",
+        from: config.email.username,  // sender address
+        to: config.email.username,   // list of receivers
+        subject: subject + "test",
+        text: text,
+        html: html,
     };
-    transporter.sendMail(message, function (err, info) {
-        if(err)
-            console.log(err)
-        else
+    let result;
+    try {
+        result = await transporter.sendMail(message).then(function(info){
+            console.log("Email sent:");
             console.log(info);
-    });
+            return true;
+        });
+    }
+    catch (err)
+    {
+        console.log("ERROR CAUGHT");
+        let errorObject = JSON.parse(JSON.stringify(err));
+        console.log(errorObject);
+        result = false;
+        // not authenticated..
+        // if errorObject.code = "EAUTH"
+    }
     */
-    res.status(200).send("Email sent");
+
+    return result;
 };
 
 export {emailHandler};

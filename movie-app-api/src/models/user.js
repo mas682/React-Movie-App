@@ -48,12 +48,12 @@ const user = (sequelize, DataTypes) => {
         lastLogin: {
           type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: sequelize.literal('CURRENT_DATE')
+          defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
         },
         passwordUpdatedAt: {
           type: DataTypes.DATE,
           allowNull: false,
-          defaultValue: sequelize.literal('CURRENT_DATE')
+          defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
         }
       }, {
         sequelize,

@@ -22,6 +22,11 @@ const userVerificationCodes = (sequelize, DataTypes) => {
         code: {
           type: DataTypes.INTEGER,
           allowNull: false
+        },
+        verificationAttempts: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
         }
       },
       {

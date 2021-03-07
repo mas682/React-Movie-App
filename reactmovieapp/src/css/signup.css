@@ -15,11 +15,17 @@
     .signUp-content {
         width: 50% !important;
     }
+    .verification-content {
+        width: 30% !important;
+    }
 }
 
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
     .signUp-content {
         width: 55% !important;
+    }
+    .verification-content {
+        width: 35% !important;
     }
 }
 
@@ -27,11 +33,17 @@
     .signUp-content {
         width: 60% !important;
     }
+    .verification-content {
+        width: 40% !important;
+    }
 }
 
 @media screen and (min-width: 800px) and (max-width: 999px) {
     .signUp-content {
         width: 65% !important;
+    }
+    .verification-content {
+        width: 45% !important;
     }
 }
 
@@ -39,16 +51,25 @@
     .signUp-content {
         width: 70% !important;
     }
+    .verification-content {
+        width: 60% !important;
+    }
 }
 
 @media screen and (max-width: 599px) {
     .signUp-content {
         width: 75% !important;
     }
+    .verification-content {
+        width: 70% !important;
+    }
 }
 
 @media screen and (max-width: 599px) {
     .signUp-content {
+        width: 80% !important;
+    }
+    .verification-content {
         width: 80% !important;
     }
 }
