@@ -10,9 +10,12 @@ CREATE TABLE public."UserVerificationCodes"
     code character varying(6) COLLATE pg_catalog."default" NOT NULL,
     "verificationAttempts" integer NOT NULL DEFAULT 0,
     "codesResent" integer NOT NULL DEFAULT 0,
+    "expiresAt" timestamp with time zone NOT NULL,
+    password character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    "firstName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    "lastName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
-    "expiresAt" timestamp with time zone NOT NULL,
     CONSTRAINT "UserVerificationCodes_pkey" PRIMARY KEY (id)
 )
 

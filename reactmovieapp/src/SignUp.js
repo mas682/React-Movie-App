@@ -28,13 +28,14 @@ class SignUpPopup extends React.Component {
             verificationCode: "",
             verificationError: "",
             verificationAttemps: 0,
-            awaitingResults: false
+            awaitingResults: false,
+            lockVerificationInput: false
         };
 
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
-        this.validateForm = this.validateForm.bind(this);
-        this.signUpResultsHandler = this.signUpResultsHandler.bind(this);
+        this.validateRegistration = this.validateRegistration.bind(this);
+        this.verificationResultsHandler = this.verificationResultsHandler.bind(this);
         this.showLoginPopUp = this.showLoginPopUp.bind(this);
         this.generateUserNameInput = this.generateUserNameInput.bind(this);
         this.generateFirstNameInput = this.generateFirstNameInput.bind(this);
@@ -46,7 +47,7 @@ class SignUpPopup extends React.Component {
         this.generateVerificationInput = this.generateVerificationInput.bind(this);
 
         this.validateVerification = this.validateVerification.bind(this);
-        this.authenticateResultsHandler = this.authenticateResultsHandler.bind(this);
+        this.registrationResultsHandler = this.registrationResultsHandler.bind(this);
         this.resendVerificationCode = this.resendVerificationCode.bind(this);
     }
 
@@ -66,7 +67,7 @@ class SignUpPopup extends React.Component {
     // function called when CREATE AN ACCOUNT button is clicked
     // to validate that the fields are correct and handle sending
     // data to server
-    async validateForm(event) {
+    async validateRegistration(event) {
         event.preventDefault();
         let error = false;
         // checks to see if email in format string@string.string
@@ -132,31 +133,23 @@ class SignUpPopup extends React.Component {
         {
             let params = {
                 username: this.state.username,
-                //firstName: this.state.firstName,
-                //lastName: this.state.lastName,
+                firstName: this.state.firstName,
+                lastName: this.state.lastName,
                 email: this.state.email,
-                //password: this.state.password
+                password: this.state.password
             };
-            // temporarily using authenticat
-            // let url = "http://localhost:9000/signup/create_account";
-            let url = "http://localhost:9000/signup/authenticate";
-            /*let result = await apiPostJsonRequest(url, params);
-            let status = result[0];
-            let message = result[1].message;
-            let requester = result[1].requester;
-            this.authenticateResultsHandler(status, message, requester);
-            */
+            let url = "http://localhost:9000/signup/register";
             this.setState({awaitingResults: true});
             apiPostJsonRequest(url, params).then((result)=>{
                 let status = result[0];
                 let message = result[1].message;
                 let requester = result[1].requester;
-                this.authenticateResultsHandler(status, message, requester);
+                this.registrationResultsHandler(status, message, requester);
             });
         }
     }
 
-    authenticateResultsHandler(status, message, requester)
+    registrationResultsHandler(status, message, requester)
     {
         if(status === 201)
         {
@@ -229,6 +222,39 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false
                 });
             }
+            else if(message === "Password must be betweeen 6-15 characters")
+            {
+                this.setState({
+                    emailError: "",
+                    usernameError: "",
+                    passwordError: message,
+                    firstNameError: "",
+                    lastNameError: "",
+                    awaitingResults: false
+                });
+            }
+            else if(message === "First name must be between 1-20 characters")
+            {
+                this.setState({
+                    emailError: "",
+                    usernameError: "",
+                    passwordError: "",
+                    firstNameError: message,
+                    lastNameError: "",
+                    awaitingResults: false
+                });
+            }
+            else if(message === "Last name must be between 1-20 characters")
+            {
+                this.setState({
+                    emailError: "",
+                    usernameError: "",
+                    passwordError: "",
+                    firstNameError: "",
+                    lastNameError: message,
+                    awaitingResults: false
+                });
+            }
         }
         else if(status === 500)
         {
@@ -266,69 +292,7 @@ class SignUpPopup extends React.Component {
     // data to server
     async validateVerification(event) {
         event.preventDefault();
-
-
         let error = false;
-        // checks to see if email in format string@string.string
-        let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.state.email);
-        // if firstName is empty
-        if(!this.state.firstName)
-        {
-            this.setState({firstNameError: "First name must be between 1-20 characters"});
-            error = true;
-        }
-        else
-        {
-            this.setState({firstNameError: ""});
-        }
-
-        if(this.state.username.length < 6 || this.state.username.length > 20)
-        {
-            this.setState({usernameError: "Username must be between 6-20 characters"});
-            error = true;
-        }
-        else
-        {
-            this.setState({usernameError: ""});
-        }
-
-        // if lastName is empty
-        if(!this.state.lastName)
-        {
-            this.setState({lastNameError: "Last name must be between 1-20 characters"});
-            error = true;
-        }
-        else
-        {
-            this.setState({lastNameError: ""});
-        }
-
-        if(this.state.email.length < 7 || this.state.email.length > 30)
-        {
-            this.setState({emailError: "The email provided is not a valid email address"});
-            error = true;
-        }
-        else if(!this.state.email.includes("@") | !validEmail)
-        {
-            this.setState({emailError: "The email provided is not a valid email address"});
-            error = true;
-        }
-        else
-        {
-            this.setState({emailError: ""});
-        }
-
-        // if password lenght < 8
-        if(this.state.password.length < 6 || this.state.password.length > 15)
-        {
-            this.setState({passwordError: "Password must be between 6-15 characters"});
-            error = true;
-        }
-        else
-        {
-            this.setState({passwordError: ""})
-        }
-
         if(this.state.verificationCode.length < 6)
         {
             this.setState({verificationError: "The verification code must be 6 digits"});
@@ -339,40 +303,244 @@ class SignUpPopup extends React.Component {
             this.setState({verificationError: "The verification code is invalid"});
             error = true;
         }
+
         if(!error)
         {
             let params = {
                 username: this.state.username,
-                firstName: this.state.firstName,
-                lastName: this.state.lastName,
                 email: this.state.email,
-                password: this.state.password,
                 verificationCode: this.state.verificationCode
             };
-            // temporarily using authenticat
             let url = "http://localhost:9000/signup/create_account";
-            //let url = "http://localhost:9000/signup/authenticate";
-            /*
-            let result = await apiPostJsonRequest(url, params);
-            let status = result[0];
-            let message = result[1].message;
-            let requester = result[1].requester;
-            this.signUpResultsHandler(status, message, requester);
-            */
             this.setState({awaitingResults: true});
             apiPostJsonRequest(url, params).then((result)=>{
                 let status = result[0];
                 let message = result[1].message;
                 let requester = result[1].requester;
-                this.signUpResultsHandler(status, message, requester, "creation");
+                this.verificationResultsHandler(status, message, requester, "creation");
             });
+        }
+    }
+
+    verificationResultsHandler(status, message, requester, type)
+    {
+        if(status === 201)
+        {
+            this.props.setMessages({
+                messages: [{type: "success", message: "Account successfully created!"}],
+                clearMessages: true
+            });
+            this.props.updateLoggedIn(requester);
+            this.closeModal();
+        }
+        else if(status === 401)
+        {
+            if(message === "You are already logged in so you must have an account")
+            {
+                this.props.setMessages({
+                    messages: [{type: "info", message: "You are already logged in"}],
+                    clearMessages: true
+                });
+                this.closeModal();
+            }
+            // tested works(same as first in 404)
+            else if(message === "Verification code is invalid.  Maximum verification attempts met")
+            {
+                let output = "Could not find a user with the given email and username " +
+                            "that has a valid active verification code.  Please try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    showVerificationPage: false,
+                    password: ""
+                });
+            }
+            // tested works(same as second in 404)
+            else if(message === "Verification code is invalid.  The maximum of 3 verification attempts met for the current code")
+            {
+                // tell user to try resend code or cancel request
+                let output ="The maximum of 3 verification attempts for the current code has been " +
+                            "reached.  Either try to resend the code or try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    verificationError: "Verification code is invalid",
+                    awaitingResults: false,
+                    lockVerificationInput: true
+                });
+            }
+            // tested works
+            else if(message === "Verification code is invalid")
+            {
+                // simply tell user code invalid
+                this.setState({
+                    verificationError: message,
+                    awaitingResults: false
+                });
+            }
+            else
+            {
+                let output = "Some unexpected 401 code was returned by the server";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    verificationError: ""
+                });
+            }
+            this.props.updateLoggedIn(requester);
+        }
+        else if(status === 409)
+        {
+            // tested, should never really happen
+            this.props.updateLoggedIn(requester);
+            if(message === "Username already exists")
+            {
+                this.setState({
+                    usernameError: "This username is already in use",
+                    showVerificationPage: false,
+                    awaitingResults: false
+                });
+            }
+            else if(message === "Email already associated with a user")
+            {
+                this.setState({
+                    emailError: "The email provided is already in use",
+                    showVerificationPage: false,
+                    awaitingResults: false
+                });
+            }
+            else
+            {
+                let output = "Some unexpected 409 code was returned by the server";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    verificationError: ""
+                });
+            }
+        }
+        else if(status === 400)
+        {
+            this.props.updateLoggedIn(requester);
+            // tested works
+            if(message === "Username must be between 6-20 characters")
+            {
+                this.setState({
+                    usernameError: message,
+                    showVerificationPage: false,
+                    awaitingResults: false
+                });
+            }
+            // tested works
+            else if(message === "The email provided is not a valid email address")
+            {
+                this.setState({
+                    emailError: message,
+                    showVerificationPage: false,
+                    awaitingResults: false
+                });
+            }
+            // tested works
+            else if(message === "Verification code invalid")
+            {
+                this.setState({
+                    verificationError: message,
+                    awaitingResults: false
+                });
+            }
+            else
+            {
+                let output = "Some unexpected 400 code was returned by the server";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    verificationError: ""
+                });
+            }
+        }
+        else if(status === 404)
+        {
+            this.props.updateLoggedIn(requester);
+            // tested works(same as second in 404)
+            if(message === "Could not find a user with the given email and username that has a valid active verification code")
+            {
+                let output = "Could not find a user with the given email and username " +
+                            "that has a valid active verification code.  Please try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    showVerificationPage: false,
+                    password: ""
+                });
+            }
+            // tested works
+            else if(message === "Could not verify user as a maximum of 3 attempts have been attempted for the verification code.")
+            {
+                let output ="The maximum of 3 verification attempts for the current code has been " +
+                            "reached.  Either try to resend the code or try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    verificationError: "Verification code is invalid",
+                    awaitingResults: false,
+                    lockVerificationInput: true
+                });
+            }
+            else if(message === "Could not send another verification code as the maximum number of codes to send out (3) has been met")
+            {
+                // for resends
+                // remove send another verification button?
+                // need to keep track of verification failures and resends client side
+                // when changing back to showVerificationPage, need to clear messages...test it out to make sure
+                // message being passed displays
+            }
+            else if(message === "User could not be found")
+            {
+                // for resends
+                // send back to main form
+            }
+            else
+            {
+                let output = "Some unexpected 404 code was returned by the server";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    verificationError: ""
+                });
+            }
+        }
+        else if(status === 500)
+        {
+            this.setState({
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: message}],
+                awaitingResults: false,
+                verificationError: ""
+            });
+            this.props.updateLoggedIn(requester);
+        }
+        else
+        {
+            let output = "Some unexpected " + status + " code was returned by the server";
+            this.setState({
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: output, timeout: 0}],
+                awaitingResults: false,
+                verificationError: ""
+            });
+            this.props.updateLoggedIn(requester);
         }
     }
 
     async resendVerificationCode(event) {
         event.preventDefault();
         let error = false;
-
         if(!error)
         {
             let params = {
@@ -385,186 +553,8 @@ class SignUpPopup extends React.Component {
                 let status = result[0];
                 let message = result[1].message;
                 let requester = result[1].requester;
-                this.signUpResultsHandler(status, message, requester, "resend");
+                this.verificationResultsHandler(status, message, requester, "resend");
             });
-        }
-    }
-
-    signUpResultsHandler(status, message, requester, type)
-    {
-        if(status === 201)
-        {
-            if(type === "creation")
-            {
-                // redirect to either homepage
-                this.props.setMessages({
-                    messages: [{type: "success", message: "Account successfully created!"}],
-                    clearMessages: true
-                });
-                this.props.updateLoggedIn(requester);
-                this.closeModal();
-                // set the state to redirect so render will redirect to landing on success
-                // actually want to redirect to a page to customize profile....
-                // this.setState({redirect: true});
-            }
-            else
-            {
-                alert("Passcode resent")
-                this.setState({
-                    usernameError: "",
-                    emailError: "",
-                    passwordError: "",
-                    firstNameError: "",
-                    lastNameError: "",
-                    awaitingResults: false
-                });
-            }
-        }
-        else if(status === 401)
-        {
-            alert(message);
-            if(message === "You are already logged in so you must have an account")
-            {
-                this.props.setMessages({
-                    messages: [{type: "info", message: "You are already logged in"}],
-                    clearMessages: true
-                });
-                this.closeModal();
-            }
-            else
-            {
-                this.setState({
-                    awaitingResults: false
-                })
-            }
-            this.props.updateLoggedIn(requester);
-        }
-        else if(status === 409)
-        {
-            alert(message);
-            this.props.updateLoggedIn(requester);
-            if(message === "Username already exists")
-            {
-                this.setState({
-                    usernameError: "This username is already in use",
-                    emailError: "",
-                    passwordError: "",
-                    firstNameError: "",
-                    lastNameError: "",
-                    awaitingResults: false
-                });
-            }
-            else
-            {
-                this.setState({
-                    emailError: "This email address is already in use",
-                    usernameError: "",
-                    passwordError: "",
-                    firstNameError: "",
-                    lastNameError: "",
-                    awaitingResults: false
-                });
-            }
-        }
-        else if(status === 400)
-        {
-            alert(message);
-            this.props.updateLoggedIn(requester);
-            if(message === "Username must be between 6-20 characters")
-            {
-                this.setState({
-                    usernameError: message,
-                    emailError: "",
-                    passwordError: "",
-                    firstNameError: "",
-                    lastNameError: "",
-                    awaitingResults: false
-                });
-            }
-            else if(message === "The email provided is not a valid email address")
-            {
-                this.setState({
-                    emailError: message,
-                    usernameError: "",
-                    passwordError: "",
-                    firstNameError: "",
-                    lastNameError: "",
-                    awaitingResults: false
-                });
-            }
-            else if(message === "Password must be betweeen 6-15 characters")
-            {
-                this.setState({
-                    passwordError: message,
-                    usernameError: "",
-                    emailError: "",
-                    firstNameError: "",
-                    lastNameError: "",
-                    awaitingResults: false
-                });
-            }
-            else if(message === "First name must be between 1-20 characters")
-            {
-                this.setState({
-                    firstNameError: message,
-                    usernameError: "",
-                    emailError: "",
-                    passwordError: "",
-                    lastNameError: "",
-                    awaitingResults: false
-                });
-            }
-            else if(message === "Last name must be between 1-20 characters")
-            {
-                this.setState({
-                    lastNameError: message,
-                    usernameError: "",
-                    emailError: "",
-                    passwordError: "",
-                    firstNameError: "",
-                    awaitingResults: false
-                });
-            }
-        }
-        else if(status === 404)
-        {
-            alert(message);
-            this.setState({
-                lastNameError: "",
-                usernameError: "",
-                emailError: "",
-                passwordError: "",
-                firstNameError: "",
-                awaitingResults: false
-            });
-        }
-        else if(status === 500)
-        {
-            this.setState({
-                lastNameError: "",
-                usernameError: "",
-                emailError: "",
-                passwordError: "",
-                firstNameError: "",
-                messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: message}],
-                awaitingResults: false
-            });
-            this.props.updateLoggedIn(requester);
-        }
-        else
-        {
-            this.setState({
-                lastNameError: "",
-                usernameError: "",
-                emailError: "",
-                passwordError: "",
-                firstNameError: "",
-                messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: "An unexpected error occurred on the server when trying to create the account"}],
-                awaitingResults: false
-            });
-            this.props.updateLoggedIn(requester);
         }
     }
 
@@ -573,12 +563,6 @@ class SignUpPopup extends React.Component {
         let value = event.target.value;
         this.setState({[name]: value});
     }
-
-    /*
-    need to fix login link at bottom in here to bring up login pop up
-    also need to do the same for the login side where there is a button for
-    the to sign up..
-    */
 
     generateUserNameInput()
     {
@@ -594,6 +578,7 @@ class SignUpPopup extends React.Component {
                     maxLength = {20}
                     className="inputFieldBoxLong validInputBox"
                     onChange={this.changeHandler}
+                    value={this.state.username}
                 />
             </React.Fragment>);
         if(this.state.usernameError)
@@ -610,6 +595,7 @@ class SignUpPopup extends React.Component {
                         maxLength = {20}
                         className="inputFieldBoxLong inputBoxError"
                         onChange={this.changeHandler}
+                        value={this.state.username}
                     />
                     <small className="errorTextSmall">{this.state.usernameError}</small>
                 </React.Fragment>);
@@ -631,6 +617,7 @@ class SignUpPopup extends React.Component {
                     maxLength = {20}
                     className={`${style.inputFieldBoxShort} validInputBox`}
                     onChange={this.changeHandler}
+                    value={this.state.firstName}
                 />
             </React.Fragment>);
         if(this.state.firstNameError)
@@ -647,6 +634,7 @@ class SignUpPopup extends React.Component {
                     maxLength = {20}
                     className={`${style.inputFieldBoxShort} inputBoxError`}
                     onChange={this.changeHandler}
+                    value={this.state.firstName}
                 />
                 <small className="errorTextSmall">{this.state.firstNameError}</small>
             </React.Fragment>);
@@ -668,6 +656,7 @@ class SignUpPopup extends React.Component {
                     maxLength = {20}
                     className={`${style.inputFieldBoxShort} validInputBox`}
                     onChange={this.changeHandler}
+                    value={this.state.lastName}
                 />
             </React.Fragment>);
         if(this.state.lastNameError)
@@ -684,6 +673,7 @@ class SignUpPopup extends React.Component {
                         maxLength = {20}
                         className={`${style.inputFieldBoxShort} inputBoxError`}
                         onChange={this.changeHandler}
+                        value={this.state.lastName}
                     />
                     <small className="errorTextSmall">{this.state.lastNameError}</small>
                 </React.Fragment>);
@@ -705,6 +695,7 @@ class SignUpPopup extends React.Component {
                     maxLength = {30}
                     className="inputFieldBoxLong validInputBox"
                     onChange={this.changeHandler}
+                    value={this.state.email}
                 />
             </React.Fragment>);
         if(this.state.emailError)
@@ -721,6 +712,7 @@ class SignUpPopup extends React.Component {
                         maxLength = {30}
                         className="inputFieldBoxLong inputBoxError"
                         onChange={this.changeHandler}
+                        value={this.state.email}
                     />
                     <small className="errorTextSmall">{this.state.emailError}</small>
                 </React.Fragment>);
@@ -742,6 +734,7 @@ class SignUpPopup extends React.Component {
                     maxLength = {15}
                     className="inputFieldBoxLong validInputBox"
                     onChange={this.changeHandler}
+                    value={this.state.password}
                 />
             </React.Fragment>);
         if(this.state.passwordError)
@@ -758,6 +751,7 @@ class SignUpPopup extends React.Component {
                         maxLength = {15}
                         className="inputFieldBoxLong inputBoxError"
                         onChange={this.changeHandler}
+                        value={this.state.password}
                     />
                     <small className="errorTextSmall">{this.state.passwordError}</small>
                 </React.Fragment>);
@@ -778,6 +772,7 @@ class SignUpPopup extends React.Component {
                         name="verificationCode"
                         form = "form2"
                         maxLength = {6}
+                        disabled={this.state.lockVerificationInput}
                         className={`inputFieldBoxLong validInputBox ${style.verificationInput}`}
                         onChange={this.changeHandler}
                     />
@@ -796,6 +791,7 @@ class SignUpPopup extends React.Component {
                             name="verificationCode"
                             form = "form2"
                             maxLength = {6}
+                            disabled={this.state.lockVerificationInput}
                             className={`inputFieldBoxLong inputBoxError ${style.verificationInput}`}
                             onChange={this.changeHandler}
                         />
@@ -817,7 +813,7 @@ class SignUpPopup extends React.Component {
         return (
             <React.Fragment>
                 <div className="content">
-                    <form id="form1" onSubmit={this.validateForm} noValidate/>
+                    <form id="form1" onSubmit={this.validateRegistration} noValidate/>
                     <div className={style.nameContainer}>
                         {firstNameInput}
                         </div>
@@ -839,7 +835,7 @@ class SignUpPopup extends React.Component {
                         form="form1"
                         value="create_account"
                         className="submitButton"
-                        onClick={this.validateForm}
+                        onClick={this.validateRegistration}
                     >CREATE YOUR ACCOUNT
                     </button>
                 </div>
@@ -880,7 +876,7 @@ class SignUpPopup extends React.Component {
         let content = (
             <React.Fragment>
                 <div className="content">
-                    <form id="form1" onSubmit={this.validateForm} noValidate/>
+                    <form id="form1" onSubmit={this.validateRegistration} noValidate/>
                     <div className={`${style.infoTextContainer} ${style.verificationTextMargins}`}>
                         Verification email sent to:<br/>
                         <div className={style.emailText}>

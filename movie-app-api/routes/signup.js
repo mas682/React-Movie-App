@@ -46,7 +46,7 @@ const selectPath = (cookie, req, res, cookieValid) =>
     if(req.method === "POST")
     {
         // if the path is profile/username/follow
-        if(req.params.type === "authenticate")
+        if(req.params.type === "register")
         {
             routeFound = true;
             createTempUser(cookie, req, res);
@@ -80,9 +80,18 @@ const createTempUser = async (cookie, req, res) =>
 {
     let username = req.body.username;
     let email = req.body.email;
+    let password = req.body.password;
+    let firstName = req.body.firstName;
+    let lastName = req.body.lastName;
     let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
     if(!valid) return;
     valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
+    if(!valid) return;
+    valid = validateStringParameter(res, password, 6, 15, "", "Password must be betweeen 6-15 characters");
+    if(!valid) return;
+    valid = validateStringParameter(res, firstName, 1, 20, "", "First name must be between 1-20 characters");
+    if(!valid) return;
+    valid = validateStringParameter(res, lastName, 1, 20, "", "Last name must be between 1-20 characters");
     if(!valid) return;
     let result;
     try
@@ -90,7 +99,10 @@ const createTempUser = async (cookie, req, res) =>
     result = await models.UserVerificationCodes.create({
         userEmail: email,
         username: username,
-        code: nanoid()
+        code: nanoid(),
+        password: password,
+        firstName: firstName,
+        lastName: lastName
     });
     }
     catch (err)
@@ -247,19 +259,10 @@ const createUser = async (cookie, req, res) =>
 {
     let username = req.body.username;
     let email = req.body.email;
-    let password = req.body.password;
-    let firstName = req.body.firstName;
-    let lastName = req.body.lastName;
     let verificationCode = req.body.verificationCode;
     let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
     if(!valid) return;
     valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
-    if(!valid) return;
-    valid = validateStringParameter(res, password, 6, 15, "", "Password must be betweeen 6-15 characters");
-    if(!valid) return;
-    valid = validateStringParameter(res, firstName, 1, 20, "", "First name must be between 1-20 characters");
-    if(!valid) return;
-    valid = validateStringParameter(res, lastName, 1, 20, "", "Last name must be between 1-20 characters");
     if(!valid) return;
     valid = validateStringParameter(res, verificationCode, 6, 6, "", "Verification code invalid");
     if(!valid) return;
@@ -289,7 +292,7 @@ const createUser = async (cookie, req, res) =>
     else if(tempUser.verificationAttempts >= 3 && tempUser.codesResent < 2)
     {
         res.status(404).send({
-            message: "Could not verify user as a maximum of 3 attempts have been tried for the pass code.",
+            message: "Could not verify user as a maximum of 3 attempts have been attempted for the verification code.",
             requester: ""
         });
         return;
@@ -354,9 +357,9 @@ const createUser = async (cookie, req, res) =>
         defaults: {
             username: username,
             email: email,
-            password: password,
-            firstName: firstName,
-            lastName: lastName,
+            password: tempUser.password,
+            firstName: tempUser.firstName,
+            lastName: tempUser.lastName,
             verified: true
         }}
     ).then(([user, created]) => {

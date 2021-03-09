@@ -19,6 +19,18 @@ const userVerificationCodes = (sequelize, DataTypes) => {
           allowNull: false,
           //unique: "UserVerificationCodes_username_key"
         },
+        password: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+        },
+        firstName: {
+            type: DataTypes.STRING(30),
+            allowNull: false,
+        },
+        lastName: {
+            type: DataTypes.STRING(30),
+            allowNull: false,
+        },
         code: {
             type: DataTypes.STRING(6),
             allowNull: false,
