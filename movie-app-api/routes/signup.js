@@ -62,6 +62,11 @@ const selectPath = (cookie, req, res, cookieValid) =>
             routeFound = true;
             resendVerificationCode(cookie, req, res);
         }
+        else if(req.params.type === "cancel_registration")
+        {
+            routeFound = true;
+            removeTempUser(cookie, req, res);
+        }
     }
     // if the route did not match any of the above
     if(!routeFound)
@@ -239,7 +244,7 @@ const resendVerificationCode = async (cookie, req, res) =>
         if(emailResult)
         {
             res.status(201).send({
-                message: "Verification email sent",
+                message: "Verification email sent.",
                 requester: ""
             });
         }
@@ -422,6 +427,59 @@ const createUser = async (cookie, req, res) =>
         }
     });
 };
+
+
+// function to remove a temp user
+const removeTempUser = async (cookie, req, res) =>
+{
+    let username = req.body.username;
+    let email = req.body.email;
+    let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
+    if(!valid) return;
+    valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
+    if(!valid) return;
+
+    let tempUser = await models.UserVerificationCodes.findOne({
+        where: {
+            userEmail: email,
+            username: username,
+            expiresAt: {[Op.gte]: moment()},
+            [Op.or]: [
+                {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
+                {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
+            ]
+        }
+    });
+    if(tempUser === null)
+    {
+        res.status(404).send({
+            message: "Could not find a user with the given email and username that has a valid active verification code",
+            requester: ""
+        });
+        return;
+    }
+
+    // delete the user out of the UserVerificationCodes table
+    try {
+        tempUser.destroy();
+    }
+    catch (err)
+    {
+        console.log("Some error occurred deleting a temp user: " + username);
+        console.log(JSON.parse(JSON.stringify(err)));
+        res.status(500).send({
+            message: "Someting went wrong on the server when removing the temporary user",
+            requester: ""
+        });
+        return;
+    }
+
+    res.status(200).send({
+        message: "Temporary user has been removed",
+        requester: ""
+    });
+};
+
 
 const sendVerificationEmail = async (verificationCode, email) =>
 {

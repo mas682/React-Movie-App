@@ -110,10 +110,12 @@ def controllerFunction():
     failedOutput = []
     # should wrap in a try
     try:
-        outputFile = open("GetNewMoviesOutput.txt", "a")
+        outputFile = open("ScriptResults/GetNewMoviesOutput.txt", "a")
     except (Exception) as error:
         print("Failed to open the output file")
         return
+    outputFile.write("\n********************************************************************"
+                    + "*********************")
     print("Starting controller function at: " + str(datetime.now()))
     outputFile.write("\nStarting controller function at: " + str(datetime.now()) + "\n")
     try:

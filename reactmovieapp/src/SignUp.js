@@ -27,9 +27,12 @@ class SignUpPopup extends React.Component {
             showVerificationPage: false,
             verificationCode: "",
             verificationError: "",
-            verificationAttemps: 0,
+            verificationAttempts: 0,
             awaitingResults: false,
-            lockVerificationInput: false
+            lockVerificationInput: false,
+            resends: 0,
+            resendingCode: false,
+            created: false
         };
 
         this.closeModal = this.closeModal.bind(this);
@@ -49,13 +52,16 @@ class SignUpPopup extends React.Component {
         this.validateVerification = this.validateVerification.bind(this);
         this.registrationResultsHandler = this.registrationResultsHandler.bind(this);
         this.resendVerificationCode = this.resendVerificationCode.bind(this);
+        this.cancelRegistration = this.cancelRegistration.bind(this);
     }
 
     closeModal() {
+        // if on the verification page and user not just created
+        if((this.state.showVerificationPage || this.state.awaitingResults) && !this.state.created)
+        {
+            //this.cancelRegistration();
+        }
         this.setState({open: false});
-        // function that is passed in by the calling component that
-        // sets some state in the other component when this is closed,
-        // such as whether or not the pop up should be open
         this.props.removeFunction();
     }
 
@@ -139,7 +145,10 @@ class SignUpPopup extends React.Component {
                 password: this.state.password
             };
             let url = "http://localhost:9000/signup/register";
-            this.setState({awaitingResults: true});
+            this.setState({
+                awaitingResults: true,
+                messageId: -1
+            });
             apiPostJsonRequest(url, params).then((result)=>{
                 let status = result[0];
                 let message = result[1].message;
@@ -151,6 +160,7 @@ class SignUpPopup extends React.Component {
 
     registrationResultsHandler(status, message, requester)
     {
+        let resultFound = true;
         if(status === 201)
         {
             this.setState({
@@ -158,9 +168,6 @@ class SignUpPopup extends React.Component {
                 awaitingResults: false
             });
             this.props.updateLoggedIn(requester);
-            // set the state to redirect so render will redirect to landing on success
-            // actually want to redirect to a page to customize profile....
-            // this.setState({redirect: true});
         }
         else if(status === 401)
         {
@@ -185,7 +192,7 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false
                 });
             }
-            else
+            else if(message === "Email already associated with a user")
             {
                 this.setState({
                     emailError: "This email address is already in use",
@@ -195,6 +202,10 @@ class SignUpPopup extends React.Component {
                     lastNameError: "",
                     awaitingResults: false
                 });
+            }
+            else
+            {
+                resultFound = false;
             }
         }
         else if(status === 400)
@@ -255,6 +266,10 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false
                 });
             }
+            else
+            {
+                resultFound = false;
+            }
         }
         else if(status === 500)
         {
@@ -265,22 +280,24 @@ class SignUpPopup extends React.Component {
                 passwordError: "",
                 firstNameError: "",
                 messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: message}],
+                messages: [{type: "failure", message: message, timeout: 0}],
                 awaitingResults: false
             });
             this.props.updateLoggedIn(requester);
         }
         else
         {
+            resultFound = false;
+        }
+        if(!resultFound)
+        {
+            let output = "Some unexpected " + status + " code was returned by the server";
             this.setState({
-                lastNameError: "",
-                usernameError: "",
-                emailError: "",
-                passwordError: "",
-                firstNameError: "",
                 messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: "An unexpected error occurred on the server when trying to create the account"}],
-                awaitingResults: false
+                messages: [{type: "failure", message: output, timeout: 0}],
+                awaitingResults: false,
+                resendingCode: false,
+                verificationError: ""
             });
             this.props.updateLoggedIn(requester);
         }
@@ -312,7 +329,10 @@ class SignUpPopup extends React.Component {
                 verificationCode: this.state.verificationCode
             };
             let url = "http://localhost:9000/signup/create_account";
-            this.setState({awaitingResults: true});
+            this.setState({
+                awaitingResults: true,
+                messageId: -1
+            });
             apiPostJsonRequest(url, params).then((result)=>{
                 let status = result[0];
                 let message = result[1].message;
@@ -322,219 +342,21 @@ class SignUpPopup extends React.Component {
         }
     }
 
-    verificationResultsHandler(status, message, requester, type)
-    {
-        if(status === 201)
+    cancelRegistration() {
+        if((this.state.resends < 2)
+            || (this.state.resends === 2 && this.state.verificationAttempts < 3))
         {
-            this.props.setMessages({
-                messages: [{type: "success", message: "Account successfully created!"}],
-                clearMessages: true
+            let params = {
+                username: this.state.username,
+                email: this.state.email,
+                verificationCode: this.state.verificationCode
+            };
+            let url = "http://localhost:9000/signup/cancel_registration";
+            // not waiting for the result as this is really a optimization for the server
+            apiPostJsonRequest(url, params).then((result)=>{
+                let status = result[0];
+                let message = result[1].message;
             });
-            this.props.updateLoggedIn(requester);
-            this.closeModal();
-        }
-        else if(status === 401)
-        {
-            if(message === "You are already logged in so you must have an account")
-            {
-                this.props.setMessages({
-                    messages: [{type: "info", message: "You are already logged in"}],
-                    clearMessages: true
-                });
-                this.closeModal();
-            }
-            // tested works(same as first in 404)
-            else if(message === "Verification code is invalid.  Maximum verification attempts met")
-            {
-                let output = "Could not find a user with the given email and username " +
-                            "that has a valid active verification code.  Please try to sign up again.";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    awaitingResults: false,
-                    showVerificationPage: false,
-                    password: ""
-                });
-            }
-            // tested works(same as second in 404)
-            else if(message === "Verification code is invalid.  The maximum of 3 verification attempts met for the current code")
-            {
-                // tell user to try resend code or cancel request
-                let output ="The maximum of 3 verification attempts for the current code has been " +
-                            "reached.  Either try to resend the code or try to sign up again.";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    verificationError: "Verification code is invalid",
-                    awaitingResults: false,
-                    lockVerificationInput: true
-                });
-            }
-            // tested works
-            else if(message === "Verification code is invalid")
-            {
-                // simply tell user code invalid
-                this.setState({
-                    verificationError: message,
-                    awaitingResults: false
-                });
-            }
-            else
-            {
-                let output = "Some unexpected 401 code was returned by the server";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    awaitingResults: false,
-                    verificationError: ""
-                });
-            }
-            this.props.updateLoggedIn(requester);
-        }
-        else if(status === 409)
-        {
-            // tested, should never really happen
-            this.props.updateLoggedIn(requester);
-            if(message === "Username already exists")
-            {
-                this.setState({
-                    usernameError: "This username is already in use",
-                    showVerificationPage: false,
-                    awaitingResults: false
-                });
-            }
-            else if(message === "Email already associated with a user")
-            {
-                this.setState({
-                    emailError: "The email provided is already in use",
-                    showVerificationPage: false,
-                    awaitingResults: false
-                });
-            }
-            else
-            {
-                let output = "Some unexpected 409 code was returned by the server";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    awaitingResults: false,
-                    verificationError: ""
-                });
-            }
-        }
-        else if(status === 400)
-        {
-            this.props.updateLoggedIn(requester);
-            // tested works
-            if(message === "Username must be between 6-20 characters")
-            {
-                this.setState({
-                    usernameError: message,
-                    showVerificationPage: false,
-                    awaitingResults: false
-                });
-            }
-            // tested works
-            else if(message === "The email provided is not a valid email address")
-            {
-                this.setState({
-                    emailError: message,
-                    showVerificationPage: false,
-                    awaitingResults: false
-                });
-            }
-            // tested works
-            else if(message === "Verification code invalid")
-            {
-                this.setState({
-                    verificationError: message,
-                    awaitingResults: false
-                });
-            }
-            else
-            {
-                let output = "Some unexpected 400 code was returned by the server";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    awaitingResults: false,
-                    verificationError: ""
-                });
-            }
-        }
-        else if(status === 404)
-        {
-            this.props.updateLoggedIn(requester);
-            // tested works(same as second in 404)
-            if(message === "Could not find a user with the given email and username that has a valid active verification code")
-            {
-                let output = "Could not find a user with the given email and username " +
-                            "that has a valid active verification code.  Please try to sign up again.";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    awaitingResults: false,
-                    showVerificationPage: false,
-                    password: ""
-                });
-            }
-            // tested works
-            else if(message === "Could not verify user as a maximum of 3 attempts have been attempted for the verification code.")
-            {
-                let output ="The maximum of 3 verification attempts for the current code has been " +
-                            "reached.  Either try to resend the code or try to sign up again.";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    verificationError: "Verification code is invalid",
-                    awaitingResults: false,
-                    lockVerificationInput: true
-                });
-            }
-            else if(message === "Could not send another verification code as the maximum number of codes to send out (3) has been met")
-            {
-                // for resends
-                // remove send another verification button?
-                // need to keep track of verification failures and resends client side
-                // when changing back to showVerificationPage, need to clear messages...test it out to make sure
-                // message being passed displays
-            }
-            else if(message === "User could not be found")
-            {
-                // for resends
-                // send back to main form
-            }
-            else
-            {
-                let output = "Some unexpected 404 code was returned by the server";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    awaitingResults: false,
-                    verificationError: ""
-                });
-            }
-        }
-        else if(status === 500)
-        {
-            this.setState({
-                messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: message}],
-                awaitingResults: false,
-                verificationError: ""
-            });
-            this.props.updateLoggedIn(requester);
-        }
-        else
-        {
-            let output = "Some unexpected " + status + " code was returned by the server";
-            this.setState({
-                messageId: this.state.messageId + 1,
-                messages: [{type: "failure", message: output, timeout: 0}],
-                awaitingResults: false,
-                verificationError: ""
-            });
-            this.props.updateLoggedIn(requester);
         }
     }
 
@@ -548,13 +370,285 @@ class SignUpPopup extends React.Component {
                 email: this.state.email,
             };
             let url = "http://localhost:9000/signup/resend_verification_code";
-            this.setState({awaitingResults: true});
+            this.setState({
+                awaitingResults: true,
+                messageId: -1,
+                resendingCode: true
+            });
             apiPostJsonRequest(url, params).then((result)=>{
                 let status = result[0];
                 let message = result[1].message;
                 let requester = result[1].requester;
                 this.verificationResultsHandler(status, message, requester, "resend");
             });
+        }
+    }
+
+    verificationResultsHandler(status, message, requester, type)
+    {
+        let resultFound = true;
+        if(status === 201)
+        {
+            if(type === "creation")
+            {
+                this.setState({created: true});
+                this.props.setMessages({
+                    messages: [{type: "success", message: "Account successfully created!"}],
+                    clearMessages: true
+                });
+                this.props.updateLoggedIn(requester);
+                this.closeModal();
+            }
+            else
+            {
+                // verification code resent
+                let output = message;
+                // if this is the second resend
+                if(this.state.resends === 1)
+                {
+                    output = output + " The maximum of 3 verification codes have been sent out";
+                }
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "info", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    resends: this.state.resends + 1
+                });
+            }
+        }
+        else if(status === 401)
+        {
+            if(message === "You are already logged in so you must have an account")
+            {
+                this.props.setMessages({
+                    messages: [{type: "info", message: "You are already logged in"}],
+                    clearMessages: true
+                });
+                this.closeModal();
+            }
+            else if(message === "Verification code is invalid.  Maximum verification attempts met")
+            {
+                let output = "Could not find a user with the given email and username " +
+                            "that has a valid active verification code.  Please try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    showVerificationPage: false,
+                    password: "",
+                    verificationAttempts: 0,
+                    resendingCode: false,
+                    resends: 0
+                });
+            }
+            else if(message === "Verification code is invalid.  The maximum of 3 verification attempts met for the current code")
+            {
+                let output ="The maximum of 3 verification attempts for the current code has been " +
+                            "reached.  Either try to resend the code or try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    verificationError: "Verification code is invalid",
+                    awaitingResults: false,
+                    resendingCode: false,
+                    lockVerificationInput: true,
+                    verificationAttempts: 3
+                });
+            }
+            else if(message === "Verification code is invalid")
+            {
+                this.setState({
+                    verificationError: message,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: this.state.verificationAttempts + 1
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+            this.props.updateLoggedIn(requester);
+        }
+        else if(status === 409)
+        {
+            // tested, should never really happen
+            this.props.updateLoggedIn(requester);
+            if(message === "Username already exists")
+            {
+                this.setState({
+                    usernameError: "This username is already in use",
+                    showVerificationPage: false,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else if(message === "Email already associated with a user")
+            {
+                this.setState({
+                    emailError: "The email provided is already in use",
+                    showVerificationPage: false,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+        }
+        else if(status === 400)
+        {
+            this.props.updateLoggedIn(requester);
+            if(message === "Username must be between 6-20 characters")
+            {
+                this.setState({
+                    usernameError: message,
+                    showVerificationPage: false,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else if(message === "The email provided is not a valid email address")
+            {
+                this.setState({
+                    emailError: message,
+                    showVerificationPage: false,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else if(message === "Verification code invalid")
+            {
+                this.setState({
+                    verificationError: message,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: this.state.verificationAttempts + 1
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+        }
+        else if(status === 404)
+        {
+            this.props.updateLoggedIn(requester);
+            if(message === "Could not find a user with the given email and username that has a valid active verification code")
+            {
+                let output = "Could not find a user with the given email and username " +
+                            "that has a valid active verification code.  Please try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    showVerificationPage: false,
+                    password: "",
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else if(message === "Could not verify user as a maximum of 3 attempts have been attempted for the verification code.")
+            {
+                let output ="The maximum of 3 verification attempts for the current code has been " +
+                            "reached.  Either try to resend the code or try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    verificationError: "Verification code is invalid",
+                    awaitingResults: false,
+                    resendingCode: false,
+                    lockVerificationInput: true,
+                    verificationAttempts: 3
+                });
+            }
+            else if(message === "Could not send another verification code as the maximum number of codes to send out (3) has been met")
+            {
+                // for resends
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: message, timeout: 0}],
+                    verificationError: "",
+                    awaitingResults: false,
+                    resendingCode: false,
+                    resends: 2
+                });
+
+            }
+            else if(message === "User could not be found")
+            {
+                // for resends
+                let output = message + " on the server.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    showVerificationPage: false,
+                    password: "",
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+        }
+        else if(status === 500)
+        {
+            if(message === "Verification email not sent")
+            {
+                let output = "An issue on the server caused the email to not be sent.  Please try again";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    showVerificationPage: false,
+                    password: "",
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else
+            {
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: message, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationError: ""
+                });
+            }
+            this.props.updateLoggedIn(requester);
+        }
+        else
+        {
+            resultFound = false;
+        }
+        if(!resultFound)
+        {
+            let output = "Some unexpected " + status + " code was returned by the server";
+            this.setState({
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: output, timeout: 0}],
+                awaitingResults: false,
+                resendingCode: false,
+                verificationError: ""
+            });
+            this.props.updateLoggedIn(requester);
         }
     }
 
@@ -873,10 +967,25 @@ class SignUpPopup extends React.Component {
     {
         let verificationInput = this.generateVerificationInput();
         // add text saying email sent to...
+        let resendButton = (
+            <div className={style.verificationButtonContainer}>
+                <button
+                    form="form2"
+                    value="create_account"
+                    className="submitButton"
+                    onClick={this.resendVerificationCode}
+                >RESEND VERIFICATION CODE
+                </button>
+            </div>
+        );
+        if(this.state.resends >= 2)
+        {
+            resendButton = "";
+        }
         let content = (
             <React.Fragment>
                 <div className="content">
-                    <form id="form1" onSubmit={this.validateRegistration} noValidate/>
+                    <form id="form2" onSubmit={this.validateRegistration} noValidate/>
                     <div className={`${style.infoTextContainer} ${style.verificationTextMargins}`}>
                         Verification email sent to:<br/>
                         <div className={style.emailText}>
@@ -890,22 +999,14 @@ class SignUpPopup extends React.Component {
                 <div className="actions">
                     <div className={style.verificationButtonContainer}>
                         <button
-                            form="form1"
+                            form="form2"
                             value="create_account"
                             className="submitButton"
                             onClick={this.validateVerification}
                         >CREATE YOUR ACCOUNT
                         </button>
                     </div>
-                    <div className={style.verificationButtonContainer}>
-                        <button
-                            form="form1"
-                            value="create_account"
-                            className="submitButton"
-                            onClick={this.resendVerificationCode}
-                        >Resend Verification Code
-                        </button>
-                    </div>
+                    {resendButton}
                     <div className={style.verificationButtonContainer}>
                         Close the pop up to cancel account creation
                     </div>
@@ -927,15 +1028,20 @@ class SignUpPopup extends React.Component {
             className = "verification";
             content = this.generateLoadingContent("Processing request...");
         }
-        else if(this.state.showVerificationPage && !this.state.awaitingResults)
+        else if(this.state.showVerificationPage && !this.state.awaitingResults && !this.state.resendingCode)
         {
             className = "verification";
             content = this.generateVerificationForm();
         }
-        else if(this.state.showVerificationPage && this.state.awaitingResults)
+        else if(this.state.showVerificationPage && this.state.awaitingResults && !this.state.resendingCode)
         {
             className = "verification";
             content = this.generateLoadingContent("Creating account...");
+        }
+        else if(this.state.showVerificationPage && this.state.awaitingResults && this.state.resendingCode)
+        {
+            className = "verification";
+            content = this.generateLoadingContent("Resending verification code...");
         }
 
 
@@ -955,10 +1061,10 @@ class SignUpPopup extends React.Component {
                         <Alert
                             messages={this.state.messages}
                             messageId={this.state.messageId}
-                            innerContainerStyle={{"z-index": "2", "font-size": "1.25em"}}
-                            symbolStyle={{"width": "5%", "margin-top": "3px"}}
+                            innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%"}}
+                            symbolStyle={{"width": "5%", "margin-top": "4px"}}
                             messageBoxStyle={{width: "86%"}}
-                            closeButtonStyle={{width: "5%", "margin-top": "3px"}}
+                            closeButtonStyle={{width: "5%", "margin-top": "4px"}}
                             />
                         <div className="header">
                             <h3 className="inlineH3"> Sign Up! </h3>
