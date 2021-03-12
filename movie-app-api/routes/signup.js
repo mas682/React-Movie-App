@@ -101,14 +101,14 @@ const createTempUser = async (cookie, req, res) =>
     let result;
     try
     {
-    result = await models.UserVerificationCodes.create({
-        userEmail: email,
-        username: username,
-        code: nanoid(),
-        password: password,
-        firstName: firstName,
-        lastName: lastName
-    });
+        result = await models.UserVerificationCodes.create({
+            userEmail: email,
+            username: username,
+            code: nanoid(),
+            password: password,
+            firstName: firstName,
+            lastName: lastName
+        });
     }
     catch (err)
     {
