@@ -1,5 +1,5 @@
 const tempVerificationCodes = (sequelize, DataTypes) => {
-    const UserVerificationCodes = sequelize.define('TempVerificationCodes', {
+    const TempVerificationCodes = sequelize.define('TempVerificationCodes', {
         id: {
           autoIncrement: true,
           type: DataTypes.INTEGER,

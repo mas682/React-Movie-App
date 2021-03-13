@@ -108,10 +108,9 @@ const checkLogin = (req, res) =>
     if(!valid) return;
     // find a user by their login
     models.User.findByLogin(req.body.username)
-    .then((user)=>{
+    .then(async (user)=>{
         if(user === null)
         {
-            // sending not found but may want to just say failed for security reasons?
             res.status(404).send({
                 message: "The username/email provided does not exist",
                 requester: ""
@@ -122,6 +121,25 @@ const checkLogin = (req, res) =>
         // may want to do something like salting, not really secure
         else if(user.password === password)
         {
+            console.log("DATE:");
+            console.log(new Date(user.createdAt.toString()).toString());
+            console.log(new Date().toString());
+            try
+            {
+                let result = await user.update({
+                    lastLogin: new Date(),
+                    passwordAttempts: 0,
+                    verificationAttempts: 0,
+                    verificationLocked: null
+                });
+                console.log(result);
+            }
+            catch (err)
+            {
+                let errorObject = JSON.parse(JSON.stringify(err));
+                console.log("Some unknown error occurred updaing the users(" + username") account on login: " + errorObject.name);
+                return;
+            }
             // create the valie to put into the cookie
             let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
             // create the cookie with expiration in 1 day
@@ -135,6 +153,18 @@ const checkLogin = (req, res) =>
         }
         else
         {
+            try
+            {
+                await user.update({
+                    passwordAttempts: user.passwordAttempts + 1
+                });
+            }
+            catch (err)
+            {
+                let errorObject = JSON.parse(JSON.stringify(err));
+                console.log("Some unknown error occurred updaing the users(" + username") account on login failure: " + errorObject.name);
+                return;
+            }
             // may want to just say login denied
             // also may want to keep track of failed login attemts and slow server
             // down or lock account if too many failed attempts
@@ -178,15 +208,18 @@ const forgotPassword = async (req, res) =>
         });
         return;
     }
-
-    // left off here...
-    // need to think this through more...
-    // what happens if a user tries say 7 times...let's the old code expire,
-    // and then code resets and they get 7 more tries...
-    // thus they can keep doing this over and over
-    // how can I keep track of this so that this does not happen?
-    // also need to lock account after so many failures
-    // keep track on server side of failed login attempts in a row..
+    else if(user.verificationLocked !== null)
+    {
+        // may not work...
+        if(new Date(user.verificationLocked) > new Date())
+        {
+            res.status(401).send({
+                message: "User account tempoarily locked due to too many verification attempts",
+                requester: ""
+            });
+            return;
+        }
+    }
 
     // see if the user already has a temp verification code out there
     let tempVerificationCode = await models.TempVerificationCodes.findOne({
@@ -206,7 +239,9 @@ const forgotPassword = async (req, res) =>
         if(tempUser.codesResent >= 2 && tempUser.verificationAttempts < 3)
         {
             res.status(404).send({
-                message: "Could not send another verification code as the maximum number of codes to send out (3) has been met",
+                message: "Could not send another verification code as the maximum number "
+                         + "of codes to send out (3) has been met.  Another code can be sent "
+                         + "within 10 minutes.",
                 requester: ""
             });
             return;
@@ -285,7 +320,6 @@ const forgotPassword = async (req, res) =>
             });
         }
     }, 5000);
-
 
 };
 

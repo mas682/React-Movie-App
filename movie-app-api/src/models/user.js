@@ -45,6 +45,19 @@ const user = (sequelize, DataTypes) => {
           allowNull: false,
           defaultValue: false
         },
+        verificationLocked: {
+            type: DataTypes.DATE
+        },
+        verificationAttempts: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
+        },
+        passwordAttempts: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
+        },
         lastLogin: {
           type: DataTypes.DATE,
           allowNull: false,
