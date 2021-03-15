@@ -50,6 +50,21 @@ const selectPath = (cookie, req, res, cookieValid) =>
                 checkLogin(req, res);
             }
         }
+        else if(req.params.type === "forgot_password")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                res.status(200).send({
+                    message: "User already logged in",
+                    requester: cookie.name,
+                });
+            }
+            else
+            {
+                forgotPassword(req, res);
+            }
+        }
     }
     else if(req.method === "GET")
     {
@@ -88,42 +103,26 @@ const checkLogin = (req, res) =>
     let password = req.body.password;
     let username = req.body.username;
     // set to 30 as if allowing email will have to be longer
-    // checks if this could be a username
     let valid = validateUsernameParameter(undefined, username, "", "");
     // if not a valid username, check to see if valid email
     if(!valid)
     {
-        valid = validateEmailParameter(undefined, username, "", "");
-        // if the email is also not valid
-        if(!valid)
-        {
-            res.status(400).send({
-                message: "Username or email address is invalid",
-                requester: ""
-            });
-            return;
-        }
+        valid = validateEmailParameter(undefined, username, res, "Username or email address is invalid");
+        if(!valid) return;
     }
     valid = validateStringParameter(res, password, 6, 15, "", "Password must be between 6-15 characters");
     if(!valid) return;
     // find a user by their login
     models.User.findByLogin(req.body.username)
     .then(async (user)=>{
-        if(user === null)
-        {
-            res.status(404).send({
-                message: "The username/email provided does not exist",
-                requester: ""
-            });
-            return;
-        }
+        // make sure the user is not null, not locked out of account
+        let userValid = await validateUser(res, username, user, true);
+        console.log("User valid: " + userValid);
+        if(!userValid) return;
         // if the password is correct
-        // may want to do something like salting, not really secure
-        else if(user.password === password)
+        if(user.password === password)
         {
-            console.log("DATE:");
-            console.log(new Date(user.createdAt.toString()).toString());
-            console.log(new Date().toString());
+            //console.log(new Date(user.createdAt.toString()).toString());
             try
             {
                 let result = await user.update({
@@ -132,13 +131,12 @@ const checkLogin = (req, res) =>
                     verificationAttempts: 0,
                     verificationLocked: null
                 });
-                console.log(result);
             }
             catch (err)
             {
                 let errorObject = JSON.parse(JSON.stringify(err));
-                console.log("Some unknown error occurred updaing the users(" + username") account on login: " + errorObject.name);
-                return;
+                console.log("Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name);
+                console.log(err);
             }
             // create the valie to put into the cookie
             let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
@@ -153,21 +151,7 @@ const checkLogin = (req, res) =>
         }
         else
         {
-            try
-            {
-                await user.update({
-                    passwordAttempts: user.passwordAttempts + 1
-                });
-            }
-            catch (err)
-            {
-                let errorObject = JSON.parse(JSON.stringify(err));
-                console.log("Some unknown error occurred updaing the users(" + username") account on login failure: " + errorObject.name);
-                return;
-            }
-            // may want to just say login denied
-            // also may want to keep track of failed login attemts and slow server
-            // down or lock account if too many failed attempts
+            await updateUserLoginAttempts(user, username);
             res.status(401).send({
                 message: "Incorrect password",
                 requester: ""
@@ -180,83 +164,28 @@ const checkLogin = (req, res) =>
 const forgotPassword = async (req, res) =>
 {
     let username = req.body.username;
-    // set to 30 as if allowing email will have to be longer
-    // checks if this could be a username
     let valid = validateUsernameParameter(undefined, username, "", "");
     // if not a valid username, check to see if valid email
     if(!valid)
     {
-        valid = validateEmailParameter(undefined, username, "", "");
-        // if the email is also not valid
-        if(!valid)
-        {
-            res.status(400).send({
-                message: "Username or email address is invalid",
-                requester: ""
-            });
-            return;
-        }
+        valid = validateEmailParameter(undefined, username, res, "Username or email address is invalid");
+        if(!valid) return;
     }
     // find a user by their login
     let user = await models.User.findByLogin(req.body.username);
-    if(user === null)
-    {
-        // sending not found but may want to just say failed for security reasons?
-        res.status(404).send({
-            message: "The username/email provided does not exist",
-            requester: ""
-        });
-        return;
-    }
-    else if(user.verificationLocked !== null)
-    {
-        // may not work...
-        if(new Date(user.verificationLocked) > new Date())
-        {
-            res.status(401).send({
-                message: "User account tempoarily locked due to too many verification attempts",
-                requester: ""
-            });
-            return;
-        }
-    }
-
-    // see if the user already has a temp verification code out there
-    let tempVerificationCode = await models.TempVerificationCodes.findOne({
-        where: {
-            userId: user.id,
-            expiresAt: {[Op.gte]: moment()},
-            [Op.or]: [
-                {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
-                {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
-            ]
-        }
-    });
-
-    let codeExists = false;
-    if(tempVerificationCode !== null)
-    {
-        if(tempUser.codesResent >= 2 && tempUser.verificationAttempts < 3)
-        {
-            res.status(404).send({
-                message: "Could not send another verification code as the maximum number "
-                         + "of codes to send out (3) has been met.  Another code can be sent "
-                         + "within 10 minutes.",
-                requester: ""
-            });
-            return;
-        }
-        codeExists = true;
-    }
-
-    let result;
+    let validationResult = await validateUserForVerification(user, res);
+    let result = validationResult.result;
+    if(!result) return;
+    // verification code record exists for the user?
+    let codeExists = validationResult.codeExists;
+    let tempVerificationCode = validationResult.tempVerificationCode;
     if(codeExists)
     {
         try
         {
             result = await tempVerificationCode.update({
                 code: nanoid(),
-                codesResent: tempUser.codesResent + 1,
+                codesResent: tempVerificationCode.codesResent + 1,
                 verificationAttempts: 0
             });
         }
@@ -268,6 +197,7 @@ const forgotPassword = async (req, res) =>
                     requester: ""
                 });
             console.log("Some unknown error occurred: " + errorObject.name);
+            console.log(err);
             return;
         }
     }
@@ -275,7 +205,7 @@ const forgotPassword = async (req, res) =>
     {
         try
         {
-            result = await tempVerificationCode.create({
+            result = await models.TempVerificationCodes.create({
                 userId: user.id,
                 code: nanoid()
             });
@@ -288,6 +218,7 @@ const forgotPassword = async (req, res) =>
                     requester: ""
                 });
             console.log("Some unknown error occurred: " + errorObject.name);
+            console.log(err);
             return;
         }
     }
@@ -320,7 +251,6 @@ const forgotPassword = async (req, res) =>
             });
         }
     }, 5000);
-
 };
 
 const sendVerificationEmail = async (verificationCode, email) =>
@@ -333,5 +263,132 @@ const sendVerificationEmail = async (verificationCode, email) =>
     let result = await emailHandler(email, header, text, html);
     return result;
 }
+
+// res is the response object
+// username - user being validated
+// user is the user object to valdiate
+// updateAttempts is a boolean to update user password attempts on failure
+const validateUser = async (res, username, user, updateAttempts) =>
+{
+    // false on failure
+    let result = true;
+    let message = "";
+    let status = 0;
+    // true depending on error found
+    let updateUser = false;
+    if(user === null)
+    {
+        message = "The username/email provided does not exist";
+        status = 404;
+        result = false;
+    }
+    else if(user.passwordAttempts >= 5)
+    {
+        message = "User account is currently locked due to too many login attempts";
+        status = 401;
+        updateUser = true;
+        result = false;
+    }
+    else if(user.verificationLocked !== null)
+    {
+        if(new Date(user.verificationLocked) > new Date())
+        {
+            message = "User account tempoarily locked due to too many verification attempts";
+            status = 401;
+            updateUser = true;
+            result = false;
+        }
+    }
+
+    if(!result)
+    {
+        if(updateAttempts && updateUser)
+        {
+            await updateUserLoginAttempts(user, username);
+        }
+        res.status(status).send({
+            message: message,
+            requester: ""
+        });
+    }
+    return result;
+}
+
+
+const updateUserLoginAttempts = async (user, username) => {
+    try
+    {
+        await user.update({
+            passwordAttempts: user.passwordAttempts + 1
+        });
+    }
+    catch (err)
+    {
+        let errorObject = JSON.parse(JSON.stringify(err));
+        console.log("Some unknown error occurred updaing the users(" + username + ") account on login failure: " + errorObject.name);
+        console.log(err);
+    }
+}
+
+const validateUserForVerification = async (user, res) => {
+    // false on failure
+    let result = true;
+    let message = "";
+    let status = 0;
+
+    if(user === null)
+    {
+        message = "The username/email provided does not exist";
+        status = 404;
+        result = false;
+    }
+    else if(user.verificationLocked !== null)
+    {
+        if(new Date(user.verificationLocked) > new Date())
+        {
+            message = "User account tempoarily locked due to too many verification attempts";
+            status = 401;
+            result = false;
+        }
+    }
+    // see if the user already has a temp verification code out there
+    let tempVerificationCode = await models.TempVerificationCodes.findOne({
+        where: {
+            userId: user.id,
+            expiresAt: {[Op.gte]: moment()},
+            [Op.or]: [
+                {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
+                {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
+            ]
+        }
+    });
+
+    let codeExists = false;
+    if(tempVerificationCode !== null)
+    {
+        if(tempVerificationCode.codesResent >= 2 && tempVerificationCode.verificationAttempts < 3)
+        {
+            status = 404;
+            message = "Could not send another verification code as the maximum number "
+                     + "of codes to send out (3) has been met.  Another code can be sent "
+                     + "within 10 minutes.";
+            result = false;
+        }
+        codeExists = true;
+    }
+    if(!result)
+    {
+        res.status(status).send({
+            message: message,
+            requester: ""
+        });
+    }
+    return {
+        result: result,
+        codeExists: codeExists,
+        tempVerificationCode: (codeExists) ? tempVerificationCode : null
+    };
+}
+
 
 export {login};
