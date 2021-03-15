@@ -5,6 +5,7 @@ import models, { sequelize } from '../src/models';
 const profileHandler = (req, res, next) => {
     // get the signed cookies in the request if there are any
     let cookie = req.signedCookies.MovieAppCookie;
+    cookie = (cookie === false) ? undefined : cookie;
     // variable to indicate if user logged in
     let valid = false;
     // if there is a signed cookie in the request
@@ -544,9 +545,16 @@ const updatePassword = async (cookie, req, res) =>
         if(user.password === req.body.oldPassword)
         {
             user.password = req.body.newPass;
+            user.lastLogin = new Date();
+            user.passwordUpdatedAt = new Date();
             let result = await user.save();
             // send a updated cookie
-            let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
+            let value = JSON.stringify({
+                name: user.username,
+                email: user.email,
+                id: user.id,
+                created: new Date()
+            });
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
             res.status(200).send("Password updated");
@@ -604,7 +612,12 @@ const updateInfo = (cookie, req, res) =>
             user.lastName = req.body.lastName;
             user.save().then((result) =>{
                 // below is used to update the cookie as the values have changed
-                let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
+                let value = JSON.stringify({
+                    name: user.username,
+                    email: user.email,
+                    id: user.id,
+                    created: new Date()
+                  });
                 res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
                 res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
                 res.status(200).send([user.username, user.email, user.firstName, user.lastName]);

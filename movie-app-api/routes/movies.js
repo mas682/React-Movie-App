@@ -7,6 +7,7 @@ const Op = require('Sequelize').Op;
 const movieHandler = (req, res, next) => {
 		// get the signed cookies in the request if there are any
 		let cookie = req.signedCookies.MovieAppCookie;
+		cookie = (cookie === false) ? undefined : cookie;
 		// variable to indicate if user logged in
 		let valid = false;
 		// if there is a signed cookie in the request

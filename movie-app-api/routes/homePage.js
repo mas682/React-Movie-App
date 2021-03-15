@@ -7,6 +7,7 @@ const homePage = (req, res, next) => {
     console.log(req.originalUrl);
     // get the signed cookies in the request if there are any
     let cookie = req.signedCookies.MovieAppCookie;
+    cookie = (cookie === false) ? undefined : cookie;
     // if there is a signed cookie in the request
     if(cookie != undefined)
     {

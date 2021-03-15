@@ -2,7 +2,8 @@ import models, { sequelize } from '../src/models';
 import {verifyLogin} from './globals.js';
 import {customAlphabet} from 'nanoid';
 const Op = require('Sequelize').Op;
-import {validateStringParameter, validateEmailParameter, validateUsernameParameter} from './globals.js';
+import {validateStringParameter, validateEmailParameter, validateUsernameParameter,
+        validateIntegerParameter} from './globals.js';
 import {emailHandler} from './EmailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
@@ -12,14 +13,22 @@ const moment = require('moment');
 const login = (req, res, next) => {
     // get the signed cookies in the request if there are any
     let cookie = req.signedCookies.MovieAppCookie;
+    cookie = (cookie === false) ? undefined : cookie;
     // if there is a signed cookie in the request
     if(cookie !== undefined)
     {
+        console.log(cookie);
         // see if the cookie has a valid user
         verifyLogin(cookie).then((cookieValid) =>
         {
-            console.log("Type: " + req.params.type);
-            selectPath(JSON.parse(cookie), req, res, cookieValid);
+            if(cookieValid)
+            {
+                selectPath(JSON.parse(cookie), req, res, cookieValid);
+            }
+            else
+            {
+                selectPath(undefined, req, res, false);
+            }
         });
     }
     // if no cookie was found
@@ -48,6 +57,8 @@ const selectPath = (cookie, req, res, cookieValid) =>
             else
             {
                 checkLogin(req, res);
+                //forgotPassword(req, res);
+                //validatePassCode(req, res);
             }
         }
         else if(req.params.type === "forgot_password")
@@ -65,6 +76,21 @@ const selectPath = (cookie, req, res, cookieValid) =>
                 forgotPassword(req, res);
             }
         }
+        else if(req.params.type === "validate_passcode")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                res.status(200).send({
+                    message: "User already logged in",
+                    requester: cookie.name,
+                });
+            }
+            else
+            {
+                validatePassCode(req, res);
+            }
+        }
     }
     else if(req.method === "GET")
     {
@@ -80,7 +106,7 @@ const selectPath = (cookie, req, res, cookieValid) =>
             }
             else
             {
-                res.status(200).send({
+                res.status(401).send({
                     message: "User not logged in",
                     requester: ""
                 });
@@ -139,7 +165,12 @@ const checkLogin = (req, res) =>
                 console.log(err);
             }
             // create the valie to put into the cookie
-            let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
+            let value = JSON.stringify({
+                name: user.username,
+                email: user.email,
+                id: user.id,
+                created: new Date()
+              });
             // create the cookie with expiration in 1 day
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
@@ -160,7 +191,6 @@ const checkLogin = (req, res) =>
     });
 };
 
-
 const forgotPassword = async (req, res) =>
 {
     let username = req.body.username;
@@ -173,7 +203,7 @@ const forgotPassword = async (req, res) =>
     }
     // find a user by their login
     let user = await models.User.findByLogin(req.body.username);
-    let validationResult = await validateUserForVerification(user, res);
+    let validationResult = await validateUserForVerification(user, res, true);
     let result = validationResult.result;
     if(!result) return;
     // verification code record exists for the user?
@@ -253,6 +283,120 @@ const forgotPassword = async (req, res) =>
     }, 5000);
 };
 
+
+const validatePassCode = async (req, res) =>
+{
+    let username = req.body.username;
+    let verificationCode = req.body.verificationCode;
+    verificationCode = '384377';
+    let valid = validateUsernameParameter(undefined, username, "", "");
+    // if not a valid username, check to see if valid email
+    if(!valid)
+    {
+        valid = validateEmailParameter(undefined, username, res, "Username or email address is invalid");
+        if(!valid) return;
+    }
+    valid = validateStringParameter(res, verificationCode, 6, 6, "", "Verification code invalid");
+    if(!valid) return;
+    // validate the value passed does not contain any characters, only numbers
+    valid = validateIntegerParameter(res, verificationCode, "", "Verification code invalid", undefined, undefined);
+    if(!valid) return;
+    // find a user by their login
+    let user = await models.User.findByLogin(req.body.username);
+    let validationResult = await validateUserForVerification(user, res, false);
+    let result = validationResult.result;
+    // if a valid validation record does not exist, return
+    if(!result) return;
+    let tempVerificationCode = validationResult.tempVerificationCode;
+    if(tempVerificationCode.code !== verificationCode)
+    {
+        try {
+            // increment verification attempts for the current code
+            await tempVerificationCode.update({
+                verificationAttempts: tempVerificationCode.verificationAttempts + 1
+            });
+            // increment the users total verification attempts since last verified
+            let obj = {verificationAttempts: user.verificationAttempts + 1};
+            if(user.verificationLocked !== null && user.verificationAttempts >= 9)
+            {
+                // if past verificationLocked and verificationAttempts still 9 or bigger,
+                // reset to 1 and null verification locked
+                if(new Date(user.verificationLocked) < new Date())
+                {
+                    obj["verificationAttempts"] = 1;
+                    obj["verificationLocked"] = null;
+                }
+            }
+            // if at max verification attempts, lock account from verification attempts for 1 hour
+            else if((user.verificationAttempts + 1) >= 9)
+            {
+                obj["verificationLocked"] = moment(new Date()).add(60, 'm').toDate();
+            }
+            await user.update(obj);
+        }
+        catch (err)
+        {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            console.log("Error updating a users verification attempts");
+            console.log(errorObject);
+            console.log(err);
+        }
+        let message = "Verification code is invalid";
+        if(user.verificationAttempts >= 9)
+        {
+            message = "Verification code is invalid.  User account tempoarily locked due to too many verification attempts";
+        }
+        else if((tempVerificationCode.codesResent >= 2 && tempVerificationCode.verificationAttempts >= 3))
+        {
+            message = "Verification code is invalid.  Verification code is no longer valid.  User may try to " +
+                      "get a new verification code in 10 minutes as the limit of (3) codes have been sent out recently";
+        }
+        else if(tempVerificationCode.verificationAttempts >= 3)
+        {
+            message = "Verification code is invalid.  Verification code is no longer valid so user must "
+                      + "request that a new verification code is sent out.";
+        }
+        res.status(401).send({
+            message: message,
+            requester: ""
+        });
+    }
+    else
+    {
+        try {
+            await tempVerificationCode.destroy();
+            let obj = {
+                verificationAttempts: 0,
+                verificationLocked: null,
+                passwordAttempts: 0
+            };
+            await user.update(obj);
+        }
+        catch (err)
+        {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            console.log("Error updating a users verification attempts");
+            console.log(errorObject);
+            console.log(err);
+        }
+        let value = JSON.stringify({
+            name: user.username,
+            email: user.email,
+            id: user.id,
+            created: new Date()
+          });
+        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+        res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
+        console.log("Adding 5 second delay");
+        setTimeout(() =>{
+            res.status(200).send({
+                message: "User authenticated",
+                requester: username
+            });
+        }, 5000);
+    }
+}
+
 const sendVerificationEmail = async (verificationCode, email) =>
 {
     let html = "<b>Movie Fantatics!</b>" +
@@ -289,16 +433,6 @@ const validateUser = async (res, username, user, updateAttempts) =>
         updateUser = true;
         result = false;
     }
-    else if(user.verificationLocked !== null)
-    {
-        if(new Date(user.verificationLocked) > new Date())
-        {
-            message = "User account tempoarily locked due to too many verification attempts";
-            status = 401;
-            updateUser = true;
-            result = false;
-        }
-    }
 
     if(!result)
     {
@@ -330,11 +464,13 @@ const updateUserLoginAttempts = async (user, username) => {
     }
 }
 
-const validateUserForVerification = async (user, res) => {
+const validateUserForVerification = async (user, res, resendCode) => {
     // false on failure
     let result = true;
     let message = "";
     let status = 0;
+    let codeExists = false;
+    let tempVerificationCode = null;
 
     if(user === null)
     {
@@ -351,30 +487,47 @@ const validateUserForVerification = async (user, res) => {
             result = false;
         }
     }
-    // see if the user already has a temp verification code out there
-    let tempVerificationCode = await models.TempVerificationCodes.findOne({
-        where: {
-            userId: user.id,
-            expiresAt: {[Op.gte]: moment()},
-            [Op.or]: [
-                {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
-                {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
-            ]
-        }
-    });
 
-    let codeExists = false;
-    if(tempVerificationCode !== null)
+    // if result not set to false yet
+    if(result)
     {
-        if(tempVerificationCode.codesResent >= 2 && tempVerificationCode.verificationAttempts < 3)
+        // see if the user already has a temp verification code out there
+        tempVerificationCode = await models.TempVerificationCodes.findOne({
+            where: {
+                userId: user.id,
+                expiresAt: {[Op.gte]: moment()},
+                [Op.or]: [
+                    {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
+                    {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
+                ]
+            }
+        });
+        if(tempVerificationCode !== null)
+        {
+            // if attempting to resend the code
+            if(resendCode && tempVerificationCode.codesResent >= 2)
+            {
+                status = 404;
+                message = "Could not send another verification code as the maximum number "
+                         + "of codes to send out (3) has been met.  Another code can be sent "
+                         + "within 10 minutes.";
+                result = false;
+            }
+            else if(!resendCode && tempVerificationCode.verificationAttempts >= 3)
+            {
+                // if the code is no longer valid
+                status = 404;
+                message = "Could not find a user with the given email and username that has a valid active verification code";
+                result = false;
+            }
+            codeExists = true;
+        }
+        else if(tempVerificationCode === null && !resendCode)
         {
             status = 404;
-            message = "Could not send another verification code as the maximum number "
-                     + "of codes to send out (3) has been met.  Another code can be sent "
-                     + "within 10 minutes.";
+            message = "Could not find a user with the given email and username that has a valid active verification code";
             result = false;
         }
-        codeExists = true;
     }
     if(!result)
     {

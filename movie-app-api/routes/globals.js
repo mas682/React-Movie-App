@@ -4,10 +4,11 @@
 
 var express = require('express');
 import models, { sequelize } from '../src/models';
-var cookieParser = require('cookie-parser');
+//var cookieParser = require('cookie-parser');
 var router = express.Router();
+const moment = require('moment');
 // used to sign the cookie
-router.use(cookieParser('somesecrettosigncookie'));
+//router.use(cookieParser('somesecrettosigncookie'));
 
 
 // function to be used to verify that the cookie is valid
@@ -16,8 +17,10 @@ router.use(cookieParser('somesecrettosigncookie'));
 const verifyLogin= async (cookie)=>
 {
     let valid = false;
+    console.log(cookie);
     cookie = JSON.parse(cookie);
-    if(cookie != undefined)
+    console.log(cookie);
+    if(cookie !== undefined)
     {
         // should be in try catch
         // get the values from the cookie
@@ -25,10 +28,27 @@ const verifyLogin= async (cookie)=>
         console.log("Authenticating: " + cookie.name);
         await models.User.findByLogin(cookie.name)
         .then((user)=>{
-            if(user != null)
+            console.log(user);
+            if(user !== null)
             {
-                valid = true;
-                console.log("Cookie valid");
+                // if the password was changed since the cookie was created
+                if(new Date(cookie.created) < new Date(user.passwordUpdatedAt))
+                {
+                    console.log("Cookie invalid");
+                }
+                else if(moment(new Date(user.lastLogin)).add(1, 'd').toDate() < new Date())
+                {
+                    console.log("Cookie invalid");
+                }
+                else if(user.passwordAttempts >= 5)
+                {
+                    console.log("Cookie invalid");
+                }
+                else
+                {
+                    valid = true;
+                    console.log("Cookie valid");
+                }
             }
             else
             {
