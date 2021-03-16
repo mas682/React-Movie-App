@@ -1,0 +1,799 @@
+import React from 'react';
+import { Link, Redirect } from 'react-router-dom';
+import Popup from 'reactjs-popup';
+import './css/SignIn/ForgotPassword.css';
+import style from './css/SignIn/ForgotPassword.module.css';
+import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import Alert from './Alert.js';
+
+// documentation for PopUp https://react-popup.elazizi.com/component-api/
+class ForgotPasswordPopup extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            open: true,
+            username: "",
+            usernameError: "",
+            messages: [],
+            messageId: -1,
+            showVerificationPage: false,
+            verificationCode: "",
+            verificationError: "",
+            verificationAttempts: 0,
+            awaitingResults: false,
+            lockVerificationInput: false,
+            resends: 0,
+            resendingCode: false,
+            authenticated: false
+        };
+
+        this.closeModal = this.closeModal.bind(this);
+        this.changeHandler = this.changeHandler.bind(this);
+        this.requestVerificationCode = this.requestVerificationCode.bind(this);
+        this.verificationResultsHandler = this.verificationResultsHandler.bind(this);
+        this.showLoginPopUp = this.showLoginPopUp.bind(this);
+        this.generateUserNameInput = this.generateUserNameInput.bind(this);
+        this.generateUserNameInputForm = this.generateUserNameInputForm.bind(this);
+        this.generateVerificationForm = this.generateVerificationForm.bind(this);
+        this.generateVerificationInput = this.generateVerificationInput.bind(this);
+
+        this.validateVerification = this.validateVerification.bind(this);
+        this.requestCodeResultsHandler = this.requestCodeResultsHandler.bind(this);
+        this.rerequestVerificationCode = this.rerequestVerificationCode.bind(this);
+        this.cancelRegistration = this.cancelRegistration.bind(this);
+    }
+
+    closeModal() {
+        // if on the verification page and user not just created
+        if((this.state.showVerificationPage || this.state.awaitingResults) && !this.state.created)
+        {
+            //this.cancelRegistration();
+        }
+        this.setState({open: false});
+        this.props.removeFunction();
+    }
+
+    showLoginPopUp() {
+        this.props.showLoginPopUp();
+        this.closeModal();
+    }
+
+    // function called when CREATE AN ACCOUNT button is clicked
+    // to validate that the fields are correct and handle sending
+    // data to server
+    async requestVerificationCode(event) {
+        event.preventDefault();
+        let error = false;
+        // checks to see if email in format string@string.string
+        let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.state.email);
+
+        if(this.state.username.length < 6 || this.state.username.length > 30)
+        {
+            this.setState({usernameError: "Username or email must be between 6-30 characters"});
+            error = true;
+        }
+        else if(this.state.username.length > 20)
+        {
+            let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.state.username);
+            if(!validEmail || !this.state.username.includes("@"))
+            {
+                this.setState({usernameError: "If the entered value is an email, the email provided " +
+                                " is not a valid email address.  Otherwise, the username cannot be "
+                                + "more than 20 characters."});
+                error = true;
+            }
+        }
+        else
+        {
+            this.setState({usernameError: ""});
+        }
+
+        if(!error)
+        {
+            let params = {
+                username: this.state.username
+            };
+            let url = "http://localhost:9000/login/forgot_password";
+            this.setState({
+                awaitingResults: true,
+                messageId: -1
+            });
+            apiPostJsonRequest(url, params).then((result)=>{
+                let status = result[0];
+                let message = result[1].message;
+                let requester = result[1].requester;
+                this.requestCodeResultsHandler(status, message, requester);
+            });
+        }
+    }
+
+    requestCodeResultsHandler(status, message, requester)
+    {
+        let resultFound = true;
+        alert(message);
+        if(status === 201)
+        {
+            this.setState({
+                showVerificationPage: true,
+                awaitingResults: false
+            });
+            this.props.updateLoggedIn(requester);
+        }
+        else if(status === 401)
+        {
+            // "User account tempoarily locked due to too many verification attempts"
+
+            this.props.setMessages({
+                messages: [{type: "info", message: "You are already logged in"}],
+                clearMessages: true
+            });
+            this.props.updateLoggedIn(requester);
+            this.closeModal();
+        }
+        else if(status === 400)
+        {
+            this.props.updateLoggedIn(requester);
+            if(message === "Username or email address is invalid")
+            {
+                this.setState({
+                    usernameError: message,
+                    awaitingResults: false
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+        }
+        else if(status === 404)
+        {
+            this.props.updateLoggedIn(requester);
+            if(message === "The username/email provided does not exist")
+            {
+                this.setState({
+                    usernameError: message,
+                    awaitingResults: false
+                });
+            }
+            else if(message === "The login path sent to the server does not exist")
+            {
+                this.setState({
+                    usernameError: message,
+                    awaitingResults: false
+                });
+            }
+            else
+            {
+                /*
+                    "Could not send another verification code as the maximum number "
+                     + "of codes to send out (3) has been met.  Another code can be sent "
+                     + "within 10 minutes.";
+                */
+                this.setState({
+                    messages: [{type: "failure", message: message, timeout: 0}],
+                    messageId: this.state.messageId + 1,
+                    awaitingResults: false,
+                    resends: 2
+                });
+            }
+        }
+        else if(status === 500)
+        {
+            this.setState({
+                lastNameError: "",
+                usernameError: "",
+                emailError: "",
+                passwordError: "",
+                firstNameError: "",
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: message, timeout: 0}],
+                awaitingResults: false
+            });
+            this.props.updateLoggedIn(requester);
+        }
+        else
+        {
+            resultFound = false;
+        }
+        if(!resultFound)
+        {
+            let output = "Some unexpected " + status + " code was returned by the server";
+            this.setState({
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: output, timeout: 0}],
+                awaitingResults: false,
+                resendingCode: false,
+                verificationError: ""
+            });
+            this.props.updateLoggedIn(requester);
+        }
+    }
+
+
+    // function called when CREATE AN ACCOUNT button is clicked
+    // to validate that the fields are correct and handle sending
+    // data to server
+    async validateVerification(event) {
+        event.preventDefault();
+        let error = false;
+        if(this.state.verificationCode.length < 6)
+        {
+            this.setState({verificationError: "The verification code must be 6 digits"});
+            error = true;
+        }
+        else if(isNaN(this.state.verificationCode))
+        {
+            this.setState({verificationError: "The verification code is invalid"});
+            error = true;
+        }
+
+        if(!error)
+        {
+            let params = {
+                username: this.state.username,
+                email: this.state.email,
+                verificationCode: this.state.verificationCode
+            };
+            let url = "http://localhost:9000/signup/create_account";
+            this.setState({
+                awaitingResults: true,
+                messageId: -1
+            });
+            apiPostJsonRequest(url, params).then((result)=>{
+                let status = result[0];
+                let message = result[1].message;
+                let requester = result[1].requester;
+                this.verificationResultsHandler(status, message, requester, "creation");
+            });
+        }
+    }
+
+    cancelRegistration() {
+        if((this.state.resends < 2)
+            || (this.state.resends === 2 && this.state.verificationAttempts < 3))
+        {
+            let params = {
+                username: this.state.username,
+                email: this.state.email,
+                verificationCode: this.state.verificationCode
+            };
+            let url = "http://localhost:9000/signup/cancel_registration";
+            // not waiting for the result as this is really a optimization for the server
+            apiPostJsonRequest(url, params).then((result)=>{
+                let status = result[0];
+                let message = result[1].message;
+            });
+        }
+    }
+
+    async rerequestVerificationCode(event) {
+        event.preventDefault();
+        let error = false;
+        if(!error)
+        {
+            let params = {
+                username: this.state.username,
+                email: this.state.email,
+            };
+            let url = "http://localhost:9000/signup/resend_verification_code";
+            this.setState({
+                awaitingResults: true,
+                messageId: -1,
+                resendingCode: true
+            });
+            apiPostJsonRequest(url, params).then((result)=>{
+                let status = result[0];
+                let message = result[1].message;
+                let requester = result[1].requester;
+                this.verificationResultsHandler(status, message, requester, "resend");
+            });
+        }
+    }
+
+    verificationResultsHandler(status, message, requester, type)
+    {
+        let resultFound = true;
+        if(status === 201)
+        {
+            if(type === "creation")
+            {
+                this.setState({created: true});
+                this.props.setMessages({
+                    messages: [{type: "success", message: "Account successfully created!"}],
+                    clearMessages: true
+                });
+                this.props.updateLoggedIn(requester);
+                this.closeModal();
+            }
+            else
+            {
+                // verification code resent
+                let output = message;
+                // if this is the second resend
+                if(this.state.resends === 1)
+                {
+                    output = output + " The maximum of 3 verification codes have been sent out";
+                }
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "info", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    resends: this.state.resends + 1
+                });
+            }
+        }
+        else if(status === 401)
+        {
+            if(message === "You are already logged in so you must have an account")
+            {
+                this.props.setMessages({
+                    messages: [{type: "info", message: "You are already logged in"}],
+                    clearMessages: true
+                });
+                this.closeModal();
+            }
+            else if(message === "Verification code is invalid.  Maximum verification attempts met")
+            {
+                let output = "Could not find a user with the given email and username " +
+                            "that has a valid active verification code.  Please try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    showVerificationPage: false,
+                    password: "",
+                    verificationAttempts: 0,
+                    resendingCode: false,
+                    resends: 0
+                });
+            }
+            else if(message === "Verification code is invalid.  The maximum of 3 verification attempts met for the current code")
+            {
+                let output ="The maximum of 3 verification attempts for the current code has been " +
+                            "reached.  Either try to resend the code or try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    verificationError: "Verification code is invalid",
+                    awaitingResults: false,
+                    resendingCode: false,
+                    lockVerificationInput: true,
+                    verificationAttempts: 3
+                });
+            }
+            else if(message === "Verification code is invalid")
+            {
+                this.setState({
+                    verificationError: message,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: this.state.verificationAttempts + 1
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+            this.props.updateLoggedIn(requester);
+        }
+        else if(status === 409)
+        {
+            // tested, should never really happen
+            this.props.updateLoggedIn(requester);
+            if(message === "Username already exists")
+            {
+                this.setState({
+                    usernameError: "This username is already in use",
+                    showVerificationPage: false,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else if(message === "Email already associated with a user")
+            {
+                this.setState({
+                    emailError: "The email provided is already in use",
+                    showVerificationPage: false,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+        }
+        else if(status === 400)
+        {
+            this.props.updateLoggedIn(requester);
+            if(message === "Username must be between 6-20 characters")
+            {
+                this.setState({
+                    usernameError: message,
+                    showVerificationPage: false,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else if(message === "The email provided is not a valid email address")
+            {
+                this.setState({
+                    emailError: message,
+                    showVerificationPage: false,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else if(message === "Verification code invalid")
+            {
+                this.setState({
+                    verificationError: message,
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationAttempts: this.state.verificationAttempts + 1
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+        }
+        else if(status === 404)
+        {
+            this.props.updateLoggedIn(requester);
+            if(message === "Could not find a user with the given email and username that has a valid active verification code")
+            {
+                let output = "Could not find a user with the given email and username " +
+                            "that has a valid active verification code.  Please try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    showVerificationPage: false,
+                    password: "",
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else if(message === "Could not verify user as a maximum of 3 attempts have been attempted for the verification code.")
+            {
+                let output ="The maximum of 3 verification attempts for the current code has been " +
+                            "reached.  Either try to resend the code or try to sign up again.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    verificationError: "Verification code is invalid",
+                    awaitingResults: false,
+                    resendingCode: false,
+                    lockVerificationInput: true,
+                    verificationAttempts: 3
+                });
+            }
+            else if(message === "Could not send another verification code as the maximum number of codes to send out (3) has been met")
+            {
+                // for resends
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: message, timeout: 0}],
+                    verificationError: "",
+                    awaitingResults: false,
+                    resendingCode: false,
+                    resends: 2
+                });
+
+            }
+            else if(message === "User could not be found")
+            {
+                // for resends
+                let output = message + " on the server.";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    showVerificationPage: false,
+                    password: "",
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+        }
+        else if(status === 500)
+        {
+            if(message === "Verification email not sent")
+            {
+                let output = "An issue on the server caused the email to not be sent.  Please try again";
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    showVerificationPage: false,
+                    password: "",
+                    verificationAttempts: 0,
+                    resends: 0
+                });
+            }
+            else
+            {
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: message, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationError: ""
+                });
+            }
+            this.props.updateLoggedIn(requester);
+        }
+        else
+        {
+            resultFound = false;
+        }
+        if(!resultFound)
+        {
+            let output = "Some unexpected " + status + " code was returned by the server";
+            this.setState({
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: output, timeout: 0}],
+                awaitingResults: false,
+                resendingCode: false,
+                verificationError: ""
+            });
+            this.props.updateLoggedIn(requester);
+        }
+    }
+
+    changeHandler(event) {
+        let name = event.target.name;
+        let value = event.target.value;
+        this.setState({[name]: value});
+    }
+
+    generateUserNameInput()
+    {
+        let usernameInput =  (
+            <React.Fragment>
+                <label>
+                    <h4 className={style.inputFieldH4} id="validLabel">Username</h4>
+                </label>
+                <input
+                    type="text"
+                    name="username"
+                    form = "form1"
+                    maxLength = {30}
+                    className="inputFieldBoxLong validInputBox"
+                    onChange={this.changeHandler}
+                    value={this.state.username}
+                />
+            </React.Fragment>);
+        if(this.state.usernameError)
+        {
+            usernameInput = (
+                <React.Fragment>
+                    <label>
+                        <h4 className={`${style.inputFieldH4} errorLabel`}>Username</h4>
+                    </label>
+                    <input
+                        type="text"
+                        name="username"
+                        form = "form1"
+                        maxLength = {30}
+                        className="inputFieldBoxLong inputBoxError"
+                        onChange={this.changeHandler}
+                        value={this.state.username}
+                    />
+                    <small className="errorTextSmall">{this.state.usernameError}</small>
+                </React.Fragment>);
+        }
+        return usernameInput;
+    }
+
+    generateVerificationInput()
+    {
+        let verificationInput =  (
+            <React.Fragment>
+                <label>
+                    <h4 className={style.inputFieldH4} id="validLabel">Verification Code:</h4>
+                </label>
+                <div className={style.verificationInputContainer}>
+                    <input
+                        type="text"
+                        name="verificationCode"
+                        form = "form2"
+                        maxLength = {6}
+                        disabled={this.state.lockVerificationInput}
+                        className={`inputFieldBoxLong validInputBox ${style.verificationInput}`}
+                        onChange={this.changeHandler}
+                    />
+                </div>
+            </React.Fragment>);
+        if(this.state.verificationError)
+        {
+            verificationInput = (
+                <React.Fragment>
+                    <label>
+                        <h4 className={`${style.inputFieldH4} errorLabel`}>Verification Code:</h4>
+                    </label>
+                    <div className={style.verificationInputContainer}>
+                        <input
+                            type="text"
+                            name="verificationCode"
+                            form = "form2"
+                            maxLength = {6}
+                            disabled={this.state.lockVerificationInput}
+                            className={`inputFieldBoxLong inputBoxError ${style.verificationInput}`}
+                            onChange={this.changeHandler}
+                        />
+                    </div>
+                    <small className="errorTextSmall">{this.state.verificationError}</small>
+                </React.Fragment>);
+        }
+        return verificationInput;
+    }
+
+    generateUserNameInputForm()
+    {
+        let usernameInput = this.generateUserNameInput();
+
+        return (
+            <React.Fragment>
+                <div className="content">
+                    <form id="form1" onSubmit={this.requestVerificationCode} noValidate/>
+                    <div className="inputFieldContainer">
+                        {usernameInput}
+                    </div>
+                </div>
+                <div className="actions">
+                    <button
+                        form="form1"
+                        value="create_account"
+                        className="submitButton"
+                        onClick={this.requestVerificationCode}
+                    >Send Verification Code
+                    </button>
+                </div>
+            </React.Fragment>);
+    }
+
+    generateLoadingContent(message)
+    {
+        let content =  (
+            <React.Fragment>
+                <div className="content">
+                    <div className={style.infoTextContainer}>
+                        {message}<br/>
+                    </div>
+                    <div className={style.loadingContainer}>
+                        <div className={style.loader}></div>
+                    </div>
+                </div>
+            </React.Fragment>
+        );
+        return content;
+    }
+
+    generateVerificationForm()
+    {
+        let verificationInput = this.generateVerificationInput();
+        // add text saying email sent to...
+        let resendButton = (
+            <div className={style.verificationButtonContainer}>
+                <button
+                    form="form2"
+                    value="create_account"
+                    className="submitButton"
+                    onClick={this.rerequestVerificationCode}
+                >RESEND VERIFICATION CODE
+                </button>
+            </div>
+        );
+        if(this.state.resends >= 2)
+        {
+            resendButton = "";
+        }
+        let content = (
+            <React.Fragment>
+                <div className="content">
+                    <form id="form2" onSubmit={this.requestVerificationCode} noValidate/>
+                    <div className={`${style.infoTextContainer} ${style.verificationTextMargins}`}>
+                        Verification email sent!<br/>
+                    </div>
+                    <div className={style.verificationContainer}>
+                        {verificationInput}
+                    </div>
+                </div>
+                <div className="actions">
+                    <div className={style.verificationButtonContainer}>
+                        <button
+                            form="form2"
+                            value="create_account"
+                            className="submitButton"
+                            onClick={this.validateVerification}
+                        >VERIFY ACCOUNT
+                        </button>
+                    </div>
+                    {resendButton}
+                </div>
+            </React.Fragment>);
+        return content;
+    }
+
+
+    render() {
+        let content;
+        let className = "forgotPass";
+        if(!this.state.showVerificationPage && !this.state.awaitingResults)
+        {
+            content = this.generateUserNameInputForm();
+        }
+        else if(!this.state.showVerificationPage && this.state.awaitingResults)
+        {
+            className = "verification";
+            content = this.generateLoadingContent("Processing request...");
+        }
+        else if(this.state.showVerificationPage && !this.state.awaitingResults && !this.state.resendingCode)
+        {
+            className = "verification";
+            content = this.generateVerificationForm();
+        }
+        else if(this.state.showVerificationPage && this.state.awaitingResults && !this.state.resendingCode)
+        {
+            className = "verification";
+            content = this.generateLoadingContent("Verifying code...");
+        }
+        else if(this.state.showVerificationPage && this.state.awaitingResults && this.state.resendingCode)
+        {
+            className = "verification";
+            content = this.generateLoadingContent("Resending verification code...");
+        }
+
+
+        return (
+            <div>
+                <Popup
+                    open={this.state.open}
+                    closeOnDocumentClick
+                    onClose={this.closeModal}
+                    className={className}
+                    >
+                    <div className="modal">
+                        {/* &times is the multiplication symbol (x) --> */}
+                        <a className="close" onClick={this.closeModal}>
+                        &times;
+                        </a>
+                        <Alert
+                            messages={this.state.messages}
+                            messageId={this.state.messageId}
+                            innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%"}}
+                            symbolStyle={{"width": "5%", "margin-top": "4px"}}
+                            messageBoxStyle={{width: "86%"}}
+                            closeButtonStyle={{width: "5%", "margin-top": "4px"}}
+                            />
+                        <div className="header">
+                            <h3 className="inlineH3"> Forgot Password </h3>
+                        </div>
+                        {content}
+                    </div>
+                </Popup>
+            </div>
+        );
+    }
+}
+
+
+export default ForgotPasswordPopup;

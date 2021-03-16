@@ -27,6 +27,7 @@ class SignInPopup extends React.Component {
 		this.validateForm = this.validateForm.bind(this);
 		this.loginResultsHandler = this.loginResultsHandler.bind(this);
 		this.showSignUpForm = this.showSignUpForm.bind(this);
+		this.showForgotPassword = this.showForgotPassword.bind(this);
 	}
 
 	openModal() {
@@ -42,6 +43,12 @@ class SignInPopup extends React.Component {
 	showSignUpForm()
 	{
 		this.props.showSignUpForm();
+		this.closeModal();
+	}
+
+	showForgotPassword()
+	{
+		this.props.showForgotPassword();
 		this.closeModal();
 	}
 
@@ -245,7 +252,7 @@ class SignInPopup extends React.Component {
 							<label className={style.rememberText}>Remember Me
 								<input className="checkbox" type="checkbox"></input>
 							</label>
-							<div className={style.forgotText}><a className="logInLink" href="">Forgot Password?</a></div>
+							<div className={style.forgotText}><button className="logInLink" onClick={this.showForgotPassword}>Forgot Password?</button></div>
 						</div>
 						<div className="newHere">
 							<div className={style.forgotText}><button className="logInLink" onClick={this.showSignUpForm}>New Here? Sign Up!</button></div>

@@ -44,6 +44,7 @@ const selectPath = (cookie, req, res, cookieValid) =>
     let routeFound = false;
     if(req.method === "POST")
     {
+        console.log(req.params.type);
         if(req.params.type === undefined)
         {
             routeFound = true;
@@ -194,6 +195,7 @@ const checkLogin = (req, res) =>
 const forgotPassword = async (req, res) =>
 {
     let username = req.body.username;
+    console.log(username);
     let valid = validateUsernameParameter(undefined, username, "", "");
     // if not a valid username, check to see if valid email
     if(!valid)
@@ -260,6 +262,7 @@ const forgotPassword = async (req, res) =>
             message: "User verification code could not be generated",
             requester: requester
         });
+        return;
     }
 
     let emailResult = await sendVerificationEmail(result.code, user.email);
@@ -280,7 +283,7 @@ const forgotPassword = async (req, res) =>
                 requester: ""
             });
         }
-    }, 5000);
+    }, 2000);
 };
 
 

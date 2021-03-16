@@ -17,7 +17,7 @@ router.get('/', function(req, res, next) {
 });
 
 // used when trying to login
-router.post('/login', function(req, res, next) {
+router.post('/login/:type', function(req, res, next) {
     login(req, res, next);
 });
 

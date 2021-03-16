@@ -9,6 +9,7 @@ import './css/header.css';
 import SignInPopup from './SignIn.js';
 import SignUpPopup from './SignUp.js';
 import SearchDropDown from './SearchDropDown.js';
+import ForgotPasswordPopup from './ForgotPasswordPopUp.js';
 
 class Header extends React.Component {
     constructor(props){
@@ -20,6 +21,7 @@ class Header extends React.Component {
             loggedIn: this.props.loggedIn,
             displaySignIn: this.props.showLoginPopUp,
             displaySignUp: false,
+            displayForgotPassword: false,
             // used to cause a redirect to a users profile page when they post a
             // new review
             redirectToProfile: false,
@@ -54,9 +56,14 @@ class Header extends React.Component {
         this.searchCloseHandler = this.searchCloseHandler.bind(this);
     }
 
-    signUpRemoveFunction = (username) =>
+    signUpRemoveFunction = () =>
     {
         this.setState({displaySignUp: false});
+    }
+
+    forgotPasswordDisplayFunction = () =>
+    {
+        this.setState({displayForgotPassword: !this.state.displayForgotPassword});
     }
 
     showSignUpForm()
@@ -785,6 +792,7 @@ class Header extends React.Component {
                 signInForm = <SignInPopup
                                 showSignUpForm={this.showSignUpForm}
                                 removeFunction={this.signInRemoveFunction}
+                                showForgotPassword={this.forgotPasswordDisplayFunction}
                             />
             }
             let signUpForm = "";
@@ -792,6 +800,16 @@ class Header extends React.Component {
             {
                 signUpForm = <SignUpPopup
                                 removeFunction={this.signUpRemoveFunction}
+                                updateLoggedIn={this.props.updateLoggedIn}
+                                setMessages={this.props.setMessages}
+                                showLoginPopUp={this.props.showLoginPopUpFunction}
+                            />
+            }
+            let forgotForm = "";
+            if(this.state.displayForgotPassword)
+            {
+                forgotForm = <ForgotPasswordPopup
+                                removeFunction={this.forgotPasswordDisplayFunction}
                                 updateLoggedIn={this.props.updateLoggedIn}
                                 setMessages={this.props.setMessages}
                                 showLoginPopUp={this.props.showLoginPopUpFunction}
@@ -843,6 +861,7 @@ class Header extends React.Component {
                     {dropDownContent}
                     {signInForm}
                     {signUpForm}
+                    {forgotForm}
                     {redirect}
                     {redirectToSearch}
                 </div>
