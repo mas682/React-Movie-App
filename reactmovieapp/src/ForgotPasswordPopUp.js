@@ -37,19 +37,13 @@ class ForgotPasswordPopup extends React.Component {
         this.generateVerificationForm = this.generateVerificationForm.bind(this);
         this.generateVerificationInput = this.generateVerificationInput.bind(this);
 
-        this.validateVerification = this.validateVerification.bind(this);
+        this.sendVerification = this.sendVerification.bind(this);
         this.requestCodeResultsHandler = this.requestCodeResultsHandler.bind(this);
         this.rerequestVerificationCode = this.rerequestVerificationCode.bind(this);
-        this.cancelRegistration = this.cancelRegistration.bind(this);
     }
 
     closeModal() {
-        // if on the verification page and user not just created
-        if((this.state.showVerificationPage || this.state.awaitingResults) && !this.state.created)
-        {
-            //this.cancelRegistration();
-        }
-        this.setState({open: false});
+        alert("Close Modal called");
         this.props.removeFunction();
     }
 
@@ -213,7 +207,7 @@ class ForgotPasswordPopup extends React.Component {
     // function called when CREATE AN ACCOUNT button is clicked
     // to validate that the fields are correct and handle sending
     // data to server
-    async validateVerification(event) {
+    async sendVerification(event) {
         event.preventDefault();
         let error = false;
         if(this.state.verificationCode.length < 6)
@@ -230,11 +224,10 @@ class ForgotPasswordPopup extends React.Component {
         if(!error)
         {
             let params = {
-                username: this.state.username,
-                email: this.state.email,
+                username: "admin313",
                 verificationCode: this.state.verificationCode
             };
-            let url = "http://localhost:9000/signup/create_account";
+            let url = "http://localhost:9000/login/validate_passcode";
             this.setState({
                 awaitingResults: true,
                 messageId: -1
@@ -243,25 +236,7 @@ class ForgotPasswordPopup extends React.Component {
                 let status = result[0];
                 let message = result[1].message;
                 let requester = result[1].requester;
-                this.verificationResultsHandler(status, message, requester, "creation");
-            });
-        }
-    }
-
-    cancelRegistration() {
-        if((this.state.resends < 2)
-            || (this.state.resends === 2 && this.state.verificationAttempts < 3))
-        {
-            let params = {
-                username: this.state.username,
-                email: this.state.email,
-                verificationCode: this.state.verificationCode
-            };
-            let url = "http://localhost:9000/signup/cancel_registration";
-            // not waiting for the result as this is really a optimization for the server
-            apiPostJsonRequest(url, params).then((result)=>{
-                let status = result[0];
-                let message = result[1].message;
+                this.verificationResultsHandler(status, message, requester, "verification");
             });
         }
     }
@@ -290,42 +265,43 @@ class ForgotPasswordPopup extends React.Component {
         }
     }
 
-    verificationResultsHandler(status, message, requester, type)
+    verificationResultsHandler(status, message, requester)
     {
         let resultFound = true;
-        if(status === 201)
+        if(status === 200)
         {
-            if(type === "creation")
-            {
-                this.setState({created: true});
-                this.props.setMessages({
-                    messages: [{type: "success", message: "Account successfully created!"}],
-                    clearMessages: true
-                });
-                this.props.updateLoggedIn(requester);
-                this.closeModal();
-            }
-            else
-            {
-                // verification code resent
-                let output = message;
-                // if this is the second resend
-                if(this.state.resends === 1)
-                {
-                    output = output + " The maximum of 3 verification codes have been sent out";
-                }
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "info", message: output, timeout: 0}],
-                    awaitingResults: false,
-                    resendingCode: false,
-                    resends: this.state.resends + 1
-                });
-            }
+            this.setState({created: true});
+            this.props.setMessages({
+                messages: [{type: "success", message: "User successfully authenticated!"}],
+                clearMessages: true
+            });
+            this.props.updateLoggedIn(requester);
+            this.closeModal();
         }
         else if(status === 401)
         {
-            if(message === "You are already logged in so you must have an account")
+            alert(message);
+            this.props.updateLoggedIn(requester);
+            // need to see what incrementing verificationAttempts does
+            // but seems to work
+            if(message === "Verification code is invalid")
+            {
+                this.setState({
+                    verificationAttempts: this.state.verificationAttempts + 1,
+                    verificationError: message,
+                    resendingCode: false,
+                    awaitingResults: false
+                });
+            }
+            // tested
+            else if(message === "User account tempoarily locked due to too many verification attempts")
+            {
+                this.props.setMessages({
+                    messages: [{type: "failure", message: message}]
+                });
+                this.closeModal();
+            }
+            else if(message === "User already logged in")
             {
                 this.props.setMessages({
                     messages: [{type: "info", message: "You are already logged in"}],
@@ -333,85 +309,45 @@ class ForgotPasswordPopup extends React.Component {
                 });
                 this.closeModal();
             }
-            else if(message === "Verification code is invalid.  Maximum verification attempts met")
+            // tested
+            else if(message === "Verification code is invalid.  User account tempoarily locked due to too many verification attempts")
             {
-                let output = "Could not find a user with the given email and username " +
-                            "that has a valid active verification code.  Please try to sign up again.";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    awaitingResults: false,
-                    showVerificationPage: false,
-                    password: "",
-                    verificationAttempts: 0,
-                    resendingCode: false,
-                    resends: 0
+                this.props.setMessages({
+                    messages: [{type: "failure", message: message}]
                 });
+                this.closeModal();
             }
-            else if(message === "Verification code is invalid.  The maximum of 3 verification attempts met for the current code")
-            {
-                let output ="The maximum of 3 verification attempts for the current code has been " +
-                            "reached.  Either try to resend the code or try to sign up again.";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    verificationError: "Verification code is invalid",
-                    awaitingResults: false,
-                    resendingCode: false,
-                    lockVerificationInput: true,
-                    verificationAttempts: 3
-                });
-            }
-            else if(message === "Verification code is invalid")
+            // tested
+            else if(message === "Verification code is invalid.  Verification code is no longer valid so user must "
+                      + "request that a new verification code is sent out.")
             {
                 this.setState({
                     verificationError: message,
                     awaitingResults: false,
                     resendingCode: false,
-                    verificationAttempts: this.state.verificationAttempts + 1
+                    lockVerificationInput: true
                 });
+            }
+            // tested
+            else if(message === "Verification code is invalid.  Verification code is no longer valid.  User may try to " +
+                      "get a new verification code in 10 minutes as the limit of (3) codes have been sent out recently")
+            {
+                this.props.setMessages({
+                    messages: [{type: "failure", message: message}]
+                });
+                this.closeModal();
             }
             else
             {
                 resultFound = false;
             }
-            this.props.updateLoggedIn(requester);
-        }
-        else if(status === 409)
-        {
-            // tested, should never really happen
-            this.props.updateLoggedIn(requester);
-            if(message === "Username already exists")
-            {
-                this.setState({
-                    usernameError: "This username is already in use",
-                    showVerificationPage: false,
-                    awaitingResults: false,
-                    resendingCode: false,
-                    verificationAttempts: 0,
-                    resends: 0
-                });
-            }
-            else if(message === "Email already associated with a user")
-            {
-                this.setState({
-                    emailError: "The email provided is already in use",
-                    showVerificationPage: false,
-                    awaitingResults: false,
-                    resendingCode: false,
-                    verificationAttempts: 0,
-                    resends: 0
-                });
-            }
-            else
-            {
-                resultFound = false;
-            }
+
         }
         else if(status === 400)
         {
             this.props.updateLoggedIn(requester);
-            if(message === "Username must be between 6-20 characters")
+            // tested
+            if(message === "Username or email address is invalid")
             {
                 this.setState({
                     usernameError: message,
@@ -422,24 +358,13 @@ class ForgotPasswordPopup extends React.Component {
                     resends: 0
                 });
             }
-            else if(message === "The email provided is not a valid email address")
-            {
-                this.setState({
-                    emailError: message,
-                    showVerificationPage: false,
-                    awaitingResults: false,
-                    resendingCode: false,
-                    verificationAttempts: 0,
-                    resends: 0
-                });
-            }
+            // tested
             else if(message === "Verification code invalid")
             {
                 this.setState({
                     verificationError: message,
                     awaitingResults: false,
-                    resendingCode: false,
-                    verificationAttempts: this.state.verificationAttempts + 1
+                    resendingCode: false
                 });
             }
             else
@@ -450,59 +375,16 @@ class ForgotPasswordPopup extends React.Component {
         else if(status === 404)
         {
             this.props.updateLoggedIn(requester);
-            if(message === "Could not find a user with the given email and username that has a valid active verification code")
+            // tested both scenarios
+            if(message === "Could not find a user with the given email and username that has a valid active verification code"
+                || message === "The username or email provided does not exist")
             {
-                let output = "Could not find a user with the given email and username " +
-                            "that has a valid active verification code.  Please try to sign up again.";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    awaitingResults: false,
-                    resendingCode: false,
-                    showVerificationPage: false,
-                    password: "",
-                    verificationAttempts: 0,
-                    resends: 0
-                });
-            }
-            else if(message === "Could not verify user as a maximum of 3 attempts have been attempted for the verification code.")
-            {
-                let output ="The maximum of 3 verification attempts for the current code has been " +
-                            "reached.  Either try to resend the code or try to sign up again.";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
-                    verificationError: "Verification code is invalid",
-                    awaitingResults: false,
-                    resendingCode: false,
-                    lockVerificationInput: true,
-                    verificationAttempts: 3
-                });
-            }
-            else if(message === "Could not send another verification code as the maximum number of codes to send out (3) has been met")
-            {
-                // for resends
                 this.setState({
                     messageId: this.state.messageId + 1,
                     messages: [{type: "failure", message: message, timeout: 0}],
-                    verificationError: "",
-                    awaitingResults: false,
-                    resendingCode: false,
-                    resends: 2
-                });
-
-            }
-            else if(message === "User could not be found")
-            {
-                // for resends
-                let output = message + " on the server.";
-                this.setState({
-                    messageId: this.state.messageId + 1,
-                    messages: [{type: "failure", message: output, timeout: 0}],
                     awaitingResults: false,
                     resendingCode: false,
                     showVerificationPage: false,
-                    password: "",
                     verificationAttempts: 0,
                     resends: 0
                 });
@@ -523,7 +405,6 @@ class ForgotPasswordPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     showVerificationPage: false,
-                    password: "",
                     verificationAttempts: 0,
                     resends: 0
                 });
@@ -723,7 +604,7 @@ class ForgotPasswordPopup extends React.Component {
                             form="form2"
                             value="create_account"
                             className="submitButton"
-                            onClick={this.validateVerification}
+                            onClick={this.sendVerification}
                         >VERIFY ACCOUNT
                         </button>
                     </div>

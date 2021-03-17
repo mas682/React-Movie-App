@@ -35,6 +35,7 @@ class Header extends React.Component {
         this.signInRemoveFunction = this.signInRemoveFunction.bind(this);
         this.showSignUpForm = this.showSignUpForm.bind(this);
         this.signUpRemoveFunction = this.signUpRemoveFunction.bind(this);
+        this.forgotPasswordDisplayFunction = this.forgotPasswordDisplayFunction.bind(this);
         this.logout = this.logout.bind(this);
         this.getSearchSuggestions = this.getSearchSuggestions.bind(this);
         this.reviewSuccessFunction = this.reviewSuccessFunction.bind(this);

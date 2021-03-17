@@ -67,7 +67,7 @@ const selectPath = (cookie, req, res, cookieValid) =>
             routeFound = true;
             if(cookieValid)
             {
-                res.status(200).send({
+                res.status(401).send({
                     message: "User already logged in",
                     requester: cookie.name,
                 });
@@ -80,9 +80,11 @@ const selectPath = (cookie, req, res, cookieValid) =>
         else if(req.params.type === "validate_passcode")
         {
             routeFound = true;
+            console.log("Here");
+            console.log(cookieValid);
             if(cookieValid)
             {
-                res.status(200).send({
+                res.status(401).send({
                     message: "User already logged in",
                     requester: cookie.name,
                 });
@@ -291,12 +293,11 @@ const validatePassCode = async (req, res) =>
 {
     let username = req.body.username;
     let verificationCode = req.body.verificationCode;
-    verificationCode = '384377';
     let valid = validateUsernameParameter(undefined, username, "", "");
     // if not a valid username, check to see if valid email
     if(!valid)
     {
-        valid = validateEmailParameter(undefined, username, res, "Username or email address is invalid");
+        valid = validateEmailParameter(res, username, "", "Username or email address is invalid");
         if(!valid) return;
     }
     valid = validateStringParameter(res, verificationCode, 6, 6, "", "Verification code invalid");
@@ -371,7 +372,8 @@ const validatePassCode = async (req, res) =>
             let obj = {
                 verificationAttempts: 0,
                 verificationLocked: null,
-                passwordAttempts: 0
+                passwordAttempts: 0,
+                lastLogin: new Date()
             };
             await user.update(obj);
         }
@@ -390,13 +392,13 @@ const validatePassCode = async (req, res) =>
           });
         res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
         res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
-        console.log("Adding 5 second delay");
+        console.log("Adding 2 second delay");
         setTimeout(() =>{
             res.status(200).send({
                 message: "User authenticated",
                 requester: username
             });
-        }, 5000);
+        }, 2000);
     }
 }
 
@@ -477,7 +479,7 @@ const validateUserForVerification = async (user, res, resendCode) => {
 
     if(user === null)
     {
-        message = "The username/email provided does not exist";
+        message = "The username or email provided does not exist";
         status = 404;
         result = false;
     }
@@ -498,15 +500,17 @@ const validateUserForVerification = async (user, res, resendCode) => {
         tempVerificationCode = await models.TempVerificationCodes.findOne({
             where: {
                 userId: user.id,
-                expiresAt: {[Op.gte]: moment()},
-                [Op.or]: [
-                    {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
-                    {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
-                ]
+                expiresAt: {[Op.gte]: new Date()},
+                //[Op.or]: [
+                //    {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
+                //    {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
+                //]
             }
         });
         if(tempVerificationCode !== null)
         {
+            console.log(new Date(tempVerificationCode.expiresAt).toString());
+            console.log(new Date().toString());
             // if attempting to resend the code
             if(resendCode && tempVerificationCode.codesResent >= 2)
             {
