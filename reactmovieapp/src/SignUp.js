@@ -1065,6 +1065,7 @@ class SignUpPopup extends React.Component {
                             symbolStyle={{"width": "5%", "margin-top": "4px"}}
                             messageBoxStyle={{width: "86%"}}
                             closeButtonStyle={{width: "5%", "margin-top": "4px"}}
+                            outterContainerStyle={{width:"calc(100% - 10px)", height: "calc(100% - 10px)"}}
                             />
                         <div className="header">
                             <h3 className="inlineH3"> Sign Up! </h3>

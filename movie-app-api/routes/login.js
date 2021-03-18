@@ -202,7 +202,7 @@ const forgotPassword = async (req, res) =>
     // if not a valid username, check to see if valid email
     if(!valid)
     {
-        valid = validateEmailParameter(undefined, username, res, "Username or email address is invalid");
+        valid = validateEmailParameter(res, username, "", "Username or email address is invalid");
         if(!valid) return;
     }
     // find a user by their login
@@ -273,6 +273,7 @@ const forgotPassword = async (req, res) =>
     setTimeout(() =>{
         if(emailResult)
         {
+            let message = "Verification email sent";
             res.status(201).send({
                 message: "Verification email sent.",
                 requester: ""
