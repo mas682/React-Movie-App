@@ -129,11 +129,14 @@ class ForgotPasswordPopup extends React.Component {
         {
             let state = {
                 showVerificationPage: true,
-                awaitingResults: false
+                awaitingResults: false,
+                messages: [{type: "success", message: message, timeout: 5000}],
+                messageId: this.state.messageId + 1,
+                lockVerificationInput: false
             };
             if(resend)
             {
-                state["messages"] = [{type: "info", message: message, timeout: 5000}];
+                state["messages"] = [{type: "success", message: message, timeout: 5000}];
                 state["messageId"] = this.state.messageId + 1;
                 state["resends"] = this.state.resends + 1;
                 state["resendingCode"] = false;
@@ -276,6 +279,10 @@ class ForgotPasswordPopup extends React.Component {
     async sendVerification(event) {
         event.preventDefault();
         let error = false;
+        if(this.state.lockVerificationInput)
+        {
+            return;
+        }
         if(this.state.verificationCode.length < 6)
         {
             this.setState({verificationError: "The verification code must be 6 digits"});
@@ -290,7 +297,7 @@ class ForgotPasswordPopup extends React.Component {
         if(!error)
         {
             let params = {
-                username: "admin313",
+                username: this.state.username,
                 verificationCode: this.state.verificationCode
             };
             let url = "http://localhost:9000/login/validate_passcode";
@@ -330,6 +337,7 @@ class ForgotPasswordPopup extends React.Component {
                     verificationError: message,
                     resendingCode: false,
                     awaitingResults: false,
+                    verificationCode: ""
                 });
             }
             // tested
@@ -362,11 +370,16 @@ class ForgotPasswordPopup extends React.Component {
             else if(message === "Verification code is invalid.  Verification code is no longer valid so user must "
                       + "request that a new verification code is sent out.")
             {
+                let output = " Verification code is no longer valid so user must "
+                            + "request that a new verification code is sent out."
                 this.setState({
-                    verificationError: message,
+                    verificationError: "Verification code is invalid",
+                    messages: [{type: "failure", message: output, timeout: 0}],
+                    messageId: this.state.messageId + 1,
                     awaitingResults: false,
                     resendingCode: false,
-                    lockVerificationInput: true
+                    lockVerificationInput: true,
+                    verificationCode: ""
                 });
             }
             // tested
@@ -396,7 +409,8 @@ class ForgotPasswordPopup extends React.Component {
                     showVerificationPage: false,
                     awaitingResults: false,
                     resendingCode: false,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             // tested
@@ -405,7 +419,8 @@ class ForgotPasswordPopup extends React.Component {
                 this.setState({
                     verificationError: message,
                     awaitingResults: false,
-                    resendingCode: false
+                    resendingCode: false,
+                    verificationCode: ""
                 });
             }
             else
@@ -426,7 +441,8 @@ class ForgotPasswordPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     showVerificationPage: false,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             else
@@ -446,7 +462,8 @@ class ForgotPasswordPopup extends React.Component {
                 messages: [{type: "failure", message: output, timeout: 0}],
                 awaitingResults: false,
                 resendingCode: false,
-                verificationError: ""
+                verificationError: "",
+                verificationCode: ""
             });
             this.props.updateLoggedIn(requester);
         }
@@ -461,38 +478,38 @@ class ForgotPasswordPopup extends React.Component {
     generateUserNameInput()
     {
         let usernameInput =  (
-            <React.Fragment>
-                <label>
-                    <h4 className={style.inputFieldH4} id="validLabel">Username</h4>
-                </label>
-                <input
-                    type="text"
-                    name="username"
-                    form = "form1"
-                    maxLength = {30}
-                    className="inputFieldBoxLong validInputBox"
-                    onChange={this.changeHandler}
-                    value={this.state.username}
-                />
-            </React.Fragment>);
-        if(this.state.usernameError)
-        {
-            usernameInput = (
-                <React.Fragment>
-                    <label>
-                        <h4 className={`${style.inputFieldH4} errorLabel`}>Username</h4>
-                    </label>
+                <div className={style.usernameInputContainer}>
+                    <div className={style.inputLabel}>
+                        <h4 className={style.inputFieldH4} id="validLabel">Username</h4>
+                    </div>
                     <input
                         type="text"
                         name="username"
                         form = "form1"
                         maxLength = {30}
-                        className="inputFieldBoxLong inputBoxError"
+                        className={`inputFieldBoxLong validInputBox ${style.usernameInput}`}
                         onChange={this.changeHandler}
                         value={this.state.username}
                     />
-                    <small className="errorTextSmall">{this.state.usernameError}</small>
-                </React.Fragment>);
+                </div>);
+        if(this.state.usernameError)
+        {
+            usernameInput = (
+                <div className={style.usernameInputContainer}>
+                    <div className={style.inputLabel}>
+                        <h4 className={`${style.inputFieldH4} errorLabel`}>Username</h4>
+                    </div>
+                    <input
+                        type="text"
+                        name="username"
+                        form = "form1"
+                        maxLength = {30}
+                        className={`inputFieldBoxLong inputBoxError ${style.usernameInput}`}
+                        onChange={this.changeHandler}
+                        value={this.state.username}
+                    />
+                    <small className={`errorTextSmall ${style.errorText}`}>{this.state.usernameError}</small>
+                </div>);
         }
         return usernameInput;
     }
@@ -509,6 +526,7 @@ class ForgotPasswordPopup extends React.Component {
                         type="text"
                         name="verificationCode"
                         form = "form2"
+                        autocomplete="off"
                         maxLength = {6}
                         disabled={this.state.lockVerificationInput}
                         className={`inputFieldBoxLong validInputBox ${style.verificationInput}`}
@@ -529,6 +547,7 @@ class ForgotPasswordPopup extends React.Component {
                             name="verificationCode"
                             form = "form2"
                             maxLength = {6}
+                            autocomplete="off"
                             disabled={this.state.lockVerificationInput}
                             className={`inputFieldBoxLong inputBoxError ${style.verificationInput}`}
                             onChange={this.changeHandler}
@@ -604,9 +623,6 @@ class ForgotPasswordPopup extends React.Component {
             <React.Fragment>
                 <div className="content">
                     <form id="form2" onSubmit={this.requestVerificationCode} noValidate/>
-                    <div className={`${style.infoTextContainer} ${style.verificationTextMargins}`}>
-                        Verification email sent!<br/>
-                    </div>
                     <div className={style.verificationContainer}>
                         {verificationInput}
                     </div>

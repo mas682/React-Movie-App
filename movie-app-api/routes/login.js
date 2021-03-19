@@ -349,7 +349,7 @@ const validatePassCode = async (req, res) =>
         let message = "Verification code is invalid";
         if(user.verificationAttempts >= 9)
         {
-            message = "Verification code is invalid.  User account tempoarily locked due to too many verification attempts";
+            message = "Verification code is invalid.  User account temporarily locked due to too many verification attempts";
         }
         else if((tempVerificationCode.codesResent >= 2 && tempVerificationCode.verificationAttempts >= 3))
         {
@@ -488,7 +488,7 @@ const validateUserForVerification = async (user, res, resendCode) => {
     {
         if(new Date(user.verificationLocked) > new Date())
         {
-            message = "User account tempoarily locked due to too many verification attempts";
+            message = "User account temporarily locked due to too many verification attempts";
             status = 401;
             result = false;
         }
@@ -502,10 +502,6 @@ const validateUserForVerification = async (user, res, resendCode) => {
             where: {
                 userId: user.id,
                 expiresAt: {[Op.gte]: new Date()},
-                //[Op.or]: [
-                //    {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
-                //    {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
-                //]
             }
         });
         if(tempVerificationCode !== null)
