@@ -73,6 +73,11 @@ const selectPath = (cookie, req, res, cookieValid) =>
 				foundNoCookie = true;
 			}
 		}
+		else if(req.params.type === "featured")
+		{
+			routeFound = true;
+			getFeaturedMovies(cookie, req, res, cookieValid);
+		}
 	}
 	else if(req.method === "POST")
 	{
@@ -472,6 +477,18 @@ const removeFromWatched = async (cookie, req, res) =>
             requester: username
         });
     }
+};
+
+const getFeaturedMovies = async(cookie, req, res, cookieValid) =>
+{
+	let username = (cookieValid) ? cookie.name : "";
+	let movies = await models.FeaturedMovies.getMovies(models);
+	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
+	res.status(200).send({
+		message: "Featured movies successfully found",
+		requester: username,
+		movies: movies
+	});
 };
 
 

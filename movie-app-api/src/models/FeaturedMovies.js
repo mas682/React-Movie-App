@@ -24,7 +24,7 @@ const featuredMovies = (sequelize, DataTypes) => {
         tableName: 'FeaturedMovies',
         schema: 'public',
         hasTrigger: true,
-        timestamps: true,
+        timestamps: false,
         indexes: [
           {
             name: "FeaturedMovies_pkey",
@@ -39,6 +39,21 @@ const featuredMovies = (sequelize, DataTypes) => {
     FeaturedMovies.associate = models => {
         // each FeaturedMovie is associated with a movie
         FeaturedMovies.belongsTo(models.Movies, {as: "FeaturedMovie", foreignKey: "movieId", onDelete: 'CASCADE'});
+    };
+
+    FeaturedMovies.getMovies = async (models) =>
+    {
+        let featuredMovies = await FeaturedMovies.findAll({
+            include: [{
+                model: models.Movies,
+                as: "FeaturedMovie"
+            }]
+        });
+        let movies = [];
+        featuredMovies.forEach((movie) =>{
+            movies.push(movie.FeaturedMovie);
+        });
+        return movies;
     };
 
     return FeaturedMovies;

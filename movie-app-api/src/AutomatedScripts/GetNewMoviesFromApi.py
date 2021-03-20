@@ -133,6 +133,7 @@ def controllerFunction():
     totalResultCount = 0
     totalMoviesInserted = 0
     genreInsertionErrors = 0
+    skippedMovies = 0
     startTime = time.time()
     # try to connect to the database
     connectionResult = connect(successfulOutput, failedOutput)
@@ -168,6 +169,10 @@ def controllerFunction():
                                 movieDetailsResult = movieDetails.get("result")
                                 # need to update this to be able to do a update string for movies
                                 parseResults = parseMovieResults(movieDetailsResult, releaseDate)
+                                if not parseResults["result"]:
+                                    skippedMovies = skippedMovies + 1
+                                    failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database as it had no imdb id\n")
+                                    continue
                                 insertResult = insertMovie(cursor, parseResults["movieInsert"], parseResults["movieUpdate"], successfulOutput, failedOutput)
                                 if insertResult == -1:
                                     failedOutput.append("Failed to create the movie with the ID of " + str(id) + " in the database due to it already existing\n")
@@ -221,7 +226,7 @@ def controllerFunction():
     successfulOutput.append("Total movies inserted into database successfully: " + str(totalMoviesInserted) + "\n")
     successfulOutput.append("Total number of genre insertion errors: " + str(genreInsertionErrors) + "\n")
     successfulOutput.append("Time elapsed: " + str(endTime) + " seconds\n")
-    if totalMoviesInserted != totalResultCount or genreInsertionErrors > 0:
+    if totalMoviesInserted != (totalResultCount - skippedMovies) or genreInsertionErrors > 0:
         outputFile.writelines(failedOutput)
     else:
         outputFile.writelines(successfulOutput)
@@ -232,8 +237,10 @@ def controllerFunction():
 # function to send api call to get the list of movies
 def getMovies(page, successfulOutput, failedOutput, apiKey):
         day = date.today()
-        #day = date(2020, 9, 4)
+        day = date(2021, 1, 8)
         day = day.strftime("%Y-%m-%d")
+        successfulOutput.append("Retrieving movies for the date of: " + day + "\n")
+        failedOutput.append("Retrieving movies for the date of: " + day + "\n")
         startDate = day
         endDate = day
         url = ("https://api.themoviedb.org/3/discover/movie?"
@@ -323,7 +330,11 @@ def getMovieDetails(movieId, successfulOutput, failedOutput, apiKey):
         return {"success":False}
 
 def parseMovieResults(result, releaseDate):
+
     # get the release dates, their types, and the rating of the movie
+    imdb_id = result.get("imdb_id", None)
+    if(imdb_id == None or imdb_id == ""):
+        return {"result":False}
     releaseDates = result.get("release_dates")
     releaseDateByType = {}
     rating = getReleaseDates(releaseDates, releaseDateByType)
@@ -343,7 +354,7 @@ def parseMovieResults(result, releaseDate):
     movieDetails = {}
     parseMovieDetails(result, movieDetails)
     movieValue = generateSQL(releaseDateByType, rating, trailer, director, rentProviders, buyProviders, externalIds, genres, movieDetails, releaseDate)
-    return {"movieInsert":movieValue["insert"], "movieUpdate":movieValue["update"], "genres":genres}
+    return {"result":True, "movieInsert":movieValue["insert"], "movieUpdate":movieValue["update"], "genres":genres}
 
 
 # dict is the object to pass in, or None

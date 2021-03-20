@@ -290,14 +290,14 @@ class MovieDisplay extends React.Component {
         {
             let message = (
                 <div>
-                    No message to display
+                    No image to display
                 </div>
             );
             if(this.state.type === "search")
             {
                 message = (
                     <div className={style.emptyMovieTitle}>
-                        {this.state.movie.title} aaaaaaaaadfasdfasdfasd sadfasdfasd
+                        {this.state.movie.title}
                     </div>);
             }
             return (

@@ -59,7 +59,7 @@ class Landing extends React.Component {
 	/* for testing */
 	async getMovies()
 	{
-		let url = "http://localhost:9000/search/movies";
+		let url = "http://localhost:9000/movies/featured";
 		let result = await apiGetJsonRequest(url);
 		console.log(result);
         let status = result.[0];
@@ -76,17 +76,20 @@ class Landing extends React.Component {
 		let startDate = moment(date).format('YYYY-MM-DD');
 		date = new Date();
 		let endDate = moment(date).format('YYYY-MM-DD');
-		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&release_date_lte=" + endDate + "&sort=release_date_desc&offset=0&max=24";
+		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&release_date_lte=" + endDate + "&sort=release_date_desc&poster_is_null=false&offset=0&max=24";
 		result = await apiGetJsonRequest(url);
 		status = result.[0];
 		message = result[1].message;
 		requester = result[1].requester;
+		console.log(result[1].movies);
 		this.setState({
 			newReleases: result[1].movies
 		});
 		date = new Date();
+		date.setDate(23);
+		startDate = moment(date).format('YYYY-MM-DD');
 		// for testing just use start date
-		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&sort=release_date_asc&offset=0&max=24";
+		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&sort=release_date_asc&poster_is_null=false&offset=0&max=24";
 		result = await apiGetJsonRequest(url);
 		status = result.[0];
 		message = result[1].message;

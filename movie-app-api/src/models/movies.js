@@ -554,6 +554,16 @@ const movie = (sequelize, DataTypes) => {
         return undefined;
     }
 
+    const generatePosterFilter = (posterArray) =>
+    {
+        let tempArray = [];
+        if(posterArray.length > 0)
+        {
+            return {poster: posterArray[0]};
+        }
+        return undefined;
+    }
+
     const generateRunTimeFilters = (runTimeArray, greaterThanTime, lessThanTime) =>
     {
         if(greaterThanTime.length > 0 && lessThanTime.length > 0)
@@ -603,6 +613,8 @@ const movie = (sequelize, DataTypes) => {
         let runTimeArray = [];
         let lessThanTime = [];
         let greaterThanTime = [];
+        // post variables
+        let posterArray = [];
         let result = false;
         let titleToSearchForFound = false;
         while(counter < numKeys)
@@ -657,6 +669,22 @@ const movie = (sequelize, DataTypes) => {
             {
                 sortKeys.push(key);
             }
+            else if(key.startsWith("poster_is_null"))
+            {
+                let values = value.split(",");
+                if(values.length > 1)
+                {
+                    return [false, "Multiple values for poster_is_null found: " + value];
+                }
+                if(value === "true")
+                {
+                    posterArray.push({[Op.is]: null});
+                }
+                else if(value === "false")
+                {
+                    posterArray.push({[Op.not]: null});
+                }
+            }
             else
             {
                 if(!key.startsWith("genre_contains") && !key.startsWith("max") && !key.startsWith("offset"))
@@ -691,6 +719,11 @@ const movie = (sequelize, DataTypes) => {
         if(runTimeFilters !== undefined)
         {
             filters.push(runTimeFilters);
+        }
+        let posterFilters = generatePosterFilter(posterArray);
+        if(posterFilters !== undefined)
+        {
+            filters.push(posterFilters);
         }
         return [true,filters, titleToSearchForFound];
     }
