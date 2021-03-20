@@ -53,6 +53,11 @@ class UserFeed extends React.Component {
         }
     }
 
+    componentWillUnmount()
+    {
+        document.removeEventListener('scroll', this.scrollEventHandler, {passive: true});
+    }
+
     scrollEventHandler(event)
     {
         // if there is no more data to load return

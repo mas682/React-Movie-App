@@ -36,6 +36,11 @@ class MoviePostDisplay extends React.Component {
         this.getData(this.state.username, 0);
     }
 
+    componentWillUnmount()
+    {
+        document.removeEventListener('scroll', this.scrollEventHandler, {passive: true});
+    }
+
     scrollEventHandler(event)
     {
         // if there is no more data to load return

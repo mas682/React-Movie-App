@@ -47,6 +47,7 @@ class MovieFilterPage extends React.Component {
         // if the page type changed
         if(nextProps.type !== prevState.header)
         {
+            console.log("Type changed");
             // clear the messages on mount
             nextProps.setMessages({
                 messages: undefined,
@@ -68,22 +69,45 @@ class MovieFilterPage extends React.Component {
         // checking the previous type as when going from one page to another, this will get hit if the type just changed
         else if((nextProps.location.search !== prevState.queryString) && (prevState.header === nextProps.type))
         {
-            // clear the messages on mount
-            nextProps.setMessages({
-                messages: undefined,
-                clearMessages: true
-            });
-            //console.log("new parameters found in movie filter page");
             let result = MovieFilterPage.getNewStateFromProps(nextProps, true);
-            let state = result.state;
-            if(result.updated)
+            // if the generated query string does not equal the new query string
+            if(result.state.queryString !== prevState.queryString)
             {
-                nextProps.history.replace({
-                    pathname: nextProps.location.pathname,
-                    search: state.queryString
+                // clear the messages on mount
+                nextProps.setMessages({
+                    messages: undefined,
+                    clearMessages: true
                 });
+                let state = result.state;
+                if(result.updated)
+                {
+                    nextProps.history.replace({
+                        pathname: nextProps.location.pathname,
+                        search: state.queryString
+                    });
+                }
+                return state;
             }
-            return state;
+            else {
+                // if the user went back to the exact same link
+                if(result.updated)
+                {
+                    nextProps.history.replace({
+                        pathname: nextProps.location.pathname,
+                        search: result.state.queryString
+                    });
+                }
+                if(nextProps.currentUser === "")
+                {
+                    return {
+                        currentUser: ""
+                    };
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
         else if(nextProps.currentUser === "")
         {
@@ -91,11 +115,10 @@ class MovieFilterPage extends React.Component {
                 currentUser: ""
             };
         }
-        return null;
-        /*
-        may want to move movie deletion to here?
-        need to make sure not changing objects directly in any other component as this will cause major issues...
-        */
+        else
+        {
+            return null;
+        }
     }
 
     static getNewStateFromProps(props, loadingNewData)
@@ -166,10 +189,12 @@ class MovieFilterPage extends React.Component {
         }
         else if(nextProps.currentUser !== this.props.currentUser)
         {
+            //console.log("User chagned");
             return true;
         }
         else if(this.state.loadingData !== nextState.loadingData)
         {
+            //console.log("Loading data changed");
             return true;
         }
         return false;
@@ -231,7 +256,6 @@ class MovieFilterPage extends React.Component {
     // called by componentDidUpdate when a change in the props is found
     async generateNewState()
     {
-        console.log(this.state);
         let result = await this.getMovies(this.state.queryString, this.state.header, this.state.offset);
         let movies = (result.state.movies === undefined) ? [] : result.state.movies;
         let state = {...result.state};
@@ -394,12 +418,16 @@ class MovieFilterPage extends React.Component {
                 this.setState({
                    loadingData: true
                 });
-                //console.log("Get new data");
                 let result = await this.getMovies(this.state.queryString, this.state.header, this.state.offset);
                 this.setState(result.state);
                 this.props.setMessages(result.messageState);
             }
         }
+    }
+
+    componentWillUnmount()
+    {
+        document.removeEventListener('scroll', this.scrollEventHandler, {passive: true});
     }
 
     async componentDidMount()
@@ -426,7 +454,6 @@ class MovieFilterPage extends React.Component {
             else
             {
                 let result = await this.getMovies(undefined, this.state.header, this.state.offset);
-                console.log(result);
                 this.setState(result.state);
                 this.props.setMessages(result.messageState);
             }
@@ -434,7 +461,6 @@ class MovieFilterPage extends React.Component {
         else
         {
             let result = await this.getMovies(undefined, this.state.header, this.state.offset);
-            console.log(result);
             this.setState(result.state);
             this.props.setMessages(result.messageState);
         }

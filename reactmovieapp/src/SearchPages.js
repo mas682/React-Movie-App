@@ -95,6 +95,11 @@ class SearchPage extends React.Component {
         });
     }
 
+    componentWillUnmount()
+    {
+        document.removeEventListener('scroll', this.scrollEventHandler, {passive: true});
+    }
+
     static getDerivedStateFromProps(nextProps, nextState)
     {
         console.log("Get derived state from props: ");
@@ -121,11 +126,11 @@ class SearchPage extends React.Component {
         if(nextState.searchValue !== newSearchValue || nextState.type !== newType)
         {
             // clear the messages on mount
-            this.props.setMessages({
+            nextProps.setMessages({
                 messages: undefined,
                 clearMessages: true
             });
-            console.log("Search value or type change found");
+            //console.log("Search value or type change found");
             let newValue = (nextProps.location.state === undefined) ? false : nextProps.location.state.newValue;
             return {
                 searchValue: newSearchValue,
@@ -329,7 +334,7 @@ class SearchPage extends React.Component {
                 this.setState({
                     loadingData: true
                 });
-                console.log("Get new data");
+                //console.log("Get new data");
                 this.getSearchSuggestions(this.state.searchValue, this.state.type);
             }
         }

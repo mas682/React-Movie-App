@@ -142,6 +142,7 @@ const movie = (sequelize, DataTypes) => {
     Movie.associate = models => {
         // each movie can be associated with many reviews
         Movie.hasMany(models.Review, {foreignKey: "movieId"});
+        Movie.hasOne(models.FeaturedMovies, {foreignKey: "movieId"});
         // each movie can have many genres
         Movie.belongsToMany(models.Genre, {through: models.MovieGenreTable, foreignKey: "movieId", otherKey: "GenreId" });
         Movie.belongsToMany(models.User, {as: "UserWatchLists", through: models.UserWatchList, foreignKey: "movieId", otherKey: "userId", onDelete: 'CASCADE'});
@@ -149,6 +150,8 @@ const movie = (sequelize, DataTypes) => {
         Movie.hasMany(models.MovieGenreTable, { as: "MovieGenreTables", foreignKey: "movieId"});
         Movie.hasMany(models.UserWatchList, {foreignKey: "movieId"});
         Movie.hasMany(models.UsersWhoWatched, {foreignKey: "movieId"});
+        // each movie can be associated with one featured movie
+        Movie.hasMany(models.Review, {foreignKey: "movieId"});
     };
 
     // function to get a movie and include a specific user who has it on their watch list
