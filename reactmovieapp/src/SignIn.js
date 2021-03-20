@@ -19,7 +19,8 @@ class SignInPopup extends React.Component {
 			usernameError: "",
 			passwordError: "",
 			messages: [],
-			messageId: -1
+			messageId: -1,
+			awaitingResults: false
 		};
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
@@ -28,6 +29,8 @@ class SignInPopup extends React.Component {
 		this.loginResultsHandler = this.loginResultsHandler.bind(this);
 		this.showSignUpForm = this.showSignUpForm.bind(this);
 		this.showForgotPassword = this.showForgotPassword.bind(this);
+		this.generateLoadingContent = this.generateLoadingContent.bind(this);
+		this.genereateLoginForm = this.genereateLoginForm.bind(this);
 	}
 
 	openModal() {
@@ -94,7 +97,11 @@ class SignInPopup extends React.Component {
 				username: this.state.username,
 				password: this.state.password
 			};
-			let url = "http://localhost:9000/login";
+			this.setState({
+				awaitingResults: true,
+				messageId: -1
+			});
+			let url = "http://localhost:9000/login/authenticate";
 			let result = await apiPostJsonRequest(url, params);
 			let status = result[0];
 			let message = result[1].message;
@@ -115,62 +122,107 @@ class SignInPopup extends React.Component {
 		{
 			if(message === "Username or email address is invalid")
 			{
-				this.setState({usernameError: message});
+				this.setState({
+					awaitingResults: false,
+					usernameError: message
+				});
 			}
 			else if(message === "Password must be between 6-15 characters")
 			{
-				this.setState({passwordError: message});
+				this.setState({
+					awaitingResults: false,
+					passwordError: message
+				});
 			}
 
 		}
 		else if(status === 404)
 		{
 			// user does not exist
-			this.setState({usernameError: message});
+			this.setState({
+				usernameError: message,
+				awaitingResults: false
+			});
 		}
 		else if(status === 401)
 		{
-			// incorrect password
-			this.setState({passwordError: message});
+			if(message === "Incorrect password.  User account is currently locked due to too many login attempts")
+			{
+				this.setState({
+					passwordError: "Incorrect password",
+					awaitingResults: false,
+					messageId: this.state.messageId + 1,
+					messages: [{type: "failure", message: "User account is currently locked due to too many login attempts"}]
+				});
+			}
+			else
+			{
+				// incorrect password
+				this.setState({
+					passwordError: message,
+					awaitingResults: false
+				});
+			}
 		}
 		else
 		{
 			this.setState({
+				awaitingResults: false,
 				messageId: this.state.messageId + 1,
 				messages: [{type: "failure", message: "An unexpected error occurred on the server"}]
 			});
 		}
 	}
 
-    render() {
+	generateLoadingContent(message)
+	{
+		//if(this.state.awaitingResults)
+		let content =  (
+			<React.Fragment>
+				<div className="content">
+					<div className={style.infoTextContainer}>
+						{message}<br/>
+					</div>
+					<div className={style.loadingContainer}>
+						<div className={style.loader}></div>
+					</div>
+				</div>
+			</React.Fragment>
+		);
+		return content;
+	}
+
+	genereateLoginForm()
+	{
 		let usernameInput =  (
-            <React.Fragment>
-                <label>
-                    <h4 className={style.inputFieldH4} id="validLabel">Username or Email</h4>
-                </label>
-                <input
-                    type="text"
-                    name="username"
-                    form = "form1"
-                    className="inputFieldBoxLong validInputBox"
-                    onChange={this.changeHandler}
-                />
-            </React.Fragment>
+			<React.Fragment>
+				<label>
+					<h4 className={style.inputFieldH4} id="validLabel">Username or Email</h4>
+				</label>
+				<input
+					type="text"
+					name="username"
+					form = "form1"
+					value={this.state.username}
+					className="inputFieldBoxLong validInputBox"
+					onChange={this.changeHandler}
+				/>
+			</React.Fragment>
 		);
 
 		let passwordInput = (
-            <React.Fragment>
-                <label>
-                    <h4 className={style.inputFieldH4} id = "validLabel">Password</h4>
-                </label>
-                <input
-                    type="password"
-                    name="password"
-                    form = "form1"
-                    className="inputFieldBoxLong validInputBox"
-                    onChange={this.changeHandler}
-                />
-            </React.Fragment>);
+			<React.Fragment>
+				<label>
+					<h4 className={style.inputFieldH4} id = "validLabel">Password</h4>
+				</label>
+				<input
+					type="password"
+					name="password"
+					form = "form1"
+					className="inputFieldBoxLong validInputBox"
+					onChange={this.changeHandler}
+				/>
+			</React.Fragment>);
 
 		if(this.state.usernameError) {
 			usernameInput = (
@@ -181,6 +233,7 @@ class SignInPopup extends React.Component {
 					<input
 						type="text"
 						name="username"
+						value={this.state.username}
 						form="form1"
 						className="inputFieldBoxLong inputBoxError"
 						onChange={this.changeHandler}
@@ -207,6 +260,49 @@ class SignInPopup extends React.Component {
 		}
 
 		return (
+			<React.Fragment>
+				<div className="content">
+					<form id="form1" onSubmit={this.validateForm} noValidate/>
+					<div className="inputFieldContainer">
+						{usernameInput}
+					</div>
+					<div className="inputFieldContainer">
+						{passwordInput}
+					</div>
+				</div>
+				<div className="actions">
+					<button
+						form="form1"
+						value="login_user"
+						className="submitButton"
+						onClick={this.validateForm}
+					>SIGN IN</button>
+				</div>
+				<div className="rememberForgot">
+					<label className={style.rememberText}>Remember Me
+						<input className="checkbox" type="checkbox"></input>
+					</label>
+					<div className={style.forgotText}><button className="logInLink" onClick={this.showForgotPassword}>Forgot Password?</button></div>
+				</div>
+				<div className="newHere">
+					<div className={style.forgotText}><button className="logInLink" onClick={this.showSignUpForm}>New Here? Sign Up!</button></div>
+				</div>
+			</React.Fragment>
+		);
+	}
+
+    render() {
+
+		let content = "";
+		if(this.state.awaitingResults)
+		{
+			content = this.generateLoadingContent("Verifying login");
+		}
+		else
+		{
+			content = this.genereateLoginForm();
+		}
+		return (
 			<div>
 				<Popup
 					open={this.state.open}
@@ -231,32 +327,7 @@ class SignInPopup extends React.Component {
 						<div className="header">
 							<h3 className="inlineH3">Sign In!</h3>
 						</div>
-						<div className="content">
-							<form id="form1" onSubmit={this.validateForm} noValidate/>
-							<div className="inputFieldContainer">
-								{usernameInput}
-							</div>
-							<div className="inputFieldContainer">
-								{passwordInput}
-							</div>
-						</div>
-						<div className="actions">
-							<button
-								form="form1"
-								value="login_user"
-								className="submitButton"
-								onClick={this.validateForm}
-							>SIGN IN</button>
-						</div>
-						<div className="rememberForgot">
-							<label className={style.rememberText}>Remember Me
-								<input className="checkbox" type="checkbox"></input>
-							</label>
-							<div className={style.forgotText}><button className="logInLink" onClick={this.showForgotPassword}>Forgot Password?</button></div>
-						</div>
-						<div className="newHere">
-							<div className={style.forgotText}><button className="logInLink" onClick={this.showSignUpForm}>New Here? Sign Up!</button></div>
-						</div>
+						{content}
 					</div>
 				</Popup>
 			</div>

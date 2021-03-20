@@ -59,7 +59,7 @@ class SignUpPopup extends React.Component {
         // if on the verification page and user not just created
         if((this.state.showVerificationPage || this.state.awaitingResults) && !this.state.created)
         {
-            //this.cancelRegistration();
+            this.cancelRegistration();
         }
         this.setState({open: false});
         this.props.removeFunction();
@@ -310,6 +310,10 @@ class SignUpPopup extends React.Component {
     async validateVerification(event) {
         event.preventDefault();
         let error = false;
+        if(this.state.lockVerificationInput)
+        {
+            return;
+        }
         if(this.state.verificationCode.length < 6)
         {
             this.setState({verificationError: "The verification code must be 6 digits"});
@@ -413,7 +417,8 @@ class SignUpPopup extends React.Component {
                     messages: [{type: "info", message: output, timeout: 0}],
                     awaitingResults: false,
                     resendingCode: false,
-                    resends: this.state.resends + 1
+                    resends: this.state.resends + 1,
+                    verificationCode: ""
                 });
             }
         }
@@ -439,7 +444,8 @@ class SignUpPopup extends React.Component {
                     password: "",
                     verificationAttempts: 0,
                     resendingCode: false,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             else if(message === "Verification code is invalid.  The maximum of 3 verification attempts met for the current code")
@@ -453,7 +459,8 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     lockVerificationInput: true,
-                    verificationAttempts: 3
+                    verificationAttempts: 3,
+                    verificationCode: ""
                 });
             }
             else if(message === "Verification code is invalid")
@@ -462,7 +469,8 @@ class SignUpPopup extends React.Component {
                     verificationError: message,
                     awaitingResults: false,
                     resendingCode: false,
-                    verificationAttempts: this.state.verificationAttempts + 1
+                    verificationAttempts: this.state.verificationAttempts + 1,
+                    verificationCode: ""
                 });
             }
             else
@@ -483,7 +491,8 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     verificationAttempts: 0,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             else if(message === "Email already associated with a user")
@@ -494,7 +503,8 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     verificationAttempts: 0,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             else
@@ -513,7 +523,8 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     verificationAttempts: 0,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             else if(message === "The email provided is not a valid email address")
@@ -524,7 +535,8 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     verificationAttempts: 0,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             else if(message === "Verification code invalid")
@@ -533,7 +545,8 @@ class SignUpPopup extends React.Component {
                     verificationError: message,
                     awaitingResults: false,
                     resendingCode: false,
-                    verificationAttempts: this.state.verificationAttempts + 1
+                    verificationAttempts: this.state.verificationAttempts + 1,
+                    verificationCode: ""
                 });
             }
             else
@@ -556,7 +569,8 @@ class SignUpPopup extends React.Component {
                     showVerificationPage: false,
                     password: "",
                     verificationAttempts: 0,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             else if(message === "Could not verify user as a maximum of 3 attempts have been attempted for the verification code.")
@@ -570,7 +584,8 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     lockVerificationInput: true,
-                    verificationAttempts: 3
+                    verificationAttempts: 3,
+                    verificationCode: ""
                 });
             }
             else if(message === "Could not send another verification code as the maximum number of codes to send out (3) has been met")
@@ -582,7 +597,8 @@ class SignUpPopup extends React.Component {
                     verificationError: "",
                     awaitingResults: false,
                     resendingCode: false,
-                    resends: 2
+                    resends: 2,
+                    verificationCode: ""
                 });
 
             }
@@ -598,7 +614,8 @@ class SignUpPopup extends React.Component {
                     showVerificationPage: false,
                     password: "",
                     verificationAttempts: 0,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             else
@@ -619,7 +636,8 @@ class SignUpPopup extends React.Component {
                     showVerificationPage: false,
                     password: "",
                     verificationAttempts: 0,
-                    resends: 0
+                    resends: 0,
+                    verificationCode: ""
                 });
             }
             else
@@ -629,7 +647,8 @@ class SignUpPopup extends React.Component {
                     messages: [{type: "failure", message: message, timeout: 0}],
                     awaitingResults: false,
                     resendingCode: false,
-                    verificationError: ""
+                    verificationError: "",
+                    verificationCode: ""
                 });
             }
             this.props.updateLoggedIn(requester);
@@ -646,7 +665,8 @@ class SignUpPopup extends React.Component {
                 messages: [{type: "failure", message: output, timeout: 0}],
                 awaitingResults: false,
                 resendingCode: false,
-                verificationError: ""
+                verificationError: "",
+                verificationCode: ""
             });
             this.props.updateLoggedIn(requester);
         }
@@ -864,6 +884,7 @@ class SignUpPopup extends React.Component {
                     <input
                         type="text"
                         name="verificationCode"
+                        autocomplete="off"
                         form = "form2"
                         maxLength = {6}
                         disabled={this.state.lockVerificationInput}
@@ -883,6 +904,7 @@ class SignUpPopup extends React.Component {
                         <input
                             type="text"
                             name="verificationCode"
+                            autocomplete="off"
                             form = "form2"
                             maxLength = {6}
                             disabled={this.state.lockVerificationInput}
@@ -924,7 +946,7 @@ class SignUpPopup extends React.Component {
                         {passwordInput}
                     </div>
                 </div>
-                <div className="actions">
+                <div className={style.actions}>
                     <button
                         form="form1"
                         value="create_account"
@@ -952,7 +974,7 @@ class SignUpPopup extends React.Component {
                         <div className={style.loader}></div>
                     </div>
                 </div>
-                <div className="actions">
+                <div className={style.actions}>
                     <div className={style.verificationButtonContainer}>
                         Close the pop up to cancel account creation
                     </div>
@@ -996,7 +1018,7 @@ class SignUpPopup extends React.Component {
                         {verificationInput}
                     </div>
                 </div>
-                <div className="actions">
+                <div className={style.actions}>
                     <div className={style.verificationButtonContainer}>
                         <button
                             form="form2"
@@ -1058,17 +1080,20 @@ class SignUpPopup extends React.Component {
                         <a className="close" onClick={this.closeModal}>
                         &times;
                         </a>
-                        <Alert
-                            messages={this.state.messages}
-                            messageId={this.state.messageId}
-                            innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%"}}
-                            symbolStyle={{"width": "5%", "margin-top": "4px"}}
-                            messageBoxStyle={{width: "86%"}}
-                            closeButtonStyle={{width: "5%", "margin-top": "4px"}}
-                            outterContainerStyle={{width:"calc(100% - 10px)", height: "calc(100% - 10px)"}}
-                            />
                         <div className="header">
                             <h3 className="inlineH3"> Sign Up! </h3>
+                        </div>
+                        <div className={style.alertContent}>
+                            <Alert
+                                messages={this.state.messages}
+                                messageId={this.state.messageId}
+                                innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%", "padding-top": "10px"}}
+                                symbolStyle={{"width": "8%", "margin-top": "4px"}}
+                                messageBoxStyle={{width: "80%"}}
+                                closeButtonStyle={{width: "8%", "margin-top": "4px"}}
+                                outterContainerStyle={{position: "inherit"}}
+                                style={{"margin-bottom":"5px"}}
+                            />
                         </div>
                         {content}
                     </div>

@@ -45,7 +45,7 @@ const selectPath = (cookie, req, res, cookieValid) =>
     if(req.method === "POST")
     {
         console.log(req.params.type);
-        if(req.params.type === undefined)
+        if(req.params.type === "authenticate")
         {
             routeFound = true;
             if(cookieValid)
@@ -58,8 +58,6 @@ const selectPath = (cookie, req, res, cookieValid) =>
             else
             {
                 checkLogin(req, res);
-                //forgotPassword(req, res);
-                //validatePassCode(req, res);
             }
         }
         else if(req.params.type === "forgot_password")
@@ -80,8 +78,6 @@ const selectPath = (cookie, req, res, cookieValid) =>
         else if(req.params.type === "validate_passcode")
         {
             routeFound = true;
-            console.log("Here");
-            console.log(cookieValid);
             if(cookieValid)
             {
                 res.status(401).send({
@@ -178,16 +174,23 @@ const checkLogin = (req, res) =>
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
             let userJson = "{\"user\":\"" + user.username + "\"}";
-            res.status(200).send({
-                message: "User authenticated",
-                requester: user.username,
-            });
+            setTimeout(() =>{
+                res.status(200).send({
+                    message: "User authenticated",
+                    requester: user.username,
+                });
+            }, 3000);
         }
         else
         {
-            await updateUserLoginAttempts(user, username);
+            let attempts = await updateUserLoginAttempts(user, username);
+            let message = "Incorrect password"
+            if(attempts >= 5)
+            {
+                message = message + ".  User account is currently locked due to too many login attempts"
+            }
             res.status(401).send({
-                message: "Incorrect password",
+                message: message,
                 requester: ""
             });
         }
@@ -468,6 +471,7 @@ const updateUserLoginAttempts = async (user, username) => {
         console.log("Some unknown error occurred updaing the users(" + username + ") account on login failure: " + errorObject.name);
         console.log(err);
     }
+    return user.passwordAttempts;
 }
 
 const validateUserForVerification = async (user, res, resendCode) => {

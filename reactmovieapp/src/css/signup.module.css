@@ -83,9 +83,24 @@
     margin-top: 10px;
 }
 
+.alertContent {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+    align-content: flex-start;
+}
+
 .cancelButton {
     background-color: red !important;
     padding: 10px 20px !important;
+}
+
+.actions {
+    width: 100%;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin: auto;
+    text-align: center;
 }
 
 .loadingContainer {
