@@ -10,22 +10,10 @@
 	text-align: center;
 }
 
-.featuredMovieDisplayContainer
-{
-    display: flex;
-    flex-flow: row nowrap;
-    overflow: hidden;
-    min-width: 100%;
-    max-width: 100%;
-    position: relative;
-    z-index: 0;
-    background-color: transparent;
-}
-
 .featuredMovieContainer {
     min-width: 100%;
     max-width: 100%;
-    height: 600px;
+	height: 100%;
     background-image: url("https://image.tmdb.org/t/p/original/wzJRB4MKi3yK138bJyuL9nx47y6.jpg");
     background-repeat: no-repeat;
 	background-size: cover;
@@ -34,19 +22,37 @@
     transition: transform 2s;
 }
 
+
+.featuredMovieDisplayContainer
+{
+	width: 100%;
+    position: relative;
+    z-index: 0;
+    background-color: transparent;
+	padding-top: 56.25%;
+}
+
+.innerDisplayContainer
+{
+	display: flex;
+	flex-flow: row nowrap;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	z-index: 0;
+	background-color: transparent;
+}
+
+
 .infoContainer
 {
     position: absolute;
     display: grid;
     width: 100%;
     bottom: 0px;
-    height: 250px;
     background-image: linear-gradient(to bottom, rgba(0,0,0,0.0), rgba(0,0,0,0.6));
-}
-
-.infoContainerTrailer
-{
-	grid-template-columns: 200px 60px calc(100% - 260px);
 }
 
 .infoContainerNoTrailer {
@@ -55,31 +61,31 @@
 
 .moviePosterContainer
 {
-    width: calc(100% - 35px);
-    padding-left: 20px;
-    padding-right: 5%;
-    padding-bottom: 15px;
-    height: 235px;
+    width: calc(100% - 20px);
+	position: relative;
+	padding-top: calc(177% - 20px);
+	margin: 10px;
 }
 
 .moviePosterContainer img
 {
-    width: 100%;
-	min-height: 235px;
-	max-height: 235px;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
 }
 
 .movieDetails {
     color: white;
-    font-size: 3.0em;
+    font-size: 1.0em;
     align-self: end;
-    padding-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .playTrailerButton {
     align-self: end;
     color: white;
-    padding-bottom: 15px;
+    margin-bottom: 10px;
     font-size: 3.0em;
 }
 
@@ -181,6 +187,12 @@
         margin-bottom: 20px;
         color: white;
     }
+
+	/* for the info on the featured movie */
+	.infoContainerTrailer
+	{
+		grid-template-columns: 20% 60px calc(80% - 60px);
+	}
 }
 
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
@@ -193,10 +205,16 @@
         display: flex;
         flex-flow: row wrap;
         align-content: flex-start;
+		margin-top: 20px;
         margin-bottom: 20px;
         background: white;
         min-height: calc(100vh - 125px);
     }
+
+	.infoContainerTrailer
+	{
+		grid-template-columns: 20% 60px calc(100% - 260px);
+	}
 }
 
 @media screen and (min-width: 1000px) and (max-width: 1199px) {
@@ -210,9 +228,15 @@
         flex-flow: row wrap;
         align-content: flex-start;
         margin-bottom: 20px;
+		margin-top: 20px;
         background: white;
         min-height: calc(100vh - 125px);
     }
+
+	.infoContainerTrailer
+	{
+		grid-template-columns: 20% 60px calc(100% - 260px);
+	}
 }
 
 @media screen and (min-width: 800px) and (max-width: 999px) {
@@ -226,9 +250,15 @@
         flex-flow: row wrap;
         align-content: flex-start;
         margin-bottom: 20px;
+		margin-top: 20px;
         background: white;
         min-height: calc(100vh - 125px);
     }
+
+	.infoContainerTrailer
+	{
+		grid-template-columns: 25% 60px calc(100% - 260px);
+	}
 }
 
 @media screen and (min-width: 600px) and (max-width: 799px) {
@@ -242,9 +272,15 @@
         flex-flow: row wrap;
         align-content: flex-start;
         margin-bottom: 20px;
+		margin-top: 20px;
         background: white;
         min-height: calc(100vh - 85px);
     }
+
+	.infoContainerTrailer
+	{
+		grid-template-columns: 25% 60px calc(100% - 260px);
+	}
 }
 
 @media screen and (max-width: 599px) {
@@ -258,7 +294,13 @@
         flex-flow: row wrap;
         align-content: flex-start;
         margin-bottom: 20px;
+		margin-top: 20px;
         background: white;
         min-height: calc(100vh - 85px);
     }
+
+	.infoContainerTrailer
+	{
+		grid-template-columns: 30% 40px calc(100% - 60px);
+	}
 }

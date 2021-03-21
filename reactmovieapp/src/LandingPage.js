@@ -145,14 +145,16 @@ class Landing extends React.Component {
 			counter = counter + 1;
 		}
 		movies = (
-				<div className={style.featuredMovieDisplayContainer} id="featuredMovieDisplayContainer">
-					<CarouselDisplay
-						items={movieDisplays}
-						id={"featuredMovieCarousel"}
-						itemContainerClass={style.featuredMovieContainer}
-						// used to make windowResizeEventHandler more efficint
-						maxVisibleItems={1}
-					/>
+				<div className={style.featuredMovieDisplayContainer}>
+					<div className={style.innerDisplayContainer} id="featuredMovieDisplayContainer">
+						<CarouselDisplay
+							items={movieDisplays}
+							id={"featuredMovieCarousel"}
+							itemContainerClass={style.featuredMovieContainer}
+							// used to make windowResizeEventHandler more efficint
+							maxVisibleItems={1}
+						/>
+					</div>
 				</div>
 		);
 		return movies;

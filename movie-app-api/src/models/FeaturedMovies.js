@@ -47,7 +47,8 @@ const featuredMovies = (sequelize, DataTypes) => {
             include: [{
                 model: models.Movies,
                 as: "FeaturedMovie"
-            }]
+            }],
+            order:[['order', 'ASC']]
         });
         let movies = [];
         featuredMovies.forEach((movie) =>{
