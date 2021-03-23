@@ -63,7 +63,7 @@
 {
     width: calc(100% - 20px);
 	position: relative;
-	padding-top: calc(177% - 20px);
+	padding-top: calc(177% - 35px);
 	margin: 10px;
 }
 
@@ -75,22 +75,9 @@
 	top: 0;
 }
 
-.movieDetails {
-    color: white;
-    font-size: 1.0em;
-    align-self: end;
-    margin-bottom: 10px;
-}
-
-.playTrailerButton {
-    align-self: end;
-    color: white;
-    margin-bottom: 10px;
-    font-size: 3.0em;
-}
-
-.playTrailerButton:hover {
+.playTrailerButton i:hover {
 	color: red;
+	cursor: pointer;
 }
 
 .movieDisplayContainer {
@@ -191,7 +178,22 @@
 	/* for the info on the featured movie */
 	.infoContainerTrailer
 	{
-		grid-template-columns: 20% 60px calc(80% - 60px);
+		grid-template-columns: 20% calc(5.0em + 5px) calc(80% - calc(5.0em + 5px));
+	}
+
+	.playTrailerButton {
+	    align-self: end;
+	    color: white;
+	    margin-bottom: 10px;
+	    font-size: 5.0em;
+	}
+
+	.movieDetails {
+	    color: white;
+	    font-size: 2.5em;
+	    align-self: end;
+		min-height: 2em;
+	    margin-bottom: 10px;
 	}
 }
 
@@ -213,7 +215,22 @@
 
 	.infoContainerTrailer
 	{
-		grid-template-columns: 20% 60px calc(100% - 260px);
+		grid-template-columns:  20% calc(5.0em + 5px) calc(80% - calc(5.0em + 5px));
+	}
+
+	.playTrailerButton {
+	    align-self: end;
+	    color: white;
+	    margin-bottom: 10px;
+	    font-size: 5.0em;
+	}
+
+	.movieDetails {
+	    color: white;
+	    font-size: 2.5em;
+	    align-self: end;
+		min-height: 2em;
+	    margin-bottom: 10px;
 	}
 }
 
@@ -235,7 +252,22 @@
 
 	.infoContainerTrailer
 	{
-		grid-template-columns: 20% 60px calc(100% - 260px);
+		grid-template-columns:  20% calc(4.0em + 5px) calc(80% - calc(4.0em + 5px));
+	}
+
+	.playTrailerButton {
+	    align-self: end;
+	    color: white;
+	    margin-bottom: 10px;
+	    font-size: 4.0em;
+	}
+
+	.movieDetails {
+	    color: white;
+	    font-size: 2.0em;
+	    align-self: end;
+		min-height: 2em;
+	    margin-bottom: 10px;
 	}
 }
 
@@ -257,7 +289,22 @@
 
 	.infoContainerTrailer
 	{
-		grid-template-columns: 25% 60px calc(100% - 260px);
+		grid-template-columns:  25% calc(3.2em + 5px) calc(75% - calc(3.2em + 5px));
+	}
+
+	.playTrailerButton {
+	    align-self: end;
+	    color: white;
+	    margin-bottom: 10px;
+	    font-size: 3.2em;
+	}
+
+	.movieDetails {
+	    color: white;
+	    font-size: 1.7em;
+	    align-self: end;
+		min-height: 2em;
+	    margin-bottom: 10px;
 	}
 }
 
@@ -279,7 +326,22 @@
 
 	.infoContainerTrailer
 	{
-		grid-template-columns: 25% 60px calc(100% - 260px);
+		grid-template-columns:  25% calc(3.0em + 5px) calc(75% - calc(3.0em + 5px));
+	}
+
+	.playTrailerButton {
+	    align-self: end;
+	    color: white;
+	    margin-bottom: 10px;
+	    font-size: 3.0em;
+	}
+
+	.movieDetails {
+	    color: white;
+	    font-size: 1.5em;
+	    align-self: end;
+		min-height: 2em;
+	    margin-bottom: 10px;
 	}
 }
 
@@ -301,6 +363,22 @@
 
 	.infoContainerTrailer
 	{
-		grid-template-columns: 30% 40px calc(100% - 60px);
+		grid-template-columns:  30% calc(2.5em + 5px) calc(70% - calc(2.5em + 5px));
+	}
+
+	.playTrailerButton {
+	    align-self: end;
+		height: calc(1em + 10px);
+	    color: white;
+	    margin-bottom: 5px;
+	    font-size: 2.5em;
+	}
+
+	.movieDetails {
+	    color: white;
+	    font-size: 1.0em;
+	    align-self: end;
+		min-height: 2.8em;
+	    margin-bottom: 5px;
 	}
 }
