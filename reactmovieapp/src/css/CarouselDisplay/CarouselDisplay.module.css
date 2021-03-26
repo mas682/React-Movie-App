@@ -18,18 +18,23 @@
         top: calc(50% - 32px);
         height: 64px;
         z-index: 1;
-        background-color: gray;
-        opacity: 50%;
+        background: rgba(0, 0, 0, 0.5);
         border-radius: 5px;
+        border: solid 0px rgba(171, 165, 165, 0.8);
     }
 
     .forwardButtonContainer i {
         color: white;
         font-size: 4em;
+        opacity: 40%;
     }
 
     .forwardButtonContainer:hover {
-        opacity: 90%;
+        border: 2px solid white;
+    }
+
+    .forwardButtonContainer:hover i {
+        opacity: 100%;
     }
 
     .backButtonContainer {
@@ -37,21 +42,30 @@
         width: auto;
         left: 0px;
         top: calc(50% - 32px);
-        background-color: gray;
         height: 64px;
         z-index: 1;
-        opacity: 50%;
+        background: rgba(0, 0, 0, 0.5);
         border-radius: 5px;
+        border: solid 0px rgba(171, 165, 165, 0.8);
     }
 
     .backButtonContainer i {
         color: white;
         font-size: 4em;
+        opacity: 40%;
         transform: rotate(180deg);
     }
 
     .backButtonContainer:hover {
         opacity: 90%;
+    }
+
+    .backButtonContainer:hover {
+        border: 2px solid white;
+    }
+
+    .backButtonContainer:hover i {
+        opacity: 100%;
     }
 }
 
