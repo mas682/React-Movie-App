@@ -17,9 +17,7 @@ const moment = require('moment');
 const verifyLogin= async (cookie)=>
 {
     let valid = false;
-    console.log(cookie);
     cookie = JSON.parse(cookie);
-    console.log(cookie);
     if(cookie !== undefined)
     {
         // should be in try catch
@@ -28,7 +26,6 @@ const verifyLogin= async (cookie)=>
         console.log("Authenticating: " + cookie.name);
         await models.User.findByLogin(cookie.name)
         .then((user)=>{
-            console.log(user);
             if(user !== null)
             {
                 // if the password was changed since the cookie was created

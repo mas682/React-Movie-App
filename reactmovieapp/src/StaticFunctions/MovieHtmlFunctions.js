@@ -67,6 +67,7 @@ const generateMovieTrailer = (style, trailer) =>
 {
     let trailerPath = "";
     let trailerElem = "";
+    let containerStyle = {};
     if(trailer !== null)
     {
         trailerPath = "https://www.youtube.com/embed/" + trailer;
@@ -76,8 +77,12 @@ const generateMovieTrailer = (style, trailer) =>
                         src={trailerPath}
                       ></iframe>;
     }
+    else
+    {
+        containerStyle = {"padding-top":"0%"};
+    }
     return (
-        <div className={style.movieTrailerContainer}>
+        <div className={style.movieTrailerContainer} style={containerStyle}>
             {trailerElem}
         </div>
     );

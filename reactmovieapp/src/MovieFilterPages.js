@@ -403,7 +403,7 @@ class MovieFilterPage extends React.Component {
     async scrollEventHandler(event)
     {
         // if there is no more data to load return
-        if(!this.state.moreData || this.state.loadingData) return;
+        if(!this.state.moreData || this.state.loadingData || this.state.loading) return;
         let element = document.querySelector("." + style.mainBodyContainer);
         let mainElementHeight = parseFloat(getComputedStyle(document.querySelector("main")).height);
         let headerHeight = parseFloat(document.body.offsetHeight);

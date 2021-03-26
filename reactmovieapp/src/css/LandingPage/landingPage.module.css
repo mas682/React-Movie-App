@@ -152,12 +152,6 @@
 }
 
 /* need both of these for javascript purposes */
-.movieContainer {
-    min-width: calc(88%/6);
-    max-width: calc(88%/6);
-    padding: 1%;
-    transition: transform 2s;
-}
 
 @media screen and (min-width: 1400px) {
     .mainBodyContainer {
@@ -195,6 +189,13 @@
 		min-height: 2em;
 	    margin-bottom: 10px;
 	}
+
+	.movieContainer {
+	    min-width: calc(88%/6);
+	    max-width: calc(88%/6);
+	    padding: 1%;
+	    transition: transform 2s;
+	}
 }
 
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
@@ -209,8 +210,9 @@
         align-content: flex-start;
 		margin-top: 20px;
         margin-bottom: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
+		color: white;
     }
 
 	.infoContainerTrailer
@@ -232,6 +234,12 @@
 		min-height: 2em;
 	    margin-bottom: 10px;
 	}
+	.movieContainer {
+	    min-width: calc(90%/5);
+	    max-width: calc(90%/5);
+	    padding: 1%;
+	    transition: transform 2s;
+	}
 }
 
 @media screen and (min-width: 1000px) and (max-width: 1199px) {
@@ -246,8 +254,9 @@
         align-content: flex-start;
         margin-bottom: 20px;
 		margin-top: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
+		color: white;
     }
 
 	.infoContainerTrailer
@@ -269,6 +278,13 @@
 		min-height: 2em;
 	    margin-bottom: 10px;
 	}
+
+	.movieContainer {
+	    min-width: calc(90%/5);
+	    max-width: calc(90%/5);
+	    padding: 1%;
+	    transition: transform 2s;
+	}
 }
 
 @media screen and (min-width: 800px) and (max-width: 999px) {
@@ -283,7 +299,8 @@
         align-content: flex-start;
         margin-bottom: 20px;
 		margin-top: 20px;
-        background: white;
+        background: black;
+		color: white;
         min-height: calc(100vh - 125px);
     }
 
@@ -306,6 +323,13 @@
 		min-height: 2em;
 	    margin-bottom: 10px;
 	}
+
+	.movieContainer {
+	    min-width: calc(92%/4);
+	    max-width: calc(92%/4);
+	    padding: 1%;
+	    transition: transform 2s;
+	}
 }
 
 @media screen and (min-width: 600px) and (max-width: 799px) {
@@ -320,7 +344,8 @@
         align-content: flex-start;
         margin-bottom: 20px;
 		margin-top: 20px;
-        background: white;
+        background: black;
+		color: white;
         min-height: calc(100vh - 85px);
     }
 
@@ -343,6 +368,13 @@
 		min-height: 2em;
 	    margin-bottom: 10px;
 	}
+
+	.movieContainer {
+	    min-width: calc(94%/3);
+	    max-width: calc(94%/3);
+	    padding: 1%;
+	    transition: transform 2s;
+	}
 }
 
 @media screen and (max-width: 599px) {
@@ -357,7 +389,8 @@
         align-content: flex-start;
         margin-bottom: 20px;
 		margin-top: 20px;
-        background: white;
+        background: black;
+		color: white;
         min-height: calc(100vh - 85px);
     }
 
@@ -368,7 +401,6 @@
 
 	.playTrailerButton {
 	    align-self: end;
-		height: calc(1em + 10px);
 	    color: white;
 	    margin-bottom: 5px;
 	    font-size: 2.5em;
@@ -378,7 +410,15 @@
 	    color: white;
 	    font-size: 1.0em;
 	    align-self: end;
-		min-height: 2.8em;
-	    margin-bottom: 5px;
+		min-height: 2.0em;
+		height: auto;
+	    margin-bottom: calc(5px + 0.25em);
+	}
+
+	.movieContainer {
+	    min-width: calc(94%/3);
+	    max-width: calc(94%/3);
+	    padding: 1%;
+	    transition: transform 2s;
 	}
 }
