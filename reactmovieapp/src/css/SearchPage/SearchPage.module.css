@@ -30,15 +30,13 @@
 }
 
 .unselectedType {
-    opacity: 50%;
-    background-color: gray;
-    border: 1px solid gray;
+    background-color: black;
+    border: 1px solid white;
 }
 
 .selectedType:hover {
-    opacity: 50%;
-    background-color: gray;
-    border: 1px solid gray;
+    background-color: black;
+    border: 1px solid white;
 }
 
 .unselectedType:hover {
@@ -82,6 +80,7 @@
     display: grid;
     grid-template-columns: calc(100% - 110px) 110px;
     position: relative;
+    color: white;
 }
 
 .resultsShowAllButtonContainer
@@ -93,7 +92,8 @@
 
 .resultsShowAllButton {
     align-self: end;
-    background: white;
+    background: black;
+    color: white;
     border: none;
     width: 110px;
     padding: 0px;
@@ -138,6 +138,17 @@
     z-index: 0;
 }
 
+.inputCustomStyle
+{
+
+}
+
+.inputCustomStyle::-webkit-input-placeholder
+{
+    color: white;
+    opacity: 70%;
+}
+
 
 /* for movie only search */
 
@@ -153,7 +164,7 @@
         align-content: flex-start;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
     }
 
@@ -186,7 +197,7 @@
         align-content: flex-start;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
     }
 
@@ -218,7 +229,7 @@
         align-content: flex-start;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
     }
 
@@ -250,7 +261,7 @@
         align-content: flex-start;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
     }
 
@@ -270,7 +281,7 @@
     }
 }
 
-@media screen and (min-width: 600px) and (max-width: 799px) {
+@media screen and (min-width: 600px) and (max-width: 799.9px) {
     .mainBodyContainer {
         width: 90%;
         height: auto;
@@ -282,7 +293,7 @@
         align-content: flex-start;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 85px);
     }
 
@@ -314,7 +325,7 @@
         align-content: flex-start;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 85px);
     }
 

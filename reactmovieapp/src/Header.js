@@ -645,6 +645,7 @@ class Header extends React.Component {
                             searchEnterHandler={this.searchEnterHandler}
                             form={"SearchBar"}
                             maxLength={250}
+                            placeHolder={"Find a movie or user"}
                         />
                     </div>
                 </div>

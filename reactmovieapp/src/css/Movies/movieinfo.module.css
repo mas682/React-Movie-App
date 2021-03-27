@@ -12,7 +12,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
         position: relative;
     }
@@ -87,7 +87,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
         position: relative;
     }
@@ -162,7 +162,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
         position: relative;
     }
@@ -237,7 +237,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 125px);
         position: relative;
     }
@@ -312,7 +312,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 85px);
         position: relative;
     }
@@ -390,7 +390,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: white;
+        background: black;
         min-height: calc(100vh - 85px);
         position: relative;
     }

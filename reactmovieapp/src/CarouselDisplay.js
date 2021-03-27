@@ -114,8 +114,14 @@ class CarouselDisplay extends React.Component {
         let itemWidth = CarouselDisplay.getContainerWidth(itemContainer);
         let itemCount = Math.floor(outterWidth/itemWidth);
 
+        if(this.state.id === "userCarousel")
+        {
+            console.log("Items visible: " + this.state.itemsVisible);
+            console.log("Item count: " + itemCount);
+            console.log(this.state.id);
+        }
         // may want to keep track of max visible items? to avoid all these calculations unless at end?
-        if(this.state.itemsVisible !== itemCount && this.state.firstItemIndex > (this.state.items.length - itemCount))
+        if(this.state.itemsVisible !== itemCount && this.state.items.length >= this.state.itemsVisible && this.state.firstItemIndex > (this.state.items.length - itemCount))
         {
             let counter = 0;
             let widthPercent = 0;
@@ -125,6 +131,10 @@ class CarouselDisplay extends React.Component {
             while(counter < itemContainers.length)
             {
                 let itemContainer = itemContainers[counter];
+                if(this.state.id === "userCarousel")
+                {
+                    console.log(itemContainer);
+                }
                 itemContainer.style.transform = "translate3d(" + widthPercent + ", 0px, 0px)";
                 counter = counter + 1;
             }
@@ -165,7 +175,7 @@ class CarouselDisplay extends React.Component {
         if(this.state.firstItemIndex > 0)
         {
             backwardButton = (
-                <div className={style.backButtonContainer} style={this.state.backButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("back")}}>
+                <div className={`${style.buttonContainer} ${style.backButton}`} style={this.state.backButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("back")}}>
                     <i class="fas fa-angle-right" style={this.state.backButtonIconStyle}/>
                 </div>
             );
@@ -175,7 +185,7 @@ class CarouselDisplay extends React.Component {
         if(this.state.firstItemIndex < (this.state.items.length - this.state.itemsVisible) && (this.state.items.length) > this.state.itemsVisible)
         {
             forwardButton = (
-                <div className={style.forwardButtonContainer} style={this.state.forwardButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("forward")}}>
+                <div className={`${style.buttonContainer} ${style.forwardButton}`} style={this.state.forwardButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("forward")}}>
                     <i class={`fas fa-angle-right`} style={this.state.forwardButtonIconStyle}/>
                 </div>
             )

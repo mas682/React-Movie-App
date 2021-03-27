@@ -1,5 +1,41 @@
 
 
+.buttonContainer {
+    position: absolute;
+    top: calc(50% - 32px);
+    height: 64px;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+    border: solid 0px rgba(171, 165, 165, 0.8);
+}
+
+.buttonContainer i {
+    color: white;
+    font-size: 4em;
+    opacity: 40%;
+}
+
+.backButton i {
+    transform: rotate(180deg);
+}
+
+.forwardButton {
+    right: 0;
+}
+
+.backButton {
+    left: 0;
+}
+
+.buttonContainer:hover {
+    border: 2px solid white;
+}
+
+.buttonContainer:hover i {
+    opacity: 100%;
+}
+
 @media screen and (min-width: 1400px) {
     .carouselItemsContainer {
         display: flex;
@@ -9,63 +45,6 @@
         max-width: 100%;
         position: relative;
         z-index: 0;
-    }
-
-    .forwardButtonContainer {
-        position: absolute;
-        width: auto;
-        right: 0px;
-        top: calc(50% - 32px);
-        height: 64px;
-        z-index: 1;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 5px;
-        border: solid 0px rgba(171, 165, 165, 0.8);
-    }
-
-    .forwardButtonContainer i {
-        color: white;
-        font-size: 4em;
-        opacity: 40%;
-    }
-
-    .forwardButtonContainer:hover {
-        border: 2px solid white;
-    }
-
-    .forwardButtonContainer:hover i {
-        opacity: 100%;
-    }
-
-    .backButtonContainer {
-        position: absolute;
-        width: auto;
-        left: 0px;
-        top: calc(50% - 32px);
-        height: 64px;
-        z-index: 1;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 5px;
-        border: solid 0px rgba(171, 165, 165, 0.8);
-    }
-
-    .backButtonContainer i {
-        color: white;
-        font-size: 4em;
-        opacity: 40%;
-        transform: rotate(180deg);
-    }
-
-    .backButtonContainer:hover {
-        opacity: 90%;
-    }
-
-    .backButtonContainer:hover {
-        border: 2px solid white;
-    }
-
-    .backButtonContainer:hover i {
-        opacity: 100%;
     }
 }
 
@@ -81,48 +60,6 @@
         position: relative;
         z-index: 0;
     }
-
-    .forwardButtonContainer {
-        position: absolute;
-        width: auto;
-        right: 0px;
-        top: calc(50% - 32px);
-        height: 64px;
-        z-index: 1;
-        background-color: gray;
-        opacity: 50%;
-    }
-
-    .forwardButtonContainer i {
-        color: white;
-        font-size: 4em;
-    }
-
-    .forwardButtonContainer:hover {
-        opacity: 100%;
-    }
-
-    .backButtonContainer {
-        position: absolute;
-        width: auto;
-        left: 0px;
-        top: calc(50% - 32px);
-        background-color: gray;
-        height: 64px;
-        z-index: 1;
-        opacity: 50%;
-    }
-
-    .backButtonContainer i {
-        color: white;
-        font-size: 4em;
-        transform: rotate(180deg);
-    }
-
-    .backButtonContainer:hover {
-        opacity: 100%;
-    }
-
 }
 
 
@@ -137,48 +74,6 @@
         position: relative;
         z-index: 0;
     }
-
-    .forwardButtonContainer {
-        position: absolute;
-        width: auto;
-        right: 0px;
-        top: calc(50% - 32px);
-        height: 64px;
-        z-index: 1;
-        background-color: gray;
-        opacity: 50%;
-    }
-
-    .forwardButtonContainer i {
-        color: white;
-        font-size: 4em;
-    }
-
-    .forwardButtonContainer:hover {
-        opacity: 100%;
-    }
-
-    .backButtonContainer {
-        position: absolute;
-        width: auto;
-        left: 0px;
-        top: calc(50% - 32px);
-        background-color: gray;
-        height: 64px;
-        z-index: 1;
-        opacity: 50%;
-    }
-
-    .backButtonContainer i {
-        color: white;
-        font-size: 4em;
-        transform: rotate(180deg);
-    }
-
-    .backButtonContainer:hover {
-        opacity: 100%;
-    }
-
 }
 
 
@@ -193,48 +88,6 @@
         position: relative;
         z-index: 0;
     }
-
-    .forwardButtonContainer {
-        position: absolute;
-        width: auto;
-        right: 0px;
-        top: calc(50% - 32px);
-        height: 64px;
-        z-index: 1;
-        background-color: gray;
-        opacity: 50%;
-    }
-
-    .forwardButtonContainer i {
-        color: white;
-        font-size: 4em;
-    }
-
-    .forwardButtonContainer:hover {
-        opacity: 100%;
-    }
-
-    .backButtonContainer {
-        position: absolute;
-        width: auto;
-        left: 0px;
-        top: calc(50% - 32px);
-        background-color: gray;
-        height: 64px;
-        z-index: 1;
-        opacity: 50%;
-    }
-
-    .backButtonContainer i {
-        color: white;
-        font-size: 4em;
-        transform: rotate(180deg);
-    }
-
-    .backButtonContainer:hover {
-        opacity: 100%;
-    }
-
 }
 
 @media screen and (min-width: 600px) and (max-width: 799px) {
@@ -248,48 +101,6 @@
         position: relative;
         z-index: 0;
     }
-
-    .forwardButtonContainer {
-        position: absolute;
-        width: auto;
-        right: 0px;
-        top: calc(50% - 32px);
-        height: 64px;
-        z-index: 1;
-        background-color: gray;
-        opacity: 50%;
-    }
-
-    .forwardButtonContainer i {
-        color: white;
-        font-size: 4em;
-    }
-
-    .forwardButtonContainer:hover {
-        opacity: 100%;
-    }
-
-    .backButtonContainer {
-        position: absolute;
-        width: auto;
-        left: 0px;
-        top: calc(50% - 32px);
-        background-color: gray;
-        height: 64px;
-        z-index: 1;
-        opacity: 50%;
-    }
-
-    .backButtonContainer i {
-        color: white;
-        font-size: 4em;
-        transform: rotate(180deg);
-    }
-
-    .backButtonContainer:hover {
-        opacity: 100%;
-    }
-
 }
 
 @media screen and (max-width: 599px) {
@@ -302,47 +113,6 @@
         max-width: 100%;
         position: relative;
         z-index: 0;
-    }
-
-    .forwardButtonContainer {
-        position: absolute;
-        width: auto;
-        right: 0px;
-        top: calc(50% - 32px);
-        height: 64px;
-        z-index: 1;
-        background-color: gray;
-        opacity: 50%;
-    }
-
-    .forwardButtonContainer i {
-        color: white;
-        font-size: 4em;
-    }
-
-    .forwardButtonContainer:hover {
-        opacity: 100%;
-    }
-
-    .backButtonContainer {
-        position: absolute;
-        width: auto;
-        left: 0px;
-        top: calc(50% - 32px);
-        background-color: gray;
-        height: 64px;
-        z-index: 1;
-        opacity: 50%;
-    }
-
-    .backButtonContainer i {
-        color: white;
-        font-size: 4em;
-        transform: rotate(180deg);
-    }
-
-    .backButtonContainer:hover {
-        opacity: 100%;
     }
 
 }

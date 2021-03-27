@@ -51,19 +51,19 @@
 
 .main {
     box-shadow: 0px 0px 8px 5px rgba(0, 0, 0, 0.2), 0px 0px 8px 5px rgba(0, 0, 0, 0.19);
-    background-image: linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9));
+    background-color: #093145;
     border-bottom-left-radius: 5px;
     border-radius: 5px;
     position: relative;
 }
 
 .main:hover {
-    box-shadow: 0px 0px 5px 5px #093145;
+    box-shadow: 0px 0px 5px 5px red;
 }
 
 .movieDetailsContainer {
     position: static;
-    color: #093145;
+    color: white;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 10px;
     min-height: 75px;
@@ -71,7 +71,6 @@
 }
 
 .bottomContainer {
-    color: #093145;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 10px;
     min-height: 75px;
@@ -86,7 +85,7 @@
 }
 
 .releaseDate {
-    color: white;
+    color: #9b9797;
 }
 
 .icons {
@@ -102,7 +101,7 @@
     font-size: 1.5em;
 }
 .watchListIcon {
-    color: rgb(9, 49, 69, .5);
+    color: rgba(112,107,107,0.5);
 }
 
 .watchListIconSelected {
@@ -121,7 +120,7 @@
 }
 
 .watchedIcon {
-    color: rgb(9, 49, 69, .5);
+    color: rgba(112,107,107,0.5);
 }
 
 .watchedIconSelected {
@@ -129,11 +128,11 @@
 }
 
 .watchListIconSelected:hover {
-    color: rgb(9, 49, 69, 0.5);
+    color: rgba(112,107,107,0.5);
 }
 
 .watchedIconSelected:hover {
-    color: rgb(9, 49, 69, .5);
+    color: rgba(112,107,107,0.5);
 }
 
 .watchedIcon:hover {
@@ -144,16 +143,16 @@
 .tooltip .tooltiptext {
   visibility: hidden;
   font-size: .75em;
-  background-color: black;
+  background-color: rgba(112,107,107,1);
   color: white;
   text-align: center;
   border-radius: 6px;
-  padding: 5px 0;
+  padding: 5px 5px;
 
   /* Position the tooltip */
   position: absolute;
   z-index: 1;
-  right: 10%;
+  right: 12%;
 }
 
 .tooltip:hover .tooltiptext {

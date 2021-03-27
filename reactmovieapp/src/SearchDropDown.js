@@ -21,6 +21,7 @@ class SearchDropDown extends React.Component {
         let allowNoSuggestion = (this.props.allowNoSuggestion !== undefined) ? this.props.allowNoSuggestion : true;
         // let the index into the suggestion array be -1 if you can select a value that is not suggested
         let suggestionIndex = (allowNoSuggestion) ? -1 : 0;
+        let inputBoxStyle = (this.props.inputBoxStyle === undefined) ? {} : this.props.inputBoxStyle;
 
         this.state = {
             // current value in search box, optional prop to preset value
@@ -73,11 +74,15 @@ class SearchDropDown extends React.Component {
             // ex. {Movies: {Path:"/movie/", key:"id"}, Users: {Path:"/profile/",key:"username"}}
             redirectPaths: this.props.redirectPaths,
             searchDropDownContainterStyle: (this.props.searchDropDownContainterStyle === undefined) ? {} : this.props.searchDropDownContainterStyle,
-            inputBoxStyle: (this.props.inputBoxStyle === undefined) ? {} : this.props.inputBoxStyle,
+            inputBoxStyle: inputBoxStyle,
             dropDownContentStyle: (this.props.dropDownContentStyle === undefined) ? {} : this.props.dropDownContentStyle,
             suggestionStyle: (this.props.suggestionStyle === undefined) ? {} : this.props.suggestionStyle,
             keyStyle: (this.props.keyStyle === undefined) ? {} : this.props.keyStyle,
+            searchIconContainerStyle: (this.props.searchIconContainerStyle === undefined) ? {} : this.props.searchIconContainerStyle,
             searchIconStyle: (this.props.searchIconStyle === undefined) ? {} : this.props.searchIconStyle,
+            // set the style on the input when focused
+            focusStyle: (this.props.focusStyle === undefined) ? inputBoxStyle : this.props.focusStyle,
+            inputCustomStyle: (this.props.inputCustomStyle === undefined) ? undefined : this.props.inputCustomStyle,
             // boolean to show the drop down from the search bar or not, if true, allowNoSuggestion should also be true
             showSuggestions: (this.props.showSuggestions === undefined) ? true : this.props.showSuggestions,
             // boolean to set the search value to the selected value on arrow key push
@@ -507,6 +512,7 @@ class SearchDropDown extends React.Component {
     // called when search box gains focus
     async onFocusHandler()
     {
+
         // if a value is in the search box, get suggestions for it
         let tempSuggestions = await this.props.getSuggestions(this.state.value);
         let suggestionIndex = (this.state.allowNoSuggestion) ? -1 : 0;
@@ -750,13 +756,18 @@ class SearchDropDown extends React.Component {
             {
                 searchIcon = (
                     <div className={style.searchButtonContainer}>
-                        <button><i class={`fas fa-search`} style={this.state.searchIconStyle} onClick={this.searchIconClickHandler}/></button>
+                        <button style={this.state.searchIconContainerStyle}><i class={`fas fa-search`} style={this.state.searchIconStyle} onClick={this.searchIconClickHandler}/></button>
                     </div>
                 );
             }
         }
         let suggestions = (this.state.showSuggestions) ? this.generateSuggestionBox() : "";
         let placeHolder = (this.state.locked) ? this.state.lockedMessage : this.state.placeHolder;
+        let className = `${style.inputFieldBoxLong} ${style.inputBoxWithIcon} validInputBox`;
+        if(this.state.inputCustomStyle !== undefined)
+        {
+            className =  `${style.inputFieldBoxLong} ${style.inputBoxWithIcon} ${this.state.inputCustomStyle} validInputBox`
+        }
         return (
               <div className={style.searchDropDownContainer} style={this.state.searchDropDownContainterStyle}>
                   <div className={style.inputFieldContainer}>
@@ -765,7 +776,7 @@ class SearchDropDown extends React.Component {
                           type="text"
                           name="value"
                           form = {this.state.form}
-                          className={`${style.inputFieldBoxLong} ${style.inputBoxWithIcon} validInputBox`}
+                          className={className}
                           onChange={this.changeHandler}
                           onFocus={this.onFocusHandler}
                           maxlength={this.state.maxLength}
@@ -774,7 +785,7 @@ class SearchDropDown extends React.Component {
                           onBlur={this.offFocusHandler}
                           value={this.state.value}
                           onKeyDown={this.keyPressedHandler}
-                          style={this.state.inputBoxStyle}
+                          style={(this.state.focused) ? this.state.focusStyle : this.state.inputBoxStyle}
                           disabled={this.state.locked}
                       />
                       {searchIcon}
