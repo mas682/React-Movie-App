@@ -1,4 +1,3 @@
-
 .headerContainer {
     width: 97.5%;
     margin-left: 2.5%;
@@ -23,8 +22,7 @@
         align-content: flex-start;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: black;
-        color: white;
+        background: white;
         min-height: calc(100vh - 125px);
     }
 
@@ -47,8 +45,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: black;
-        color: white;
+        background: white;
         min-height: calc(100vh - 125px);
     }
 
@@ -71,8 +68,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: black;
-        color: white;
+        background: white;
         min-height: calc(100vh - 125px);
     }
 
@@ -95,8 +91,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: black;
-        color: white;
+        background: white;
         min-height: calc(100vh - 125px);
     }
 
@@ -119,8 +114,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: black;
-        color: white;
+        background: white;
         min-height: calc(100vh - 85px);
     }
 
@@ -143,8 +137,7 @@
         align-content: flex-start;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: black;
-        color: white;
+        background: white;
         min-height: calc(100vh - 85px);
     }
 

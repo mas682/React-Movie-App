@@ -809,6 +809,10 @@ class SearchPage extends React.Component {
                                 items={movieDisplays}
                                 id={"movieCarousel"}
                                 itemContainerClass={style.movieContainer}
+                                forwardButtonIconStyle={{"color": "red"}}
+                                forwardButtonContainerStyle={style.forwardButtonContainerStyle}
+                                backButtonIconStyle={{"color": "red"}}
+                                backButtonContainerStyle={style.backButtonContainerStyle}
                                 // used to make windowResizeEventHandler more efficint
                                 maxVisibleItems={6}
                             />
@@ -985,16 +989,7 @@ class SearchPage extends React.Component {
                         placeHolder={"Find a movie or user"}
                         form={"searchPage"}
                         maxLength={250}
-                        inputBoxStyle={{background:"black", color:"white", border: ".5px solid red"}}
-                        focusStyle={{
-                            background:"black",
-                             border: "1px solid red",
-                             "box-shadow":"0px 0px 15px red",
-                             color: "white"
-                         }}
-                         searchIconContainerStyle={{background:"black"}}
-                         searchIconStyle={{background:"black"}}
-                         inputCustomStyle={style.inputCustomStyle}
+                        inputCustomStyle={style.inputCustomStyle}
                     />
                 </div>
                 {types}

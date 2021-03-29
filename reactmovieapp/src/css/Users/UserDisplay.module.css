@@ -1,18 +1,13 @@
-
-
-
-
 .main {
     box-shadow: 0px 0px 8px 5px rgba(0, 0, 0, 0.2), 0px 0px 8px 5px rgba(0, 0, 0, 0.19);
-    background-color: #093145;
-    /*linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9));*/
+    background-image: linear-gradient(to bottom, rgba(112,107,107,0.9), rgba(112,107,107,0.9));
     border-bottom-left-radius: 5px;
     border-radius: 5px;
     position: relative;
 }
 
 .main:hover {
-    box-shadow: 0px 0px 5px 5px red;
+    box-shadow: 0px 0px 5px 5px #093145;
 }
 
 .userImageContainer {
@@ -44,7 +39,7 @@
 
 .userDetailsContainer {
     position: static;
-    color: #9b9797;
+    color: #093145;
     min-height: 25px;
     width: 100%;
 }
@@ -61,7 +56,7 @@
 .actualName {
     font-size: 0.8em;
     font-weight: 500;
-    color:  #9b9797;
+    color:  #093145;
     padding-bottom: 3px;
     padding-left: 3px;
 }
@@ -91,12 +86,12 @@
 
 .followColor:hover
 {
-    background-color: #827d7d;
+    background-color: DarkGray;
 }
 
 .notFollowingColor
 {
-    background-color: #827d7d;
+    background-color: DarkGray;
 }
 
 .notFollowingColor:hover

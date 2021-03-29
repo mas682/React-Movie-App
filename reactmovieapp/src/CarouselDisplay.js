@@ -18,10 +18,11 @@ class CarouselDisplay extends React.Component {
             // if not close to the end of the items list
             maxVisibleItems: props.maxVisibleItems,
             itemsContainerStyle: (props.itemsContainerStyle === undefined) ? {} : props.itemsContainerStyle,
-            backButtonContainerStyle: (props.backButtonContainerStyle === undefined) ? {} : props.backButtonContainerStyle,
+            backButtonContainerStyle: (props.backButtonContainerStyle === undefined) ? undefined : props.backButtonContainerStyle,
             backButtonIconStyle: (props.backButtonIconStyle === undefined) ? {} : props.backButtonIconStyle,
-            forwardButtonContainerStyle: (props.forwardButtonContainerStyle === undefined) ? {} : props.forwardButtonContainerStyle,
-            forwardButtonIconStyle: (props.forwardButtonIconStyle === undefined) ? {} : props.forwardButtonIconStyle
+            forwardButtonContainerStyle: (props.forwardButtonContainerStyle === undefined) ? undefined : props.forwardButtonContainerStyle,
+            forwardButtonIconStyle: (props.forwardButtonIconStyle === undefined) ? {} : props.forwardButtonIconStyle,
+
         };
         /**** DO NOT USE MARGINS ON EITHER THE outterItemContainer or the container for the items passed in ***/
         /*** use padding! ***/
@@ -113,14 +114,13 @@ class CarouselDisplay extends React.Component {
         let itemContainer = itemContainers[0];
         let itemWidth = CarouselDisplay.getContainerWidth(itemContainer);
         let itemCount = Math.floor(outterWidth/itemWidth);
-
-        if(this.state.id === "userCarousel")
+        if(itemCount > this.state.items.length)
         {
-            console.log("Items visible: " + this.state.itemsVisible);
-            console.log("Item count: " + itemCount);
-            console.log(this.state.id);
+            itemCount = this.state.items.length;
         }
+
         // may want to keep track of max visible items? to avoid all these calculations unless at end?
+        //left off here...issues when going smaller to bigger now that bigger to smaller fixed
         if(this.state.itemsVisible !== itemCount && this.state.items.length >= this.state.itemsVisible && this.state.firstItemIndex > (this.state.items.length - itemCount))
         {
             let counter = 0;
@@ -131,10 +131,6 @@ class CarouselDisplay extends React.Component {
             while(counter < itemContainers.length)
             {
                 let itemContainer = itemContainers[counter];
-                if(this.state.id === "userCarousel")
-                {
-                    console.log(itemContainer);
-                }
                 itemContainer.style.transform = "translate3d(" + widthPercent + ", 0px, 0px)";
                 counter = counter + 1;
             }
@@ -174,8 +170,13 @@ class CarouselDisplay extends React.Component {
         let backwardButton = "";
         if(this.state.firstItemIndex > 0)
         {
+            let backwardButtonContainerStyle = `${style.buttonContainer} ${style.backButton}`;
+            if(this.state.backButtonContainerStyle !== undefined)
+            {
+                backwardButtonContainerStyle = `${style.buttonContainer} ${style.backButton} ${this.state.backButtonContainerStyle}`
+            }
             backwardButton = (
-                <div className={`${style.buttonContainer} ${style.backButton}`} style={this.state.backButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("back")}}>
+                <div className={backwardButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("back")}}>
                     <i class="fas fa-angle-right" style={this.state.backButtonIconStyle}/>
                 </div>
             );
@@ -184,8 +185,13 @@ class CarouselDisplay extends React.Component {
         let forwardButton = "";
         if(this.state.firstItemIndex < (this.state.items.length - this.state.itemsVisible) && (this.state.items.length) > this.state.itemsVisible)
         {
+            let forwardButtonContainerStyle = `${style.buttonContainer} ${style.forwardButton}`;
+            if(this.state.forwardButtonContainerStyle !== undefined)
+            {
+                forwardButtonContainerStyle = `${style.buttonContainer} ${style.forwardButton} ${this.state.forwardButtonContainerStyle}`
+            }
             forwardButton = (
-                <div className={`${style.buttonContainer} ${style.forwardButton}`} style={this.state.forwardButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("forward")}}>
+                <div className={forwardButtonContainerStyle} onClick={() =>{this.directionalButtonHandler("forward")}}>
                     <i class={`fas fa-angle-right`} style={this.state.forwardButtonIconStyle}/>
                 </div>
             )

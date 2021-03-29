@@ -22,7 +22,6 @@
 
 @media screen and (min-width: 1400px) {
     .mainBodyContainer {
-        color: white;
         width: 70%;
         min-height: calc(100vh - 125px);
         height: auto;
@@ -35,13 +34,12 @@
         justify-content: center;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: black;
+        background: white;
     }
 }
 
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
     .mainBodyContainer {
-        color: white;
         width: 75%;
         height: calc(100vh - 125px);
         margin-left: 12.5%;
@@ -53,13 +51,12 @@
         justify-content: center;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: black;
+        background: white;
     }
 }
 
 @media screen and (min-width: 1000px) and (max-width: 1199px) {
     .mainBodyContainer {
-        color: white;
         width: 80%;
         height: calc(100vh - 125px);
         margin-left: 10%;
@@ -71,13 +68,12 @@
         justify-content: center;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: black;
+        background: white;
     }
 }
 
 @media screen and (min-width: 800px) and (max-width: 999px) {
     .mainBodyContainer {
-        color: white;
         width: 85%;
         height: calc(100vh - 125px);
         margin-left: 7.5%;
@@ -89,13 +85,12 @@
         justify-content: center;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: black;
+        background: white;
     }
 }
 
 @media screen and (min-width: 600px) and (max-width: 799px) {
     .mainBodyContainer {
-        color: white;
         width: 90%;
         height: calc(100vh - 85px);
         margin-left: 5%;
@@ -107,13 +102,12 @@
         justify-content: center;
         margin-top: 20px;
         margin-bottom: 20px;
-        background: black;
+        background: white;
     }
 }
 
 @media screen and (max-width: 599px) {
     .mainBodyContainer {
-        color: white;
         width: 95%;
         height: calc(100vh - 85px);
         margin-left: 2.5%;
@@ -125,6 +119,6 @@
         justify-content: center;
         margin-bottom: 20px;
         margin-top: 20px;
-        background: black;
+        background: white;
     }
 }
