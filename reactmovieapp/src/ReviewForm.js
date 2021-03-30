@@ -3,7 +3,8 @@ import React from 'react';
 import history from './History'
 import { Link } from 'react-router-dom';
 import Popup from 'reactjs-popup';
-import style from './css/reviewform.module.css';
+import style from './css/ReviewForm/reviewform.module.css';
+import './css/ReviewForm/ReviewForm.css';
 import SearchDropDown from './SearchDropDown.js';
 import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
@@ -709,7 +710,6 @@ class ReviewPopUp extends React.Component {
 
     generateReviewInput()
     {
-        console.log("Rows in input generator: " + this.state.numberRows);
         let infoMessage = "";
         if(this.state.review.length === this.state.reviewMaxCharacters)
         {
@@ -800,7 +800,7 @@ class ReviewPopUp extends React.Component {
                         open={this.state.open}
                         onClose={this.closeModal}
                         closeOnDocumentClick
-                        contentStyle={{ width: "40%"}}
+                        className={"reviewForm"}
                     >
                         <div className={style.modal}>
                             {/* &times is the multiplication symbol (x) --> */}
@@ -827,7 +827,7 @@ class ReviewPopUp extends React.Component {
                                     <h4 className={style.h4NoMargin}>Rating</h4>
                                 </div>
                                 <div className = {`${style.centeredMaxWidthContainer} ${style.containerMarginBottom10}`}>
-                                    <fieldset class="rating">
+                                    <fieldset className={`rating ${style.ratingStars}`}>
                                         {ratingStars}
                                     </fieldset>
                                 </div>

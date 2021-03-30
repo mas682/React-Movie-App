@@ -5,6 +5,29 @@
   width: 100%;
   overflow-y:auto;
 }
+
+@media only screen and (max-width: 599px) {
+    .modal {
+      max-height: calc(100vh - 150px);
+    }
+
+    .ratingStars {
+        font-size: 9px;
+    }
+
+    /* used to create a container that takes up half the screen */
+    .proConContainer {
+        width: 90% !important;
+        margin-right: 5% !important;
+        margin-left: 5% !important;
+    }
+
+    .reviewInputField {
+        max-height: calc(100vh - 180px) !important;
+    }
+}
+
+
 /* below is for the scroll bar on the pop up */
 /* width */
 .reviewInputField::-webkit-scrollbar,

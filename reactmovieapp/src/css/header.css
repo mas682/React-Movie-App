@@ -96,7 +96,7 @@
     }
 }
 
-@media screen and (max-width: 799.99px) {
+@media screen and (max-width: 799px) {
     .App-Header {
         background-color: #333;
         height: 45px;
