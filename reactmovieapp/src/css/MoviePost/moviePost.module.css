@@ -31,6 +31,16 @@
 	width: 50px;
 }
 
+.socialButtonContainer {
+
+}
+
+.socialButtons {
+	display: grid;
+    grid-template-columns: 49% 2% 49%;
+    position: relative;
+}
+
 
 .post {
 	margin: auto;
@@ -118,6 +128,15 @@
     background-color: DarkGray;
 }
 
+.commentButton {
+	grid-column-start: 3;
+}
+
+.likeButton {
+	grid-column-start: 1;
+}
+
+
 .postButton:hover
 {
     background-color: blue;
@@ -175,6 +194,22 @@
     margin-bottom: 20px;
 	word-break: break-all;
 	word-wrap: break-word;
+	-webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+}
+
+.showMoreButton
+{
+	background: none;
+	border: none;
+	color: blue;
+	font-weight: 600;
+	padding: 0px;
+}
+
+.showMoreButton:focus {
+	outline: none;
 }
 
 .timestampContainer
@@ -233,8 +268,66 @@
 	outline: none;
 }
 
-.moviePoster {
+@media only screen and (max-width: 599px) {
+	.rating {
+		font-size: 3em !important;
+	}
+
+	.moviePosterContainer {
+		width: 70% !important;
+		margin-left: 15% !important;
+		margin-right: 15% !important;
+	}
+}
+
+
+.moviePosterContainer {
 	width: 50%;
+	margin-left: 25%;
+	margin-right: 25%;
+	justify-content: center;
+	display: flex;
+	flex-flow: row wrap;
+}
+
+.innerMoviePosterContainer {
+	width: 100%;
+	padding-top: 177.77%;
+	position: relative;
+}
+
+.moviePoster {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.emptyMoviePoster {
+    width: 100%;
+    height: 100%;
+    background: lightgray;
+    display: grid;
+    position: absolute;
+    top: 0;
+    left: 0;
+	color: black;
+}
+
+.emptyMoviePoster div {
+    justify-self: center;
+    align-self: center;
+    font-size: 2em;
+    font-weight: 500;
+    margin-left: 10%;
+    margin-right: 10%;
+    text-align: center;
+	font-weight: 550;
+}
+
+.emptyMoviePoster:visited {
+	color: black;
 }
 
 .watchListIcon {
@@ -302,12 +395,12 @@ fieldset, label {
 
 .rating {
     border: none;
+	font-size: 3.5em;
 }
 
 .rating > input { display: none; }
 .rating > label:before {
     margin: 5px;
-    font-size: 3em;
     font-family: FontAwesome;
     display: inline-block;
     content: "\f005";

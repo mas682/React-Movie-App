@@ -54,7 +54,10 @@ class MoviePost extends React.Component {
                 type: "popup",
                 // path to movies page
                 moviePath: this.props.data.moviePath,
-                props: this.props
+                props: this.props,
+                // boolean to indicate if showing full review or not
+                showFullReview: false,
+                visibleReview: this.props.data.review.substring(0, 250)
             };
         }
         else
@@ -99,7 +102,10 @@ class MoviePost extends React.Component {
                 removePost: false,
                 type: "non-popup",
                 moviePath: moviePath,
-                props: this.props
+                props: this.props,
+                // boolean to indicate if showing full review or not
+                showFullReview: false,
+                visibleReview: this.props.data.review.substring(0, 250)
             };
         }
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
@@ -120,6 +126,7 @@ class MoviePost extends React.Component {
         this.updateLiked = this.updateLiked.bind(this);
         this.removeFunction = this.removeFunction.bind(this);
         this.removePostResultsHandler = this.removePostResultsHandler.bind(this);
+        this.showReviewHandler = this.showReviewHandler.bind(this);
     }
 
     /*
@@ -230,9 +237,22 @@ class MoviePost extends React.Component {
             type: "non-popup",
             moviePath: moviePath,
             // storing the props as needed for getDerivedStateFromProps
-            props: props
+            props: props,
+            // boolean to indicate if showing full review or not
+            showFullReview: false,
+            visibleReview: props.data.review.substring(0, 250)
         };
     }
+
+
+    showReviewHandler()
+    {
+        this.setState({
+            showFullReview: !this.state.showFullReview,
+            visibleReview: (!this.state.showFullReview) ? this.state.review : this.props.data.review.substring(0, 250)
+        });
+    }
+
 
     // function to update the liked count and sets liked to true/false
     // based on the value of value
@@ -637,9 +657,9 @@ class MoviePost extends React.Component {
         if(this.state.liked)
         {
             // turn the liked button to blue
-            return <button className={`${style.postButton} blueButton`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
+            return <button className={`${style.postButton} ${style.likeButton} blueButton`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
         }
-        return <button className={`${style.postButton}`} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
+        return <button className={`${style.postButton} ${style.likeButton} `} onClick={(e)=> this.likeButtonHandler(e)}><i class={`fa fa-thumbs-up ${style.thumbsUp}`}/> Like</button>;
     }
 
     //This function is used to geneate the good/bad buttons with the appropriate values in the HTML
@@ -788,11 +808,11 @@ class MoviePost extends React.Component {
     {
         if(!this.state.openPopUp)
         {
-            return (<button className={`${style.postButton}`} onClick={() => this.changeState("openPopUp", true)}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>);
+            return (<button className={`${style.postButton} ${style.commentButton}`} onClick={() => this.changeState("openPopUp", true)}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>);
         }
         else
         {
-            return (<button className={`${style.postButton} blueButton`} onClick={() => this.changeState("openPopUp", false)}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>);
+            return (<button className={`${style.postButton} ${style.commentButton} blueButton`} onClick={() => this.changeState("openPopUp", false)}><i class={`far fa-comment ${style.commentIcon}`}/> Comment</button>);
         }
     }
 
@@ -810,6 +830,20 @@ class MoviePost extends React.Component {
         let postPopUp = this.generatePostPopUp();
         let popUpButton = this.generatePostPopUpButton();
         let profilePath = "/profile/" + this.state.username;
+        let showMoreButton = "";
+        if(this.state.showFullReview && this.state.review.length > 250)
+        {
+            showMoreButton = (<button className={style.showMoreButton} onClick={this.showReviewHandler}>...less</button>);
+        }
+        else if(!this.state.showFullReview && this.state.review.length > 250)
+        {
+            showMoreButton = (<button className={style.showMoreButton} onClick={this.showReviewHandler}>...more</button>);
+        }
+        let movieImage = (<img className={style.moviePoster} src={this.state.poster}/>);
+        if(this.state.movie.poster === null)
+        {
+            movieImage = (<div className={style.emptyMoviePoster}><div>No image to display</div></div>);
+        }
         return(<React.Fragment>
             <div className={style.postHeader}>
                 <div className={style.reviewerContainer}>
@@ -832,8 +866,8 @@ class MoviePost extends React.Component {
             <div>
                 <h3>{this.state.title}</h3>
             </div>
-            <div className="postImage">
-                <Link to={this.state.moviePath}><img className={style.moviePoster} src={this.state.poster}/></Link>
+            <div className={style.moviePosterContainer}>
+                <Link to={this.state.moviePath} className={style.innerMoviePosterContainer}>{movieImage}</Link>
             </div>
             <form id={this.state.form} />
             <div className="centeredMaxWidthContainer">
@@ -860,7 +894,7 @@ class MoviePost extends React.Component {
                 </div>
             </div>
             <div className={style.review}>
-                {this.state.review}
+                {this.state.visibleReview}{showMoreButton}
             </div>
             <div className={style.timestampContainer}>
                 {this.state.time}
@@ -871,10 +905,9 @@ class MoviePost extends React.Component {
                     {likesPopUp}
                 </div>
             </div>
-            <div className="socialButtonContainer">
-                <div className="socialButtons">
+            <div className={style.socialButtonContainer}>
+                <div className={style.socialButtons}>
                     {likedButton}
-                    <button className={`${style.postButton}`}>Go to movie page</button>
                     {popUpButton}
                     {postPopUp}
                     {editPopup}
