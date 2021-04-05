@@ -9,14 +9,10 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var app = express();
 const fetch = require('node-fetch');
-/*
-// connect to the database
-sequelize.sync().then(() => {
-  app.listen(9000, () => {
-    console.log(`Example app listening on port 9000!`);
-  });
-});
-*/
+
+// to run, npm run server
+
+
 // restart db each time
 //! NEVER SET THIS TO TRUE, will remove triggers from tables
 const eraseDatabaseOnSync = false;

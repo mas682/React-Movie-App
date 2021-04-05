@@ -6,7 +6,9 @@ database.ini
 test.json
 movieList.json
 ScriptResults
+/movie-app-api/Config.json
 
 emailInfo.txt
-EmailConfig.json
 command-to-run.txt
+/node_modules
+/movie-app-api/uploads

@@ -1,5 +1,11 @@
 import {verifyLogin, validateUsernameParameter, validateIntegerParameter, validateStringParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
+import {imageHandler} from './fileHandler.js';
+const fs = require('fs');
+const AWS = require('aws-sdk');
+const config = require('../Config.json');
+
+
 
 // function to get the reviews associated with a users profile
 const profileHandler = (req, res, next) => {
@@ -86,6 +92,11 @@ const selectPath = (cookie, req, res, cookieValid) =>
             {
                 foundNoCookie = true;
             }
+        }
+        else if(req.params.type === "setimage")
+        {
+            setImage(cookie, req, res);
+            routeFound = true;
         }
     }
     else if(req.method === "POST")
@@ -715,5 +726,15 @@ const removeUser = async (cookie, req, res) =>
     }
 
 }
+
+// function to handle updating a users profile pic
+const setImage = async (cookie, req, res) =>
+{
+    imageHandler();
+    console.log("Finished");
+    res.status(200).send();
+}
+
+
 
 export {profileHandler};

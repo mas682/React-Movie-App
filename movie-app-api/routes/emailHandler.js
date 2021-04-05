@@ -1,7 +1,7 @@
 import {verifyLogin} from './globals.js';
 import models, { sequelize } from '../src/models';
 var nodemailer = require('nodemailer');
-const config = require('../EmailConfig.json');
+const config = require('../Config.json');
 
 // function to get information associated with the user who has the cookie
 const emailHandler = async (recipient, subject, text, html) => {
