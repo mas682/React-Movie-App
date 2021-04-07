@@ -7,6 +7,7 @@
     "server": "nodemon --exec babel-node app.js"
   },
   "dependencies": {
+    "@sendgrid/mail": "^7.4.2",
     "aws-sdk": "^2.879.0",
     "babel-preset-env": "^1.7.0",
     "cookie-parser": "~1.4.4",
