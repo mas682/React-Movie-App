@@ -30,16 +30,18 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
             <head>
             <title>`+ title + `</title>
             </head>
-            <body style="background-color: #990000; min-height: calc(100vh - 100px); margin: 50px;">
-                <div style="background-color: #333; min-height: 100%;">
-                    <div style="text-align: center; height: 10%; display: flex; justify-Content: center; align-items: center;">
-                        <h1 style="color: white">` + header +`</h1>
+            <body style="background-color: #990000; padding: 50px;">
+                <div style="background-color: #333; height: 10vh; min-heigh: 70vh;">
+                    <div style="text-align: center; height: 7vh; display: flex; justify-Content: center; align-items: center;">
+                        <div>
+                            <h1 style="color: white">` + header +`</h1>
+                        </div>
                     </div>
-                    <div style="min-height: calc(80% - 20px); color: gray; margin-left: 5%; margin-right: 5%; padding: 10px; text-align: left; background-color: #f9f9f9">
-                        <div style="height: calc(95% - 20px - 20%);">
+                    <div style="min-height: calc(56vh - 20px); height: 10vh; color: gray; margin-left: 5%; margin-right: 5%; padding: 10px; text-align: left; background-color: #f9f9f9">
+                        <div style="height: calc(100% - (20px + 40px));">
                         `+ body +`
                         </div>
-                        <div style="height: 5%; text-align: center; color: black">
+                        <div style="height: 40px; text-align: center; color: black">
                             ` + footer + `
                         </div>
                     </div>
