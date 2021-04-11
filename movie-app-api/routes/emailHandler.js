@@ -31,10 +31,10 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
             <title>`+ title + `</title>
             </head>
             <body style="background-color: #990000; padding: 50px;">
-                <div style="background-color: #333; height: 10vh; min-heigh: 70vh;">
-                    <div style="text-align: center; height: 7vh; display: flex; justify-Content: center; align-items: center;">
-                        <div>
-                            <h1 style="color: white">` + header +`</h1>
+                <div style="background-color: #333; min-height: 70vh; height: 10vh;">
+                    <div style="display:grid;text-align:center;height: 7vh;">
+                        <div style="color: white; font-size: 2em; font-weight: bold; margin: auto;">
+                            ` + header +`
                         </div>
                     </div>
                     <div style="min-height: calc(56vh - 20px); height: 10vh; color: gray; margin-left: 5%; margin-right: 5%; padding: 10px; text-align: left; background-color: #f9f9f9">
@@ -53,13 +53,12 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
     `;
 
     // left off here
-    work on email formatting through gmail, then fix here...
-    issue with calc using % for some reason..
-    use vh? for margin, padding, sizes?
+    //need to fix footer in main body
+    //need to fix header
 
     console.log(html);
     let msg = {
-        to: config.email.username,
+        to: "mstropkey682@gmail.com",
         from: config.emailSender.helpEmail,
         subject: subject,
         text: "test",
@@ -74,6 +73,7 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
         console.log(error);
         return false;
     });
+    return true;
 
     return result;
 };

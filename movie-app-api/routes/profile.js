@@ -756,6 +756,7 @@ const setImage = async (cookie, req, res) =>
 */
 const emailTest = async(cookie, req, res) =>
 {
+    let subject = "Movie-Fanatics Verification Test";
     let header = "Movie-Fanatics";
     let title = "Email Header";
     let body = `<h2 style="color: #333">Welcome to Movie-Fanatics!</h2>This is a test paragraph for movie-fanatics.  This is a test paragraph for movie-fanatics.
@@ -763,21 +764,25 @@ const emailTest = async(cookie, req, res) =>
     This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.
     This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.`
     let footer =  `Visit us at <a href="movie-fanatics.com">movie-fanatics.com</a><br>Please contact us if you have any questions at <a href="mailto:help@movie-fanatics.com">help@movie-fanatics.com</a>`;
+    // above is for testing
+
     let html = `
         <html>
             <head>
             <title>`+ title + `</title>
             </head>
-            <body style="background-color: #990000; min-height: calc(100vh - 100px); margin: 50px;">
-                <div style="background-color: #333; min-height: 100%;">
-                    <div style="text-align: center; height: 10%; display: flex; justify-Content: center; align-items: center;">
-                        <h1 style="color: white">` + header +`</h1>
+            <body style="background-color: #990000; padding: 50px;">
+                <div style="background-color: #333; height: 10vh; min-heigh: 70vh;">
+                    <div style="text-align: center; height: 7vh; display: flex; justify-Content: center; align-items: center;">
+                        <div>
+                            <h1 style="color: white">` + header +`</h1>
+                        </div>
                     </div>
-                    <div style="min-height: calc(80% - 20px); color: gray; margin-left: 5%; margin-right: 5%; padding: 10px; text-align: left; background-color: #f9f9f9">
-                        <div style="height: calc(95% - 20px - 20%);">
+                    <div style="min-height: calc(56vh - 20px); height: 10vh; color: gray; margin-left: 5%; margin-right: 5%; padding: 10px; text-align: left; background-color: #f9f9f9">
+                        <div style="height: calc(100% - (20px + 40px));">
                         `+ body +`
                         </div>
-                        <div style="height: 5%; text-align: center; color: black">
+                        <div style="height: 40px; text-align: center; color: black">
                             ` + footer + `
                         </div>
                     </div>
