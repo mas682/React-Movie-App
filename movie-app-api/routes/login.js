@@ -408,12 +408,12 @@ const validatePassCode = async (req, res) =>
 
 const sendVerificationEmail = async (verificationCode, email) =>
 {
-    let html = "<b>Movie Fantatics!</b>" +
-               "<br> Your temporary verification code is: " + verificationCode;
-    let text = "If you did not request this verification code, make sure your account"
-                + " has not been hacked";
-    let header = "Movie Fanatics Temporary Verification Code";
-    let result = await emailHandler(email, header, text, html);
+    let subject = "Movie-Fanatics Temporary Verification Code";
+    let title = subject;
+    let body = `<h2 style="color: #333; font-size: 1.25em;">Movie-Fanatics Verificaiton Code</h2>
+                Your temporary verificaiton code is: ` + verificationCode + `<br><br>If you did not
+                request this verification code, make sure your account has not been compromised`;
+    let result = await emailHandler(email, subject, title, undefined, body, undefined);
     return result;
 }
 

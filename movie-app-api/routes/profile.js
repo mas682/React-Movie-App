@@ -767,30 +767,84 @@ const emailTest = async(cookie, req, res) =>
     // above is for testing
 
     let html = `
-        <html>
-            <head>
-            <title>`+ title + `</title>
-            </head>
-            <body style="background-color: #990000; padding: 50px;">
-                <div style="background-color: #333; height: 10vh; min-heigh: 70vh;">
-                    <div style="text-align: center; height: 7vh; display: flex; justify-Content: center; align-items: center;">
-                        <div>
-                            <h1 style="color: white">` + header +`</h1>
-                        </div>
-                    </div>
-                    <div style="min-height: calc(56vh - 20px); height: 10vh; color: gray; margin-left: 5%; margin-right: 5%; padding: 10px; text-align: left; background-color: #f9f9f9">
-                        <div style="height: calc(100% - (20px + 40px));">
-                        `+ body +`
-                        </div>
-                        <div style="height: 40px; text-align: center; color: black">
-                            ` + footer + `
-                        </div>
-                    </div>
-                    <div style="height: 10%">
+    <html>
+        <meta name="color-scheme" content="light dark">
+        <meta name="supported-color-schemes" content="light dark">
+        <head>
+        <style type="text/css">
+            :root {
+                Color-scheme: light;
+                supported-color-schemes:light;
+            }
+            body {
+                background-color: #990000;
+                padding: 50px;
+            }
+            .outterContainer
+            {
+                background-color: #333;
+                min-height: 700px;
+                height: 100px;
+            }
+            .outterHeader {
+                color: white;
+                font-size: 2em;
+                font-weight: bold;
+                margin: auto;
+            }
+            .outterHeaderContainer {
+                display:grid;
+                text-align:center;
+                height: 70px;
+            }
+            .innerContainer {
+                min-height: 540px;
+                height: 100px;
+                color: gray;
+                margin-left: 5%;
+                margin-right: 5%;
+                padding: 10px;
+                text-align: left;
+                background-color: #f9f9f9;
+            }
+            .mainText {
+                height: calc(100% - (20px + 40px));
+            }
+            .innerFooter
+            {
+                height: 40px;
+                text-align: center;
+                color: black;
+            }
+            .outterFooter {
+                height: 70px;
+            }
+        </style>
+        <title>Email Header</title>
+        </head>
+        <body>
+            <div class="outterContainer">
+                <div class="outterHeaderContainer">
+                    <div class="outterHeader">
+                        Movie-Fanatics
                     </div>
                 </div>
-            </body>
-        </html>
+                <div class="innerContainer">
+                    <div class="mainText">
+                    <h2 style="color: #333">Welcome to Movie-Fanatics!</h2>This is a test paragraph for movie-fanatics.  This is a test paragraph for movie-fanatics.
+This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.
+This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.
+This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.
+                    </div>
+                    <div class="innerFooter">
+                        Visit us at <a href="movie-fanatics.com">movie-fanatics.com</a><br>Please contact us if you have any questions at <a href="mailto:help@movie-fanatics.com">help@movie-fanatics.com</a>
+                    </div>
+                </div>
+                    <div class="outterFooter"
+                </div>
+            </div>
+        </body>
+    </html>
     `;
     res.status(200).send(html);
 }

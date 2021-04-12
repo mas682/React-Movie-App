@@ -484,11 +484,13 @@ const removeTempUser = async (cookie, req, res) =>
 
 const sendVerificationEmail = async (verificationCode, email) =>
 {
-    let html = "<b>Welcome to Movie Fantatics!</b>" +
-               "<br> Your verification code is: " + verificationCode;
-    let text = "If you did not sign up for Movie Fanatics, please disregard";
     let header = "Movie Fanatics Verification Code";
-    let result = await emailHandler(email, header, text, html);
+    let subject = "Movie-Fanatics Email Verification";
+    let title = subject;
+    let body = `<h2 style="color: #333; font-size: 1.25em;">Welcome to Movie-Fanatics!</h2>
+                Your verification code is: ` + verificationCode + `<br><br>If you did not
+                request to sign up for <a href="https://www.movie-fanatics.com">movie-fanatics.com</a>, please disregard this email.`;
+    let result = await emailHandler(email, subject, title, undefined, body, undefined);
     return result;
 }
 
