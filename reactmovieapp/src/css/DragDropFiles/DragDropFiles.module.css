@@ -35,6 +35,10 @@
     height: 0.1px;
     opacity: 0;
     overflow: hidden;
-    position: absolute;
+    z-index: -1;
+}
+
+.box__input {
+    background: red;
     z-index: -1;
 }
