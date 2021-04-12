@@ -1,0 +1,46 @@
+/* this class controls the popup box width
+   it can only be seen when inspecting the doc
+   the default width is 50%
+   !important overrides the html style */
+
+@media screen and (min-width: 1400px) {
+    .profilePicPopup-content {
+        width: 25% !important;
+        color: black;
+    }
+}
+
+@media screen and (min-width: 1200px) and (max-width: 1399px) {
+    .profilePicPopup-content {
+        width: 30% !important;
+        color: black;
+    }
+}
+
+@media screen and (min-width: 1000px) and (max-width: 1199px) {
+    .profilePicPopup-content {
+        width: 35% !important;
+        color: black;
+    }
+}
+
+@media screen and (min-width: 800px) and (max-width: 999px) {
+    .profilePicPopup-content {
+        width: 45% !important;
+        color: black;
+    }
+}
+
+@media screen and (min-width: 600px) and (max-width: 799px) {
+    .profilePicPopup-content {
+        width: 60% !important;
+        color: black;
+    }
+}
+
+@media screen and (max-width: 599px) {
+    .profilePicPopup-content {
+        width: 70% !important;
+        color: black;
+    }
+}

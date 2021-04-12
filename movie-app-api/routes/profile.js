@@ -98,11 +98,6 @@ const selectPath = (cookie, req, res, cookieValid) =>
             setImage(cookie, req, res);
             routeFound = true;
         }
-        else if(req.params.type === "emailtest")
-        {
-            emailTest(cookie, req, res);
-            routeFound = true;
-        }
     }
     else if(req.method === "POST")
     {
@@ -739,115 +734,5 @@ const setImage = async (cookie, req, res) =>
     console.log("Finished");
     res.status(200).send();
 }
-
-/*
-<div data-role="module-unsubscribe" class="module" role="module" data-type="unsubscribe" style="color:#444444; font-size:12px; line-height:20px; padding:16px 16px 16px 16px; text-align:Center;" data-muid="4e838cf3-9892-4a6d-94d6-170e474d21e5">
-
-  <p style="font-size:12px; line-height:20px;">
-    <a class="Unsubscribe--unsubscribeLink" href="{{{unsubscribe}}}" target="_blank" style="font-family:sans-serif;text-decoration:none;">
-      Unsubscribe
-    </a>
-    -
-    <a href="{{{unsubscribe_preferences}}}" target="_blank" class="Unsubscribe--unsubscribePreferences" style="font-family:sans-serif;text-decoration:none;">
-      Unsubscribe Preferences
-    </a>
-  </p>
-</div>
-*/
-const emailTest = async(cookie, req, res) =>
-{
-    let subject = "Movie-Fanatics Verification Test";
-    let header = "Movie-Fanatics";
-    let title = "Email Header";
-    let body = `<h2 style="color: #333">Welcome to Movie-Fanatics!</h2>This is a test paragraph for movie-fanatics.  This is a test paragraph for movie-fanatics.
-    This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.
-    This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.
-    This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.`
-    let footer =  `Visit us at <a href="movie-fanatics.com">movie-fanatics.com</a><br>Please contact us if you have any questions at <a href="mailto:help@movie-fanatics.com">help@movie-fanatics.com</a>`;
-    // above is for testing
-
-    let html = `
-    <html>
-        <meta name="color-scheme" content="light dark">
-        <meta name="supported-color-schemes" content="light dark">
-        <head>
-        <style type="text/css">
-            :root {
-                Color-scheme: light;
-                supported-color-schemes:light;
-            }
-            body {
-                background-color: #990000;
-                padding: 50px;
-            }
-            .outterContainer
-            {
-                background-color: #333;
-                min-height: 700px;
-                height: 100px;
-            }
-            .outterHeader {
-                color: white;
-                font-size: 2em;
-                font-weight: bold;
-                margin: auto;
-            }
-            .outterHeaderContainer {
-                display:grid;
-                text-align:center;
-                height: 70px;
-            }
-            .innerContainer {
-                min-height: 540px;
-                height: 100px;
-                color: gray;
-                margin-left: 5%;
-                margin-right: 5%;
-                padding: 10px;
-                text-align: left;
-                background-color: #f9f9f9;
-            }
-            .mainText {
-                height: calc(100% - (20px + 40px));
-            }
-            .innerFooter
-            {
-                height: 40px;
-                text-align: center;
-                color: black;
-            }
-            .outterFooter {
-                height: 70px;
-            }
-        </style>
-        <title>Email Header</title>
-        </head>
-        <body>
-            <div class="outterContainer">
-                <div class="outterHeaderContainer">
-                    <div class="outterHeader">
-                        Movie-Fanatics
-                    </div>
-                </div>
-                <div class="innerContainer">
-                    <div class="mainText">
-                    <h2 style="color: #333">Welcome to Movie-Fanatics!</h2>This is a test paragraph for movie-fanatics.  This is a test paragraph for movie-fanatics.
-This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.
-This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.
-This is a test paragraph for movie-fanatics. This is a test paragraph for movie-fanatics.
-                    </div>
-                    <div class="innerFooter">
-                        Visit us at <a href="movie-fanatics.com">movie-fanatics.com</a><br>Please contact us if you have any questions at <a href="mailto:help@movie-fanatics.com">help@movie-fanatics.com</a>
-                    </div>
-                </div>
-                    <div class="outterFooter"
-                </div>
-            </div>
-        </body>
-    </html>
-    `;
-    res.status(200).send(html);
-}
-
 
 export {profileHandler};

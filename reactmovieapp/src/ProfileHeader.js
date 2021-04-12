@@ -5,6 +5,7 @@ import UserListPopUp from './UserListPopUp.js';
 import style5 from './css/userProfile.module.css';
 import './css/forms.css'
 import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import EditProfilePicPopUp from './EditProfilePicPopUp.js';
 
 
 class ProfileHeader extends React.Component {
@@ -25,7 +26,8 @@ class ProfileHeader extends React.Component {
             postCount: this.props.postCount,
             loading: true,
             loggedInUser: this.props.currentUser,
-            redirect: false
+            redirect: false,
+            showEditProfilePic: false
         };
         this.removePopUp = this.removePopUp.bind(this);
         this.updateFollowerCount = this.updateFollowerCount.bind(this);
@@ -366,6 +368,10 @@ class ProfileHeader extends React.Component {
         {
             this.setState({displayFollowed: true});
         }
+        else if(type === "showEditProfilePic")
+        {
+            this.setState({showEditProfilePic: true});
+        }
     }
 
     removePopUp(type)
@@ -445,6 +451,10 @@ class ProfileHeader extends React.Component {
                         showErrorPage={this.props.showErrorPage}
                     />;
         }
+        if(this.state.showEditProfilePic)
+        {
+            popup = <EditProfilePicPopUp />;
+        }
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";
         // if this header is for the logged in users page
@@ -466,7 +476,11 @@ class ProfileHeader extends React.Component {
 
         return (
             <div className={style5.profileHeader}>
-                <img className={style5.profilePic} src={require("./images/profile-pic.jpg")}/>
+                <img
+                    className={style5.profilePic}
+                    src={require("./images/profile-pic.jpg")}
+                    onClick={(e)=> this.generatePopUp(e, "showEditProfilePic")}
+                />
                 <h3>{this.state.username}</h3>
                 {followButton}
                 {followerDisplay}

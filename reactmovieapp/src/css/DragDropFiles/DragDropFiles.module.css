@@ -1,0 +1,40 @@
+.inputContainer
+{
+    height: 200px;
+    border: 5px gray dashed;
+    border-radius: 5px;
+}
+
+
+.box__dragndrop,
+.box__uploading,
+.box__success,
+.box__error {
+  display: none;
+}
+
+
+.box {
+    font-size: 1.25rem;
+    position: relative;
+    padding: 100px 20px;
+    outline: 2px dashed #92b0b3;
+    outline-offset: -10px;
+}
+
+.dragover {
+    background-color: #c8dadf;
+}
+
+.box .box__dragndrop {
+    display: inline;
+}
+
+.box__file {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
