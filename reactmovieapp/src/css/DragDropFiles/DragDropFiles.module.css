@@ -6,31 +6,36 @@
 }
 
 
-.box__dragndrop,
-.box__uploading,
-.box__success,
-.box__error {
-  display: none;
-}
-
-
-.box {
+.dropContainer {
     font-size: 1.25rem;
     position: relative;
-    padding: 100px 20px;
-    outline: 2px dashed #92b0b3;
+    padding: 120px 20px;
     outline-offset: -10px;
+}
+
+.outline {
+    outline: 2px dashed #92b0b3;
+}
+
+.errorOutline {
+    outline: 2px dashed red;
+}
+
+.errorText {
+    color: red;
+    display: block;
+    font-size: 0.75em;
 }
 
 .dragover {
     background-color: #c8dadf;
 }
 
-.box .box__dragndrop {
+.dropContainer .info_text {
     display: inline;
 }
 
-.box__file {
+.imageInput {
     width: 0.1px;
     height: 0.1px;
     opacity: 0;
@@ -38,7 +43,37 @@
     z-index: -1;
 }
 
-.box__input {
-    background: red;
-    z-index: -1;
+.previewContainer {
+    display: grid;
+    justify-content: center;
+    align-items: center;
+}
+
+.imageContainer {
+    width: min-content;
+    position: relative;
+}
+
+.image {
+    height: 250px;
+    display: block;
+}
+
+.cancelIcon {
+    font-size: 2.5em;
+    color: gray;
+    position: absolute;
+    z-index: 1;
+    top: 5px;
+    right: 5px;
+}
+
+/* make the image opacity 80% on cancel icon hover*/
+.cancelIcon:hover + img
+{
+    opacity: 80%;
+}
+
+.cancelIcon:hover {
+    color: red;
 }

@@ -17,7 +17,9 @@ class EditProfilePicPopUp extends React.Component {
             messageId: -1,
             showSuccessPage: false,
             awaitingResults: false,
-            currentUser: props.currentUser
+            currentUser: props.currentUser,
+            image: undefined,
+            imageData: undefined
         };
 
         this.closeModal = this.closeModal.bind(this);
@@ -25,6 +27,7 @@ class EditProfilePicPopUp extends React.Component {
         this.showLoginPopUp = this.showLoginPopUp.bind(this);
         this.generateEditDisplay = this.generateEditDisplay.bind(this);
         this.generateVerificationInput = this.generateVerificationInput.bind(this);
+        this.updateImage = this.updateImage.bind(this);
 //        this.sendVerification = this.sendVerification.bind(this);
     }
 
@@ -43,6 +46,14 @@ class EditProfilePicPopUp extends React.Component {
         this.setState({[name]: value});
     }
 
+    updateImage(result)
+    {
+        this.setState({
+            image: result.image,
+            imageData: result.imageData
+        });
+    }
+
 
     generateVerificationInput()
     {
@@ -52,7 +63,7 @@ class EditProfilePicPopUp extends React.Component {
                     <h4 className={style.inputFieldH4} id="validLabel">Profile pic:</h4>
                 </label>
                 <div className={style.verificationInputContainer}>
-                    <DragDropFile />
+                    <DragDropFile setImage={this.updateImage}/>
                 </div>
             </React.Fragment>);
         if(this.state.verificationError)
@@ -158,7 +169,7 @@ class EditProfilePicPopUp extends React.Component {
                         &times;
                         </a>
                         <div className="header">
-                            <h3 className="inlineH3"> Forgot Password </h3>
+                            <h3 className="inlineH3"> Set Profile Picture</h3>
                         </div>
                         <div className={style.alertContent}>
                             <Alert

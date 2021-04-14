@@ -380,6 +380,10 @@ class ProfileHeader extends React.Component {
         {
             this.setState({displayFollowers: false});
         }
+        else if(type === "showEditProfilePic")
+        {
+            this.setState({showEditProfilePic: false});
+        }
         else
         {
             this.setState({displayFollowed: false});
@@ -453,7 +457,7 @@ class ProfileHeader extends React.Component {
         }
         if(this.state.showEditProfilePic)
         {
-            popup = <EditProfilePicPopUp />;
+            popup = <EditProfilePicPopUp removeFunction={() => {this.removePopUp("showEditProfilePic")}}/>;
         }
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";

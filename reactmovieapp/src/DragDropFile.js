@@ -1,16 +1,18 @@
 import React from 'react';
-import { Link, Redirect } from 'react-router-dom';
 import style from './css/DragDropFiles/DragDropFiles.module.css';
-import Alert from './Alert.js';
 
 // documentation for PopUp https://react-popup.elazizi.com/component-api/
 class DragDropFile extends React.Component {
     constructor(props) {
         super(props);
+        // if one is not undefined, both should not be undefined
+        let image = (this.props.image === undefined) ? undefined : this.props.image;
+        let imageData = (this.props.imageData === undefined) ? undefined : this.props.imageData;
         this.state = {
+            // keeps track of if user hovering over input container
             counter: 0,
             error: "",
-            file: undefined,
+            image: undefined,
             imageData: undefined,
             type: "image"
         };
@@ -20,6 +22,8 @@ class DragDropFile extends React.Component {
         this.dragLeaveHandler = this.dragLeaveHandler.bind(this);
         this.imageValidator = this.imageValidator.bind(this);
         this.inputImageHandler = this.inputImageHandler.bind(this);
+        this.previewImage = this.previewImage.bind(this);
+        this.removeImage = this.removeImage.bind(this);
     }
 
     dragEnterHandler(e) {
@@ -29,7 +33,7 @@ class DragDropFile extends React.Component {
         this.setState({counter: counter});
         if(counter === 1)
         {
-            let form = document.querySelector('.' + style.box);
+            let form = document.querySelector('.' + style.dropContainer);
             form.classList.add(style.dragover);
         }
     }
@@ -55,7 +59,7 @@ class DragDropFile extends React.Component {
         this.setState({counter: counter});
         if(counter === 0)
         {
-            let form = document.querySelector('.' + style.box);
+            let form = document.querySelector('.' + style.dropContainer);
             form.classList.remove(style.dragover);
         }
     }
@@ -114,14 +118,18 @@ class DragDropFile extends React.Component {
         let result = this.imageValidator(files);
         if(result.error === "")
         {
+            this.setState({
+                image: result.image
+            });
             let reader = new FileReader();
             reader.readAsDataURL(result.image);
             reader.onloadend = () => {
                 this.setState({imageData: reader.result});
+                this.props.setImage({
+                    image: result.image,
+                    imageData: reader.result
+                });
             }
-            this.setState({
-                file: result.file
-            });
         }
         else
         {
@@ -131,40 +139,86 @@ class DragDropFile extends React.Component {
         }
     }
 
+    removeImage()
+    {
+        this.setState({
+            image: undefined,
+            imageData: undefined
+        });
+    }
+
+    previewImage()
+    {
+        console.log(this.state.image);
+        let output = (
+            <React.Fragment>
+            <div className={style.previewContainer}>
+                <div className={style.imageContainer}>
+                    <i class={`fas fa-times-circle ${style.cancelIcon}`} onClick={this.removeImage}></i>
+                    <img className={style.image} src={this.state.imageData} />
+                </div>
+            </div>
+            </React.Fragment>
+        );
+        return output;
+    }
+
     render() {
         let img = "";
         if(this.state.imageData !== undefined)
         {
-            img = <img src={this.state.imageData} />;
+            return this.previewImage();
         }
-        return (
-            <form
-                className={style.box}
-                method="post"
-                action=""
-                enctype="multipart/form-data"
+        let output = (
+            <div
+                className={`${style.dropContainer} ${style.outline}`}
                 onDrop={(e) => {this.dragDropHandler(e, this.state.type)}}
                 onDragOver={this.dragOverHandler}
                 onDragEnter={this.dragEnterHandler}
                 onDragLeave={this.dragLeaveHandler}
-                id={"form"}
             >
-                <div class={style.box__input}>
+                <div>
                     <input
-                        class={style.box__file}
+                        class={style.imageInput}
                         type="file"
                         accept = "image/*"
                         onChange={(e) => {this.inputImageHandler(e, "input")}}
                         name="files[]"
-                        id="file"
+                        id="fileInput"
                     />
-                    <label for="file"><strong>Choose a file</strong><span class="box__dragndrop"> or drag it here</span>.</label>
+                    <label for="fileInput"><strong>Choose a file</strong><span class={style.info_text}> or drag it here</span>.</label>
                 </div>
-                {img}
-                <div class={style.box__uploading}>Uploading…</div>
-                <div class={style.box__success}>Done!</div>
-                <div class={style.box__error}>Error! <span></span>.</div>
-            </form>
+            </div>
+        );
+        if(this.state.error !== "")
+        {
+            output = (
+                <div
+                    className={`${style.dropContainer} ${style.errorOutline}`}
+                    onDrop={(e) => {this.dragDropHandler(e, this.state.type)}}
+                    onDragOver={this.dragOverHandler}
+                    onDragEnter={this.dragEnterHandler}
+                    onDragLeave={this.dragLeaveHandler}
+                >
+                    <div>
+                        <input
+                            class={style.imageInput}
+                            type="file"
+                            accept = "image/*"
+                            onChange={(e) => {this.inputImageHandler(e, "input")}}
+                            name="files[]"
+                            id="fileInput"
+                        />
+                        <label for="fileInput"><strong>Choose a file</strong><span class={style.info_text}> or drag it here</span>.</label>
+                        <span className={style.errorText}>{this.state.error}</span>
+                    </div>
+                </div>
+            )
+        }
+        return (
+            <React.Fragment>
+                {output}
+            </React.Fragment>
         );
     }
 }
