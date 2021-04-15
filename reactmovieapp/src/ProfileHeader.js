@@ -457,7 +457,10 @@ class ProfileHeader extends React.Component {
         }
         if(this.state.showEditProfilePic)
         {
-            popup = <EditProfilePicPopUp removeFunction={() => {this.removePopUp("showEditProfilePic")}}/>;
+            popup = <EditProfilePicPopUp
+                        removeFunction={() => {this.removePopUp("showEditProfilePic")}}
+                        currentUser={this.state.loggedInUser}
+                    />;
         }
         let followerDisplay = this.generateFollowerDisplay();
         let followButton = "";

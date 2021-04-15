@@ -10,6 +10,23 @@ import {homePage} from './homePage.js';
 import {getUserInfo} from './getUserInfo.js';
 import {movieHandler} from './movies.js';
 import {searchHandler} from './search.js';
+//import {uploads} from './fileHandler.js';
+
+let multer = require('multer');
+
+let storage = multer.diskStorage({
+    // store the file in the uploads folder
+    destination: function(req, file, cb) {
+        cb(null, 'uploads')
+    },
+    // use the files original name
+    filename: function(req, file, cb) {
+        cb(null, file.originalname)
+    }
+});
+
+// holds the storage object
+var uploads = multer({storage});
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -59,7 +76,7 @@ router.get('/profile/:userId/:type', function(req, res, next) {
 });
 
 // used for all posts routes to /profile/username/some other parameter
-router.post('/profile/:userId/:type', function(req, res, next) {
+router.post('/profile/:userId/:type', uploads.single('file'), function(req, res, next) {
     profileHandler(req, res, next);
 });
 

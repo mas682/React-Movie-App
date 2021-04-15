@@ -1,31 +1,6 @@
-/* sets H4 size and to inline */
-.inputFieldH4 {
-    display: inline;
-    font-size: 1.5em;
-}
-
-.verificationButtonContainer {
+.submitButtonContainer {
     width: 100%;
     margin-top: 10px;
-}
-
-.usernameInput
-{
-    width: 95%;
-    align-self: center;
-}
-
-.usernameInputContainer {
-    display: flex;
-    flex-flow: column;
-    width: 100%;
-    text-align: center;
-}
-
-.inputLabel
-{
-    width: 100%;
-    align-self: center;
 }
 
 .infoTextContainer {
@@ -38,27 +13,11 @@
     font-weight: 700;
 }
 
-.errorText {
-    margin-left: 2.5%;
-    margin-right: 2.5%;
-    text-align: left;
-}
-
-.verificationTextMargins {
-    margin-bottom: 20px;
-}
-
-.verificationInputContainer {
+.inputContainer {
     width: 100%;
 }
 
-.verificationInput {
-    font-size: 2.5em !important;
-    text-align: center;
-    width: 8ch !important;
-}
-
-.verificationContainer {
+.mainContainer {
     width: 100%;
     position: relative;
     text-align: center;

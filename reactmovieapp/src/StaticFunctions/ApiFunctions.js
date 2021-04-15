@@ -41,16 +41,32 @@ const apiPostTextRequest = (url, parameters) =>
         });
 };
 
-const apiPostJsonRequest = (url, parameters) =>
+const apiPostJsonRequest = (url, parameters, headers, json) =>
 {
-    const requestOptions = {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json'},
-        body: JSON.stringify(
-            parameters
-        )
-    };
+    headers = (headers === undefined) ? { 'Content-Type': 'application/json'} : headers;
+    let requestOptions;
+    if(json === undefined || json)
+    {
+        requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            headers: headers,
+            body: JSON.stringify(
+                parameters
+            )
+        };
+    }
+    else
+    {
+        requestOptions = {
+            method: 'POST',
+            credentials: 'include',
+            //headers: headers,
+            body: parameters
+        };
+    }
+
+    console.log(requestOptions);
 
     let status = 0;
     return fetch(url, requestOptions)

@@ -93,11 +93,6 @@ const selectPath = (cookie, req, res, cookieValid) =>
                 foundNoCookie = true;
             }
         }
-        else if(req.params.type === "setimage")
-        {
-            setImage(cookie, req, res);
-            routeFound = true;
-        }
     }
     else if(req.method === "POST")
     {
@@ -158,6 +153,18 @@ const selectPath = (cookie, req, res, cookieValid) =>
             if(cookieValid)
             {
                 removeUser(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
+        else if(req.params.type === "set_picture")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                setImage(cookie, req, res);
             }
             else
             {
@@ -698,7 +705,7 @@ const removeUser = async (cookie, req, res) =>
         if(result === undefined)
         {
             res.status(500).send({
-                message: "Server failed to user for some unkown reason",
+                message: "Server failed to remove user for some unkown reason",
                 requester: requester
             });
         }
@@ -730,9 +737,13 @@ const removeUser = async (cookie, req, res) =>
 // function to handle updating a users profile pic
 const setImage = async (cookie, req, res) =>
 {
-    imageHandler();
+    imageHandler(req, res);
+    //console.log(req);
+    console.log(req.body);
+    console.log(req.file);
+    console.log(req.data);
     console.log("Finished");
-    res.status(200).send();
+    res.status(200).send({requester: cookie.name, message: "Test"});
 }
 
 export {profileHandler};

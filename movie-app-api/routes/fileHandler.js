@@ -18,7 +18,7 @@ const storage = multer.diskStorage({
 });
 
 // holds the storage object
-const uploads = multer({ storage });
+var uploads = multer({ storage });
 
 
 
@@ -47,7 +47,9 @@ const imageHandler2 = async() => {
 
 
 // test function
-const imageHandler = async() => {
+const imageHandler = async(req, res) => {
+    //uploadImageHandler(req, res);
+    uploads.single('file');
     // find the directory
     const uploadsDir = path.join('uploads');
     fs.readdir(uploadsDir, (err, files) => {
@@ -89,4 +91,4 @@ const imageFilter = function(req, file, cb) {
     cb(null, true);
 };
 
-export {imageHandler}
+export {imageHandler, uploads}

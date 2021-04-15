@@ -95,6 +95,10 @@ class DragDropFile extends React.Component {
                 {
                     error = "Max image size is 1MB";
                 }
+                else if(file.name.length > 100)
+                {
+                    error = "File name cannot be greater than 100 characters";
+                }
                 else
                 {
                     return {
@@ -145,11 +149,14 @@ class DragDropFile extends React.Component {
             image: undefined,
             imageData: undefined
         });
+        this.props.setImage({
+            image: undefined,
+            imageData: undefined
+        });
     }
 
     previewImage()
     {
-        console.log(this.state.image);
         let output = (
             <React.Fragment>
             <div className={style.previewContainer}>

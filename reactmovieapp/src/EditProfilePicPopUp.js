@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import './css/SetProfilePic/SetProfilePic.css';
 import style from './css/SetProfilePic/SetProfilePic.module.css';
@@ -7,7 +7,6 @@ import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
 import DragDropFile from './DragDropFile.js';
 
-// documentation for PopUp https://react-popup.elazizi.com/component-api/
 class EditProfilePicPopUp extends React.Component {
     constructor(props) {
         super(props);
@@ -21,14 +20,12 @@ class EditProfilePicPopUp extends React.Component {
             image: undefined,
             imageData: undefined
         };
-
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.showLoginPopUp = this.showLoginPopUp.bind(this);
         this.generateEditDisplay = this.generateEditDisplay.bind(this);
-        this.generateVerificationInput = this.generateVerificationInput.bind(this);
         this.updateImage = this.updateImage.bind(this);
-//        this.sendVerification = this.sendVerification.bind(this);
+        this.sendApiRequest = this.sendApiRequest.bind(this);
     }
 
     closeModal() {
@@ -50,45 +47,36 @@ class EditProfilePicPopUp extends React.Component {
     {
         this.setState({
             image: result.image,
-            imageData: result.imageData
+            imageData: result.imageData,
+            messages: [],
+            messageId: -1
         });
     }
 
-
-    generateVerificationInput()
+    sendApiRequest()
     {
-        let verificationInput =  (
-            <React.Fragment>
-                <label>
-                    <h4 className={style.inputFieldH4} id="validLabel">Profile pic:</h4>
-                </label>
-                <div className={style.verificationInputContainer}>
-                    <DragDropFile setImage={this.updateImage}/>
-                </div>
-            </React.Fragment>);
-        if(this.state.verificationError)
-        {
-            verificationInput = (
-                <React.Fragment>
-                    <label>
-                        <h4 className={`${style.inputFieldH4} errorLabel`}>Verification Code:</h4>
-                    </label>
-                    <div className={style.verificationInputContainer}>
-                        <input
-                            type="text"
-                            name="verificationCode"
-                            form = "form2"
-                            maxLength = {6}
-                            autocomplete="off"
-                            disabled={this.state.lockVerificationInput}
-                            className={`inputFieldBoxLong inputBoxError ${style.verificationInput}`}
-                            onChange={this.changeHandler}
-                        />
-                    </div>
-                    <small className="errorTextSmall">{this.state.verificationError}</small>
-                </React.Fragment>);
-        }
-        return verificationInput;
+        let data = new FormData();
+        data.append('file', this.state.image);
+        let params = data;
+        params = {};
+        console.log(params);
+        let header = { 'Content-Type': 'multipart/form-data'};
+        //header = {};
+        let url = "http://localhost:9000/profile/" + this.state.currentUser + "/set_picture";
+        this.setState({
+            awaitingResults: true,
+            messageId: -1
+        });
+        apiPostJsonRequest(url, params, header, false).then((result) =>{
+            let status = result[0];
+            let message = result[1].message;
+            let requester = result[1].requester;
+            //this.registrationResultsHandler(status, message, requester);
+            alert(status);
+            this.setState({
+                awaitingResults: false
+            });
+        });
     }
 
 
@@ -111,27 +99,32 @@ class EditProfilePicPopUp extends React.Component {
 
     generateEditDisplay()
     {
-        let verificationInput = this.generateVerificationInput();
-        // add text saying email sent to...
-        let content = (
-            <React.Fragment>
-                <div className="content">
-                    <form id="form2" onSubmit={this.requestVerificationCode} noValidate/>
-                    <div className={style.verificationContainer}>
-                        {verificationInput}
-                    </div>
-                </div>
+        let button = "";
+        if(this.state.image !== undefined)
+        {
+            button = (
                 <div className="actions">
-                    <div className={style.verificationButtonContainer}>
+                    <div className={style.submitButtonContainer}>
                         <button
-                            form="form2"
-                            value="create_account"
+                            value="update_picture"
                             className="submitButton"
-                            onClick={this.sendVerification}
-                        >VERIFY ACCOUNT
+                            onClick={this.sendApiRequest}
+                        >Upload Picture
                         </button>
                     </div>
                 </div>
+            );
+        }
+        let content = (
+            <React.Fragment>
+                <div className="content">
+                    <div className={style.mainContainer}>
+                        <div className={style.inputContainer}>
+                            <DragDropFile setImage={this.updateImage}/>
+                        </div>
+                    </div>
+                </div>
+                {button}
             </React.Fragment>);
         return content;
     }
@@ -146,12 +139,13 @@ class EditProfilePicPopUp extends React.Component {
         }
         else if(!this.state.showSuccessPage && this.state.awaitingResults)
         {
-            content = this.generateLoadingContent("Processing request...");
+            content = this.generateLoadingContent("Updating profile picture...");
         }
         else if(this.state.showSuccessPage)
         {
+            // may want to just close it out and show an alert saying picture successfully
+            // updated
             className = "verification";
-            content = this.generateVerificationForm();
         }
 
 
@@ -176,9 +170,9 @@ class EditProfilePicPopUp extends React.Component {
                                 messages={this.state.messages}
                                 messageId={this.state.messageId}
                                 innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%", "padding-top": "10px"}}
-                                symbolStyle={{"width": "8%", "margin-top": "4px"}}
+                                symbolStyle={{"width": "8%", "margin-top": "2px"}}
                                 messageBoxStyle={{width: "80%"}}
-                                closeButtonStyle={{width: "8%", "margin-top": "4px"}}
+                                closeButtonStyle={{width: "8%", "margin-top": "2px"}}
                                 outterContainerStyle={{position: "inherit"}}
                                 style={{"margin-bottom":"5px"}}
                             />
