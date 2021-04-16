@@ -58,10 +58,9 @@ class EditProfilePicPopUp extends React.Component {
         let data = new FormData();
         data.append('file', this.state.image);
         let params = data;
-        params = {};
         console.log(params);
         let header = { 'Content-Type': 'multipart/form-data'};
-        //header = {};
+        header = {};
         let url = "http://localhost:9000/profile/" + this.state.currentUser + "/set_picture";
         this.setState({
             awaitingResults: true,

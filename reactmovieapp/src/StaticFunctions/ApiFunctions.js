@@ -61,7 +61,7 @@ const apiPostJsonRequest = (url, parameters, headers, json) =>
         requestOptions = {
             method: 'POST',
             credentials: 'include',
-            //headers: headers,
+            headers: headers,
             body: parameters
         };
     }

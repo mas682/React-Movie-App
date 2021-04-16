@@ -14,11 +14,15 @@ const storage = multer.diskStorage({
     // use the files original name
     filename: function(req, file, cb) {
         cb(null, file.originalname)
+    },
+    onError: function(err, next) {
+        console.log('error', err);
+        next(err);
     }
 });
 
 // holds the storage object
-var uploads = multer({ storage });
+var imageUpload = multer({ storage }).single('image');
 
 
 
@@ -47,23 +51,16 @@ const imageHandler2 = async() => {
 
 
 // test function
-const imageHandler = async(req, res) => {
-    //uploadImageHandler(req, res);
-    uploads.single('file');
-    // find the directory
-    const uploadsDir = path.join('uploads');
-    fs.readdir(uploadsDir, (err, files) => {
-        if(err)
+const imageHandler = async(req, res, next) => {
+    imageUpload(req, res,function(err) {
+        if(!err)
         {
-            console.log({msg: err});
-        }
-        if(files.length === 0)
-        {
-            console.log({msg: 'No Images Uploaded!'});
+            next();
         }
         else
         {
-            console.log(files);
+            console.log(err);
+            res.status(400).send("Failed");
         }
     });
 }
@@ -91,4 +88,4 @@ const imageFilter = function(req, file, cb) {
     cb(null, true);
 };
 
-export {imageHandler, uploads}
+export {imageHandler, imageUpload}

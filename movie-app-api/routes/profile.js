@@ -21,18 +21,18 @@ const profileHandler = (req, res, next) => {
         verifyLogin(cookie).then((cookieValid) =>
         {
             // get the reviews and pass the cookie
-            selectPath(JSON.parse(cookie), req, res, cookieValid);
+            selectPath(JSON.parse(cookie), req, res, cookieValid, next);
         });
     }
     // if no cookie was found
     else
     {
         // pass that cookie was not valid
-        selectPath(undefined, req, res, false);
+        selectPath(undefined, req, res, false, next);
     }
 };
 
-const selectPath = (cookie, req, res, cookieValid) =>
+const selectPath = (cookie, req, res, cookieValid, next) =>
 {
     let routeFound = false;
     let foundNoCookie = false;
@@ -159,16 +159,24 @@ const selectPath = (cookie, req, res, cookieValid) =>
                 foundNoCookie = true;
             }
         }
-        else if(req.params.type === "set_picture")
+        else
         {
-            routeFound = true;
-            if(cookieValid)
+            if(req.params.type === undefined)
             {
-                setImage(cookie, req, res);
-            }
-            else
-            {
-                foundNoCookie = true;
+                let urlSplit = req.url.split('/');
+                let type = urlSplit[3];
+                if(type !== undefined && type === "set_picture")
+                {
+                    routeFound = true;
+                    if(cookieValid)
+                    {
+                        setImage(cookie, req, res, next);
+                    }
+                    else
+                    {
+                        foundNoCookie = true;
+                    }
+                }
             }
         }
     }
@@ -735,15 +743,18 @@ const removeUser = async (cookie, req, res) =>
 }
 
 // function to handle updating a users profile pic
-const setImage = async (cookie, req, res) =>
+const setImage = async (cookie, req, res, next) =>
 {
-    imageHandler(req, res);
-    //console.log(req);
-    console.log(req.body);
-    console.log(req.file);
-    console.log(req.data);
-    console.log("Finished");
-    res.status(200).send({requester: cookie.name, message: "Test"});
+    let username = cookie.name;
+    if(req.params.userId !== cookie.name)
+    {
+        res.status(401).send({message: "The user passed in the url does not match the cookie", requester: username});
+    }
+    else
+    {
+        console.log("Inside set image!");
+        next();
+    }
 }
 
 export {profileHandler};
