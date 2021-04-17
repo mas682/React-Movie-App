@@ -752,7 +752,6 @@ const setImage = async (cookie, req, res, next) =>
     }
     else
     {
-        console.log("Inside set image!");
         next();
     }
 }
