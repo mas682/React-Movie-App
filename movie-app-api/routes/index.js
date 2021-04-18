@@ -69,12 +69,9 @@ router.post('/profile/:userId/set_picture',
         imageHandler(req, res, next);
     },
     function(req, res, next) {
-        // handle response
-        // delete old pic if one exists, update new pic path
-        console.log(req.file);
-        // if req.file === undefined, file not found
-        console.log("Done");
-        res.status(200).send();
+        res.locals.skipAuthentication = true;
+        res.locals.type = "updateImage";
+        profileHandler(req, res, next);
     }
 );
 

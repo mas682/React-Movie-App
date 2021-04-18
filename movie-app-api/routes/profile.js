@@ -1,6 +1,6 @@
 import {verifyLogin, validateUsernameParameter, validateIntegerParameter, validateStringParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
-import {imageHandler} from './fileHandler.js';
+import {removeImage} from './fileHandler.js';
 const fs = require('fs');
 const AWS = require('aws-sdk');
 const config = require('../Config.json');
@@ -12,8 +12,23 @@ const profileHandler = (req, res, next) => {
     // get the signed cookies in the request if there are any
     let cookie = req.signedCookies.MovieAppCookie;
     cookie = (cookie === false) ? undefined : cookie;
-    // variable to indicate if user logged in
-    let valid = false;
+    // if calling another function after already authenticated before
+    if(res.locals.skipAuthentication !== undefined && res.locals.skipAuthentication)
+    {
+        if(res.locals.type === "updateImage")
+        {
+            updateImage(JSON.parse(cookie), req, res);
+        }
+        else
+        {
+            // should never happen but just in case
+            res.status(500).send({
+                message: "Internal server error",
+                requester: JSON.parse(cookie).name
+            });
+        }
+        return;
+    }
     // if there is a signed cookie in the request
     if(cookie != undefined)
     {
@@ -742,18 +757,105 @@ const removeUser = async (cookie, req, res) =>
 
 }
 
-// function to handle updating a users profile pic
+// function to handle validating a user can update their profile pic
 const setImage = async (cookie, req, res, next) =>
 {
-    let username = cookie.name;
+    let requester = cookie.name;
+    let valid = validateUsernameParameter(res, req.params.userId, requester, "You cannot try to alter another users profile picture");
+    if(!valid) return;
     if(req.params.userId !== cookie.name)
     {
-        res.status(401).send({message: "The user passed in the url does not match the cookie", requester: username});
+        res.status(401).send({
+            message: "The user passed in the url does not match the requester",
+            requester: requester
+        });
     }
     else
     {
+        res.locals.requester = cookie.name;
         next();
     }
+}
+
+// function to handle updating database once image has been uploaded
+const updateImage = async(cookie, req, res) =>
+{
+    // try to update the users picture
+    // handle errors on updating database
+    let requester = cookie.name;
+    let status;
+    let message;
+    if(req.file === undefined)
+    {
+        // file could not be found in request as it was not defined as file: image
+        res.status(400).send({
+            message: "The new profile picture could not be found in the request",
+            requester: requester
+        });
+        return;
+    }
+    // find the user
+    let user = await models.User.findByLogin(requester);
+    let newPicture = req.file.key;
+    if(user === null)
+    {
+        // need to remove the file as the user no longer exists
+        status = 401;
+        message = "You are not logged in";
+        requester = "";
+    }
+    else
+    {
+        let oldPicture = user.picture;
+        try
+        {
+            let result = await user.update({
+                picture: newPicture
+            });
+            status = 200;
+            message = "User picture successfully updated";
+            if(oldPicture !== null)
+            {
+                // remove the old image
+                removeImage(oldPicture);
+            }
+        }
+        catch(err)
+        {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            if(errorObject.name === 'SequelizeUniqueConstraintError')
+            {
+                if(errorObject.original.constraint === "users_picture_key")
+                {
+                    // this should just about never occur
+                    // if here, a picture was overwritten...
+                    console.log("User picture name conflicts with an existing image name: " + newPicture);
+                    status = 500;
+                    message = "Some unexpected error occurred on the server"
+                }
+                else
+                {
+                    console.log("Some unexpected foreign key constraint error occurred when uploading a new user image: " + errorObject.original.constraint);
+                    console.log(errorObject);
+                    status = 500;
+                    message = "Some unexpected error occurred on the server";
+                    removeImage(newPicture);
+                }
+            }
+            else
+            {
+                console.log("Some unkown error occurred: " + errorObject.name);
+                console.log(err);
+                status = 500;
+                message = "Some unexpected error occurred on the server";
+                removeImage(newPicture);
+            }
+        }
+    }
+    res.status(status).send({
+        message: message,
+        requester: requester
+    });
 }
 
 export {profileHandler};

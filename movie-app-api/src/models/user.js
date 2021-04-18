@@ -35,6 +35,10 @@ const user = (sequelize, DataTypes) => {
           type: DataTypes.STRING(500),
           allowNull: true
         },
+        picture: {
+          type: DataTypes.STRING(50),
+          allowNull: true
+        },
         admin: {
           type: DataTypes.BOOLEAN,
           allowNull: false,
@@ -356,6 +360,20 @@ const user = (sequelize, DataTypes) => {
             attributes: ["id", "username", "firstName", "lastName"]
         });
         return users;
+    };
+
+    // function to see if a user has a picture name associated with them
+    User.hasPictureFileName = async(file) => {
+        let users = await User.findAll({
+            where: {
+                picture: file
+            }
+        });
+        if(users.length > 0)
+        {
+            return true;
+        }
+        return false;
     };
 
 
