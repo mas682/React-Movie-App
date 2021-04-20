@@ -4,7 +4,8 @@
 const config = require('../Config.json');
 const AWS = require('aws-sdk');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
+const multerS3 = require('multer-s3-transform');
+const sharp = require('sharp');
 import FileUploadError from '../src/FileUploadError.js';
 import { nanoid } from 'nanoid/async'
 import models, {sequelize} from '../src/models';
@@ -37,40 +38,67 @@ const storage = multer.diskStorage({
 const storage = multerS3({
     s3: s3Bucket,
     bucket: config.aws.bucketName,
-    key: async function (req, file, cb) {
-        let fileExt = file.originalname.split(".")[1];
-        fileExt = fileExt.toLowerCase();
-        let filename;
-        let nameInUse;
-        let counter = 0;
-        do {
-            filename = await nanoid();
-            filename = filename + "." + fileExt;
-            try
-            {
-                nameInUse = await models.User.hasPictureFileName(filename);
-            }
-            catch(err)
-            {
-                let errorObject = JSON.parse(JSON.stringify(err));
-                console.log("Some unexpected error occurred trying to see if the file name: " + filename +
-                " was in use for a user profile picture");
-                console.log(errorObject);
-                cb(err, false);
-                return;
-            }
-            counter = counter + 1;
-        } while (counter < 5 && nameInUse);
+    shouldTransform: function(req, file, cb) {
+        cb(null, true);
+    },
+    transforms: [
+        {
+            id: 'original',
+            key: async function(req, file, cb) {
+                let fileExt = file.originalname.split(".")[1];
+                fileExt = fileExt.toLowerCase();
+                let filename;
+                let nameInUse;
+                let counter = 0;
+                do {
+                    filename = await nanoid();
+                    filename = filename + "." + fileExt;
+                    try
+                    {
+                        nameInUse = await models.User.hasPictureFileName(filename);
+                    }
+                    catch(err)
+                    {
+                        let errorObject = JSON.parse(JSON.stringify(err));
+                        console.log("Some unexpected error occurred trying to see if the file name: " + filename +
+                        " was in use for a user profile picture");
+                        console.log(errorObject);
+                        cb(err, false);
+                        return;
+                    }
+                    counter = counter + 1;
+                } while (counter < 5 && nameInUse);
 
-        if(counter >= 5 && nameInUse)
-        {
-            return cb(new FileUploadError("SERVER_FILE_NAME_GENERATION_ERROR"), false);
+                if(counter >= 5 && nameInUse)
+                {
+                    return cb(new FileUploadError("SERVER_FILE_NAME_GENERATION_ERROR"), false);
+                }
+                else
+                {
+                    cb(null, filename);
+                }
+            },
+            transform: function(req, file, cb) {
+                let type = file.mimetype.toLowerCase();
+                if(type === 'image/jpeg' || type === 'image/jpg')
+                {
+                    cb(null, sharp().resize(800, 800).jpeg());
+                }
+                else if(type === 'image/png')
+                {
+                    cb(null, sharp().resize(800, 800).png());
+                }
+                else if(type === 'image/png')
+                {
+                    cb(null, sharp().resize(800, 800).gif());
+                }
+                else
+                {
+                    cb(new FileUploadError("INVALID_FILE_TYPE"), false);
+                }
+            }
         }
-        else
-        {
-            cb(null, filename);
-        }
-    }
+    ]
 });
 
 
@@ -98,7 +126,7 @@ var imageUpload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize: 1024000,
+        fileSize: 12288000,
         files: 1
     }
 }).single('file');
@@ -120,9 +148,7 @@ const imageHandler = async(req, res, next) => {
                 status = 400;
                 if(errorObject.message === 'File too large')
                 {
-                    // need to resize pictures to 100kb or less...
-                    // consider jimp library or sharp along with multers3 transform
-                    message = "The provided file is too large(max size: )";
+                    message = "The provided file is too large(max size: 12MB)";
                 }
                 else if(errorObject.message === 'Unexpected File')
                 {
@@ -222,7 +248,7 @@ const removeImage = async(filename) =>
             }
             else
             {
-                console.log("Successfully removed image from the bucket or the image did not exist");
+                //console.log("Successfully removed image from the bucket or the image did not exist");
                 // {} on successful removal
             }
         });

@@ -91,9 +91,9 @@ class DragDropFile extends React.Component {
                 {
                     error = "Please select a valid image file"
                 }
-                else if(file.size > 1024000)
+                else if(file.size > 12288000)
                 {
-                    error = "Max image size is 1MB";
+                    error = "Max image size is 12MB";
                 }
                 else if(file.name.length > 100)
                 {
