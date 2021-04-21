@@ -1,5 +1,6 @@
 import React from 'react';
 import style from './css/DragDropFiles/DragDropFiles.module.css';
+import Cropper from 'react-easy-crop';
 
 // documentation for PopUp https://react-popup.elazizi.com/component-api/
 class DragDropFile extends React.Component {
@@ -14,7 +15,15 @@ class DragDropFile extends React.Component {
             error: "",
             image: undefined,
             imageData: undefined,
-            type: "image"
+            type: "image",
+            // for cropper
+            crop: {x: 0, y: 0},
+            zoom: 1,
+            aspect: 1,
+            croppedArea: undefined,
+            croppedAreaPixels: undefined,
+            newImageData: undefined,
+            cropping: true
         };
         this.dragDropHandler = this.dragDropHandler.bind(this);
         this.dragOverHandler = this.dragOverHandler.bind(this);
@@ -24,6 +33,90 @@ class DragDropFile extends React.Component {
         this.inputImageHandler = this.inputImageHandler.bind(this);
         this.previewImage = this.previewImage.bind(this);
         this.removeImage = this.removeImage.bind(this);
+
+        // for cropper
+        this.setCrop = this.setCrop.bind(this);
+        this.setZoom = this.setZoom.bind(this);
+        this.onCropComplete = this.onCropComplete.bind(this);
+        this.createImage = this.createImage.bind(this);
+        this.getCroppedImg = this.getCroppedImg.bind(this);
+        this.doneCropping = this.doneCropping.bind(this);
+    }
+
+    setCrop(state) {
+        this.setState({crop: state});
+    }
+
+    setZoom(state) {
+        this.setState({zoom: state});
+    }
+
+    async doneCropping() {
+        let result = await this.getCroppedImg(this.state.imageData, this.state.croppedAreaPixels);
+        this.setState({
+            cropping: false,
+            newImageData: result
+        });
+    }
+
+    onCropComplete(croppedArea, croppedAreaPixels)
+    {
+        this.setState({
+            croppedArea: croppedArea,
+            croppedAreaPixels: croppedAreaPixels
+        });
+    }
+
+    createImage(url){
+        return new Promise(async (resolve, reject) => {
+            const image = new Image()
+            image.addEventListener('load', () => {console.log(image); resolve(image)})
+            image.addEventListener('error', error => reject(error))
+            image.setAttribute('crossOrigin', 'anonymous') // needed to avoid cross-origin issues on CodeSandbox
+            image.src = url
+            return image;
+        });
+    };
+
+    async getCroppedImg(imageSrc, pixelCrop) {
+        const image = await this.createImage(imageSrc);
+        console.log(image);
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+
+        const maxSize = Math.max(image.width, image.height)
+        const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2))
+
+        // set each dimensions to double largest dimension to allow for a safe area for the
+        // image to rotate in without being clipped by canvas context
+        canvas.width = safeArea
+        canvas.height = safeArea
+
+        // translate canvas context to a central location on image to allow rotating around the center.
+        ctx.translate(safeArea / 2, safeArea / 2)
+        ctx.translate(-safeArea / 2, -safeArea / 2)
+
+        // draw rotated image and store data.
+        ctx.drawImage(
+            image,
+            safeArea / 2 - image.width * 0.5,
+            safeArea / 2 - image.height * 0.5
+        )
+        const data = ctx.getImageData(0, 0, safeArea, safeArea)
+
+        // set canvas width to final desired crop size - this will clear existing context
+        canvas.width = pixelCrop.width
+        canvas.height = pixelCrop.height
+
+        // paste generated rotate image with correct offsets for x,y crop values.
+        ctx.putImageData(
+            data,
+            Math.round(0 - safeArea / 2 + image.width * 0.5 - pixelCrop.x),
+            Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y)
+        )
+
+        // As Base64 string
+        return canvas.toDataURL('image/jpeg');
     }
 
     dragEnterHandler(e) {
@@ -157,6 +250,7 @@ class DragDropFile extends React.Component {
 
     previewImage()
     {
+        console.log(typeof(this.state.imageData));
         let output = (
             <React.Fragment>
             <div className={style.previewContainer}>
@@ -167,6 +261,37 @@ class DragDropFile extends React.Component {
             </div>
             </React.Fragment>
         );
+        output =  (
+            <React.Fragment>
+            <div className={style.previewContainer}>
+                <div className={style.editContainer}>
+                    <Cropper
+                        image={this.state.imageData}
+                        crop={this.state.crop}
+                        zoom={this.state.zoom}
+                        aspect={this.state.aspect}
+                        onCropChange={this.setCrop}
+                        onCropComplete={this.onCropComplete}
+                        onZoomChange={this.setZoom}
+                    />
+                </div>
+                                <button onClick={this.doneCropping}>Done</button>
+            </div>
+            </React.Fragment>
+        );
+        if(this.state.newImageData !== undefined)
+        {
+            output = (
+                <React.Fragment>
+                <div className={style.previewContainer}>
+                    <div className={style.imageContainer}>
+                        <i class={`fas fa-times-circle ${style.cancelIcon}`} onClick={this.removeImage}></i>
+                        <img className={style.image} src={this.state.newImageData} />
+                    </div>
+                </div>
+                </React.Fragment>
+            );
+        }
         return output;
     }
 
