@@ -55,15 +55,27 @@
 }
 
 .editContainer {
-    width: 300px;
-    height: 300px;
+    width: 325px;
+    height: 325px;
     position: relative;
 }
 
 .image {
-    height: 250px;
-    width: 250px;
+    height: 100%;
+    width: 325px;
     display: block;
+}
+
+@media only screen and (max-width: 500px) {
+    .editContainer {
+        width: 75vw;
+        height: 75vw;
+    }
+
+    .image {
+        width: 75vw;
+        height: 75vw;
+    }
 }
 
 .cancelIcon {
@@ -75,12 +87,30 @@
     right: 5px;
 }
 
+.editIcon {
+    font-size: 2.5em;
+    color: gray;
+    position: absolute;
+    z-index: 1;
+    bottom: 5px;
+    right: 5px;
+}
+
 /* make the image opacity 80% on cancel icon hover*/
-.cancelIcon:hover + img
+.cancelIcon:hover ~ img
 {
     opacity: 80%;
 }
 
 .cancelIcon:hover {
+    color: red;
+}
+
+.editIcon:hover ~ img
+{
+    opacity: 80%;
+}
+
+.editIcon:hover {
     color: red;
 }

@@ -41,6 +41,7 @@ class DragDropFile extends React.Component {
         this.createImage = this.createImage.bind(this);
         this.getCroppedImg = this.getCroppedImg.bind(this);
         this.doneCropping = this.doneCropping.bind(this);
+        this.editImage = this.editImage.bind(this);
     }
 
     setCrop(state) {
@@ -221,10 +222,14 @@ class DragDropFile extends React.Component {
             let reader = new FileReader();
             reader.readAsDataURL(result.image);
             reader.onloadend = () => {
-                this.setState({imageData: reader.result});
+                this.setState({
+                    imageData: reader.result,
+                    cropping: true
+                });
                 this.props.setImage({
                     image: result.image,
-                    imageData: reader.result
+                    imageData: reader.result,
+                    cropping: true
                 });
             }
         }
@@ -236,32 +241,36 @@ class DragDropFile extends React.Component {
         }
     }
 
+    editImage()
+    {
+        this.setState({
+            cropping: true
+        });
+    }
+
     removeImage()
     {
         this.setState({
             image: undefined,
-            imageData: undefined
+            imageData: undefined,
+            crop: {x: 0, y: 0},
+            zoom: 1,
+            aspect: 1,
+            croppedArea: undefined,
+            croppedAreaPixels: undefined,
+            newImageData: undefined,
+            cropping: true
         });
         this.props.setImage({
             image: undefined,
-            imageData: undefined
+            imageData: undefined,
+            cropping: false
         });
     }
 
     previewImage()
     {
-        console.log(typeof(this.state.imageData));
-        let output = (
-            <React.Fragment>
-            <div className={style.previewContainer}>
-                <div className={style.imageContainer}>
-                    <i class={`fas fa-times-circle ${style.cancelIcon}`} onClick={this.removeImage}></i>
-                    <img className={style.image} src={this.state.imageData} />
-                </div>
-            </div>
-            </React.Fragment>
-        );
-        output =  (
+        let output =  (
             <React.Fragment>
             <div className={style.previewContainer}>
                 <div className={style.editContainer}>
@@ -275,17 +284,17 @@ class DragDropFile extends React.Component {
                         onZoomChange={this.setZoom}
                     />
                 </div>
-                                <button onClick={this.doneCropping}>Done</button>
             </div>
             </React.Fragment>
         );
-        if(this.state.newImageData !== undefined)
+        if(this.state.newImageData !== undefined && !this.state.cropping)
         {
             output = (
                 <React.Fragment>
                 <div className={style.previewContainer}>
                     <div className={style.imageContainer}>
                         <i class={`fas fa-times-circle ${style.cancelIcon}`} onClick={this.removeImage}></i>
+                        <i class={`far fa-edit ${style.editIcon}`} onClick={this.editImage}></i>
                         <img className={style.image} src={this.state.newImageData} />
                     </div>
                 </div>

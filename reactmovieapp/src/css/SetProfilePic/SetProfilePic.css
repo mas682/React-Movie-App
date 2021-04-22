@@ -40,7 +40,7 @@
 
 @media screen and (max-width: 599px) {
     .profilePicPopup-content {
-        width: 70% !important;
+        width: 80% !important;
         color: black;
     }
 }

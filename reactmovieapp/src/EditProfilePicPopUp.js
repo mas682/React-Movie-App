@@ -18,7 +18,9 @@ class EditProfilePicPopUp extends React.Component {
             awaitingResults: false,
             currentUser: props.currentUser,
             image: undefined,
-            imageData: undefined
+            imageData: undefined,
+            cropping: false,
+            editing: false
         };
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
@@ -26,6 +28,7 @@ class EditProfilePicPopUp extends React.Component {
         this.generateEditDisplay = this.generateEditDisplay.bind(this);
         this.updateImage = this.updateImage.bind(this);
         this.sendApiRequest = this.sendApiRequest.bind(this);
+        this.setCropping = this.setCropping.bind(this);
     }
 
     closeModal() {
@@ -45,11 +48,22 @@ class EditProfilePicPopUp extends React.Component {
 
     updateImage(result)
     {
+        console.log(result)
         this.setState({
             image: result.image,
             imageData: result.imageData,
             messages: [],
-            messageId: -1
+            messageId: -1,
+            cropping: result.cropping,
+            editing: result.cropping
+        });
+    }
+
+    setCropping(cropping)
+    {
+        console.log(cropping);
+        this.setState({
+            cropping: cropping
         });
     }
 
@@ -99,7 +113,8 @@ class EditProfilePicPopUp extends React.Component {
     generateEditDisplay()
     {
         let button = "";
-        if(this.state.image !== undefined)
+        console.log(this.state.cropping);
+        if(this.state.image !== undefined && !this.state.cropping)
         {
             button = (
                 <div className="actions">
@@ -114,12 +129,29 @@ class EditProfilePicPopUp extends React.Component {
                 </div>
             );
         }
+        else if(this.state.cropping)
+        {
+            button = (
+                <div className="actions">
+                    <div className={style.submitButtonContainer}>
+                        <button
+                            value="update_picture"
+                            className="submitButton"
+                        >Done Editing
+                        </button>
+                    </div>
+                </div>
+            );
+        }
         let content = (
             <React.Fragment>
                 <div className="content">
                     <div className={style.mainContainer}>
                         <div className={style.inputContainer}>
-                            <DragDropFile setImage={this.updateImage}/>
+                            <DragDropFile
+                                setImage={this.updateImage}
+                                editing={this.state.editing}
+                            />
                         </div>
                     </div>
                 </div>
