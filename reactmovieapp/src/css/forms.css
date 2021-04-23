@@ -72,6 +72,10 @@
     outline: none;
 }
 
+.submitButton:active {
+    opacity: 80%;
+}
+
 /* make a h3 header inline */
 .inlineH3 {
     display: inline;

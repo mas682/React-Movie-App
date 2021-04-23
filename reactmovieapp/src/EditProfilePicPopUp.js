@@ -17,10 +17,10 @@ class EditProfilePicPopUp extends React.Component {
             showSuccessPage: false,
             awaitingResults: false,
             currentUser: props.currentUser,
-            image: undefined,
-            imageData: undefined,
-            cropping: false,
-            editing: false
+            originalImage: undefined,
+            originalImageData: undefined,
+            croppedImage: undefined,
+            croppedImageData: undefined
         };
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
@@ -28,7 +28,7 @@ class EditProfilePicPopUp extends React.Component {
         this.generateEditDisplay = this.generateEditDisplay.bind(this);
         this.updateImage = this.updateImage.bind(this);
         this.sendApiRequest = this.sendApiRequest.bind(this);
-        this.setCropping = this.setCropping.bind(this);
+        this.removeImage = this.removeImage.bind(this);
     }
 
     closeModal() {
@@ -46,24 +46,23 @@ class EditProfilePicPopUp extends React.Component {
         this.setState({[name]: value});
     }
 
+    // function called by DragDropFile to update image
     updateImage(result)
     {
-        console.log(result)
         this.setState({
-            image: result.image,
-            imageData: result.imageData,
+            croppedImage: result.image,
+            croppedImageData: result.imageData,
             messages: [],
             messageId: -1,
-            cropping: result.cropping,
-            editing: result.cropping
         });
     }
 
-    setCropping(cropping)
+    // function called by DragDropFile
+    removeImage()
     {
-        console.log(cropping);
         this.setState({
-            cropping: cropping
+            croppedImage: undefined,
+            croppedImageData: undefined
         });
     }
 
@@ -113,8 +112,7 @@ class EditProfilePicPopUp extends React.Component {
     generateEditDisplay()
     {
         let button = "";
-        console.log(this.state.cropping);
-        if(this.state.image !== undefined && !this.state.cropping)
+        if(this.state.croppedImage !== undefined)
         {
             button = (
                 <div className="actions">
@@ -129,20 +127,6 @@ class EditProfilePicPopUp extends React.Component {
                 </div>
             );
         }
-        else if(this.state.cropping)
-        {
-            button = (
-                <div className="actions">
-                    <div className={style.submitButtonContainer}>
-                        <button
-                            value="update_picture"
-                            className="submitButton"
-                        >Done Editing
-                        </button>
-                    </div>
-                </div>
-            );
-        }
         let content = (
             <React.Fragment>
                 <div className="content">
@@ -150,7 +134,7 @@ class EditProfilePicPopUp extends React.Component {
                         <div className={style.inputContainer}>
                             <DragDropFile
                                 setImage={this.updateImage}
-                                editing={this.state.editing}
+                                removeImage={this.removeImage}
                             />
                         </div>
                     </div>
