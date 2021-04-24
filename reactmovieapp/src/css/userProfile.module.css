@@ -2,8 +2,7 @@
 .profilePic {
     float: left;
 	height: 125px;
-	weight: 125px;
-	padding-left: 5px;
+	width: 125px;
 }
 
 .userFeedEmpty {
@@ -17,6 +16,61 @@
     font-size: 2em;
     font-weight: 500;
 }
+
+.editIcon {
+    font-size: 1.25em;
+    color: gray;
+    position: absolute;
+    z-index: 1;
+    top: 1px;
+    right: 1px;
+}
+
+#myPage:hover img,
+.editIcon:hover ~ img
+{
+    opacity: 80%;
+}
+
+#myPage:hover .editIcon,
+.editIcon:hover
+{
+    color: red;
+}
+
+
+.imageContainer
+{
+    width: 125px;
+    position: relative;
+    z-index: 0;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  font-size: 1em;
+  background-color: red;
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 5px;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  right: -95px;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  font-weight: normal;
+}
+
+.tooltiptext {
+}
+
+
+
 
 
 

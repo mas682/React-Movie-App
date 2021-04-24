@@ -23,7 +23,7 @@ const profileHandler = (req, res, next) => {
         {
             // should never happen but just in case
             res.status(500).send({
-                message: "Internal server error",
+                message: "Some unexpected error occurred on the server",
                 requester: JSON.parse(cookie).name
             });
         }
@@ -761,7 +761,7 @@ const removeUser = async (cookie, req, res) =>
 const setImage = async (cookie, req, res, next) =>
 {
     let requester = cookie.name;
-    let valid = validateUsernameParameter(res, req.params.userId, requester, "You cannot try to alter another users profile picture");
+    let valid = validateUsernameParameter(res, req.params.userId, requester, "Invalid username found in the url");
     if(!valid) return;
     if(req.params.userId !== cookie.name)
     {
@@ -852,6 +852,7 @@ const updateImage = async(cookie, req, res) =>
             }
         }
     }
+
     res.status(status).send({
         message: message,
         requester: requester

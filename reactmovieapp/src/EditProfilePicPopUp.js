@@ -20,7 +20,8 @@ class EditProfilePicPopUp extends React.Component {
             originalImage: undefined,
             originalImageData: undefined,
             croppedImage: undefined,
-            croppedImageData: undefined
+            croppedImageData: undefined,
+            croppedDimensions: undefined
         };
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
@@ -29,6 +30,7 @@ class EditProfilePicPopUp extends React.Component {
         this.updateImage = this.updateImage.bind(this);
         this.sendApiRequest = this.sendApiRequest.bind(this);
         this.removeImage = this.removeImage.bind(this);
+        this.setPictureResultsHandler = this.setPictureResultsHandler.bind(this);
     }
 
     closeModal() {
@@ -49,20 +51,36 @@ class EditProfilePicPopUp extends React.Component {
     // function called by DragDropFile to update image
     updateImage(result)
     {
-        this.setState({
-            croppedImage: result.image,
-            croppedImageData: result.imageData,
-            messages: [],
-            messageId: -1,
-        });
+        if(result.type === "original")
+        {
+            this.setState({
+                originalImage: result.image,
+                originalImageData: result.imageData,
+                messages: [],
+                messageId: -1,
+            });
+        }
+        else
+        {
+            this.setState({
+                croppedImage: result.image,
+                croppedImageData: result.imageData,
+                messages: [],
+                messageId: -1,
+                croppedDimensions: result.croppedDimensions
+            });
+        }
     }
 
     // function called by DragDropFile
     removeImage()
     {
         this.setState({
+            originalImage: undefined,
+            originalImageData: undefined,
             croppedImage: undefined,
-            croppedImageData: undefined
+            croppedImageData: undefined,
+            croppedDimensions: undefined
         });
     }
 
@@ -71,9 +89,7 @@ class EditProfilePicPopUp extends React.Component {
         let data = new FormData();
         data.append('file', this.state.image);
         let params = data;
-        console.log(params);
-        let header = { 'Content-Type': 'multipart/form-data'};
-        header = {};
+        let header = {};
         let url = "http://localhost:9000/profile/" + this.state.currentUser + "/set_picture";
         this.setState({
             awaitingResults: true,
@@ -83,12 +99,87 @@ class EditProfilePicPopUp extends React.Component {
             let status = result[0];
             let message = result[1].message;
             let requester = result[1].requester;
-            //this.registrationResultsHandler(status, message, requester);
-            alert(status);
-            this.setState({
-                awaitingResults: false
-            });
+            this.setPictureResultsHandler(status, message, requester, result);
         });
+    }
+
+    setPictureResultsHandler(status, message, requester, result)
+    {
+        if(status === 200)
+        {
+            // "User picture successfully updated"
+            this.props.updateLoggedIn(requester);
+            this.props.setMessages({
+                messages: [{message: message, type: "success"}]
+            });
+            this.props.removeFunction();
+        }
+        else
+        {
+            this.props.updateLoggedIn(requester);
+            if(status === 404)
+            {
+                // "The profile path sent to the server does not exist"
+                // should just about never occur
+                this.setState({
+                    awaitingResults: false,
+                    messages: [{message: message, type: "failure", timeout: 0}],
+                    messageId: this.state.messageId + 1
+                });
+            }
+            else if(status === 401)
+            {
+                if(message === "The user passed in the url does not match the requester")
+                {
+                    // close the pop up
+                    this.props.removeFunction();
+                    this.props.setMessages({messages:[{message: message, type: "failure"}]});
+                }
+                else
+                {
+                    this.setState({
+                        awaitingResults: false
+                    });
+                    this.props.removeFunction();
+                    this.props.showLoginPopUp(false);
+                }
+            }
+            else if(status === 400)
+            {
+                // scenarios:
+                // Invalid username found in the url
+                // username in url cannot possibly be a username
+                // "The provided file is too large(max size: 12MB)"
+                // "The file could not be found in the request"
+                // "Only 1 image can be sent in the request"
+                // 'Invalid file type'
+                //  'File name cannot be greater than 100 characters or less than 5 characters'
+                // "The new profile picture could not be found in the request"
+                    // file not found in request as not defined as file: image in reqeust
+                this.setState({
+                    awaitingResults: false,
+                    messages: [{message: message, type: "failure", timeout: 0}],
+                    messageId: this.state.messageId + 1
+                });
+            }
+            else if(status === 500)
+            {
+                this.setState({
+                    awaitingResults: false,
+                    messages: [{message: message, type: "failure", timeout: 0}],
+                    messageId: this.state.messageId + 1
+                });
+            }
+            else
+            {
+                message = "A unexpected status code (" + status + ") was returned from the server";
+                this.setState({
+                    awaitingResults: false,
+                    messages: [{message: message, type: "failure", timeout: 0}],
+                    messageId: this.state.messageId + 1
+                });
+            }
+        }
     }
 
 
@@ -135,6 +226,10 @@ class EditProfilePicPopUp extends React.Component {
                             <DragDropFile
                                 setImage={this.updateImage}
                                 removeImage={this.removeImage}
+                                image={this.state.originalImage}
+                                imageData={this.state.originalImageData}
+                                croppedImageData={this.state.croppedImageData}
+                                croppedDimensions={this.state.croppedDimensions}
                             />
                         </div>
                     </div>

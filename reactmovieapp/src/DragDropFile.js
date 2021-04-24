@@ -6,24 +6,21 @@ import Cropper from 'react-easy-crop';
 class DragDropFile extends React.Component {
     constructor(props) {
         super(props);
-        // if one is not undefined, both should not be undefined
-        let image = (this.props.image === undefined) ? undefined : this.props.image;
-        let imageData = (this.props.imageData === undefined) ? undefined : this.props.imageData;
         this.state = {
             // keeps track of if user hovering over input container
             counter: 0,
             error: "",
-            image: undefined,
-            imageData: undefined,
+            image: (this.props.image === undefined) ? undefined : this.props.image,
+            imageData: (this.props.imageData === undefined) ? undefined : this.props.imageData,
             type: "image",
             // for cropper
-            crop: {x: 0, y: 0},
-            zoom: 1,
-            aspect: 1,
-            croppedArea: undefined,
-            croppedAreaPixels: undefined,
-            newImageData: undefined,
-            editing: true
+            crop: (this.props.croppedDimensions === undefined) ? {x: 0, y: 0} : this.props.croppedDimensions.crop,
+            zoom: (this.props.croppedDimensions === undefined) ? 1 : this.props.croppedDimensions.zoom,
+            aspect: (this.props.croppedDimensions === undefined) ? 1 : this.props.croppedDimensions.aspect,
+            croppedArea: (this.props.croppedDimensions === undefined) ? undefined : this.props.croppedDimensions.croppedArea,
+            croppedAreaPixels: (this.props.croppedDimensions === undefined) ? undefined : this.props.croppedDimensions.croppedAreaPixels,
+            newImageData: (this.props.croppedImageData === undefined) ? undefined : this.props.croppedImageData,
+            editing: (this.props.croppedImageData === undefined) ? true : false
         };
         this.dragDropHandler = this.dragDropHandler.bind(this);
         this.dragOverHandler = this.dragOverHandler.bind(this);
@@ -63,8 +60,16 @@ class DragDropFile extends React.Component {
         });
         // set the image in the parent component
         this.props.setImage({
+            type: "edited",
             image: this.state.image,
-            imageData: result
+            imageData: result,
+            croppedDimensions: {
+                crop: this.state.crop,
+                zoom: this.state.zoom,
+                aspect: this.state.aspect,
+                croppedArea: this.state.croppedArea,
+                croppedAreaPixels: this.state.croppedAreaPixels
+            }
         });
     }
 
@@ -225,6 +230,11 @@ class DragDropFile extends React.Component {
                     imageData: reader.result,
                     editing: true
                 });
+                this.props.setImage({
+                    type: "original",
+                    image: result.image,
+                    imageData: reader.result
+                })
             }
         }
         else
@@ -243,8 +253,10 @@ class DragDropFile extends React.Component {
         });
         // clear the image in the parent component
         this.props.setImage({
+            type: "edited",
             image: undefined,
-            imageData: undefined
+            imageData: undefined,
+            croppedDimensions: undefined
         });
     }
 
@@ -271,8 +283,12 @@ class DragDropFile extends React.Component {
             <React.Fragment>
             <div className={style.previewContainer}>
                 <div className={style.imageContainer}>
-                    <i class={`fas fa-times-circle ${style.cancelIcon} ${style.cancelFileIcon}`} onClick={this.removeImage}></i>
-                    <i class={`far fa-edit ${style.editIcon}`} onClick={this.editImage}></i>
+                    <i class={`fas fa-times-circle ${style.cancelIcon} ${style.cancelFileIcon} ${style.tooltip}`} id={style.removeToolTip} onClick={this.removeImage}>
+                        <span class={style.tooltiptext}>Remove Image</span>
+                    </i>
+                    <i class={`far fa-edit ${style.editIcon} ${style.tooltip}`} id={style.editToolTip} onClick={this.editImage}>
+                        <span class={style.tooltiptext}>Edit Image</span>
+                    </i>
                     <img className={style.image} src={this.state.newImageData} />
                 </div>
             </div>
@@ -286,7 +302,9 @@ class DragDropFile extends React.Component {
             <React.Fragment>
             <div className={style.previewContainer}>
                 <div className={style.editContainer}>
-                    <i class={`fas fa-times-circle ${style.cancelIcon} ${style.cancelEditIcon}`} onClick={this.removeImage}></i>
+                    <i class={`fas fa-times-circle ${style.cancelIcon} ${style.cancelEditIcon} ${style.tooltip}`} id={style.removeToolTip} onClick={this.removeImage}>
+                        <span class={style.tooltiptext}>Remove Image</span>
+                    </i>
                     <Cropper
                         image={this.state.imageData}
                         crop={this.state.crop}

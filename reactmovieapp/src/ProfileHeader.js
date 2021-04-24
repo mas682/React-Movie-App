@@ -2,7 +2,7 @@ import React from 'react';
 // should get rid of this eventually
 import {Link, Redirect, withRouter} from 'react-router-dom';
 import UserListPopUp from './UserListPopUp.js';
-import style5 from './css/userProfile.module.css';
+import style from './css/userProfile.module.css';
 import './css/forms.css'
 import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import EditProfilePicPopUp from './EditProfilePicPopUp.js';
@@ -393,19 +393,19 @@ class ProfileHeader extends React.Component {
     generateFollowerDisplay()
     {
         let display = (
-            <div className={style5.followersContainer}>
-                <div className={style5.numberDisplay}>
-                    <button className={style5.followersButton} onClick={(e)=> this.generatePopUp(e, "followers")}><h3 className={style5.socialHeader}>Followers</h3>
+            <div className={style.followersContainer}>
+                <div className={style.numberDisplay}>
+                    <button className={style.followersButton} onClick={(e)=> this.generatePopUp(e, "followers")}><h3 className={style.socialHeader}>Followers</h3>
                     {this.state.followerCount}
                     </button>
                 </div>
-                <div className={style5.numberDisplay}>
-                    <button className={style5.followersButton} onClick={(e)=> this.generatePopUp(e, "following")}><h3 className={style5.socialHeader}>Following</h3>
+                <div className={style.numberDisplay}>
+                    <button className={style.followersButton} onClick={(e)=> this.generatePopUp(e, "following")}><h3 className={style.socialHeader}>Following</h3>
                     {this.state.followingCount}
                     </button>
                 </div>
-                <div className={style5.numberDisplay}>
-                    <button className={style5.followersButton}><h3 className={style5.socialHeader}>Posts</h3>
+                <div className={style.numberDisplay}>
+                    <button className={style.followersButton}><h3 className={style.socialHeader}>Posts</h3>
                     {this.state.postCount}
                     </button>
                 </div>
@@ -460,6 +460,9 @@ class ProfileHeader extends React.Component {
             popup = <EditProfilePicPopUp
                         removeFunction={() => {this.removePopUp("showEditProfilePic")}}
                         currentUser={this.state.loggedInUser}
+                        updateLoggedIn={this.props.updateLoggedIn}
+                        showLoginPopUp={this.props.showLoginPopUp}
+                        setMessages={this.props.setMessages}
                     />;
         }
         let followerDisplay = this.generateFollowerDisplay();
@@ -473,21 +476,38 @@ class ProfileHeader extends React.Component {
         {
             if(this.state.following)
             {
-                followButton = <button className={`${style5.followButton} ${style5.followColor}`} onClick={(e)=> this.followHandler(e, "unfollow")}>Follow</button>;
+                followButton = <button className={`${style.followButton} ${style.followColor}`} onClick={(e)=> this.followHandler(e, "unfollow")}>Follow</button>;
             }
             else
             {
-                followButton = <button className={`${style5.followButton} ${style5.notFollowingColor}`} onClick={(e)=> this.followHandler(e, "follow")}>Follow</button>;
+                followButton = <button className={`${style.followButton} ${style.notFollowingColor}`} onClick={(e)=> this.followHandler(e, "follow")}>Follow</button>;
             }
         }
 
-        return (
-            <div className={style5.profileHeader}>
+        let imageContainer = (
+            <div className={`${style.imageContainer} ${style.tooltip}`} id={style.myPage} onClick={(e)=> this.generatePopUp(e, "showEditProfilePic")}>
+                <span class={style.tooltiptext}>Edit Picture</span>
+                <i class={`far fa-edit ${style.editIcon}`} onClick={this.editImage}></i>
                 <img
-                    className={style5.profilePic}
+                    className={style.profilePic}
                     src={require("./images/profile-pic.jpg")}
-                    onClick={(e)=> this.generatePopUp(e, "showEditProfilePic")}
                 />
+            </div>
+        );
+        if(this.state.loggedInUser !== this.state.username)
+        {
+            imageContainer = (
+                <div className={style.imageContainer} >
+                    <img
+                        className={style.profilePic}
+                        src={require("./images/profile-pic.jpg")}
+                    />
+                </div>
+            )
+        }
+        return (
+            <div className={style.profileHeader}>
+                {imageContainer}
                 <h3>{this.state.username}</h3>
                 {followButton}
                 {followerDisplay}
