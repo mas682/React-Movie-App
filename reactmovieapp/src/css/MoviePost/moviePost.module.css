@@ -16,6 +16,16 @@
 	margin-left: 2%;
 }
 
+.reviewerContainer a
+{
+	color: blue;
+	font-weight: bold;
+}
+
+.reviewerContainer a:visited {
+	color: blue;
+}
+
 .userImageContainer
 {
 	width: 45%;

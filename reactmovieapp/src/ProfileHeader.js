@@ -486,11 +486,11 @@ class ProfileHeader extends React.Component {
 
         let imageContainer = (
             <div className={`${style.imageContainer} ${style.tooltip}`} id={style.myPage} onClick={(e)=> this.generatePopUp(e, "showEditProfilePic")}>
-                <span class={style.tooltiptext}>Edit Picture</span>
+                <span class={style.tooltiptext}>Update Picture</span>
                 <i class={`far fa-edit ${style.editIcon}`} onClick={this.editImage}></i>
                 <img
                     className={style.profilePic}
-                    src={require("./images/profile-pic.jpg")}
+                    src={require("./images/profile-pic.png")}
                 />
             </div>
         );

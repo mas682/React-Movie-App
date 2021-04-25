@@ -57,7 +57,8 @@ class MoviePost extends React.Component {
                 props: this.props,
                 // boolean to indicate if showing full review or not
                 showFullReview: false,
-                visibleReview: this.props.data.review.substring(0, 250)
+                visibleReview: this.props.data.review.substring(0, 250),
+                reviewUser: this.props.data.user
             };
         }
         else
@@ -105,7 +106,8 @@ class MoviePost extends React.Component {
                 props: this.props,
                 // boolean to indicate if showing full review or not
                 showFullReview: false,
-                visibleReview: this.props.data.review.substring(0, 250)
+                visibleReview: this.props.data.review.substring(0, 250),
+                reviewUser: this.props.data.user
             };
         }
         this.likeButtonHandler = this.likeButtonHandler.bind(this);
@@ -844,6 +846,15 @@ class MoviePost extends React.Component {
         {
             movieImage = (<div className={style.emptyMoviePoster}><div>No image to display</div></div>);
         }
+        // default picture
+        let userPictureSrc = require("./images/profile-pic.png");
+        /*
+            if(this.state.reviewUser.picture !== null)
+            {
+                userPictureSrc = ...
+            }
+
+        */
         return(<React.Fragment>
             <div className={style.postHeader}>
                 <div className={style.reviewerContainer}>
@@ -851,7 +862,7 @@ class MoviePost extends React.Component {
                 </div>
                 <div className={style.userImageContainer}>
                     <div>
-                        <img className={style.userImage} src={require("./images/profile-pic.jpg")}/>
+                        <img className={style.userImage} src={userPictureSrc}/>
                     </div>
                 </div>
                 <Dropdown className={style2.editButtonContainer} drop="left">
