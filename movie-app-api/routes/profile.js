@@ -9,6 +9,7 @@ const config = require('../Config.json');
 
 // function to get the reviews associated with a users profile
 const profileHandler = (req, res, next) => {
+    console.log(req.headers['x-forwarded-for']);
     // get the signed cookies in the request if there are any
     let cookie = req.signedCookies.MovieAppCookie;
     cookie = (cookie === false) ? undefined : cookie;
@@ -796,7 +797,7 @@ const updateImage = async(cookie, req, res) =>
     }
     // find the user
     let user = await models.User.findByLogin(requester);
-    let newPicture = req.file.key;
+    let newPicture = req.locals.filename;
     if(user === null)
     {
         // need to remove the file as the user no longer exists
@@ -807,6 +808,8 @@ const updateImage = async(cookie, req, res) =>
     else
     {
         let oldPicture = user.picture;
+        console.log("Old picture: " + oldPicture);
+        console.log("New Picutre: " + newPicture);
         try
         {
             let result = await user.update({

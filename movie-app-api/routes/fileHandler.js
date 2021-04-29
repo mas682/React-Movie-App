@@ -39,12 +39,13 @@ const storage = multerS3({
     s3: s3Bucket,
     bucket: config.aws.bucketName,
     shouldTransform: function(req, file, cb) {
+        console.log(file);
         cb(null, true);
     },
     transforms: [
         {
             id: 'original',
-            key: async function(req, file, cb) {
+            key: async function(req, file, cb, res) {
                 let fileExt = file.originalname.split(".")[1];
                 fileExt = fileExt.toLowerCase();
                 let filename;
@@ -75,7 +76,8 @@ const storage = multerS3({
                 }
                 else
                 {
-                    cb(null, filename);
+                    req.locals = {filename:filename};
+                    cb(null, "UserPictures/" + filename);
                 }
             },
             transform: function(req, file, cb) {
@@ -237,7 +239,7 @@ const imageHandler = async(req, res, next) => {
 
 const removeImage = async(filename) =>
 {
-    let params = {Bucket: config.aws.bucketName, Key: filename};
+    let params = {Bucket: config.aws.bucketName, Key: "UserPictures/" + filename};
     try
     {
         s3Bucket.deleteObject(params, function(err, data) {

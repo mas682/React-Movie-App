@@ -848,13 +848,18 @@ class MoviePost extends React.Component {
         }
         // default picture
         let userPictureSrc = require("./images/profile-pic.png");
-        /*
-            if(this.state.reviewUser.picture !== null)
-            {
-                userPictureSrc = ...
-            }
-
-        */
+        //alert(this.state.reviewUser.picture);
+        userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/XdpSqly677K4X9MlQdAz_.jpg";
+        //alert(this.state.reviewUser.picture);
+        if(this.state.reviewUser.picture !== null)
+        {
+            userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/" + this.state.reviewUser.picture;
+        }
+        console.log("Pics:");
+        console.log(userPictureSrc);
+        console.log('https://movie-fanatics-bucket1.s3.amazonaws.com/UP1ifNayV7Y01cgNGYhiZ.jpg');
+        //userPictureSrc = 'https://movie-fanatics-bucket1.s3.amazonaws.com/XdpSqly677K4X9MlQdAz_.jpg';
+        //userPictureSrc = 'https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/FPJNbfMmOMSMCpuB-FQgO.jpg';
         return(<React.Fragment>
             <div className={style.postHeader}>
                 <div className={style.reviewerContainer}>

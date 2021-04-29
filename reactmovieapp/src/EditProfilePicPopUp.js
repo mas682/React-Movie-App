@@ -87,8 +87,9 @@ class EditProfilePicPopUp extends React.Component {
     sendApiRequest()
     {
         let data = new FormData();
-        data.append('file', this.state.image);
+        data.append('file', this.state.croppedImage);
         let params = data;
+        console.log(params);
         let header = {};
         let url = "http://localhost:9000/profile/" + this.state.currentUser + "/set_picture";
         this.setState({
