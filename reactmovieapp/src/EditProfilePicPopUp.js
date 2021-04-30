@@ -113,6 +113,7 @@ class EditProfilePicPopUp extends React.Component {
             this.props.setMessages({
                 messages: [{message: message, type: "success"}]
             });
+            this.props.pictureUpdated(true);
             this.props.removeFunction();
         }
         else

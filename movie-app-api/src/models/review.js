@@ -385,7 +385,7 @@ const review = (sequelize, DataTypes) => {
             {
                 model: models.User,
                 as: "user",
-                attributes: ["username", "id"],
+                attributes: ["username", "id", "picture"],
                 required: true,
                 include: {
                     model: models.User,

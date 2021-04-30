@@ -27,6 +27,7 @@ class UserProfile extends React.Component {
             redirect: false,
             showErrorPage: false,
             errorMessage: "",
+            reloadPicture: false,
             // used a switch to cause rerender when new review posted from this page
             newReview: this.props.newReview,
             props: props
@@ -37,6 +38,7 @@ class UserProfile extends React.Component {
         this.updatePostCount = this.updatePostCount.bind(this);
         this.redirectToHome = this.redirectToHome.bind(this);
         this.showErrorPage = this.showErrorPage.bind(this);
+        this.reloadProfilePicture = this.reloadProfilePicture.bind(this);
     }
 
     // update the state if new props came in with a different profile
@@ -77,6 +79,12 @@ class UserProfile extends React.Component {
         else if(this.state.postCount !== 0)
         {
             this.updatePostCount(0);
+        }
+        else if(this.state.reloadPicture)
+        {
+            this.setState({
+                reloadPicture: false
+            });
         }
         else if(prevState.username !== this.state.username)
         {
@@ -127,6 +135,7 @@ class UserProfile extends React.Component {
              || nextState.redirect === true
              || nextState.showErrorPage !== this.state.showErrorPage
              || nextState.newReview !== this.state.newReview
+             || nextState.reloadPicture !== this.state.reloadPicture
          );
     }
 
@@ -160,6 +169,11 @@ class UserProfile extends React.Component {
     decrementPostCount()
     {
         this.setState({postCount:-1});
+    }
+
+    reloadProfilePicture()
+    {
+        this.setState({reloadPicture: true});
     }
 
     // this only gets called by the above method to update the state on
@@ -209,6 +223,8 @@ class UserProfile extends React.Component {
                         setMessages={this.props.setMessages}
                         showErrorPage={this.showErrorPage}
                         newReview={this.state.newReview}
+                        newPicture={this.state.reloadPicture}
+                        reloadProfilePicture={this.reloadProfilePicture}
                     />
                     <MoviePostDisplay
                         username={this.state.username}
@@ -222,6 +238,7 @@ class UserProfile extends React.Component {
                         setMessages={this.props.setMessages}
                         showErrorPage={this.showErrorPage}
                         newReview={this.state.newReview}
+                        newPicture={this.state.reloadPicture}
                         mainBodyContainer={style.mainBodyContainer}
                     />
                 </div>

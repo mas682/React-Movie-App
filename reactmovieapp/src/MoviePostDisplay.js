@@ -79,6 +79,10 @@ class MoviePostDisplay extends React.Component {
         {
             this.getData(this.props.username, 0);
         }
+        else if(!this.state.loading && this.props.newPicture)
+        {
+            this.getData(this.props.username, 0);
+        }
     }
 
     // handles calling api for componentDidMount and componentDidUpdate

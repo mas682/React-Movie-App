@@ -72,7 +72,7 @@ class UserDisplay extends React.Component {
         let following = false;
         return {
             id: props.user.id,
-            poster: props.user.picture,
+            picture: props.user.picture,
             user: props.user,
             currentUser: props.currentUser,
             following: following,
@@ -271,11 +271,17 @@ class UserDisplay extends React.Component {
 
 
         let path = "/profile/" + this.state.user.username;
+        let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic.png";
+        if(this.state.picture !== null)
+        {
+            userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/" + this.state.picture;
+        }
+
         return (
             <Link to={path} className={style.link}>
                 <div className={style.main}>
                     <div className={style.userImageContainer} onClick={this.pictureClickedHandler}>
-                        <img className={style.userImage} style={this.state.userPictureStyle} src={require("./images/profile-pic.jpg")}/>
+                        <img className={style.userImage} style={this.state.userPictureStyle} src={userPictureSrc}/>
                     </div>
                     <div className={style.bottomContainer} onClick={this.pictureClickedHandler}>
                         <div className={style.userDetailsContainer}>

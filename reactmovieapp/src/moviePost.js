@@ -171,7 +171,7 @@ class MoviePost extends React.Component {
         // may need to use props for currentUser too?
         if(prevState.type !== "popup")
         {
-            if((prevState.props.data.id !== nextProps.data.id) || (prevState.props.currentUser !== nextProps.currentUser))
+            if((prevState.props.data.id !== nextProps.data.id) || (prevState.props.currentUser !== nextProps.currentUser) || (prevState.reviewUser.picture !== nextProps.data.user.picture))
             {
                 return MoviePost.newPropState(nextProps);
             }
@@ -190,7 +190,6 @@ class MoviePost extends React.Component {
                 // need to fix newPropState..
                 console.log(prevState.props);
                 console.log(nextProps);
-                alert("New props received pop up");
             }
             return null;
         }
@@ -202,7 +201,6 @@ class MoviePost extends React.Component {
 
     static newPropState(props)
     {
-        console.log(props);
         let moviePath = props.data.movie.title.replace(" ", "-");
         moviePath = "/movie/" + props.data.movie.id + "-" + moviePath;
         return {
@@ -242,7 +240,8 @@ class MoviePost extends React.Component {
             props: props,
             // boolean to indicate if showing full review or not
             showFullReview: false,
-            visibleReview: props.data.review.substring(0, 250)
+            visibleReview: props.data.review.substring(0, 250),
+            reviewUser: props.data.user
         };
     }
 
@@ -483,8 +482,6 @@ class MoviePost extends React.Component {
             this.removeFunction();
             return;
         }
-        console.log("Updated review: ");
-        console.log(reviewResult);
         let moviePath = reviewResult.movie.title.replace(" ", "-");
         this.setState({
             // boolean for opening the edit pop up
@@ -846,20 +843,12 @@ class MoviePost extends React.Component {
         {
             movieImage = (<div className={style.emptyMoviePoster}><div>No image to display</div></div>);
         }
-        // default picture
-        let userPictureSrc = require("./images/profile-pic.png");
-        //alert(this.state.reviewUser.picture);
-        userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/XdpSqly677K4X9MlQdAz_.jpg";
-        //alert(this.state.reviewUser.picture);
+        let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic.png";
         if(this.state.reviewUser.picture !== null)
         {
             userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/" + this.state.reviewUser.picture;
         }
-        console.log("Pics:");
-        console.log(userPictureSrc);
-        console.log('https://movie-fanatics-bucket1.s3.amazonaws.com/UP1ifNayV7Y01cgNGYhiZ.jpg');
-        //userPictureSrc = 'https://movie-fanatics-bucket1.s3.amazonaws.com/XdpSqly677K4X9MlQdAz_.jpg';
-        //userPictureSrc = 'https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/FPJNbfMmOMSMCpuB-FQgO.jpg';
+        console.log(this.state);
         return(<React.Fragment>
             <div className={style.postHeader}>
                 <div className={style.reviewerContainer}>

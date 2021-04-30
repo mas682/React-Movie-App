@@ -24,6 +24,7 @@ class ProfileHeader extends React.Component {
             displayFollowers: false,
             displayFollowed: false,
             postCount: this.props.postCount,
+            picture: null,
             loading: true,
             loggedInUser: this.props.currentUser,
             redirect: false,
@@ -37,6 +38,7 @@ class ProfileHeader extends React.Component {
         this.followHandler = this.followHandler.bind(this);
         this.unfollowResultsHandler = this.unfollowResultsHandler.bind(this);
         this.followResultsHandler = this.followResultsHandler.bind(this);
+        this.updateProfilePicture = this.updateProfilePicture.bind(this);
     }
 
     // function to change the followed count to the passed in value if it is not equal
@@ -115,6 +117,10 @@ class ProfileHeader extends React.Component {
         {
             this.getData(this.props.username);
         }
+        else if(!prevState.loading && (this.props.newPicture))
+        {
+            this.getData(this.props.username);
+        }
     }
 
     // function to handle getting data from api
@@ -132,6 +138,7 @@ class ProfileHeader extends React.Component {
             // see if request succeeded
             if(status === 200)
             {
+                console.log(result[1]);
                 this.setState({
                     username: username,
                     // get the users id from the response
@@ -140,6 +147,7 @@ class ProfileHeader extends React.Component {
                     followerCount: result[1].followerCount,
                     followingCount: result[1].followingCount,
                     postCount: result[1].postCount,
+                    picture: result[1].picture,
                     displayFollowers: false,
                     displayFollowed: false,
                     loading: false,
@@ -390,6 +398,15 @@ class ProfileHeader extends React.Component {
         }
     }
 
+    // function called when profile picture is updated to cause a reload of the users page
+    updateProfilePicture(updated)
+    {
+        if(updated)
+        {
+            this.props.reloadProfilePicture();
+        }
+    }
+
     generateFollowerDisplay()
     {
         let display = (
@@ -463,6 +480,7 @@ class ProfileHeader extends React.Component {
                         updateLoggedIn={this.props.updateLoggedIn}
                         showLoginPopUp={this.props.showLoginPopUp}
                         setMessages={this.props.setMessages}
+                        pictureUpdated={this.updateProfilePicture}
                     />;
         }
         let followerDisplay = this.generateFollowerDisplay();
@@ -484,13 +502,15 @@ class ProfileHeader extends React.Component {
             }
         }
 
+        let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/" + this.state.picture;
+
         let imageContainer = (
             <div className={`${style.imageContainer} ${style.tooltip}`} id={style.myPage} onClick={(e)=> this.generatePopUp(e, "showEditProfilePic")}>
                 <span class={style.tooltiptext}>Update Picture</span>
                 <i class={`far fa-edit ${style.editIcon}`} onClick={this.editImage}></i>
                 <img
                     className={style.profilePic}
-                    src={require("./images/profile-pic.png")}
+                    src={userPictureSrc}
                 />
             </div>
         );

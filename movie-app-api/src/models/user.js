@@ -357,7 +357,7 @@ const user = (sequelize, DataTypes) => {
                     END ASC`),
                 ['username', 'ASC']
             ],
-            attributes: ["id", "username", "firstName", "lastName"]
+            attributes: ["id", "username", "firstName", "lastName", "picture"]
         });
         return users;
     };

@@ -334,7 +334,8 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
             followerCount: followerCount,
             followingCount: followingCount,
             requester: loggedInUser,
-            postCount: postCount
+            postCount: postCount,
+            picture: (user.picture === null) ? "default-pic.png" : user.picture
         })
     });
 }
