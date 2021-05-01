@@ -9,7 +9,6 @@ const config = require('../Config.json');
 
 // function to get the reviews associated with a users profile
 const profileHandler = (req, res, next) => {
-    console.log(req.headers['x-forwarded-for']);
     // get the signed cookies in the request if there are any
     let cookie = req.signedCookies.MovieAppCookie;
     cookie = (cookie === false) ? undefined : cookie;
@@ -193,6 +192,22 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
                         foundNoCookie = true;
                     }
                 }
+            }
+        }
+    }
+    else if(req.method === "DELETE")
+    {
+        // if the path is profile/username/follow
+        if(req.params.type === "remove_picture")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                removeProfilePicture(cookie, req, res);
+            }
+            else
+            {
+                foundNoCookie = true;
             }
         }
     }
@@ -778,6 +793,89 @@ const setImage = async (cookie, req, res, next) =>
         next();
     }
 }
+
+
+// function to remove a users profile picture
+const removeProfilePicture = async(cookie, req, res) =>
+{
+    let requester = cookie.name;
+    let valid = validateUsernameParameter(res, req.params.userId, requester, "Invalid username found in the url");
+    if(!valid) return;
+    if(req.params.userId !== cookie.name)
+    {
+        res.status(401).send({
+            message: "The user passed in the url does not match the requester",
+            requester: requester
+        });
+        return;
+    }
+    let status;
+    let message;
+    // find the user
+    let user = await models.User.findByLogin(requester);
+    if(user === null)
+    {
+        // need to remove the file as the user no longer exists
+        status = 401;
+        message = "User not found";
+        requester = "";
+    }
+    else
+    {
+        if(user.picture === null)
+        {
+            status = 200;
+            message = "User picture not found";
+        }
+        else
+        {
+            // remove the picture
+            let result = await removeImage(user.picture);
+            // if true, successfully removed or did not exist
+            if(result)
+            {
+                try
+                {
+                    let result = await user.update({
+                        picture: null
+                    });
+                    status = 200;
+                    message = "User picture successfully removed";
+                }
+                catch(err)
+                {
+                    let errorObject = JSON.parse(JSON.stringify(err));
+                    if(errorObject.name === 'SequelizeUniqueConstraintError')
+                    {
+                        console.log("Some unexpected foreign key constraint error occurred when uploading a new user image: " + errorObject.original.constraint);
+                        console.log(errorObject);
+                        status = 500;
+                        message = "Some unexpected error occurred on the server when trying to remove the users profile picture";
+                    }
+                    else
+                    {
+                        console.log("Some unkown error occurred: " + errorObject.name);
+                        console.log(err);
+                        status = 500;
+                        message = "Some unexpected error occurred on the server when trying to remove the users profile picture";
+                    }
+                }
+            }
+            else
+            {
+                status = 500;
+                message = "Some unexpected error occurred on the server when removing the profile picture";
+            }
+        }
+    }
+    setTimeout(() => {
+        res.status(status).send({
+            message: message,
+            requester: requester
+        });
+    }, 5000);
+}
+
 
 // function to handle updating database once image has been uploaded
 const updateImage = async(cookie, req, res) =>

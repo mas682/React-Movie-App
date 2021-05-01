@@ -177,8 +177,6 @@ const review = (sequelize, DataTypes) => {
             include:includeArray,
             group: groupByArray
         });
-        console.log(reviews);
-        console.log(reviews.count.length);
         return reviews.rows;
     }
 

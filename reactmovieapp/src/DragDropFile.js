@@ -20,7 +20,10 @@ class DragDropFile extends React.Component {
             croppedArea: (this.props.croppedDimensions === undefined) ? undefined : this.props.croppedDimensions.croppedArea,
             croppedAreaPixels: (this.props.croppedDimensions === undefined) ? undefined : this.props.croppedDimensions.croppedAreaPixels,
             newImageData: (this.props.croppedImageData === undefined) ? undefined : this.props.croppedImageData,
-            editing: (this.props.croppedImageData === undefined) ? true : false
+            editing: (this.props.croppedImageData === undefined) ? true : false,
+            // the file name of the users existing picutre if they have one
+            existingPicture: this.props.existingPicture,
+            removePicture: false
         };
         this.dragDropHandler = this.dragDropHandler.bind(this);
         this.dragOverHandler = this.dragOverHandler.bind(this);
@@ -30,6 +33,7 @@ class DragDropFile extends React.Component {
         this.inputImageHandler = this.inputImageHandler.bind(this);
         this.previewImage = this.previewImage.bind(this);
         this.removeImage = this.removeImage.bind(this);
+        this.removeExistingImage = this.removeExistingImage.bind(this);
 
         // for cropper
         this.setCrop = this.setCrop.bind(this);
@@ -277,6 +281,15 @@ class DragDropFile extends React.Component {
         this.props.removeImage();
     }
 
+    // called when the first remove button clicked
+    removeExistingImage()
+    {
+        this.setState({
+            removeImage: !this.state.removeImage
+        });
+        this.props.updateHeader();
+    }
+
     previewImage()
     {
         return (
@@ -328,8 +341,39 @@ class DragDropFile extends React.Component {
         );
     }
 
+    generateRemovePicture()
+    {
+        return (
+            <React.Fragment>
+            <div className={style.previewContainer}>
+                <div className={style.removeImageText}>
+                    Are you sure you want to remove your profile picture?
+                </div>
+                <div className={style.removeImageButtonContainer}>
+                    <button
+                        value="cancel_remove_picture"
+                        className={`submitButton ${style.removeImageNoButton}`}
+                        onClick={this.removeExistingImage}
+                    >No
+                    </button>
+                    <button
+                        value="remove_picture"
+                        className={`submitButton ${style.removeImageYesButton}`}
+                        onClick={this.props.removeProfilePicture}
+                    >Yes
+                    </button>
+                </div>
+            </div>
+            </React.Fragment>
+        );
+    }
+
     render() {
         let img = "";
+        if(this.state.removeImage)
+        {
+            return this.generateRemovePicture();
+        }
         if(this.state.imageData !== undefined)
         {
             if(!this.state.editing)
@@ -341,7 +385,22 @@ class DragDropFile extends React.Component {
                 return this.generateEditImage();
             }
         }
+        let button = (
+            <div>
+                <button
+                    value="remove_picture"
+                    className={`submitButton ${style.removePictureButton}`}
+                    onClick={this.removeExistingImage}
+                >Remove Profile Picture
+                </button>
+            </div>
+        );
+        if(this.state.existingPicture === null)
+        {
+            button = "";
+        }
         let output = (
+            <React.Fragment>
             <div
                 className={`${style.dropContainer} ${style.outline}`}
                 onDrop={(e) => {this.dragDropHandler(e, this.state.type)}}
@@ -361,10 +420,13 @@ class DragDropFile extends React.Component {
                     <label for="fileInput"><strong>Choose a file</strong><span class={style.info_text}> or drag it here</span>.</label>
                 </div>
             </div>
+            {button}
+            </React.Fragment>
         );
         if(this.state.error !== "")
         {
             output = (
+                <React.Fragment>
                 <div
                     className={`${style.dropContainer} ${style.errorOutline}`}
                     onDrop={(e) => {this.dragDropHandler(e, this.state.type)}}
@@ -385,6 +447,8 @@ class DragDropFile extends React.Component {
                         <span className={style.errorText}>{this.state.error}</span>
                     </div>
                 </div>
+                {button}
+                </React.Fragment>
             )
         }
         return (

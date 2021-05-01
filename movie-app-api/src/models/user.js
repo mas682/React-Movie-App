@@ -169,7 +169,6 @@ const user = (sequelize, DataTypes) => {
     };
 
     User.getAllFollowers = async (userId) => {
-        console.log(userId);
         let user = await User.findOne({
             where: {id: userId},
             attributes: ["id", "username"],

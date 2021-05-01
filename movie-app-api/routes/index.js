@@ -80,6 +80,10 @@ router.post('/profile/:userId/:type', function(req, res, next) {
     profileHandler(req, res, next);
 });
 
+router.delete('/profile/:userId/:type', function(req, res, next) {
+    profileHandler(req, res, next);
+})
+
 
 // used to return the movies from the API call to the screen
 router.get('/movies/:type', function(req, res, next) {

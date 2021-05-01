@@ -131,6 +131,11 @@
     margin-top: 10px;
 }
 
+.removePictureButton {
+    margin-top: 10px;
+    background: red;
+}
+
 .tooltip .tooltiptext {
   visibility: hidden;
   font-size: .6em;
@@ -167,4 +172,32 @@
 }
 
 .tooltiptext {
+}
+
+.removeImageText
+{
+    padding-top: 20px;
+    padding-bottom: 20px;
+    font-size: 1.5em;
+    font-weight: bold;
+    width: 90%;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+.removeImageYesButton {
+    grid-column: 4;
+    width: 100px;
+    justify-self: start;
+}
+
+.removeImageNoButton {
+    grid-column: 2;
+    width: 100px;
+    justify-self: end;
+}
+
+.removeImageButtonContainer {
+    display: grid;
+    grid-template-columns: 7.5% 40% 5% 40% 7.5%;
 }

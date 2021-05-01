@@ -242,24 +242,16 @@ const removeImage = async(filename) =>
     let params = {Bucket: config.aws.bucketName, Key: "UserPictures/" + filename};
     try
     {
-        s3Bucket.deleteObject(params, function(err, data) {
-            if(err) {
-                console.log("Error removing image from S3 bucket: " + filename);
-                let errorObject = JSON.parse(JSON.stringify(err));
-                console.log(errorObject);
-            }
-            else
-            {
-                //console.log("Successfully removed image from the bucket or the image did not exist");
-                // {} on successful removal
-            }
-        });
+        let counter = 0;
+        await s3Bucket.deleteObject(params).promise();
+        return true;
     }
     catch(err)
     {
         console.log("Error removing image from S3 bucket: " + filename);
         let errorObject = JSON.parse(JSON.stringify(err));
         console.log(errorObject);
+        return false;
     }
 };
 

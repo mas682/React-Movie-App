@@ -481,6 +481,7 @@ class ProfileHeader extends React.Component {
                         showLoginPopUp={this.props.showLoginPopUp}
                         setMessages={this.props.setMessages}
                         pictureUpdated={this.updateProfilePicture}
+                        userPicture={this.state.picture}
                     />;
         }
         let followerDisplay = this.generateFollowerDisplay();
@@ -520,7 +521,7 @@ class ProfileHeader extends React.Component {
                 <div className={style.imageContainer} >
                     <img
                         className={style.profilePic}
-                        src={require("./images/profile-pic.jpg")}
+                        src={userPictureSrc}
                     />
                 </div>
             )

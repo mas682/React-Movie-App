@@ -78,4 +78,22 @@ const apiPostJsonRequest = (url, parameters, headers, json) =>
         });
 };
 
-export {apiGetJsonRequest, apiPostTextRequest, apiPostJsonRequest};
+const apiDeleteJsonRequest = (url) =>
+{
+    const requestOptions = {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json'},
+    };
+
+    let status = 0;
+    return fetch(url, requestOptions)
+        .then(res => {
+            status = res.status;
+            return res.json();
+        }).then(result =>{
+            return [status, result];
+        });
+};
+
+export {apiGetJsonRequest, apiPostTextRequest, apiPostJsonRequest, apiDeleteJsonRequest};

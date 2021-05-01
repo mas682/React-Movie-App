@@ -3,7 +3,7 @@ import { Redirect } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import './css/SetProfilePic/SetProfilePic.css';
 import style from './css/SetProfilePic/SetProfilePic.module.css';
-import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {apiPostJsonRequest, apiDeleteJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
 import DragDropFile from './DragDropFile.js';
 
@@ -21,7 +21,10 @@ class EditProfilePicPopUp extends React.Component {
             originalImageData: undefined,
             croppedImage: undefined,
             croppedImageData: undefined,
-            croppedDimensions: undefined
+            croppedDimensions: undefined,
+            // users existing picture or null
+            existingPicture: props.userPicture,
+            awaitingRemovePicture: false
         };
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
@@ -30,7 +33,9 @@ class EditProfilePicPopUp extends React.Component {
         this.updateImage = this.updateImage.bind(this);
         this.sendApiRequest = this.sendApiRequest.bind(this);
         this.removeImage = this.removeImage.bind(this);
-        this.setPictureResultsHandler = this.setPictureResultsHandler.bind(this);
+        this.apiResultsHandler = this.apiResultsHandler.bind(this);
+        this.sendRemoveRequest = this.sendRemoveRequest.bind(this);
+        this.showAwaitingRemovePicture = this.showAwaitingRemovePicture.bind(this);
     }
 
     closeModal() {
@@ -40,6 +45,15 @@ class EditProfilePicPopUp extends React.Component {
     showLoginPopUp() {
         this.props.showLoginPopUp();
         this.closeModal();
+    }
+
+    // called by DragDrop to update the header when user considering removing
+    // picutre
+    showAwaitingRemovePicture()
+    {
+        this.setState({
+            awaitingRemovePicture: !this.state.awaitingRemovePicture
+        });
     }
 
     changeHandler(event) {
@@ -89,7 +103,6 @@ class EditProfilePicPopUp extends React.Component {
         let data = new FormData();
         data.append('file', this.state.croppedImage);
         let params = data;
-        console.log(params);
         let header = {};
         let url = "http://localhost:9000/profile/" + this.state.currentUser + "/set_picture";
         this.setState({
@@ -100,19 +113,45 @@ class EditProfilePicPopUp extends React.Component {
             let status = result[0];
             let message = result[1].message;
             let requester = result[1].requester;
-            this.setPictureResultsHandler(status, message, requester, result);
+            this.apiResultsHandler(status, message, requester, result, "update");
         });
     }
 
-    setPictureResultsHandler(status, message, requester, result)
+    // function to send api request to remove profile picture
+    sendRemoveRequest()
+    {
+        let url = "http://localhost:9000/profile/" + this.state.currentUser + "/remove_picture";
+        this.setState({
+            awaitingResults: true,
+            messageId: -1
+        });
+        apiDeleteJsonRequest(url).then((result) => {
+            let status = result[0];
+            let message = result[1].message;
+            let requester = result[1].requester;
+            this.apiResultsHandler(status, message, requester, result, "remove");
+        });
+    }
+
+    // results handler used for both updating or removing picture
+    apiResultsHandler(status, message, requester, result, type)
     {
         if(status === 200)
         {
             // "User picture successfully updated"
             this.props.updateLoggedIn(requester);
-            this.props.setMessages({
-                messages: [{message: message, type: "success"}]
-            });
+            if(type === "remove")
+            {
+                this.props.setMessages({
+                    messages: [{message: "User picture successfully removed", type: "success"}]
+                });
+            }
+            else
+            {
+                this.props.setMessages({
+                    messages: [{message: message, type: "success"}]
+                });
+            }
             this.props.pictureUpdated(true);
             this.props.removeFunction();
         }
@@ -125,6 +164,7 @@ class EditProfilePicPopUp extends React.Component {
                 // should just about never occur
                 this.setState({
                     awaitingResults: false,
+                    awaitingRemovePicture: false,
                     messages: [{message: message, type: "failure", timeout: 0}],
                     messageId: this.state.messageId + 1
                 });
@@ -140,7 +180,8 @@ class EditProfilePicPopUp extends React.Component {
                 else
                 {
                     this.setState({
-                        awaitingResults: false
+                        awaitingResults: false,
+                        awaitingRemovePicture: false,
                     });
                     this.props.removeFunction();
                     this.props.showLoginPopUp(false);
@@ -160,6 +201,7 @@ class EditProfilePicPopUp extends React.Component {
                     // file not found in request as not defined as file: image in reqeust
                 this.setState({
                     awaitingResults: false,
+                    awaitingRemovePicture: false,
                     messages: [{message: message, type: "failure", timeout: 0}],
                     messageId: this.state.messageId + 1
                 });
@@ -168,6 +210,7 @@ class EditProfilePicPopUp extends React.Component {
             {
                 this.setState({
                     awaitingResults: false,
+                    awaitingRemovePicture: false,
                     messages: [{message: message, type: "failure", timeout: 0}],
                     messageId: this.state.messageId + 1
                 });
@@ -177,6 +220,7 @@ class EditProfilePicPopUp extends React.Component {
                 message = "A unexpected status code (" + status + ") was returned from the server";
                 this.setState({
                     awaitingResults: false,
+                    awaitingRemovePicture: false,
                     messages: [{message: message, type: "failure", timeout: 0}],
                     messageId: this.state.messageId + 1
                 });
@@ -232,6 +276,9 @@ class EditProfilePicPopUp extends React.Component {
                                 imageData={this.state.originalImageData}
                                 croppedImageData={this.state.croppedImageData}
                                 croppedDimensions={this.state.croppedDimensions}
+                                removeProfilePicture={this.sendRemoveRequest}
+                                existingPicture={this.state.existingPicture}
+                                updateHeader={this.showAwaitingRemovePicture}
                             />
                         </div>
                     </div>
@@ -249,6 +296,10 @@ class EditProfilePicPopUp extends React.Component {
         {
             content = this.generateEditDisplay();
         }
+        else if(this.state.awaitingResults && this.state.awaitingRemovePicture)
+        {
+            content = this.generateLoadingContent("Removing profile picture...");
+        }
         else if(!this.state.showSuccessPage && this.state.awaitingResults)
         {
             content = this.generateLoadingContent("Updating profile picture...");
@@ -261,6 +312,11 @@ class EditProfilePicPopUp extends React.Component {
         }
 
 
+        let header = "Set Profile Picture";
+        if(this.state.awaitingRemovePicture)
+        {
+            header = "Remove Picture";
+        }
         return (
             <div>
                 <Popup
@@ -275,7 +331,7 @@ class EditProfilePicPopUp extends React.Component {
                         &times;
                         </a>
                         <div className="header">
-                            <h3 className="inlineH3"> Set Profile Picture</h3>
+                            <h3 className="inlineH3">{header}</h3>
                         </div>
                         <div className={style.alertContent}>
                             <Alert
