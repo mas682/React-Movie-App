@@ -17,7 +17,6 @@ const login = (req, res, next) => {
     // if there is a signed cookie in the request
     if(cookie !== undefined)
     {
-        console.log(cookie);
         // see if the cookie has a valid user
         verifyLogin(cookie).then((cookieValid) =>
         {
@@ -44,7 +43,6 @@ const selectPath = (cookie, req, res, cookieValid) =>
     let routeFound = false;
     if(req.method === "POST")
     {
-        console.log(req.params.type);
         if(req.params.type === "authenticate")
         {
             routeFound = true;
@@ -200,7 +198,6 @@ const checkLogin = (req, res) =>
 const forgotPassword = async (req, res) =>
 {
     let username = req.body.username;
-    console.log(username);
     let valid = validateUsernameParameter(undefined, username, "", "");
     // if not a valid username, check to see if valid email
     if(!valid)

@@ -255,7 +255,7 @@ const getFollowers = async (cookie, req, res, cookieValid) =>
     if(!valid) return;
     // returns a empty array if no followers
     // null if invalid user
-    let followers = await models.User.getFollowers(username, cookie.id);
+    let followers = await models.User.getFollowers(username, cookie.id, models);
     if(followers === null)
     {
         res.status(404).send({
@@ -279,7 +279,7 @@ const getFollowing = async (cookie, req, res) =>
     let username = req.params.userId;
     let valid = validateUsernameParameter(res, username, cookie.name, "Username is invalid");
     if(!valid) return;
-    let following = await models.User.getFollowing(username, cookie.id);
+    let following = await models.User.getFollowing(username, cookie.id, models);
     if(following === null)
     {
         res.status(404).send({
@@ -344,7 +344,6 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
         }
         res.status(200).send({
             message: "User information successfully found",
-            userID: user.id,
             following: followed,
             followerCount: followerCount,
             followingCount: followingCount,
@@ -907,8 +906,6 @@ const updateImage = async(cookie, req, res) =>
     else
     {
         let oldPicture = user.picture;
-        console.log("Old picture: " + oldPicture);
-        console.log("New Picutre: " + newPicture);
         try
         {
             let result = await user.update({
@@ -954,11 +951,12 @@ const updateImage = async(cookie, req, res) =>
             }
         }
     }
-
-    res.status(status).send({
-        message: message,
-        requester: requester
-    });
+    setTimeout(() => {
+        res.status(status).send({
+            message: message,
+            requester: requester
+        });
+    }, 5000);
 }
 
 export {profileHandler};

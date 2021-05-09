@@ -230,7 +230,7 @@ const user = (sequelize, DataTypes) => {
     // the requesting user also follows
     // friendName is the username of the user whose friends list you are checking
     // userId is the user id of the requesting user
-    User.getFollowers = async (friendName, userId) => {
+    User.getFollowers = async (friendName, userId, models) => {
         let user = await User.findByLogin(friendName);
         if(user === null)
         {
@@ -244,7 +244,13 @@ const user = (sequelize, DataTypes) => {
                     as: "Followers",
                     attributes:["username"],
                     where: {id: userId},
-                    required: false
+                    required: false,
+                    through: {attributes:[]}
+                },
+                {
+                    model: models.UsersFriends,
+                    as: "UsersFriends",
+                    attributes: []
                 }
             ]
         });
@@ -255,7 +261,7 @@ const user = (sequelize, DataTypes) => {
     // requesting user also follows
     // friendName is the username fo the user whose friends list you are checking
     // userId is the user id of the requesting user
-    User.getFollowing = async (friendName, userId) => {
+    User.getFollowing = async (friendName, userId, models) => {
         let user = await User.findByLogin(friendName);
         if(user === null)
         {
@@ -269,7 +275,13 @@ const user = (sequelize, DataTypes) => {
                     as: "Followers",
                     attributes: ["username"],
                     where: {id: userId},
-                    required: false
+                    required: false,
+                    through: {attributes: []}
+                },
+                {
+                    model: models.UsersFriends,
+                    as: "UsersFriends",
+                    attributes: []
                 }
             ]
         });
@@ -356,7 +368,7 @@ const user = (sequelize, DataTypes) => {
                     END ASC`),
                 ['username', 'ASC']
             ],
-            attributes: ["id", "username", "firstName", "lastName", "picture"]
+            attributes: ["username", "firstName", "lastName", "picture"]
         });
         return users;
     };

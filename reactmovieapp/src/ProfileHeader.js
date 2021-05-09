@@ -15,7 +15,6 @@ class ProfileHeader extends React.Component {
         this.state ={
             // name of user whose profile this belongs to
             username: this.props.username,
-            id: -1,
             // if this is the current user, set to true
             // if this is someone else, set to appropriate value
             following: false,
@@ -141,8 +140,6 @@ class ProfileHeader extends React.Component {
                 console.log(result[1]);
                 this.setState({
                     username: username,
-                    // get the users id from the response
-                    id: result[1].userID,
                     following: result[1].following,
                     followerCount: result[1].followerCount,
                     followingCount: result[1].followingCount,

@@ -112,7 +112,7 @@ const review = (sequelize, DataTypes) => {
             {
                 model: models.User,
                 as: "user",
-                attributes: ["username", "id", "picture"],
+                attributes: ["username", "picture"],
                 duplicating: false
             },
             {
@@ -171,7 +171,8 @@ const review = (sequelize, DataTypes) => {
             order: [["updatedAt", 'DESC']],
             // only get these attributes
             attributes: {
-                include: attributes
+                include: attributes,
+                exclude: ["userId"]
             },
             // include the following models with the specified attributes
             include:includeArray,
@@ -184,6 +185,7 @@ const review = (sequelize, DataTypes) => {
     // function to get a INDIVIDUAL review with the users who liked it
     // this also checks to see if the reviews that are returned are
     // also liked by the requester
+    // need to be careful with this to make sure not reutnring user IDs
     Review.findByIdWithLikes = async (models, reviewId, requesterId) =>
     {
         let includeArray = [
@@ -383,12 +385,12 @@ const review = (sequelize, DataTypes) => {
             {
                 model: models.User,
                 as: "user",
-                attributes: ["username", "id", "picture"],
+                attributes: ["username", "picture"],
                 required: true,
                 include: {
                     model: models.User,
                     as: "Followers",
-                    attributes: ["id"],
+                    attributes: ["username"],
                     through: {attributes: []},
                     where: {id: requesterId},
                     required: true,
@@ -449,7 +451,8 @@ const review = (sequelize, DataTypes) => {
             limit: max,
             // only get these attributes
             attributes: {
-                include: attributes
+                include: attributes,
+                exclude: ["userId"]
             },
             // include the following models with the specified attributes
             include:includeArray,
