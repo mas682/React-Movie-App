@@ -386,6 +386,7 @@ const user = (sequelize, DataTypes) => {
             ],
             attributes: ["username", "firstName", "lastName", "picture"]
         });
+        console.log(users);
         return users;
     };
 

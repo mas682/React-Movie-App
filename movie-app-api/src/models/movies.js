@@ -896,6 +896,10 @@ const movie = (sequelize, DataTypes) => {
                 required: false,
                 where: {
                     username: user
+                },
+                attributes:["username"],
+                through: {
+                    attributes: []
                 }
             });
             includeArray.push({
@@ -904,6 +908,10 @@ const movie = (sequelize, DataTypes) => {
                 required: false,
                 where: {
                     username: user
+                },
+                attributes:["username"],
+                through: {
+                    attributes: []
                 }
             });
         }
