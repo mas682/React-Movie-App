@@ -298,13 +298,21 @@ const user = (sequelize, DataTypes) => {
                     model: models.User,
                     as: "UserWatchLists",
                     required: true,
-                    where: {id: userId}
+                    where: {id: userId},
+                    attributes: ["username"],
+                    through: {
+                        attributes: []
+                    }
                 },
                 {
                     model: models.User,
                     as: "UsersWhoWatched",
                     required: false,
-                    where: {id: userId}
+                    where: {id: userId},
+                    attributes: ["username"],
+                    through: {
+                        attributes: []
+                    }
                 },
                 {
                     model: models.Genre,
@@ -327,13 +335,21 @@ const user = (sequelize, DataTypes) => {
                     model: models.User,
                     as: "UserWatchLists",
                     required: false,
-                    where: {id: userId}
+                    where: {id: userId},
+                    attributes: ["username"],
+                    through: {
+                        attributes: []
+                    }
                 },
                 {
                     model: models.User,
                     as: "UsersWhoWatched",
                     required: true,
-                    where: {id: userId}
+                    where: {id: userId},
+                    attributes: ["username"],
+                    through: {
+                        attributes: []
+                    }
                 },
                 {
                     model: models.Genre,

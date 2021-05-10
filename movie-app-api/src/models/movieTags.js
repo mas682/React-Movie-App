@@ -115,6 +115,7 @@ const movieTag = (sequelize, DataTypes) => {
             where: {
                 value: value
             },
+            attributes: ["id", "value"],
             order: [
                 ['value', 'ASC']
             ]
@@ -131,6 +132,7 @@ const movieTag = (sequelize, DataTypes) => {
             // get the tags that start with the value
             let tagStartsWith = await MovieTag.findAll({
                 limit: tempCount,
+                attributes: ["id", "value"],
                 where: {
                   [Op.and]: [
                     {
@@ -166,6 +168,7 @@ const movieTag = (sequelize, DataTypes) => {
             // get the tags that end with the value
             let tagEndsWith = await MovieTag.findAll({
                 limit: tempCount,
+                attributes: ["id", "value"],
                 where: {
                     [Op.and]: [
                       {
@@ -199,6 +202,7 @@ const movieTag = (sequelize, DataTypes) => {
             let tempCount = count - tags.length;
             let tagContains = await MovieTag.findAll({
                 limit: tempCount,
+                attributes: ["id", "value"],
                 where: {
                     [Op.and]: [
                       {

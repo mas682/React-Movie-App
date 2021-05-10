@@ -177,7 +177,6 @@ const getMovieTitles = async (cookie, req, res, cookieValid) =>
 		}
 		else
 		{
-			console.log(movies);
 			res.status(200).send({
 				message: "Movies successfully found",
 				requester: requester,
@@ -207,7 +206,6 @@ const getMovieTagSuggestions = async (cookie, req, res, cookieValid) =>
 	}
 	else
 	{
-		console.log(tags);
 		// not sure if this will be needed?
 		if(tags.length < 1)
 		{
@@ -218,6 +216,7 @@ const getMovieTagSuggestions = async (cookie, req, res, cookieValid) =>
 		}
 		else
 		{
+			console.log(tags);
 			res.status(200).send({
 				message: "Tags successfully found",
 				requester: requester,
