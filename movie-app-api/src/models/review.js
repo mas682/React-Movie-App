@@ -368,8 +368,17 @@ const review = (sequelize, DataTypes) => {
                     as: "Followers",
                     attributes:["username"],
                     where: {id: userId},
-                    required: false
+                    required: false,
+                    through: {
+                        attributes: []
+                    }
+                },
+                {
+                    model: models.Like,
+                    as: "like",
+                    attributes: []
                 }
+
             ]
         });
         return usersWhoLiked;

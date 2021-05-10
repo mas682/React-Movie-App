@@ -58,7 +58,7 @@ class MoviePost extends React.Component {
                 // boolean to indicate if showing full review or not
                 showFullReview: false,
                 visibleReview: this.props.data.review.substring(0, 250),
-                reviewUser: this.props.data.user
+                reviewUser: this.props.data.reviewUser
             };
         }
         else
@@ -482,6 +482,7 @@ class MoviePost extends React.Component {
             this.removeFunction();
             return;
         }
+        console.log(reviewResult);
         let moviePath = reviewResult.movie.title.replace(" ", "-");
         this.setState({
             // boolean for opening the edit pop up

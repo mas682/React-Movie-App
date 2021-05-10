@@ -273,9 +273,27 @@ const updateReview = async (cookie, req, res) =>
     {
         updatedReview = updatedReview[0];
     }
+    // create the output so the user Id is not sent
+    let output = {
+            id: updatedReview.dataValues.id,
+            rating: updatedReview.dataValues.rating,
+            review: updatedReview.dataValues.review,
+            movieId: updatedReview.dataValues.movieId,
+            createdAt: updatedReview.dataValues.createdAt,
+            updatedAt: updatedReview.dataValues.updatedAt,
+            likeCount: updatedReview.dataValues.likeCount,
+            liked: updatedReview.dataValues.liked,
+            user: {
+                username: updatedReview.dataValues.user.dataValues.username
+            },
+            goodTags: updatedReview.dataValues.goodTags,
+            badTags: updatedReview.dataValues.badTags,
+            movie: updatedReview.dataValues.movie
+    };
+
     res.status(201).send({
         message: "Review successfully updated",
-        review: updatedReview,
+        review: output,
         requester: requester,
         errors: errorMessages
     });
