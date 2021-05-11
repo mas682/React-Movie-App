@@ -1,0 +1,132 @@
+profile.js -> getUserHeaderInfo
+
+Review.findById's
+Review.findByIdWithLikes
+Review.getReviewWithCreator
+Review.getUserReviewFeed
+
+
+
+
+need to be careful in reviews as user ID may be in those as well...
+
+
+
+login.js
+    - checkLogin puts id in cookie but I think that is okay...
+    - forgotPassword
+    - validatePassCode puts id,email in cookie but I think it is okay...
+    - this file is okay
+
+
+profile.js
+    - updateImage
+    - getReviews
+        - may want to rename param userId to username
+        - removed Id returned from models.Review.findByIds
+        - need to check what is returned by models.Review.findByIds...
+    - getProfiles
+        - check models.User.findUsers
+            - removed user id from here
+        - need to fix api response message here...
+    - getUserHeaderInfo
+        - may want to rename param userId to username
+    - getFeed
+        - may want to rename param userId to username
+        - check models.Review.getUserReviewFeed
+            - removed id's being returned
+            - changed followers attributes from id to username
+    - getFollowers
+        - check models.User.getFollowers
+            - had to remove UsersFriends from being returned
+            - also had to remove it from the follower
+    - getFollowing
+        -check models.User.getFollowing
+            - had to remove UsersFriends from being returned
+            - also had to remove it from the follower
+    - followUser
+        - may want to rename param userId to username
+    - unfollowUser
+        - may want to rename param userId to username
+    - updateInfo
+        - API responses need updated
+        - id, email put in cookie but I think it is okay...
+    - updatePassword
+        - API responses need updated
+        - id, email put in cookie but I think it is okay...
+    - removeUser
+        - may want to rename userId to username
+    - removeProfilePicture
+        - may want to rename userId to username
+
+reviews.js and reviewCreator.js
+    - getComments
+        - check models.Review.getReviewComments
+    - createReview
+        - all good
+    - updateReview
+        - this is returning a userId in the review...
+        - updated output to only send correct fields
+    - addLike
+        - all good
+    - removeLike
+        - all good
+    - getLikes
+        - check model: models.Review.getLikes
+            - removed userId from followers and the user that like that was returned
+    - postComment
+        - all good
+    - updateComment
+        - all good
+    - removeComment
+        - all good
+    - removePost
+        - all good
+movies.js
+    - getMovieTitles
+        - all good
+    - getMovieTagSuggestions
+        - models.MovieTag.findByValue needs updated so that it is a single query...
+        - all good, updated time stamps no longer passed back
+    - getMovieInfo
+        - check models.Movies.getMovieInfo
+            - removed user info being returned in userwatchlsits/user watched lists
+    - getWatchList
+        - check models.User.getWatchList
+            - removed user info being returned in userwatchlsits/user watched lists
+    - getWatchedList
+        - check models.User.getWatchedList
+            - removed user info being returned in userwatchlsits/user watched lists
+    - getFeaturedMovies
+        - all good
+    - addToWatchList
+        - all good
+    - removeFromWatchList
+        - all good
+    - addToWatched
+        -all good
+    - removeFromWatched
+        - all good
+
+search.js
+    - getAllRelatedItems
+        - models.Movies.findByTitle
+            - all good
+        - models.User.findUsers
+            - all good
+    - queryMoviesByTitle
+        - all good
+    - getMovies
+        - check models.Movies.queryMovies
+            - updated user watch lists and users who watched so id's not returned
+    - getUsers
+        - all good
+
+signup.js
+    - 
+
+
+
+
+
+reviewCreator.js

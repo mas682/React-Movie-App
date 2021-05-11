@@ -6,16 +6,10 @@ import {login} from './login.js';
 import {review} from './reviews.js';
 import {profileHandler} from './profile.js';
 import {signUp} from './signup.js';
-import {homePage} from './homePage.js';
 import {getUserInfo} from './getUserInfo.js';
 import {movieHandler} from './movies.js';
 import {searchHandler} from './search.js';
 import {imageHandler} from './fileHandler.js';
-
-/* GET home page. */
-router.get('/', function(req, res, next) {
-    homePage(req, res, next);
-});
 
 // used when trying to login
 router.post('/login/:type', function(req, res, next) {
