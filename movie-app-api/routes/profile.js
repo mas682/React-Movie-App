@@ -236,14 +236,22 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
 const getProfiles = async (cookie, req, res, cookieValid) =>
 {
     let username = req.query.user;
+    let requester = (cookieValid) ? cookie.name : "";
     let users = await models.User.findUsers(username, 5);
     if(users === undefined)
     {
-        res.status(404).send("Unable to find any users matching that value");
+        res.status(404).send({
+            message: "Unable to find any users matching that value",
+            requester: requester
+        });
     }
     else
     {
-        res.status(200).send(users);
+        res.status(200).send({
+            message: "Users successfully found",
+            requester: requester,
+            users: users
+        });
     }
   };
 
@@ -569,34 +577,53 @@ const unfollowUser = (cookie, req, res) =>
 // function to handle updating a users password
 const updatePassword = async (cookie, req, res) =>
 {
+    let requester = cookie.name;
     let username = cookie.name;
     // if the password is not provided, automatically deny
     if(!req.body.oldPassword)
     {
-        res.status(401).send("Your password is incorrect");
+        res.status(401).send({
+            message: "Your password is incorrect",
+            requester: requester
+        });
     }
     else if(req.params.userId !== cookie.name)
     {
-        res.status(401).send("The user passed in the url does not match the cookie");
+        res.status(401).send({
+            message: "The user passed in the url does not match the cookie",
+            requester: requester
+        });
     }
     else if(!req.body.newPass)
     {
-        res.status(400).send("New password not provided");
+        res.status(400).send({
+            message: "New password not provided",
+            requester: requester
+        });
     }
     else if(req.body.newPass.length < 8)
     {
-        res.status(400).send("Password must be at least 8 characters")
+        res.status(400).send({
+            message: "Password must be at least 8 characters",
+            requester: requester
+        });
     }
     else if(req.body.oldPassword === req.body.newPass)
     {
-        res.status(400).send("New password is identical to the previous one");
+        res.status(400).send({
+            message: "New password is identical to the previous one",
+            requester: requester
+        });
     }
     else
     {
         let user = await models.User.findByLogin(cookie.name);
         if(user === null)
         {
-            res.status(404).send("Could not find the user to update");
+            res.status(404).send({
+                message: "Could not find the user to update",
+                requester: requester
+            });
             return;
         }
         if(user.password === req.body.oldPassword)
@@ -604,6 +631,7 @@ const updatePassword = async (cookie, req, res) =>
             user.password = req.body.newPass;
             user.lastLogin = new Date();
             user.passwordUpdatedAt = new Date();
+            // this should be in a try/catch block...
             let result = await user.save();
             // send a updated cookie
             let value = JSON.stringify({
@@ -614,11 +642,27 @@ const updatePassword = async (cookie, req, res) =>
             });
             res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
-            res.status(200).send("Password updated");
+            res.status(200).send({
+                message: "Password updated",
+                requester: requester
+            });
         }
         else
         {
-            res.status(401).send("Password incorrect");
+
+            left off here...needs tested
+
+            let attempts = await updateUserLoginAttempts(user, username);
+            let message = "Password incorrect";
+            if(attempts >= 5)
+            {
+                message = message + ". User account is currently locked due to too many failed password attempts";
+            }
+            // increment incorrect password attempt here...
+            res.status(401).send({
+                message: message,
+                requester: requester
+            });
         }
 
     }
@@ -628,6 +672,7 @@ const updatePassword = async (cookie, req, res) =>
 // first name, last name, email, or username
 const updateInfo = (cookie, req, res) =>
 {
+    let requester = cookie.name;
     //let username = cookie.name;
     let username = req.params.userId;
     // find a user by their login
@@ -635,7 +680,10 @@ const updateInfo = (cookie, req, res) =>
     .then(async (user)=>{
         if(user === null)
         {
-            res.status(404).send(["Could not find the user to update"]);
+            res.status(404).send({
+                message: "Could not find the user to update",
+                requester: requester
+            });
             return;
         }
         let currentUser = false;
@@ -648,7 +696,10 @@ const updateInfo = (cookie, req, res) =>
                 let tempUser = await models.User.findByLogin(req.body.username);
                 if(tempUser !== null)
                 {
-                    res.status(409).send(["username already in use"]);
+                    res.status(409).send({
+                        message: "username already in use",
+                        requester: requester
+                    });
                     return;
                 }
             }
@@ -658,15 +709,21 @@ const updateInfo = (cookie, req, res) =>
                 let tempUser = await models.User.findByLogin(req.body.email);
                 if(tempUser !== null)
                 {
-                    res.status(409).send(["email already in use"]);
+                    res.status(409).send({
+                        message: "email already in use",
+                        requester: requester
+                    });
                     return;
                 }
             }
+            // validate first and last name
+
 
             user.username = req.body.username;
             user.email = req.body.email;
             user.firstName = req.body.firstName;
             user.lastName = req.body.lastName;
+            // this should be in a try/catch...
             user.save().then((result) =>{
                 // below is used to update the cookie as the values have changed
                 let value = JSON.stringify({
@@ -682,7 +739,10 @@ const updateInfo = (cookie, req, res) =>
         }
         else
         {
-            res.send(401).send(["Cannot update the profile of another user"]);
+            res.send(401).send({
+                message: "Cannot update the profile of another user",
+                requester: requester
+            });
         }
     });
 }
