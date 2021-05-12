@@ -3,7 +3,7 @@ import {verifyLogin} from './globals.js';
 import {customAlphabet} from 'nanoid';
 const Op = require('Sequelize').Op;
 import {validateStringParameter, validateEmailParameter, validateUsernameParameter,
-        validateIntegerParameter} from './globals.js';
+        validateIntegerParameter, updateUserLoginAttempts} from './globals.js';
 import {emailHandler} from './EmailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
@@ -452,23 +452,6 @@ const validateUser = async (res, username, user, updateAttempts) =>
         });
     }
     return result;
-}
-
-
-const updateUserLoginAttempts = async (user, username) => {
-    try
-    {
-        await user.update({
-            passwordAttempts: user.passwordAttempts + 1
-        });
-    }
-    catch (err)
-    {
-        let errorObject = JSON.parse(JSON.stringify(err));
-        console.log("Some unknown error occurred updaing the users(" + username + ") account on login failure: " + errorObject.name);
-        console.log(err);
-    }
-    return user.passwordAttempts;
 }
 
 const validateUserForVerification = async (user, res, resendCode) => {

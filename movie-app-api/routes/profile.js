@@ -1,4 +1,5 @@
-import {verifyLogin, validateUsernameParameter, validateIntegerParameter, validateStringParameter} from './globals.js';
+import {verifyLogin, validateUsernameParameter, validateIntegerParameter,
+    validateStringParameter, validateEmailParameter, updateUserLoginAttempts} from './globals.js';
 import models, { sequelize } from '../src/models';
 import {removeImage} from './fileHandler.js';
 const fs = require('fs');
@@ -58,14 +59,6 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
         {
             routeFound = true;
             getReviews(cookie, req, res, cookieValid);
-        }
-        else if(req.params.userId === "query")
-        {
-            routeFound = true;
-            // get profile names
-            // Not sure if this is ever actually used? could be in future though for
-            // search pages..
-            getProfiles(cookie, req, res, cookieValid);
         }
         else if(req.params.type === "user_info")
         {
@@ -230,30 +223,6 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
         });
     }
 };
-
-
-// this function will return a list of users whose username start with the passed in string
-const getProfiles = async (cookie, req, res, cookieValid) =>
-{
-    let username = req.query.user;
-    let requester = (cookieValid) ? cookie.name : "";
-    let users = await models.User.findUsers(username, 5);
-    if(users === undefined)
-    {
-        res.status(404).send({
-            message: "Unable to find any users matching that value",
-            requester: requester
-        });
-    }
-    else
-    {
-        res.status(200).send({
-            message: "Users successfully found",
-            requester: requester,
-            users: users
-        });
-    }
-  };
 
 // this function will return a users follwers for their page
 const getFollowers = async (cookie, req, res, cookieValid) =>
@@ -580,38 +549,24 @@ const updatePassword = async (cookie, req, res) =>
     let requester = cookie.name;
     let username = cookie.name;
     // if the password is not provided, automatically deny
-    if(!req.body.oldPassword)
-    {
-        res.status(401).send({
-            message: "Your password is incorrect",
-            requester: requester
-        });
-    }
-    else if(req.params.userId !== cookie.name)
+    let valid = validateUsernameParameter(res, req.params.userId, requester, "Username must be between 6-20 characters");
+    if(!valid) return;
+    valid = validateStringParameter(res, req.body.oldPassword, 6, 15, requester, "Password must be betweeen 6-15 characters");
+    if(!valid) return;
+    valid = validateStringParameter(res, req.body.newPass, 6, 15, requester, "New password must be betweeen 6-15 characters");
+    if(!valid) return;
+
+    if(req.params.userId !== cookie.name)
     {
         res.status(401).send({
             message: "The user passed in the url does not match the cookie",
             requester: requester
         });
     }
-    else if(!req.body.newPass)
-    {
-        res.status(400).send({
-            message: "New password not provided",
-            requester: requester
-        });
-    }
-    else if(req.body.newPass.length < 8)
-    {
-        res.status(400).send({
-            message: "Password must be at least 8 characters",
-            requester: requester
-        });
-    }
     else if(req.body.oldPassword === req.body.newPass)
     {
         res.status(400).send({
-            message: "New password is identical to the previous one",
+            message: "New password is identical to the previous one sent by the user",
             requester: requester
         });
     }
@@ -631,8 +586,20 @@ const updatePassword = async (cookie, req, res) =>
             user.password = req.body.newPass;
             user.lastLogin = new Date();
             user.passwordUpdatedAt = new Date();
-            // this should be in a try/catch block...
-            let result = await user.save();
+            try
+            {
+                await user.save();
+            }
+            catch (err)
+            {
+                let errorObject = JSON.parse(JSON.stringify(err));
+                res.status(500).send({
+                        message: "A unknown error occurred trying to update the users password",
+                        requester: requester
+                    });
+                console.log("Some unknown error occurred when updating a users password: " + errorObject.name);
+                return;
+            }
             // send a updated cookie
             let value = JSON.stringify({
                 name: user.username,
@@ -649,9 +616,6 @@ const updatePassword = async (cookie, req, res) =>
         }
         else
         {
-
-            left off here...needs tested
-
             let attempts = await updateUserLoginAttempts(user, username);
             let message = "Password incorrect";
             if(attempts >= 5)
@@ -675,75 +639,103 @@ const updateInfo = (cookie, req, res) =>
     let requester = cookie.name;
     //let username = cookie.name;
     let username = req.params.userId;
+    let valid = validateUsernameParameter(res, req.body.username, requester, "Username must be between 6-20 characters");
+    if(!valid) return;
+    valid = validateEmailParameter(res, req.body.email, requester, "The email provided is not a valid email address");
+    if(!valid) return;
+    valid = validateStringParameter(res, req.body.firstName, 1, 20, requester, "First name must be between 1-20 characters");
+    if(!valid) return;
+    valid = validateStringParameter(res, req.body.lastName, 1, 20, requester, "Last name must be between 1-20 characters");
+    if(!valid) return;
+    if(requester !== username)
+    {
+        res.status(401).send({
+            message: "You cannot update another users information",
+            requester: requester
+        });
+        return;
+    }
     // find a user by their login
-    models.User.findByLogin(username)
+    models.User.findByLogin(requester)
     .then(async (user)=>{
         if(user === null)
         {
-            res.status(404).send({
+            // sending 401 as if null user does not exist
+            res.status(401).send({
                 message: "Could not find the user to update",
-                requester: requester
+                requester: ""
             });
             return;
         }
-        let currentUser = false;
-        // if this is the current user
-        if(cookie.name === user.username)
-        {
-            // if the username is being updated, make sure not in use
-            if(user.username !== req.body.username)
-            {
-                let tempUser = await models.User.findByLogin(req.body.username);
-                if(tempUser !== null)
-                {
-                    res.status(409).send({
-                        message: "username already in use",
-                        requester: requester
-                    });
-                    return;
-                }
-            }
-            // if the email is being updated, make sure not in use
-            if(user.email !== req.body.email)
-            {
-                let tempUser = await models.User.findByLogin(req.body.email);
-                if(tempUser !== null)
-                {
-                    res.status(409).send({
-                        message: "email already in use",
-                        requester: requester
-                    });
-                    return;
-                }
-            }
-            // validate first and last name
 
-
-            user.username = req.body.username;
-            user.email = req.body.email;
-            user.firstName = req.body.firstName;
-            user.lastName = req.body.lastName;
-            // this should be in a try/catch...
-            user.save().then((result) =>{
-                // below is used to update the cookie as the values have changed
-                let value = JSON.stringify({
-                    name: user.username,
-                    email: user.email,
-                    id: user.id,
-                    created: new Date()
-                  });
-                res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-                res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
-                res.status(200).send([user.username, user.email, user.firstName, user.lastName]);
+        let result;
+        try {
+            result = await user.update({
+                username: req.body.username,
+                email: req.body.email,
+                firstName: req.body.firstName,
+                lastName: req.body.lastName
             });
         }
-        else
+        catch (err)
         {
-            res.send(401).send({
-                message: "Cannot update the profile of another user",
-                requester: requester
-            });
+            let errorObject = JSON.parse(JSON.stringify(err));
+            console.log(errorObject);
+            if(errorObject.name === "SequelizeUniqueConstraintError")
+            {
+                if(errorObject.original.constraint === "users_username_key")
+                {
+                    res.status(409).send({
+                        message: "Username already in use",
+                        requester: requester
+                    });
+                }
+                else if(errorObject.original.constraint === "users_userEmail_key")
+                {
+                    res.status(409).send({
+                        message: "Email already associated with a user",
+                        requester: requester
+                    });
+                }
+                else
+                {
+                    res.status(500).send({
+                        message: "A unknown constraint error occurred trying to update the users information",
+                        requester: requester
+                    });
+                    console.log("Some unknown constraint error occurred: " + errorObject.original.constraint);
+                }
+            }
+            else
+            {
+                res.status(500).send({
+                    message: "A unknown error occurred trying to update the users info",
+                    requester: requester
+                });
+                console.log("Some unknown error occurred when trying to update a users info: " + errorObject.name);
+            }
+            return;
         }
+        // below is used to update the cookie as the values have changed
+        let value = JSON.stringify({
+            name: result.username,
+            email: result.email,
+            id: result.id,
+            created: new Date()
+        });
+        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+        res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
+        let updatedUser = {
+            username: result.username,
+            email: result.email,
+            firstName: result.firstName,
+            lastName: result.lastName
+        };
+        res.status(200).send({
+            message: "User info successfully updated",
+            requester: updatedUser,
+            user: updatedUser
+        });
     });
 }
 
@@ -796,8 +788,7 @@ const removeUser = async (cookie, req, res) =>
         return;
     }
     // check the users password against the requesters password
-    let passwordValid = (currentUser) ? (userToRemove.password === password) :
-        (user.password === password);
+    let passwordValid = (currentUser) ? (userToRemove.password === password) : (user.password === password);
     if(passwordValid)
     {
         let result = await userToRemove.destroy();

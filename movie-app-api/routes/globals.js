@@ -23,7 +23,6 @@ const verifyLogin= async (cookie)=>
         // should be in try catch
         // get the values from the cookie
         // see if the user is valid
-        console.log("Authenticating: " + cookie.name);
         await models.User.findByLogin(cookie.name)
         .then((user)=>{
             if(user !== null)
@@ -44,7 +43,6 @@ const verifyLogin= async (cookie)=>
                 else
                 {
                     valid = true;
-                    console.log("Cookie valid");
                 }
             }
             else
@@ -55,6 +53,23 @@ const verifyLogin= async (cookie)=>
     }
     return valid;
 };
+
+// function to increment user login attempts
+const updateUserLoginAttempts = async (user, username) => {
+    try
+    {
+        await user.update({
+            passwordAttempts: user.passwordAttempts + 1
+        });
+    }
+    catch (err)
+    {
+        let errorObject = JSON.parse(JSON.stringify(err));
+        console.log("Some unknown error occurred updaing the users(" + username + ") account on login failure: " + errorObject.name);
+        console.log(err);
+    }
+    return user.passwordAttempts;
+}
 
 
 // function to validate that a parameter is actually a integer
@@ -233,4 +248,5 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
     return true;
 };
 
-export {router, verifyLogin, validateIntegerParameter, validateUsernameParameter, validateStringParameter, validateEmailParameter};
+export {router, verifyLogin, validateIntegerParameter, validateUsernameParameter,
+     validateStringParameter, validateEmailParameter, updateUserLoginAttempts};

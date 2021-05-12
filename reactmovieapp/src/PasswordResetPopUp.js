@@ -17,7 +17,8 @@ class PasswordResetPopUp extends React.Component {
             newPassError: "",
             newPass2: "",
             newPass2Error: "",
-            redirect: false
+            redirect: false,
+            currentUser: this.props.currentUser
         };
         this.callApi = this.callApi.bind(this);
         this.validateForm = this.validateForm.bind(this);
@@ -40,7 +41,7 @@ class PasswordResetPopUp extends React.Component {
         };
 
         let status = 0;
-        let url = "http://localhost:9000/profile/" + this.state.username + "/update_password";
+        let url = "http://localhost:9000/profile/" + this.state.currentUser + "/update_password";
         return fetch(url, requestOptions)
             .then(res => {
                 status = res.status;
