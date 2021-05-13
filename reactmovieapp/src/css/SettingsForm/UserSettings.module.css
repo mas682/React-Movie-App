@@ -38,16 +38,16 @@
     width: 90%;
     margin-left: 5%;
     margin-right: 5%;
-    margin-top: 5px;
-    font-size: 1.7em;
+    margin-top: 0px;
+    font-size: 1.5em;
     margin-bottom: 10px;
 }
 
 .inputFieldBoxShort
 {
-    width: 50%;
+    width: 30ch;
     margin-top: 5px;
-    font-size: 1.7em;
+    font-size: 1.5em;
     border-radius: 6px;
     margin-bottom: 5px;
 }
@@ -97,6 +97,9 @@
     position: relative;
 }
 
+
+
+
 .popupButton {
     background-color: #008CBA;;
 }
@@ -112,6 +115,11 @@
 .submitButton:focus
 {
     outline: 0;
+}
+
+.submitButtonColor:hover
+{
+    opacity: 70%;
 }
 
 
@@ -214,5 +222,23 @@
         background-color: white;
         margin-bottom: 20px;
         margin-top: 20px;
+    }
+
+    .inputFieldBoxShort
+    {
+        width: 100%;
+        margin-top: 5px;
+        font-size: 1.2em;
+        border-radius: 6px;
+        margin-bottom: 5px;
+    }
+
+    .sectionText {
+        width: 90%;
+        margin-left: 5%;
+        margin-right: 5%;
+        margin-top: 0px;
+        font-size: 1.2em;
+        margin-bottom: 10px;
     }
 }

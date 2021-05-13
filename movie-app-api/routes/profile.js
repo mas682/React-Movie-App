@@ -622,7 +622,6 @@ const updatePassword = async (cookie, req, res) =>
             {
                 message = message + ". User account is currently locked due to too many failed password attempts";
             }
-            // increment incorrect password attempt here...
             res.status(401).send({
                 message: message,
                 requester: requester
@@ -647,6 +646,7 @@ const updateInfo = (cookie, req, res) =>
     if(!valid) return;
     valid = validateStringParameter(res, req.body.lastName, 1, 20, requester, "Last name must be between 1-20 characters");
     if(!valid) return;
+    console.log(requester);
     if(requester !== username)
     {
         res.status(401).send({
@@ -690,7 +690,7 @@ const updateInfo = (cookie, req, res) =>
                         requester: requester
                     });
                 }
-                else if(errorObject.original.constraint === "users_userEmail_key")
+                else if(errorObject.original.constraint === "users_email_key")
                 {
                     res.status(409).send({
                         message: "Email already associated with a user",
@@ -733,7 +733,7 @@ const updateInfo = (cookie, req, res) =>
         };
         res.status(200).send({
             message: "User info successfully updated",
-            requester: updatedUser,
+            requester: updatedUser.username,
             user: updatedUser
         });
     });

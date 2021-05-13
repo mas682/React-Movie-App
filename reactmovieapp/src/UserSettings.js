@@ -36,7 +36,8 @@ class UserSettings extends React.Component {
 			displayPasswordResetPop: false,
 			displayRemoveAccountPopUp: false,
 			currentUser: this.props.currentUser,
-			awaitingResults: false
+			awaitingResults: false,
+			loadingError: false
         };
         this.setEdit = this.setEdit.bind(this);
         this.generateInput = this.generateInput.bind(this);
@@ -48,6 +49,7 @@ class UserSettings extends React.Component {
 		this.showRemoveAccountPopUp = this.showRemoveAccountPopUp.bind(this);
 		this.generatePasswordPopUp = this.generatePasswordPopUp.bind(this);
 		this.updateUserResultsHandler = this.updateUserResultsHandler.bind(this);
+		this.getUserInfoResultsHandler = this.getUserInfoResultsHandler.bind(this);
 	}
 
 	async componentDidMount()
@@ -66,29 +68,7 @@ class UserSettings extends React.Component {
 		}
 		else
 		{
-	        this.callApi().then(result =>{
-	            // set status to result[0]
-	            let status = result[0];
-	            // see if request succeeded
-	            if(status == 200)
-	            {
-	                this.setState({
-	                    firstName: result[1][0],
-	                    lastName: result[1][1],
-	                    username: result[1][2],
-	                    email: result[1][3],
-	                    loading: false
-	                });
-	            }
-	            else
-	            {
-	                alert(result[1]);
-	                this.setState({
-	                    loading: false,
-	                    redirect: true
-	                });
-	            }
-	        });
+	        this.callApi();
 		}
 	}
 
@@ -105,7 +85,10 @@ class UserSettings extends React.Component {
 			}
 			else
 			{
-				this.callApi(this.props.currentUser);
+				this.setState({
+					currentUser: this.props.currentUser
+				});
+				this.callApi();
 			}
 		}
 	}
@@ -306,6 +289,7 @@ class UserSettings extends React.Component {
 						usernameError: message
 					});
 				}
+				// tested
 				else if(message === "Email already associated with a user")
 				{
 					this.setState({
@@ -347,6 +331,59 @@ class UserSettings extends React.Component {
 				this.setState({
 					awaitingResults: false
 				});
+			}
+		}
+	}
+
+	// function called after callApi function is called
+	// handles get call to get user info
+	getUserInfoResultsHandler(status, message, requester, result)
+	{
+		message = "The getUserInfo path sent to the server does not exist";
+		if(status === 200)
+		{
+			let user = result[1].user;
+			this.setState({
+				firstName: user.firstName,
+				lastName: user.lastName,
+				username: user.username,
+				email: user.email,
+				loading: false
+			});
+			this.props.updateLoggedIn(requester);
+		}
+		else
+		{
+			if(status === 401)
+			{
+				// will cause redirect to home page
+				this.props.updateLoggedIn(requester);
+				this.props.showLoginPopUp();
+			}
+			else if(status === 404)
+			{
+				this.setState({
+					loading: false,
+					loadingError: true
+				});
+				this.props.setMessages({
+					messages: [{type: "failure", message: message}],
+					clearMessages: true
+				});
+				this.props.updateLoggedIn(requester);
+			}
+			else
+			{
+				this.setState({
+					loading: false,
+					loadingError: true
+				});
+				let output = "Some unexpected " + status + " code was returned by the server";
+				this.props.setMessages({
+					messages: [{type: "failure", message: output}],
+					clearMessages: true
+				});
+				this.props.updateLoggedIn(requester);
 			}
 		}
 	}
@@ -403,8 +440,11 @@ class UserSettings extends React.Component {
 	async callApi()
 	{
 		let url = "http://localhost:9000/getuserinfo";
-		let result = await apiGetJsonRequest(url)
-		return result;
+		let result = await apiGetJsonRequest(url);
+		let status = result[0];
+		let message = result[1];
+		let requester = result[1].requester;
+		this.getUserInfoResultsHandler(status, message, requester, result);
 	}
 
     // function to generate HTML for each section such as first name, last name, username, email
@@ -412,7 +452,8 @@ class UserSettings extends React.Component {
 	// value is the value for the input type
 	// title is First Name, Last Name, etc.
 	// oldKey is key to the state for the old value if the user decides not to update it
-    generateInput(type, value, title, oldKey)
+	// maxSize is the maax number of characters to be allowed in input box
+    generateInput(type, value, title, oldKey, maxSize)
     {
         let result = "";
         // if this.state[type+"Error"]...
@@ -436,6 +477,7 @@ class UserSettings extends React.Component {
                                 value={this.state[value]}
                                 className={`${style.inputFieldBoxShort} inputBoxError`}
                                 onChange={this.changeHandler}
+								maxLength = {maxSize}
                             />
                         </div>
                         <div className={style.errorTextContainer}>
@@ -459,6 +501,7 @@ class UserSettings extends React.Component {
                                 value={this.state[value]}
                                 className={`${style.inputFieldBoxShort} validInputBox`}
                                 onChange={this.changeHandler}
+								maxLength = {maxSize}
                             />
                         </div>
                     </React.Fragment>);
@@ -511,10 +554,21 @@ class UserSettings extends React.Component {
         {
 			return <Redirect to={{pathname: "/", state: {displayLogin: true}}} />;
         }
-        let firstInput = this.generateInput("editFirst", "firstName", "First Name", "oldFirst");
-        let lastInput = this.generateInput("editLast", "lastName", "Last Name", "oldLast");
-        let userInput = this.generateInput("editUser", "username", "username", "oldUser");
-        let emailInput = this.generateInput("editEmail", "email", "Email", "oldEmail");
+		else if(this.state.loadingError)
+		{
+			// if the info was not loaded
+			return (
+				<div className={style.mainBodyContainer}>
+						<div className={style.header}>
+							<h2>Settings</h2>
+						</div>
+				</div>
+			)
+		}
+		let userInput = this.generateInput("editUser", "username", "Username", "oldUser", 20);
+		let emailInput = this.generateInput("editEmail", "email", "Email", "oldEmail", 30);
+        let firstInput = this.generateInput("editFirst", "firstName", "First Name", "oldFirst", 20);
+        let lastInput = this.generateInput("editLast", "lastName", "Last Name", "oldLast", 20);
         let submitButton = "";
         if(this.state.editFirst || this.state.editLast || this.state.editUser || this.state.editEmail)
         {
@@ -524,7 +578,7 @@ class UserSettings extends React.Component {
                         <button
                             form="form1"
                             value="submit_changes"
-                            className="submitButton"
+                            className={`submitButton ${style.submitButtonColor}`}
                             onClick={this.validateForm}
                             >Submit Changes
                         </button>
@@ -541,10 +595,10 @@ class UserSettings extends React.Component {
                         <h2>Settings</h2>
 		            </div>
                     <form id="form1" onSubmit={this.validateForm} noValidate/>
+					{userInput}
+					{emailInput}
                     {firstInput}
                     {lastInput}
-                    {userInput}
-                    {emailInput}
                     {submitButton}
 					<div className={style.submitButtonContainer}>
 						<button

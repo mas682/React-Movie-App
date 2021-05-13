@@ -5,6 +5,7 @@ import style from './css/SettingsForm/UserSettings.module.css';
 import './css/forms.css';
 //import './css/signup.css';
 import './css/SettingsForm/PasswordResetPopUp.css';
+import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 class PasswordResetPopUp extends React.Component {
     constructor(props) {
@@ -18,37 +19,13 @@ class PasswordResetPopUp extends React.Component {
             newPass2: "",
             newPass2Error: "",
             redirect: false,
-            currentUser: this.props.currentUser
+            currentUser: this.props.currentUser,
+            awaitingResults: false
         };
-        this.callApi = this.callApi.bind(this);
         this.validateForm = this.validateForm.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
-    }
-
-    callApi()
-    {
-        // Simple POST request with a JSON body using fetch
-        const requestOptions = {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                oldPassword: this.state.oldPassword,
-                newPass: this.state.newPass,
-                newPass2: this.state.newPass2
-            })
-        };
-
-        let status = 0;
-        let url = "http://localhost:9000/profile/" + this.state.currentUser + "/update_password";
-        return fetch(url, requestOptions)
-            .then(res => {
-                status = res.status;
-                return res.text();
-            }).then(result => {
-                return [status, result];
-            });
+        this.updatePasswordResultsHandler = this.updatePasswordResultsHandler.bind(this);
     }
 
     changeHandler(event) {
@@ -103,10 +80,10 @@ class PasswordResetPopUp extends React.Component {
         {
             // boolean to override other checks
             let priority = false;
-            if(this.state.newPass.length < 8)
+            if(this.state.newPass.length < 6 || this.state.newPass.length > 20)
             {
                 this.setState({
-                    newPassError: "Your password must be at least 8 characters",
+                    newPassError: "Your password must be between 6-20 characters characters",
                     oldPasswordError: "",
                     newPass2Error: ""
                 });
@@ -143,57 +120,111 @@ class PasswordResetPopUp extends React.Component {
 
         if(!error)
         {
-            let updateResult = await this.callApi();
-            let status = updateResult[0];
-            let response = updateResult[1];
-            if(status === 200 && response === "Password updated")
+            let params = {
+                    oldPassword: this.state.oldPassword,
+                    newPass: this.state.newPass,
+                    newPass2: this.state.newPass2
+            };
+            this.setState({
+                awaitingResults: true
+            });
+            let url = "http://localhost:9000/profile/" + this.state.currentUser + "/update_password";
+            apiPostJsonRequest(url, params).then((result) =>{
+                let status = result[0];
+                let message = result[1].message;
+                let requester = result[1].requester;
+                this.updatePasswordResultsHandler(status, message, requester);
+            });
+        }
+    }
+
+    updatePasswordResultsHandler(status, message, requester)
+    {
+        let resultFound = true;
+        if(status === 200)
+        {
+            this.props.updateLoggedIn(requester);
+            this.closeModal();
+        }
+        else
+        {
+            if(status === 400)
             {
-                this.closeModal()
+                // New password is identical to the previous one sent by the user
+                // Username must be between 6-20 characters
+                // Password must be betweeen 6-15 characters
+                // New password must be betweeen 6-15 characters
+                if(message === "New password must be betweeen 6-15 characters")
+                {
+                    this.setState({
+                        newPassError: message,
+                        oldPasswordError: "",
+                        newPass2Error: ""
+                    });
+                }
+                else if(message === "New password is identical to the previous one sent by the user")
+                {
+                    this.setState({
+                        newPassError: "You new password cannot be the same as the old password",
+                        oldPasswordError: "",
+                        newPass2Error: ""
+                    });
+                }
+                else
+                {
+                    resultFound = false;
+                }
             }
-            else if(status === 400 && response === "New password not provided")
+            else if(status === 401)
             {
-                this.setState({
-                    newPassError: "You must enter a new password",
-                    oldPasswordError: "",
-                    newPass2Error: ""
-                });
+                if(message === "Password incorred")
+                {
+                    this.setState({
+                        newPassError: "",
+                        oldPasswordError: "Your password is incorrect",
+                        newPass2Error: ""
+                    });
+                }
+                else
+                {
+                    resultFound = false;
+                }
+                // The user passed in the url does not match the cookie
+                // Password incorrect
+                // "Password incorrect. User account is currently locked due to too many failed password attempts"
+                // "You are not logged in"
             }
-            else if(status === 401 && response === "reroute as not logged in" || response === "No cookie")
+            else if(status === 404)
             {
-                alert("You are not logged in");
-                this.setState({
-                    redirect: true
-                });
-                // should redirect
+                // Could not find the user to update
+                // "The profile path sent to the server does not exist"
+                if(message === "Could not find the user to update")
+                {
+
+                }
+                else
+                {
+                    resultFound = false;
+                }
             }
-            // may want to limit to 3 tries?
-            else if(status === 401 && response === "Password incorrect")
+            else if(status === 500)
             {
-                this.setState({
-                    newPassError: "",
-                    oldPasswordError: "Your password is incorrect",
-                    newPass2Error: ""
-                });
-            }
-            else if(status === 400 && response === "Password must be at least 8 characters")
-            {
-                this.setState({
-                    newPassError: "Your new password must be at least 8 characters",
-                    oldPasswordError: "",
-                    newPass2Error: ""
-                });
-            }
-            else if(status === 400 && response === "New password is identical to the previous one")
-            {
-                this.setState({
-                    newPassError: "You new password cannot be the same as the old password",
-                    oldPasswordError: "",
-                    newPass2Error: ""
-                });
+                // "A unknown error occurred trying to update the users password"
             }
             else
             {
-                alert(response);
+                resultFound = false;
+            }
+            if(!resultFound)
+            {
+                let output = "Some unexpected " + status + " code was returned by the server";
+                this.props.setMessages({
+                    messages: [{type: "failure", message: output}],
+                    clearMessages: true
+                });
+                this.setState({
+                    awaitingResults: false
+                });
             }
         }
     }

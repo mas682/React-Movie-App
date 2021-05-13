@@ -14,20 +14,37 @@ const getUserInfo = (req, res, next) => {
         {
             if(cookieValid)
             {
-                // get the reviews and pass the cookie
-                getUser(JSON.parse(cookie), res);
+                if(req.method === "GET")
+                {
+                    // get the reviews and pass the cookie
+                    getUser(JSON.parse(cookie), res);
+                }
+                else
+                {
+                    let requester = cookieValid ? cookie.name : "";
+                    res.status(404).send({
+                        message:"The getUserInfo path sent to the server does not exist",
+                        requester: requester
+                    });
+                }
             }
             // cookie not valid
             else
             {
-                res.status(401).send("Invalid cookie");
+                res.status(401).send({
+                    message: "You are not logged in",
+                    requester: ""
+                });
             }
         });
     }
     // if no cookie was found
     else
     {
-        res.status(401).send("No cookie found in request");
+        res.status(401).send({
+            message: "You are not logged in",
+            requester: ""
+        });
     }
 };
 
@@ -40,12 +57,25 @@ const getUser = (cookie, res) =>
         // if the user was not found
         if(user === null)
         {
-            res.status(404).send("Unable to find user associated with cookie");
+            res.status(401).send({
+                requester: "",
+                message: "Unable to find user associated with cookie",
+            });
         }
         // if the user was found
         else
         {
-            res.status(200).send([user.firstName, user.lastName, user.username, user.email]);
+            let userObj = {
+                firstName: user.firstName,
+                lastName: user.lastName,
+                username: user.username,
+                email: user.email
+            };
+            res.status(200).send({
+                requester: username,
+                message: "User info successfully found",
+                user: userObj
+            });
         }
     });
 };
