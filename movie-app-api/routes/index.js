@@ -49,11 +49,11 @@ router.get('/profile/query', function(req, res, next) {
     profileHandler(req, res, next);
 });
 
-router.get('/profile/:userId/:type', function(req, res, next) {
+router.get('/profile/:username/:type', function(req, res, next) {
     profileHandler(req, res, next);
 });
 
-router.post('/profile/:userId/set_picture',
+router.post('/profile/:username/set_picture',
     function(req, res, next) {
         // validate requester
         profileHandler(req, res, next);
@@ -70,11 +70,11 @@ router.post('/profile/:userId/set_picture',
 );
 
 // used for all posts routes to /profile/username/some other parameter
-router.post('/profile/:userId/:type', function(req, res, next) {
+router.post('/profile/:username/:type', function(req, res, next) {
     profileHandler(req, res, next);
 });
 
-router.delete('/profile/:userId/:type', function(req, res, next) {
+router.delete('/profile/:username/:type', function(req, res, next) {
     profileHandler(req, res, next);
 })
 

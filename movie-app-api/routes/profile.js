@@ -227,7 +227,7 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
 // this function will return a users follwers for their page
 const getFollowers = async (cookie, req, res, cookieValid) =>
 {
-    let username = req.params.userId;
+    let username = req.params.username;
     let valid = validateUsernameParameter(res, username, cookie.name, "Username is invalid");
     if(!valid) return;
     // returns a empty array if no followers
@@ -253,7 +253,7 @@ const getFollowers = async (cookie, req, res, cookieValid) =>
 // this function will return a users following for their page
 const getFollowing = async (cookie, req, res) =>
 {
-    let username = req.params.userId;
+    let username = req.params.username;
     let valid = validateUsernameParameter(res, username, cookie.name, "Username is invalid");
     if(!valid) return;
     let following = await models.User.getFollowing(username, cookie.id, models);
@@ -280,7 +280,7 @@ const getFollowing = async (cookie, req, res) =>
 const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
 {
     //let username = cookie.name;
-    let username = req.params.userId;
+    let username = req.params.username;
     let loggedInUser = (cookieValid) ? cookie.name : "";
     let valid = validateUsernameParameter(res, username, loggedInUser, "Username is invalid");
     if(!valid) return;
@@ -335,7 +335,7 @@ const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
 const getReviews = async (cookie, req, res, cookieValid) =>
 {
     //let username = cookie.name;
-    let username = req.params.userId;
+    let username = req.params.username;
     let requester = (cookieValid) ? cookie.name : "";
     let max = (req.query.max === undefined) ? 50 : req.query.max;
     let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
@@ -389,7 +389,7 @@ const getReviews = async (cookie, req, res, cookieValid) =>
 // function to get the feed for a specific user
 const getFeed = async (cookie, req, res) =>
 {
-    let username = req.params.userId;
+    let username = req.params.username;
     let requester = cookie.name;
     let max = (req.query.max === undefined) ? 50 : req.query.max;
     let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
@@ -432,7 +432,7 @@ const followUser = (cookie, req, res) =>
     // requesting users username
     let requestingUser = cookie.name;
     // user to follows username
-    let followUname = req.params.userId;
+    let followUname = req.params.username;
     let valid = validateUsernameParameter(res, followUname, requestingUser, "Username to follow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
@@ -490,7 +490,7 @@ const followUser = (cookie, req, res) =>
 const unfollowUser = (cookie, req, res) =>
 {
     let requestingUser = cookie.name;
-    let unfollowUname = req.params.userId;
+    let unfollowUname = req.params.username;
     let valid = validateUsernameParameter(res, unfollowUname, requestingUser, "Username to unfollow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
@@ -549,14 +549,14 @@ const updatePassword = async (cookie, req, res) =>
     let requester = cookie.name;
     let username = cookie.name;
     // if the password is not provided, automatically deny
-    let valid = validateUsernameParameter(res, req.params.userId, requester, "Username must be between 6-20 characters");
+    let valid = validateUsernameParameter(res, req.params.username, requester, "Username must be between 6-20 characters");
     if(!valid) return;
     valid = validateStringParameter(res, req.body.oldPassword, 6, 15, requester, "Password must be betweeen 6-15 characters");
     if(!valid) return;
     valid = validateStringParameter(res, req.body.newPass, 6, 15, requester, "New password must be betweeen 6-15 characters");
     if(!valid) return;
 
-    if(req.params.userId !== cookie.name)
+    if(req.params.username !== cookie.name)
     {
         res.status(401).send({
             message: "The user passed in the url does not match the cookie",
@@ -638,7 +638,7 @@ const updateInfo = (cookie, req, res) =>
 {
     let requester = cookie.name;
     //let username = cookie.name;
-    let username = req.params.userId;
+    let username = req.params.username;
     let valid = validateUsernameParameter(res, req.body.username, requester, "Username must be between 6-20 characters");
     if(!valid) return;
     valid = validateEmailParameter(res, req.body.email, requester, "The email provided is not a valid email address");
@@ -746,7 +746,7 @@ const removeUser = async (cookie, req, res) =>
 {
     let requester = cookie.name;
     let password = req.body.password;
-    let userNameToRemove = req.params.userId;
+    let userNameToRemove = req.params.username;
     let valid = validateUsernameParameter(res, userNameToRemove, requester,
          "Username for the user to remove is invalid");
     if(!valid) return;
@@ -829,9 +829,9 @@ const removeUser = async (cookie, req, res) =>
 const setImage = async (cookie, req, res, next) =>
 {
     let requester = cookie.name;
-    let valid = validateUsernameParameter(res, req.params.userId, requester, "Invalid username found in the url");
+    let valid = validateUsernameParameter(res, req.params.username, requester, "Invalid username found in the url");
     if(!valid) return;
-    if(req.params.userId !== cookie.name)
+    if(req.params.username !== cookie.name)
     {
         res.status(401).send({
             message: "The user passed in the url does not match the requester",
@@ -850,9 +850,9 @@ const setImage = async (cookie, req, res, next) =>
 const removeProfilePicture = async(cookie, req, res) =>
 {
     let requester = cookie.name;
-    let valid = validateUsernameParameter(res, req.params.userId, requester, "Invalid username found in the url");
+    let valid = validateUsernameParameter(res, req.params.username, requester, "Invalid username found in the url");
     if(!valid) return;
-    if(req.params.userId !== cookie.name)
+    if(req.params.username !== cookie.name)
     {
         res.status(401).send({
             message: "The user passed in the url does not match the requester",
