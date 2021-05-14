@@ -97,6 +97,7 @@ class ReviewPopUp extends React.Component {
     // used when editing a review to generate the goodTag and badTag state objects
     getTags(tagArray)
     {
+        console.log(tagArray);
         let tags = {};
         for(let tag of tagArray)
         {

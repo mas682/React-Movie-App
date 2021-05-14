@@ -499,7 +499,7 @@ class MoviePost extends React.Component {
             usedGoodButtons: MoviePost.getGoodButtons(reviewResult.goodTags),
             usedBadButtons: MoviePost.getBadButtons(reviewResult.badTags),
             review: reviewResult.review,
-            fullReview: reviewResult.review,
+            fullReview: reviewResult,
             time: reviewResult.createdAt,
             moviePath: moviePath
         });
