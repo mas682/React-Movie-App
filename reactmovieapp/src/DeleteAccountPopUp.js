@@ -219,10 +219,12 @@ class DeleteAccountPopUp extends React.Component {
                     <Alert
                         messages={this.state.messages}
                         messageId={this.state.messageId}
-                        style={{"text-align": "left"}}
-                        symbolStyle={{"width": "5%", "margin-top": "2px"}}
-                        messageBoxStyle={{width: "86%"}}
-                        closeButtonStyle={{width: "5%", "margin-top": "2px"}}
+                        innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%", "padding-top": "10px"}}
+                        symbolStyle={{"width": "8%", "margin-top": "4px"}}
+                        messageBoxStyle={{width: "80%"}}
+                        closeButtonStyle={{width: "8%", "margin-top": "4px"}}
+                        outterContainerStyle={{position: "inherit"}}
+                        style={{"margin-bottom":"5px"}}
                     />
                     <div className="header">
                         <h3 className="inlineH3"> Delete account </h3>

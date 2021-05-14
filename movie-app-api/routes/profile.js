@@ -621,6 +621,7 @@ const updatePassword = async (cookie, req, res) =>
             if(attempts >= 5)
             {
                 message = message + ". User account is currently locked due to too many failed password attempts";
+                requester = "";
             }
             res.status(401).send({
                 message: message,

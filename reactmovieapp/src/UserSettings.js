@@ -527,7 +527,13 @@ class UserSettings extends React.Component {
 	{
 		if(this.state.displayPasswordResetPop)
 		{
-			return <PasswordResetPopUp currentUser={this.state.currentUser} removeFunction={this.removePasswordResetPopUp}/>;
+			return <PasswordResetPopUp
+						currentUser={this.state.currentUser}
+						removeFunction={this.removePasswordResetPopUp}
+						updateLoggedIn={this.props.updateLoggedIn}
+						showLoginPopUp={this.props.showLoginPopUp}
+						setMessages={this.props.setMessages}
+					/>;
 		}
 		return "";
 	}

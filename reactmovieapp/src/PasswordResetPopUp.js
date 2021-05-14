@@ -6,6 +6,7 @@ import './css/forms.css';
 //import './css/signup.css';
 import './css/SettingsForm/PasswordResetPopUp.css';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import Alert from './Alert.js';
 
 class PasswordResetPopUp extends React.Component {
     constructor(props) {
@@ -20,7 +21,9 @@ class PasswordResetPopUp extends React.Component {
             newPass2Error: "",
             redirect: false,
             currentUser: this.props.currentUser,
-            awaitingResults: false
+            awaitingResults: false,
+            messages: "",
+            messageId: -1
         };
         this.validateForm = this.validateForm.bind(this);
         this.closeModal = this.closeModal.bind(this);
@@ -122,11 +125,11 @@ class PasswordResetPopUp extends React.Component {
         {
             let params = {
                     oldPassword: this.state.oldPassword,
-                    newPass: this.state.newPass,
-                    newPass2: this.state.newPass2
+                    newPass: this.state.newPass
             };
             this.setState({
-                awaitingResults: true
+                awaitingResults: true,
+                messageId: -1
             });
             let url = "http://localhost:9000/profile/" + this.state.currentUser + "/update_password";
             apiPostJsonRequest(url, params).then((result) =>{
@@ -143,6 +146,10 @@ class PasswordResetPopUp extends React.Component {
         let resultFound = true;
         if(status === 200)
         {
+            this.props.setMessages({
+                messages: [{type: "success", message: message}],
+                clearMessages: true
+            });
             this.props.updateLoggedIn(requester);
             this.closeModal();
         }
@@ -150,24 +157,40 @@ class PasswordResetPopUp extends React.Component {
         {
             if(status === 400)
             {
-                // New password is identical to the previous one sent by the user
-                // Username must be between 6-20 characters
-                // Password must be betweeen 6-15 characters
-                // New password must be betweeen 6-15 characters
+                this.props.updateLoggedIn(requester);
                 if(message === "New password must be betweeen 6-15 characters")
                 {
                     this.setState({
                         newPassError: message,
                         oldPasswordError: "",
-                        newPass2Error: ""
+                        newPass2Error: "",
+                        awaitingResults: false
                     });
                 }
                 else if(message === "New password is identical to the previous one sent by the user")
                 {
                     this.setState({
-                        newPassError: "You new password cannot be the same as the old password",
+                        newPassError: "Your new password cannot be the same as the old password",
                         oldPasswordError: "",
-                        newPass2Error: ""
+                        newPass2Error: "",
+                        awaitingResults: false
+                    });
+                }
+                else if(message === "Username must be between 6-20 characters")
+                {
+                    this.setState({
+                        messages: [{type: "failure", message: message}],
+                        messageId: this.state.messageId + 1,
+                        awaitingResults: false
+                    });
+                }
+                else if(message === "Password must be betweeen 6-15 characters")
+                {
+                    this.setState({
+                        newPassError: "",
+                        oldPasswordError: message,
+                        newPass2Error: "",
+                        awaitingResults: false
                     });
                 }
                 else
@@ -177,22 +200,45 @@ class PasswordResetPopUp extends React.Component {
             }
             else if(status === 401)
             {
-                if(message === "Password incorred")
+                if(message === "Password incorrect")
                 {
+                    this.props.updateLoggedIn(requester);
                     this.setState({
                         newPassError: "",
                         oldPasswordError: "Your password is incorrect",
-                        newPass2Error: ""
+                        newPass2Error: "",
+                        awaitingResults: false
+                    });
+                }
+                else if(message === "The user passed in the url does not match the cookie")
+                {
+                    this.props.updateLoggedIn(requester);
+                    this.setState({
+                        messages: [{type: "failure", message: message}],
+                        messageId: this.state.messageId + 1,
+                        awaitingResults: false
+                    });
+                }
+                else if(message === "You are not logged in")
+                {
+                    // should cause a redirect to the home page
+                    this.props.showLoginPopUp();
+                    this.props.updateLoggedIn(requester);
+                }
+                else if(message.startsWith("Password incorrect. User account"))
+                {
+                    this.props.updateLoggedIn(requester);
+                    // "Password incorrect. User account is currently locked due to too many failed password attempts"
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
                     });
                 }
                 else
                 {
+                    this.props.updateLoggedIn(requester);
                     resultFound = false;
                 }
-                // The user passed in the url does not match the cookie
-                // Password incorrect
-                // "Password incorrect. User account is currently locked due to too many failed password attempts"
-                // "You are not logged in"
             }
             else if(status === 404)
             {
@@ -200,29 +246,46 @@ class PasswordResetPopUp extends React.Component {
                 // "The profile path sent to the server does not exist"
                 if(message === "Could not find the user to update")
                 {
-
+                    // this should cause a redirect to the home page
+                    this.props.showLoginPopUp();
+                    this.props.updateLoggedIn(requester);
+                }
+                else if(message === "The profile path sent to the server does not exist")
+                {
+                    this.props.updateLoggedIn(requester);
+                    this.setState({
+                        messages: [{type: "failure", message: message}],
+                        messageId: this.state.messageId + 1,
+                        awaitingResults: false
+                    });
                 }
                 else
                 {
+                    this.props.updateLoggedIn(requester);
                     resultFound = false;
                 }
             }
             else if(status === 500)
             {
+                this.props.updateLoggedIn(requester);
                 // "A unknown error occurred trying to update the users password"
+                this.setState({
+                    messages: [{type: "failure", message: message}],
+                    messageId: this.state.messageId + 1,
+                    awaitingResults: false
+                });
             }
             else
             {
                 resultFound = false;
+                this.props.updateLoggedIn(requester);
             }
             if(!resultFound)
             {
                 let output = "Some unexpected " + status + " code was returned by the server";
-                this.props.setMessages({
-                    messages: [{type: "failure", message: output}],
-                    clearMessages: true
-                });
                 this.setState({
+                    messages: [{type: "failure", message: output}],
+                    messageId: this.state.messageId + 1,
                     awaitingResults: false
                 });
             }
@@ -305,6 +368,16 @@ class PasswordResetPopUp extends React.Component {
                     <button className="close" onClick={this.closeModal}>
                     &times;
                     </button>
+                    <Alert
+                        messages={this.state.messages}
+                        messageId={this.state.messageId}
+                        innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%", "padding-top": "10px"}}
+                        symbolStyle={{"width": "8%", "margin-top": "4px"}}
+                        messageBoxStyle={{width: "80%"}}
+                        closeButtonStyle={{width: "8%", "margin-top": "4px"}}
+                        outterContainerStyle={{position: "inherit"}}
+                        style={{"margin-bottom":"5px"}}
+                    />
                     <div className="header">
                         <h3 className="inlineH3"> Change Password </h3>
                     </div>
