@@ -2,9 +2,6 @@ import {verifyLogin, validateUsernameParameter, validateIntegerParameter,
     validateStringParameter, validateEmailParameter, updateUserLoginAttempts} from './globals.js';
 import models, { sequelize } from '../src/models';
 import {removeImage} from './fileHandler.js';
-const fs = require('fs');
-const AWS = require('aws-sdk');
-const config = require('../Config.json');
 
 
 
@@ -24,7 +21,7 @@ const profileHandler = (req, res, next) => {
         {
             // should never happen but just in case
             res.status(500).send({
-                message: "Some unexpected error occurred on the server",
+                message: "Some unexpected error occurred on the server.  Error code: (1000)",
                 requester: JSON.parse(cookie).name
             });
         }
