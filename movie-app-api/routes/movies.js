@@ -319,9 +319,11 @@ const addToWatchList = async (cookie, req, res) =>
         let result = await movie.addUserWatchLists(cookie.id);
         if(result === undefined)
         {
+			let message = "A error occurred trying to add the movie to the users watch list.  Error code: 1500";
+			console.log(message);
             // if undefined, usually means the association already exists..
             res.status(500).send({
-                message: "A error occurred trying to add the movie to the users watch list",
+                message: message,
                 requester: username
             });
         }
@@ -364,9 +366,10 @@ const removeFromWatchList = async (cookie, req, res) =>
         let result = await movie.removeUserWatchLists(cookie.id);
         if(result === undefined)
         {
+			let message = "A error occurred trying to remove the movie from the users watch list.  Error code: 1501"
             // if undefined, usually means the association already exists..
             res.status(500).send({
-                message: "A error occurred trying to remove the movie from the users watch list",
+                message: message,
                 requester: username
             });
         }
@@ -410,9 +413,11 @@ const addToWatched = async (cookie, req, res) =>
         let result = await movie.addUsersWhoWatched(cookie.id);
         if(result === undefined)
         {
+			let message = "A error occurred trying to add the movie to the users watched list.  Error code: 1502"
+			console.log(message);
             // if undefined, usually means the association already exists..
             res.status(500).send({
-                message: "A error occurred trying to add the movie to the users watched list",
+                message: message,
                 requester: username
             });
         }
@@ -455,9 +460,11 @@ const removeFromWatched = async (cookie, req, res) =>
         let result = await movie.removeUsersWhoWatched(cookie.id);
         if(result === undefined)
         {
+			let message = "A error occurred trying to remove the movie from the users watched list.  Error code: 1503"
+			console.log(message);
             // if undefined, usually means the association already exists..
             res.status(500).send({
-                message: "A error occurred trying to remove the movie to the users watched list",
+                message: message,
                 requester: username
             });
         }

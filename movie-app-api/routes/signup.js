@@ -134,19 +134,19 @@ const createTempUser = async (cookie, req, res) =>
             else
             {
                 res.status(500).send({
-                    message: "A unknown constraint error occurred trying to create the user",
+                    message: "A unknown constraint error occurred trying to create the user.  Error code: 1300",
                     requester: ""
                 });
-                console.log("Some unknown constraint error occurred: " + errorObject.original.constraint);
+                console.log("Some unknown constraint error occurred (Error code: 1300): " + errorObject.original.constraint);
             }
         }
         else
         {
             res.status(500).send({
-                message: "A unknown error occurred trying to create the user",
+                message: "A unknown error occurred trying to create the user.  Error code: 1301",
                 requester: ""
             });
-            console.log("Some unknown error occurred: " + errorObject.name);
+            console.log("Some unknown error occurred (Error code: 1301): " + errorObject.name);
         }
         return;
     }
@@ -165,8 +165,10 @@ const createTempUser = async (cookie, req, res) =>
         }
         else
         {
+            let message = "Verification email not sent.  Error code: 1302";
+            console.log(message);
             res.status(500).send({
-                message: "Verification email not sent",
+                message: message,
                 requester: ""
             });
         }
@@ -223,10 +225,10 @@ const resendVerificationCode = async (cookie, req, res) =>
     {
         let errorObject = JSON.parse(JSON.stringify(err));
         res.status(500).send({
-                message: "A unknown error occurred trying to update the users verification code",
+                message: "A unknown error occurred trying to update the users verification code.  Error code: 1303",
                 requester: ""
             });
-        console.log("Some unknown error occurred: " + errorObject.name);
+        console.log("Some unknown error occurred (Error code: 1303): " + errorObject.name);
         return;
     }
     if(result === undefined || result === null)
@@ -251,8 +253,10 @@ const resendVerificationCode = async (cookie, req, res) =>
         }
         else
         {
+            let message = "Verification email not sent.  Error code: 1304";
+            console.log(message);
             res.status(500).send({
-                message: "Verification email not sent",
+                message: message,
                 requester: ""
             });
         }
@@ -420,8 +424,9 @@ const createUser = async (cookie, req, res) =>
             }
             else
             {
+                let message = "Someting went wrong on the server when creating the user.  Error code: 1305"
                 res.status(500).send({
-                    message: "Someting went wrong on the server when creating the user",
+                    message: message,
                     requester: ""
                 });
             }
@@ -466,10 +471,10 @@ const removeTempUser = async (cookie, req, res) =>
     }
     catch (err)
     {
-        console.log("Some error occurred deleting a temp user: " + username);
+        console.log("Some error occurred deleting a temp user (Error code: 1306): " + username);
         console.log(JSON.parse(JSON.stringify(err)));
         res.status(500).send({
-            message: "Someting went wrong on the server when removing the temporary user",
+            message: "Someting went wrong on the server when removing the temporary user.  Error code: 1306",
             requester: ""
         });
         return;

@@ -19,11 +19,13 @@ const profileHandler = (req, res, next) => {
         }
         else
         {
+            let message = "Some unexpected error occurred on the server.  Error code: 1000"
             // should never happen but just in case
             res.status(500).send({
-                message: "Some unexpected error occurred on the server.  Error code: (1000)",
+                message: message,
                 requester: JSON.parse(cookie).name
             });
+            console.log(message);
         }
         return;
     }
@@ -458,8 +460,9 @@ const followUser = (cookie, req, res) =>
                 userToFollow.addFollower(cookie.id).then((result) => {
                     if(result === undefined)
                     {
+                        let message = "Some error occured trying to follow the user.  Error code: 1001"
                         res.status(500).send({
-                            message: "Some error occured trying to follow the user",
+                            message: message,
                             requester: requestingUser
                         });
                     }
@@ -515,8 +518,9 @@ const unfollowUser = (cookie, req, res) =>
                 userToUnfollow.removeFollower(cookie.id).then((result) => {
                     if(result === undefined)
                     {
+                        let message = "Some error occured trying to unfollow the user.  Error code: 1002"
                         res.status(500).send({
-                            message: "Some error occured trying to unfollow the user",
+                            message: message,
                             requester: requestingUser
                         });
                     }
@@ -591,10 +595,10 @@ const updatePassword = async (cookie, req, res) =>
             {
                 let errorObject = JSON.parse(JSON.stringify(err));
                 res.status(500).send({
-                        message: "A unknown error occurred trying to update the users password",
+                        message: "A unknown error occurred trying to update the users password.  Error code: 1003",
                         requester: requester
                     });
-                console.log("Some unknown error occurred when updating a users password: " + errorObject.name);
+                console.log("Some unknown error occurred when updating a users password (Error code: 1003): " + errorObject.name);
                 return;
             }
             // send a updated cookie
@@ -698,19 +702,19 @@ const updateInfo = (cookie, req, res) =>
                 else
                 {
                     res.status(500).send({
-                        message: "A unknown constraint error occurred trying to update the users information",
+                        message: "A unknown constraint error occurred trying to update the users information.  Error code: 1004",
                         requester: requester
                     });
-                    console.log("Some unknown constraint error occurred: " + errorObject.original.constraint);
+                    console.log("Some unknown constraint error occurred (Error Code: 1004): " + errorObject.original.constraint);
                 }
             }
             else
             {
                 res.status(500).send({
-                    message: "A unknown error occurred trying to update the users info",
+                    message: "A unknown error occurred trying to update the users info.  Error code: 1005",
                     requester: requester
                 });
-                console.log("Some unknown error occurred when trying to update a users info: " + errorObject.name);
+                console.log("Some unknown error occurred when trying to update a users info (Error code: 1005): " + errorObject.name);
             }
             return;
         }
@@ -792,8 +796,9 @@ const removeUser = async (cookie, req, res) =>
         let result = await userToRemove.destroy();
         if(result === undefined)
         {
+            let message = "Server failed to remove user for some unkown reason.  Error code: 1006";
             res.status(500).send({
-                message: "Server failed to remove user for some unkown reason",
+                message: message,
                 requester: requester
             });
         }
@@ -895,24 +900,25 @@ const removeProfilePicture = async(cookie, req, res) =>
                     let errorObject = JSON.parse(JSON.stringify(err));
                     if(errorObject.name === 'SequelizeUniqueConstraintError')
                     {
-                        console.log("Some unexpected foreign key constraint error occurred when uploading a new user image: " + errorObject.original.constraint);
+                        console.log("Some unexpected foreign key constraint error occurred when uploading a new user image (Error code: 1007): " + errorObject.original.constraint);
                         console.log(errorObject);
                         status = 500;
-                        message = "Some unexpected error occurred on the server when trying to remove the users profile picture";
+                        message = "Some unexpected error occurred on the server when trying to remove the users profile picture.  Error code: 1007";
                     }
                     else
                     {
-                        console.log("Some unkown error occurred: " + errorObject.name);
+                        console.log("Some unkown error occurred (Error Code: 1008): " + errorObject.name);
                         console.log(err);
                         status = 500;
-                        message = "Some unexpected error occurred on the server when trying to remove the users profile picture";
+                        message = "Some unexpected error occurred on the server when trying to remove the users profile picture. Error code: 1008";
                     }
                 }
             }
             else
             {
                 status = 500;
-                message = "Some unexpected error occurred on the server when removing the profile picture";
+                message = "Some unexpected error occurred on the server when removing the profile picture. Error code: 1009";
+                console.log(message);
             }
         }
     }
@@ -977,25 +983,25 @@ const updateImage = async(cookie, req, res) =>
                 {
                     // this should just about never occur
                     // if here, a picture was overwritten...
-                    console.log("User picture name conflicts with an existing image name: " + newPicture);
+                    console.log("User picture name conflicts with an existing image name (Error code: 1010): " + newPicture);
                     status = 500;
-                    message = "Some unexpected error occurred on the server"
+                    message = "Some unexpected error occurred on the server. Error code: 1010"
                 }
                 else
                 {
-                    console.log("Some unexpected foreign key constraint error occurred when uploading a new user image: " + errorObject.original.constraint);
+                    console.log("Some unexpected foreign key constraint error occurred when uploading a new user image (Error code: 1011): " + errorObject.original.constraint);
                     console.log(errorObject);
                     status = 500;
-                    message = "Some unexpected error occurred on the server";
+                    message = "Some unexpected error occurred on the server.  Error code: 1011";
                     removeImage(newPicture);
                 }
             }
             else
             {
-                console.log("Some unkown error occurred: " + errorObject.name);
+                console.log("Some unkown error occurred (Error code: 1012): " + errorObject.name);
                 console.log(err);
                 status = 500;
-                message = "Some unexpected error occurred on the server";
+                message = "Some unexpected error occurred on the server.  Error code: 1012";
                 removeImage(newPicture);
             }
         }

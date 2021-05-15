@@ -97,11 +97,13 @@ const createReview = async (cookie, req, res) =>
     }
     if(review === null)
     {
+        let message = "Review creation failed for some unexpected reason.  Error code: 1101"
         // review creation failed, should just about never occur
         res.status(500).send({
-            message: "Review creation failed for some unexpected reason",
+            message: message,
             requester: requester
         });
+        console.log(message);
     }
     else
     {
@@ -439,10 +441,10 @@ const reviewErrorHandler = (err) =>
         }
         else
         {
-            console.log("Some unexpected foreign key constraint error occurred: " + errorObject.original.constraint);
+            console.log("Some unexpected foreign key constraint error occurred (Error code: 1101): " + errorObject.original.constraint);
             console.log(err);
             status = 500;
-            message = "Some unexpected constraint error occurred on the server";
+            message = "Some unexpected constraint error occurred on the server. Error code: 1101";
         }
     }
     else if(errorObject.name === "SequelizeUniqueConstraintError")
@@ -454,18 +456,18 @@ const reviewErrorHandler = (err) =>
         }
         else
         {
-            console.log("Some unexpected unique key constraint error occurred: " + errorObject.original.constraint);
+            console.log("Some unexpected unique key constraint error occurred (Error code: 1102): " + errorObject.original.constraint);
             console.log(err);
             status = 500;
-            message = "Some unexpected constraint error occurred on the server";
+            message = "Some unexpected constraint error occurred on the server.  Error code: 1102";
         }
     }
     else
     {
-        console.log("Some unknown error occurred: " + errorObject.name);
+        console.log("Some unknown error occurred (Error code: 1103): " + errorObject.name);
         console.log(err);
         status = 500;
-        message = "Some unexpected error occurred on the server";
+        message = "Some unexpected error occurred on the server.  Error code: 1103";
     }
     return {status: status, message: message};
 }

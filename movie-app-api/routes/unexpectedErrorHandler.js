@@ -9,7 +9,8 @@ const unexpectedErrorHandler = (err, req, res, next) => {
     cookie = (cookie === false) ? undefined : cookie;
     // if there is a signed cookie in the request
     let status = 500;
-    let message = "Some unexpected error occurred on the server";
+    let message = "Some unexpected error occurred on the server.  Error code: 1400";
+    console.log(message);
     let requester = "";
     if(cookie != undefined)
     {

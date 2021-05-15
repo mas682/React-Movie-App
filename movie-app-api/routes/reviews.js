@@ -163,8 +163,10 @@ const removePost = async (req, res, cookie) =>
             let result = await review.destroy();
             if(result === undefined)
             {
+                let message = "Server failed to delete review for some unkown reason.  Error code: 1200";
+                console.log(message);
                 res.status(500).send({
-                    message: "Server failed to delete review for some unkown reason",
+                    message: message,
                     requester: cookie.name
                 });
             }
@@ -209,8 +211,9 @@ const addLike = (cookie, req, res) =>
                 // if undefined, a association already exists
                 if(result === undefined)
                 {
+                    let message = "Some error occurred trying to like the post.  Error code: 1201"
                     res.status(500).send({
-                        message: "Some error occurred trying to like the post",
+                        message: message,
                         requester: cookie.name
                     });
                 }
@@ -264,8 +267,9 @@ const removeLike = (cookie, req, res) =>
                 // if undefined, a association already exists
                 if(result === undefined)
                 {
+                    let message = "Some error occurred trying to remove like from the post.  Error code: 1202"
                     res.status(500).send({
-                        message: "Some error occurred trying to remove like from the post",
+                        message: message,
                         requester: cookie.name
                     });
                 }
@@ -375,17 +379,17 @@ const postComment = async (req, res, cookie) =>
                 else
                 {
                     res.status(500).send({
-                        message: "A unknown error occurred trying to post a comment to the review",
+                        message: "A unknown error occurred trying to post a comment to the review.  Error code: 1203",
                         requester: requester
                     });
-                    console.log("Some unknown constraint error occurred: " + errorObject.original.constraint);
+                    console.log("Some unknown constraint error occurred (Error code: 1203): " + errorObject.original.constraint);
                 }
             }
             else
             {
-                console.log("Some unknown error occurred during posting a comment: " + errorObject.name);
+                console.log("Some unknown error occurred during posting a comment (Error code: 1204): " + errorObject.name);
                 res.status(500).send({
-                    message: "A unknown error occurred trying to post a comment to the review",
+                    message: "A unknown error occurred trying to post a comment to the review.  Error code: 1204",
                     requester: requester
                 });
             }
@@ -439,8 +443,9 @@ const updateComment = async (req, res, cookie) =>
             }
             catch(err)
             {
+                let message = "Comment update failed due to a server issue.  Error code: 1205"
                 res.status(500).send({
-                    message: "Comment update failed due to a server issue",
+                    message: message,
                     requester: requester
                 });
                 return;
@@ -531,8 +536,9 @@ const commentRemoval = async (res, comment, requester) =>
     }
     catch(err)
     {
+        let message = "Comment removal failed due to a server issue.  Error code: 1206"
         res.status(500).send({
-            message: "Comment removal failed due to a server issue",
+            message: message,
             requester: requester
         });
         return;

@@ -1,0 +1,184 @@
+{
+    "badPageHandler.js": {
+
+    },
+    "emailHandler.js": {
+
+    },
+    "fileHandler.js": {
+
+    },
+    "getUserInfo.js":{
+
+    },
+    "globals.js":{
+
+    },
+    "index.js":{
+
+    },
+    "login.js":{
+
+    },
+    "movies.js":{
+        "1500":{
+            "Description":"A user was trying to add a movie to their watch list but the update to the database failed.  Usually means the association already exists.",
+            "function":"addToWatchList"
+        },
+        "1501":{
+            "Description":"A user was trying to remove a movie from their watch list but the update to the database failed",
+            "function":"removeFromWatchList"
+        },
+        "1502":{
+            "Description":"A user was trying to add a movie to their watched list but the udpate to the database failed.  Usually means the association already exists.",
+            "function":"addToWatched"
+        },
+        "1503":{
+            "Description":"A user was trying to remove a movie from their watched list but the update to the database failed",
+            "function":"removeFromWatchedList"
+        },
+
+    },
+    "profile.js":{
+        "1000":{
+            "Description": "Occurs if res.locals.skipAuthentication is set to true but the type is not.  for updating the users image.  This should just about never occur as res.locals.skipAuthentication is only.  Set to true if updating a users image",
+            "function": "profileHandler"
+        },
+        "1001":{
+            "Description": "A user tried to follow another user but the update to the database failed",
+            "function": "followUser"
+        },
+        "1002":{
+            "Description": "A user tried to unfollow another user but the update to the database failed",
+            "function": "unfollowUser"
+        },
+        "1003":{
+            "Description": "A user tried to update their password but the update to the database failed",
+            "function": "updatePassword"
+        },
+        "1004":{
+            "Description":"A user tried to update their information but some unexpected constraint error occurred",
+            "function":"updateInfo"
+        },
+        "1005":{
+            "Description":"A user tried to update their information but the update to the database failed",
+            "function":"updateInfo"
+        },
+        "1006":{
+            "Description":"A user tried to delete their account but the update to the database failed",
+            "function":"removeUser"
+        },
+        "1007":{
+            "Description":"Some unexpected constraint error occurred when a user tried to set their picture to null",
+            "function":"removeProfilePicture"
+        },
+        "1008":{
+            "Description":"A user tried to delete their profile picture but the update to the database failed",
+            "function":"removeProfilePicture"
+        },
+        "1009":{
+            "Description":"A user tried to delete their profile picture but some unexpected error occured when removing it from AWS",
+            "function":"removeProfilePicture"
+        },
+        "1010":{
+            "Description":"A user tried to upate their picture but it overwrote another users picture as they have the same file name, thus two users pictures are now wrong",
+            "function":"updateImage"
+        },
+        "1011":{
+            "Description":"Some unexpected constraint error occured when a user tried to update their picture on the database",
+            "function":"updateImage"
+        },
+        "1012":{
+            "Description":"Some unexpected error occurred when a user tried to update their picture on the database",
+            "function":"updateImage"
+        }
+    },
+    "reviewCreator.js":{
+        "1100":{
+            "Description":"A user attempted to create a review but it failed to be created on the database for some reason",
+            "function":"createReview"
+        },
+        "1101":{
+            "Description":"Some unexpected foreign key constraint error occurred when a user was updating or creating a review",
+            "function":"reviewErrorHandler"
+        },
+        "1102":{
+            "Description":"Some unexpected constraint error occurred when a user was updating or creating a review",
+            "function":"reviewErrorHandler"
+        },
+        "1103":{
+            "Description":"Some unexpected error occurred on the database when a user tried to update or create a review",
+            "function":"reviewErrorHandler"
+        }
+
+    },
+    "reviews.js":{
+        "1200":{
+            "Description":"A user tried to delete a review but the update to the database failed",
+            "function":"removePost"
+        },
+        "1201":{
+            "Description":"A user tried to like a review post but the update to the database failed",
+            "function":"addLike"
+        },
+        "1202":{
+            "Description":"A user tried to remove a like from a review post but the update to the database failed",
+            "function":"removeLike"
+        },
+        "1203":{
+            "Description":"A user tried to post a comment on a review post but a unknown constraint error occurred",
+            "function":"postComment"
+        },
+        "1204":{
+            "Description":"A user tried to post a comment on a review post but the update to the database failed",
+            "function":"postComment"
+        },
+        "1205":{
+            "Description":"A user tried to update a comment on a review post but the update to the database failed",
+            "function":"updateComment"
+        },
+        "1206":{
+            "Description":"A user tried to remove a comment from a review post but the update to the database failed",
+            "function":"commentRemoval"
+        }
+    },
+    "search.js":{
+
+    },
+    "signup.js":{
+        "1300":{
+            "Description":"A user was attempting to sign up but some unexpected constraint error occurred",
+            "function":"createTempUser"
+        },
+        "1301":{
+            "Description":"A user was attempting to sign up but the update to the database failed",
+            "function":"createTempUser"
+        },
+        "1302": {
+            "Description":"A user was attempting to sign up but the verification email failed to be sent out",
+            "function":"createTempUser"
+        },
+        "1303":{
+            "Description":"A user tried to have their email verification code resent but the udpate to the database failed",
+            "function":"resendVerificationCode"
+        },
+        "1304": {
+            "Description":"A user attempting to sign up tried to have their verification code resent but the email did not get sent out",
+            "function":"resendVerificationCode"
+        },
+        "1305": {
+            "Description":"When creating a users official account the update to the database failed",
+            "function":"createUser"
+        },
+        "1306": {
+            "Description":"When removing a temporary user the update to the database failed",
+            "function":"removeTempUser"
+        }
+    },
+    "unexpectedErrorHandler.js":{
+        "1400": {
+            "Description":"A unexpected error occurred on the server and was caught",
+            "function":"unexpectedErrorHandler"
+        }
+    }
+}
