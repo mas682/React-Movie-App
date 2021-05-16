@@ -1,6 +1,7 @@
 import Sequelize from 'sequelize';
+const config = require('../../Config.json');
 
-const sequelize = new Sequelize('postgres://postgres:password@localhost:5432/movie-app', {
+const sequelize = new Sequelize("postgres://" + config.database.username + ":" + config.database.password + "@" + config.database.host, {
     dialect: 'postgres',
     // shuts off logging
     logging: false

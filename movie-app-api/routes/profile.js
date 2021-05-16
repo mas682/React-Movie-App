@@ -32,6 +32,7 @@ const profileHandler = (req, res, next) => {
     // if there is a signed cookie in the request
     if(cookie != undefined)
     {
+        let cookieValid = await verifyLogin(cookie);
         // see if the cookie has a valid user
         verifyLogin(cookie).then((cookieValid) =>
         {
@@ -135,7 +136,7 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                updateInfo(cookie, req, res);
+                updateInfo(cookie, req, res, next);
             }
             else
             {
@@ -635,7 +636,7 @@ const updatePassword = async (cookie, req, res) =>
 
 // function to handle updating a users information such as their
 // first name, last name, email, or username
-const updateInfo = (cookie, req, res) =>
+const updateInfo = (cookie, req, res, next) =>
 {
     let requester = cookie.name;
     //let username = cookie.name;
@@ -731,11 +732,13 @@ const updateInfo = (cookie, req, res) =>
         });
         res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
         res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
+
         let updatedUser = {
             username: result.username,
             email: result.email,
             firstName: result.firstName,
-            lastName: result.lastName
+            lastName: result.lastName,
+            test: test
         };
         res.status(200).send({
             message: "User info successfully updated",
@@ -904,7 +907,7 @@ const removeProfilePicture = async(cookie, req, res) =>
                     let errorObject = JSON.parse(JSON.stringify(err));
                     if(errorObject.name === 'SequelizeUniqueConstraintError')
                     {
-                        console.log("Some unexpected foreign key constraint error occurred when uploading a new user image (Error code: 1007): " + errorObject.original.constraint);
+                        console.log("Some unexpected constraint error occurred when uploading a new user image (Error code: 1007): " + errorObject.original.constraint);
                         console.log(errorObject);
                         status = 500;
                         message = "Some unexpected error occurred on the server when trying to remove the users profile picture.  Error code: 1007";
@@ -993,7 +996,7 @@ const updateImage = async(cookie, req, res) =>
                 }
                 else
                 {
-                    console.log("Some unexpected foreign key constraint error occurred when uploading a new user image (Error code: 1011): " + errorObject.original.constraint);
+                    console.log("Some unexpected constraint error occurred when uploading a new user image (Error code: 1011): " + errorObject.original.constraint);
                     console.log(errorObject);
                     status = 500;
                     message = "Some unexpected error occurred on the server.  Error code: 1011";
