@@ -165,8 +165,8 @@ const imageHandler = async(req, res, next) => {
                 else
                 {
                     status = 500;
-                    message = "Some unexpected error occurred on the server";
-                    console.log(message + " when a user was uploading a image");
+                    message = "Some unexpected error occurred on the server.  Error code: 1700";
+                    console.log(message);
                     console.log(errorObject);
                 }
 
@@ -192,8 +192,8 @@ const imageHandler = async(req, res, next) => {
                 else
                 {
                     status = 500;
-                    message = "Some unexpected error occurred on the server";
-                    console.log(message + " when a user was uploading a image");
+                    message = "Some unexpected error occurred on the server.  Error code: 1701";
+                    console.log(message);
                     console.log(errorObject);
                 }
             }
@@ -202,29 +202,29 @@ const imageHandler = async(req, res, next) => {
                 if(errorObject.code === 'InvalidAccessKeyId')
                 {
                     status = 500;
-                    message = "Some unexpected error occurred on the server";
-                    console.log("Sever error: s3 access key invalid");
+                    message = "Some unexpected error occurred on the server.  Error code: 1702";
+                    console.log("Sever error: s3 access key invalid.  (Error code: 1702)");
                     console.log(errorObject);
                 }
                 else if(errorObject.code === 'SignatureDoesNotMatch')
                 {
                     status = 500;
-                    message = "Some unexpected error occurred on the server";
-                    console.log("Sever error: s3 signature does not match");
+                    message = "Some unexpected error occurred on the server.  Error code: 1703";
+                    console.log("Sever error: s3 signature does not match.  (Error code: 1703)");
                     console.log(errorObject);
                 }
                 else if(errorObject.code === 'NoSuchBucket')
                 {
                     status = 500;
-                    message = "Some unexpected error occurred on the server";
-                    console.log("Sever error: s3 bucket " + config.aws.bucketName + " could not be found");
+                    message = "Some unexpected error occurred on the server.  Error code: 1704";
+                    console.log("Sever error: s3 bucket " + config.aws.bucketName + " could not be found.  (Error code: 1704)");
                     console.log(errorObject);
                 }
                 else
                 {
                     status = 500;
-                    message = "Some unexpected error occurred on the server";
-                    console.log(message + " when a user was uploading a image");
+                    message = "Some unexpected error occurred on the server.  Error code: 1705";
+                    console.log(message);
                     console.log(errorObject);
                 }
 
@@ -250,6 +250,7 @@ const removeImage = async(filename) =>
     {
         console.log("Error removing image from S3 bucket: " + filename);
         let errorObject = JSON.parse(JSON.stringify(err));
+        // may need some additional error catching here to get more insight into this
         console.log(errorObject);
         return false;
     }

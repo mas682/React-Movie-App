@@ -6,7 +6,30 @@
 
     },
     "fileHandler.js": {
-
+        "1700":{
+            "Description":"Some unexpected Multer Error occurred when a user was uploading a picture",
+            "function": "imageHandler"
+        },
+        "1701":{
+            "Description":"Some unexpected FileUploadError occurred when a user was uploading a picture",
+            "function":"imageHandler"
+        },
+        "1702":{
+            "Description":"The AWS s3 access key was invalid when a user was uploading a picture",
+            "function":"imageHandler"
+        },
+        "1703":{
+            "Description":"The AWS s3 key signature did not match when a user was uploading a picture",
+            "function":"imageHandler"
+        },
+        "1704":{
+            "Description":"The AWS s3 bucket could not be found when a user was uploading a picture",
+            "function":"imageHandler"
+        },
+        "1705":{
+            "Description":"Some unexpected error occurred whena  user was uploading a picture",
+            "function":"imageHandler"
+        }
     },
     "getUserInfo.js":{
 
@@ -18,7 +41,18 @@
 
     },
     "login.js":{
-
+        "1600":{
+            "Description":"A user tried to have a verification code resent when they forgot their password but the update to the database failed",
+            "function":"forgotPassword"
+        },
+        "1601":{
+            "Description":"A user tried to have a verification code sent as they forgot their password but the update to the database failed",
+            "function":"forgotPassword"
+        },
+        "1602":{
+            "Description":"A error occurred sending out a users verification code",
+            "function":"forgotPassword"
+        }
     },
     "movies.js":{
         "1500":{
@@ -36,8 +70,7 @@
         "1503":{
             "Description":"A user was trying to remove a movie from their watched list but the update to the database failed",
             "function":"removeFromWatchedList"
-        },
-
+        }
     },
     "profile.js":{
         "1000":{

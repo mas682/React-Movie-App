@@ -227,10 +227,10 @@ const forgotPassword = async (req, res) =>
         {
             let errorObject = JSON.parse(JSON.stringify(err));
             res.status(500).send({
-                    message: "A unknown error occurred trying to update the users verification code",
+                    message: "A unknown error occurred trying to update the users verification code.  Error code: 1600",
                     requester: ""
                 });
-            console.log("Some unknown error occurred: " + errorObject.name);
+            console.log("Some unknown error occurred (Error code: 1600): " + errorObject.name);
             console.log(err);
             return;
         }
@@ -248,10 +248,10 @@ const forgotPassword = async (req, res) =>
         {
             let errorObject = JSON.parse(JSON.stringify(err));
             res.status(500).send({
-                    message: "A unknown error occurred trying to create the users verification code",
+                    message: "A unknown error occurred trying to create the users verification code.  Error code: 1601",
                     requester: ""
                 });
-            console.log("Some unknown error occurred: " + errorObject.name);
+            console.log("Some unknown error occurred (Error code: 1601): " + errorObject.name);
             console.log(err);
             return;
         }
@@ -280,9 +280,9 @@ const forgotPassword = async (req, res) =>
             });
         }
         else
-        {
+        {   
             res.status(500).send({
-                message: "Verification email not sent",
+                message: "Verification email not sent.  Error code: 1602",
                 requester: ""
             });
         }
