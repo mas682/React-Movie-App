@@ -24,15 +24,16 @@ class UserSettings extends React.Component {
             username: "",
             oldUser: "",
             usernameError: "",
+			// email change will be done in the future
             email: "",
-            emailError: "",
-            oldEmail: "",
+            //emailError: "",
+            //oldEmail: "",
             loading: true,
             redirect: false,
             editFirst: false,
             editLast: false,
             editUser: false,
-            editEmail: false,
+            //editEmail: false,
 			displayPasswordResetPop: false,
 			displayRemoveAccountPopUp: false,
 			currentUser: this.props.currentUser,
@@ -98,7 +99,7 @@ class UserSettings extends React.Component {
         event.preventDefault();
         let error = false;
         // checks to see if email in format string@string.string
-        let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.state.email);
+        //let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.state.email);
         // if firstName is empty
         if(!this.state.firstName || this.state.firstName.length < 1 || this.state.firstName.length > 20)
         {
@@ -131,7 +132,8 @@ class UserSettings extends React.Component {
             this.setState({lastNameError: ""});
         }
 
-        // if lastName is empty
+		/*
+        // if email is empty
         if(this.state.email.length < 7 || this.state.email.length > 30)
         {
             this.setState({emailError: "The email provided is not a valid email address"});
@@ -146,13 +148,14 @@ class UserSettings extends React.Component {
         {
             this.setState({emailError: ""});
         }
+		*/
         if(!error)
         {
 			let params = {
 				username: this.state.username,
 			    firstName: this.state.firstName,
 			    lastName: this.state.lastName,
-			    email: this.state.email,
+			   // email: this.state.email,
 			};
 			let url = "http://localhost:9000/profile/" + this.state.currentUser + "/update";
 			this.setState({
@@ -184,8 +187,8 @@ class UserSettings extends React.Component {
 				oldUser: "",
 				usernameError: "",
 				email: user.email,
-				emailError: "",
-				oldEmail: "",
+				//emailError: "",
+				//oldEmail: "",
 				editFirst: false,
 				editLast: false,
 				editUser: false,
@@ -224,8 +227,6 @@ class UserSettings extends React.Component {
 			}
 			else if(status === 404)
 			{
-				// The profile path sent to the server does not exist
-				// tested
 				if(message === "The profile path sent to the server does not exist")
 				{
 					this.setState({
@@ -244,7 +245,6 @@ class UserSettings extends React.Component {
 			}
 			else if(status === 400)
 			{
-				// all tested
 				if(message === "Username must be between 6-20 characters")
 				{
 					this.setState({
@@ -252,6 +252,7 @@ class UserSettings extends React.Component {
 						usernameError: message
 					});
 				}
+				/*
 				else if(message === "The email provided is not a valid email address")
 				{
 					this.setState({
@@ -259,6 +260,7 @@ class UserSettings extends React.Component {
 						emailError: message
 					});
 				}
+				*/
 				else if(message === "First name must be between 1-20 characters")
 				{
 					this.setState({
@@ -281,7 +283,6 @@ class UserSettings extends React.Component {
 			}
 			else if(status === 409)
 			{
-				// tested
 				if(message === "Username already in use")
 				{
 					this.setState({
@@ -289,7 +290,7 @@ class UserSettings extends React.Component {
 						usernameError: message
 					});
 				}
-				// tested
+				/*
 				else if(message === "Email already associated with a user")
 				{
 					this.setState({
@@ -297,6 +298,7 @@ class UserSettings extends React.Component {
 						emailError: message
 					});
 				}
+				*/
 				else
 				{
 					resultFound = false;
@@ -457,7 +459,7 @@ class UserSettings extends React.Component {
     {
         let result = "";
         // if this.state[type+"Error"]...
-        if(this.state[type])
+        if(this.state[type] && type !== "editEmail")
         {
             let errorType = value + "Error";
             if(this.state[errorType])
@@ -509,11 +511,13 @@ class UserSettings extends React.Component {
         }
         else
         {
+			let editButton = (<button className={style.editText} onClick={() => {this.setEdit(type, value, oldKey)} }>Edit</button>);
+			if(type === "editEmail") editButton = "";
             result = (
                 <React.Fragment>
                     <div className={style.sectionHeader}>
                         <h3 className={style.h3Header}>{title}</h3>
-                        <button className={style.editText} onClick={() => {this.setEdit(type, value, oldKey)} }>Edit</button>
+                        {editButton}
                     </div>
                     <div className={style.sectionText}>
                         {this.state[value]}
@@ -576,7 +580,7 @@ class UserSettings extends React.Component {
         let firstInput = this.generateInput("editFirst", "firstName", "First Name", "oldFirst", 20);
         let lastInput = this.generateInput("editLast", "lastName", "Last Name", "oldLast", 20);
         let submitButton = "";
-        if(this.state.editFirst || this.state.editLast || this.state.editUser || this.state.editEmail)
+        if(this.state.editFirst || this.state.editLast || this.state.editUser)
         {
             submitButton = (
                 <React.Fragment>
@@ -601,8 +605,8 @@ class UserSettings extends React.Component {
                         <h2>Settings</h2>
 		            </div>
                     <form id="form1" onSubmit={this.validateForm} noValidate/>
-					{userInput}
 					{emailInput}
+					{userInput}
                     {firstInput}
                     {lastInput}
                     {submitButton}

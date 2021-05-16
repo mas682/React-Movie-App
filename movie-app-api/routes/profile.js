@@ -642,8 +642,10 @@ const updateInfo = (cookie, req, res) =>
     let username = req.params.username;
     let valid = validateUsernameParameter(res, req.body.username, requester, "Username must be between 6-20 characters");
     if(!valid) return;
+    /* to be implemented later
     valid = validateEmailParameter(res, req.body.email, requester, "The email provided is not a valid email address");
     if(!valid) return;
+    */
     valid = validateStringParameter(res, req.body.firstName, 1, 20, requester, "First name must be between 1-20 characters");
     if(!valid) return;
     valid = validateStringParameter(res, req.body.lastName, 1, 20, requester, "Last name must be between 1-20 characters");
@@ -674,7 +676,7 @@ const updateInfo = (cookie, req, res) =>
         try {
             result = await user.update({
                 username: req.body.username,
-                email: req.body.email,
+                //email: req.body.email,
                 firstName: req.body.firstName,
                 lastName: req.body.lastName
             });
@@ -692,6 +694,7 @@ const updateInfo = (cookie, req, res) =>
                         requester: requester
                     });
                 }
+                /*
                 else if(errorObject.original.constraint === "users_email_key")
                 {
                     res.status(409).send({
@@ -699,6 +702,7 @@ const updateInfo = (cookie, req, res) =>
                         requester: requester
                     });
                 }
+                */
                 else
                 {
                     res.status(500).send({
