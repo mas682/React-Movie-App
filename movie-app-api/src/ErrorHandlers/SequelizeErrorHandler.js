@@ -34,8 +34,9 @@
                     defaultMessage:"User associated with the review does not exist",
                     logMessage: undefined,
                     defaultStatus: 401,
+                    defaultErrorCode: ...
                     log: true,
-                    errorCodes: {
+                    functions: {
                         reviewCreator: {
                             createReview: {
                                 errorCode: undefined,
@@ -63,85 +64,67 @@ const ERRORS = {
     "ForeignKey": {
         "reviews_userId_fkey":{
             defaultMessage:"User associated with the review does not exist",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 401,
-            log: true,
-            errorCodes: {
+            defaultLog: false,
+            defaultErrorCode: undefined,
+            functions: {
                 reviewCreator: {
-                    createReview: {
-
-                    },
-                    updateReview: {
-
-                    }
+                    createReview: {},
+                    updateReview: {}
                 }
             }
         },
         "reviews_movieId_fkey":{
             defaultMessage:"Movie associated with the review does not exist",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 404,
-            log: true,
-            errorCodes: {
+            defaultLog: false,
+            defaultErrorCode: undefined,
+            functions: {
                 reviewCreator: {
-                    createReview: {
-
-                    },
-                    updateReview: {
-
-                    }
+                    createReview: {},
+                    updateReview: {}
                 }
             }
         },
         "comments_userId_fkey":{
             defaultMessage: "User could not be found",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 401,
-            log: false,
-            errorCodes: {
+            defaultLog: false,
+            defaultErrorCode: undefined,
+            functions: {
                 reviews: {
-                    postComment: {
-                        errorCode: undefined,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: undefined
-                    }
+                    postComment: {}
                 }
             }
         },
         "comments_reviewId_fkey":{
             defaultMessage: "The review could not be found",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 404,
-            log: false,
-            errorCodes: {
+            defaultLog: false,
+            defaultErrorCode: undefined,
+            functions: {
                 reviews: {
-                    postComment: {
-                        errorCode: undefined,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: undefined,
-                        status: undefined
-                    }
+                    postComment: {}
                 }
             }
         },
         default: {
             defaultMessage: "Some unexpected error occurred on the server",
-            logMessage: "Some unexpected foreign key constraint error occurred",
+            defaultLogMessage: "Some unexpected foreign key constraint error occurred",
             defaultStatus: 500,
-            log: true,
-            errorCodes: {
+            defaultLog: true,
+            defaultErrorCode: undefined,
+            functions: {
                 review: {
                     postComment: {
-                        errorCode: 1203,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: true,
-                        status: undefined
+                        errorCode: 1203
                     }
                 },
-                // the coes here will need fixed as they were groupded into 1 before
+                // the codes here will need fixed as they were groupded into 1 before
                 reviewCreator: {
                     createReview: {
                         errorCode: 1101
@@ -157,10 +140,11 @@ const ERRORS = {
     "UniqueConstraint":{
         "reviews_userId_movieId_key":{
             defaultMessage:"A review for this movie by the current user already exists.",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 400,
-            log: false,
-            errorCodes: {
+            defaultLog: false,
+            defaultErrorCode: undefined,
+            functions: {
                 reviewCreator: {
                     createReview: {},
                     updateReview: {}
@@ -169,89 +153,73 @@ const ERRORS = {
         },
         "users_username_key": {
             defaultMessage: "Username is already in use",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 409,
-            log: false,
-            errorCodes: {
+            defaultLog: false,
+            defaultErrorCode: undefined,
+            functions: {
                 profile: {
-                    updateInfo: {
-                        errorCode: undefined,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: undefined
-                    }
+                    updateInfo: {}
                 }
             }
         },
         "users_email_key":{
             defaultMessage: "Email already associated with a user",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 409,
-            log: false,
-            errorCodes: {
+            defaultLog: false,
+            defaultErrorCode: undefined,
+            functions: {
                 profile: {
-                    updateInfo: {
-                        errorCode: undefined,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: undefined
-                    }
+                    updateInfo: {}
                 }
             }
         },
         "users_picture_key":{
             defaultMessage: "Some unexpected error occurred on the server",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 500,
-            log: true,
-            errorCodes: {
+            defaultLog: true,
+            defaultErrorCode: undefined,
+            functions: {
                 profile: {
                     updateImage: {
-                        errorCode: 1010,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: true
+                        errorCode: 1010
                     }
                 }
             }
         },
         "UserVerificationCodes_username_key": {
             defaultMessage: "Username already exists",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 409,
-            log: false,
-            errorCodes: {
+            defaultLog: false,
+            defaultErrorCode: undefined,
+            functions: {
                 signup: {
-                    createTempUser: {
-                        errorCode: undefined,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: undefined
-                    }
+                    createTempUser: {}
                 }
             }
         },
         "UserVerificationCodes_userEmail_key":{
             defaultMessage: "Email already associated with a user",
-            logMessage: undefined,
+            defaultLogMessage: undefined,
             defaultStatus: 409,
-            log: false,
-            errorCodes: {
+            defaultLog: false,
+            defaultErrorCode: undefined,
+            functions: {
                 signup: {
-                    createTempUser: {
-                        errorCode: undefined,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: undefined
-                    }
+                    createTempUser: {}
                 }
             }
         },
         default: {
             defaultMessage: "Some unexpected error occurred on the server",
-            logMessage: "Some unexpected unique constraint error occurred",
-            log: true,
-            errorCodes: {
+            defaultLogMessage: "Some unexpected unique constraint error occurred",
+            defaultStatus: 500,
+            defaultLog: true,
+            defaultErrorCode: undefined,
+            functions: {
                 // these will need fixed as error code is the same for both...
                 reviewCreator: {
                     createReview:{
@@ -263,76 +231,149 @@ const ERRORS = {
                 },
                 profile: {
                     updateInfo: {
-                        errorCode: 1004,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: true
+                        errorCode: 1004
                     },
                     removeProfilePicture: {
-                        errorCode: 1007,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: true
+                        errorCode: 1007
                     },
                     updateImage: {
-                        errorCode: 1011,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: true
+                        errorCode: 1011
                     }
                 },
                 signup: {
                     createTempUser: {
-                        errorCode: 1300,
-                        message: undefined,
-                        logMessage: undefined,
-                        log: true
+                        errorCode: 1300
                     }
                 }
             }
         }
     },
     undefined: {
-        defaultMessage: "Some unexpected constraint error occurred",
+        defaultMessage: "Some unexpected error occurred",
+        defaultLogMessage: undefined,
         defaultStatus: 500,
-        log: true,
-        errorCodes: {
-            profile: {
-                updateInfo: {
-                    errorCode: 1600,
-                    message: "",
-                    output: false
-                }
-            },
-            profile: {
-                updateInfo: {
-                    errorCode: 1600,
-                    message: "",
-                    output: true
-                }
-            },
-            reviewCreator: {
-                function: {
-
-                }
-            }
-        }
+        defaultLog: true,
+        defaultErrorCode: undefined,
+        functions: {}
     }
 }
 
 
-class SequelizeErrorHandler {
-    constructor(error, file, location) {
-        this.error = error;
-        let code;
-        if(error.name.contains("ConstraintError"))
+function sequelizeErrorHandler(error, file, functionName) {
+    let errorType;
+    let errorKey;
+    if(error.name.includes("ForeignKey"))
+    {
+        errorType = "ForeignKey";
+        errorKey = error.original.constraint;
+    }
+    else if(error.name.includes("UniqueConstraint"))
+    {
+        errorType = "UniqueConstraint";
+        errorKey = error.original.constraint;
+    }
+    else
+    {
+        errorType = "undefined";
+    }
+
+    // the high level type of error, ex. ForeignKey, UniqueConstraint, undefined
+    let errorClass = ERRORS[errorType];
+    let errorObj;
+    if(errorType === "undefined")
+    {
+        errorObj = errorClass;
+    }
+    else
+    {
+        // the exact error, ex. users_email_key
+        errorObj = errorClass[errorKey]
+        if(errorObj === undefined)
         {
-            code = error.original.constraint;
+            errorObj = errorClass["undefined"]
+        }
+    }
+    let classObj = undefined;
+    let functionObj = undefined;
+    if(Object.keys(errorObj.functions).length > 1)
+    {
+        classObj = errorObj.functions[file];
+        // find the specific class obj if there is one
+        if(classObj !== undefined)
+        {
+            functionObj = classObj[functionName]
+        }
+    }
+
+    let output = {
+        message: "",
+        status: undefined,
+        log: undefined,
+        logMessage: ""
+    };
+    // if there is no definition for the specific function, use defaults
+    if(functionObj === undefined || Object.keys(functionObj).length < 1)
+    {
+        return getOutput(errorObj, undefined);
+    }
+    else
+    {
+        return getOutput(errorObj, functionObj);
+    }
+
+}
+
+// if either the function the error occurred in is not defined or
+// the function is defined but has no properties
+function getOutput(errorObj, functionObj)
+{
+    let output = {
+        message: "",
+        status: undefined,
+        log: undefined,
+        logMessage: ""
+    };
+    let message = errorObj.defaultMessage;
+    let log = errorObj.defaultLog;
+    let logMessage = errorObj.defaultLogMessage;
+    let errorCode = errorObj.defaultErrorCode;
+    let status = errorObj.defaultStatus;
+    // if there is a object for the specific function, check the values
+    if(functionObj !== undefined)
+    {
+        message = (functionObj.message === undefined) ? message : functionObj.message;
+        log = (functionObj.log === undefined) ? log : functionObj.log;
+        logMessage = (functionObj.logMessage === undefined) ? logMessage : functionObj.logMessage;
+        errorCode = (functionObj.errorCode === undefined) ? errorCode : functionObj.errorCode;
+        status = (functionObj.status === undefined) ? status : functionObj.status;
+    }
+
+
+    // if there is a error code, append it to the message
+    if(errorCode !== undefined)
+    {
+        message = message + " .  Error code: " + errorCode;
+    }
+    // if the error will be logged, get the log message
+    if(log)
+    {
+        // if no log message, set it to message
+        if(logMessage === undefined)
+        {
+            logMessage = "(Error code: " + errorCode + ") " + message;
         }
         else
         {
-            code = "undefined";
+            logMessage = "(Error code: " + errorCode + ") " + logMessage;
         }
-        this.code = code;
     }
+    output.status = status;
+    output.log = log;
+    output.logMessage = logMessage;
+    output.message = message;
+
+    console.log(output);
+    return output;
 }
+
+export {sequelizeErrorHandler};

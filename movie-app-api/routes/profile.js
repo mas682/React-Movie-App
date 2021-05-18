@@ -3,6 +3,9 @@ import {verifyLogin, validateUsernameParameter, validateIntegerParameter,
 import models, { sequelize } from '../src/models';
 import {removeImage} from './fileHandler.js';
 
+// for testing
+import {sequelizeErrorHandler} from '../src/ErrorHandlers/sequelizeErrorHandler.js';
+
 
 
 // function to get the reviews associated with a users profile
@@ -32,7 +35,6 @@ const profileHandler = (req, res, next) => {
     // if there is a signed cookie in the request
     if(cookie != undefined)
     {
-        let cookieValid = await verifyLogin(cookie);
         // see if the cookie has a valid user
         verifyLogin(cookie).then((cookieValid) =>
         {
@@ -685,7 +687,9 @@ const updateInfo = (cookie, req, res, next) =>
         catch (err)
         {
             let errorObject = JSON.parse(JSON.stringify(err));
-            console.log(errorObject);
+            // for testing
+            sequelizeErrorHandler(errorObject, "profile", "updateInfo");
+
             if(errorObject.name === "SequelizeUniqueConstraintError")
             {
                 if(errorObject.original.constraint === "users_username_key")
