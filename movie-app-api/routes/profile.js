@@ -686,6 +686,9 @@ const updateInfo = (cookie, req, res, next) =>
         }
         catch (err)
         {
+            next(err);
+            return;
+            /*
             let errorObject = JSON.parse(JSON.stringify(err));
             // for testing
             sequelizeErrorHandler(errorObject, "profile", "updateInfo");
@@ -707,7 +710,7 @@ const updateInfo = (cookie, req, res, next) =>
                         requester: requester
                     });
                 }
-                */
+
                 else
                 {
                     res.status(500).send({
@@ -726,6 +729,7 @@ const updateInfo = (cookie, req, res, next) =>
                 console.log("Some unknown error occurred when trying to update a users info (Error code: 1005): " + errorObject.name);
             }
             return;
+            */
         }
         // below is used to update the cookie as the values have changed
         let value = JSON.stringify({

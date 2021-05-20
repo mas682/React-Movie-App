@@ -141,6 +141,8 @@ const imageHandler = async(req, res, next) => {
         }
         else
         {
+            next(err);
+            /*
             let status;
             let message;
             let requester = res.locals.requester;
@@ -227,12 +229,12 @@ const imageHandler = async(req, res, next) => {
                     console.log(message);
                     console.log(errorObject);
                 }
-
             }
             res.status(status).send({
                 message: message,
                 requester: requester
             });
+            */
         }
     });
 }

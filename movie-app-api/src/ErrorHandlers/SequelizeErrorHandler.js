@@ -312,7 +312,7 @@ function sequelizeErrorHandler(error, file, functionName) {
         logMessage: ""
     };
     // if there is no definition for the specific function, use defaults
-    if(functionObj === undefined || Object.keys(functionObj).length < 1)
+    if(functionObj === undefined || Object.keys(functionObj).length < 0)
     {
         return getOutput(errorObj, undefined);
     }

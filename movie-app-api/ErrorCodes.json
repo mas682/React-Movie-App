@@ -27,7 +27,11 @@
             "function":"imageHandler"
         },
         "1705":{
-            "Description":"Some unexpected error occurred whena  user was uploading a picture",
+            "Description":"Some unexpected error occurred when a user was uploading a picture",
+            "function":"imageHandler"
+        },
+        "1705":{
+            "Description":"When a user was uploading a file, a unique file name could not be found after 5 tries",
             "function":"imageHandler"
         }
     },

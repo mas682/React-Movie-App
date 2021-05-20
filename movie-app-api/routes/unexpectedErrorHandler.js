@@ -1,17 +1,23 @@
 import {verifyLogin} from './globals.js';
+import {getErrorHandler} from '../src/ErrorHandlers/errorReceiver.js';
 
 
 // handles routes that do not exist
 
 
 const unexpectedErrorHandler = (err, req, res, next) => {
+    let result = getErrorHandler(err, "fileHandler", "imageHandler");
+    if(result.log)
+    {
+        console.log(result.logMessage);
+        console.log(JSON.parse(JSON.stringify(err)));
+    }
+
     let cookie = req.signedCookies.MovieAppCookie;
     cookie = (cookie === false) ? undefined : cookie;
     // if there is a signed cookie in the request
-    let status = 500;
-    let message = "Some unexpected error occurred on the server.  Error code: 1400";
-    console.log(JSON.parse(JSON.stringify(err)));
-    console.log(message);
+    let status = result.status;
+    let message = result.message;
     let requester = "";
     if(cookie != undefined)
     {
