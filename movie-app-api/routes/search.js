@@ -5,59 +5,46 @@ const Op = require('Sequelize').Op;
 
 // function to get movies and return them to the client
 const searchHandler = (req, res, next) => {
-		// get the signed cookies in the request if there are any
-		let cookie = req.signedCookies.MovieAppCookie;
-		cookie = (cookie === false) ? undefined : cookie;
-		// variable to indicate if user logged in
-		let valid = false;
-		// if there is a signed cookie in the request
-		if(cookie != undefined)
-		{
-				// see if the cookie has a valid user
-				verifyLogin(cookie).then((cookieValid) =>
-				{
-						// get the reviews and pass the cookie
-						selectPath(JSON.parse(cookie), req, res, cookieValid);
-				});
-		}
-		// if no cookie was found
-		else
-		{
-				// pass that cookie was not valid
-				selectPath(undefined, req, res, false);
-		}
+	let requester = res.locals.requester;
+	// set which file the request is for
+	res.locals.file = "profile";
+	selectPath(requester, req, res, next);
 };
 
-const selectPath = (cookie, req, res, cookieValid) =>
+const selectPath = (requester, req, res, next) =>
 {
+    res.locals.function = "selectPath";
 	let routeFound = false;
 	if(req.method === "GET")
 	{
 		if(req.params.type === "query_all")
 		{
-			getAllRelatedItems(cookie, req, res, cookieValid);
 			routeFound = true;
+			getAllRelatedItems(requester, req, res)
+			.catch((err) => {next(err)});
 		}
 		else if(req.params.type === "movies")
 		{
-			getMovies(cookie, req, res, cookieValid);
 			routeFound = true;
+			getMovies(requester, req, res)
+			.catch((err) => {next(err)});
 		}
 		else if(req.params.type === "users")
 		{
-			getUsers(cookie, req, res, cookieValid);
 			routeFound = true;
+			getUsers(requester, req, res)
+			.catch((err) => {next(err)});
 		}
 		else if(req.params.type === "movies_title")
 		{
-			queryMoviesByTitle(cookie, req, res, cookieValid);
 			routeFound = true;
+			queryMoviesByTitle(requester, req, res)
+			.catch((err) => {next(err)});
 		}
 	}
 
 	if(!routeFound)
 	{
-		let requester = cookieValid ? cookie.name : "";
 		res.status(404).send({
 			message: "The search path sent to the server does not exist",
 			requester: requester
@@ -68,10 +55,9 @@ const selectPath = (cookie, req, res, cookieValid) =>
 // this function will return the movie titles, users, genres, etc.
 // that the user will select from based off of their input
 // limits the number returned to 5 per type
-const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
+const getAllRelatedItems = async (requester, req, res) =>
 {
 	let defaultMax = 25;
-	let requester = cookieValid ? cookie.name : "";
 	let value = req.query.value;
 	let count = (req.query.max === undefined) ? defaultMax : req.query.max;
 	let valid = validateStringParameter(res, value, 0, 250, requester, "The value to search for is invalid");
@@ -93,9 +79,8 @@ const getAllRelatedItems = async (cookie, req, res, cookieValid) =>
 // function to query movies off title only
 // doing this as a seperate function as it will be faster than the function
 // with various parameters
-const queryMoviesByTitle = async (cookie, req, res, cookieValid) =>
+const queryMoviesByTitle = async (requester, req, res) =>
 {
-	let requester = cookieValid ? cookie.name : "";
 	let title = req.query.value;
 	let count = (req.query.max === undefined) ? 50 : req.query.max;
 	let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
@@ -116,10 +101,10 @@ const queryMoviesByTitle = async (cookie, req, res, cookieValid) =>
 	});
 }
 
-const getMovies = async (cookie, req, res, cookieValid) =>
+const getMovies = async (requester, req, res) =>
 {
 	// consider limiting number of query keys or query length...
-	let username = cookieValid ? cookie.name : "";
+	let username = requester;
 	let max = (req.query.max === undefined) ? 50 : req.query.max;
 	let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
 	let valid = validateIntegerParameter(res, max, username, "The maximum number of movies to return is invalid");
@@ -148,11 +133,10 @@ const getMovies = async (cookie, req, res, cookieValid) =>
 };
 
 
-const getUsers = async (cookie, req, res, cookieValid) =>
+const getUsers = async (requester, req, res) =>
 {
 	let defaultMax = 25;
 	let defaultOffset = 0;
-	let requester = cookieValid ? cookie.name : "";
 	let userToFind = req.query.value;
 	let offset = (req.query.offset === undefined) ? defaultOffset : req.query.offset;
 	let count = (req.query.max === undefined) ? defaultMax : req.query.max;

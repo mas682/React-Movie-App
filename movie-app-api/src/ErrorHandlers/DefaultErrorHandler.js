@@ -8,8 +8,7 @@ const ERRORS = {
         defaultErrorCode: undefined,
         functions: {
             fileHandler: {
-                imageHandler: {
-                }
+                imageHandler: {}
             }
         }
     }

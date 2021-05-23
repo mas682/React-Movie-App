@@ -26,6 +26,7 @@ const review = (req, res, next) =>
 const selectPath = (requester, req, res) =>
 {
     res.locals.function = "selectPath";
+    let routeFound = false;
     if(req.method === "GET")
     {
         let routeFound = false;
@@ -38,86 +39,82 @@ const selectPath = (requester, req, res) =>
                 .catch((err) => {next(err)});
             }
         }
-        // if the route was invalid for the GET request
-        if(!routeFound)
-        {
-            res.status(404).send({
-                message:"The review path sent to the server does not exist",
-                requester: requester
-            });
-        }
     }
     else if(req.method === "POST")
     {
         if(Object.keys(req.params).length == 0)
         {
+            routeFound = true;
             createReview(requester, req, res)
             .catch((err) => {next(err)});
         }
         // if the path is /review/update
         else if(req.params.type === "update")
         {
+            routeFound = true;
             updateReview(requester, req, res)
             .catch((err) => {next(err)});
         }
         // if the path is /review/add_like
         else if(req.params.type === "addlike")
         {
+            routeFound = true;
             addLike(requester, req, res)
             .catch((err) => {next(err)});
         }
         // if the path is /review/removelike
         else if(req.params.type === "removelike")
         {
+            routeFound = true;
             removeLike(requester, req, res)
             .catch((err) => {next(err)});
         }
         // if the path is /review/getlikes
         else if(req.params.type === "getlikes")
         {
+            routeFound = true;
             getLikes(requester, req, res)
             .catch((err) => {next(err)});
         }
         // if the path is /review/postcomment
         else if(req.params.type === "postcomment")
         {
+            routeFound = true;
             postComment(req, res, requester)
             .catch((err) => {next(err)});
         }
         // if the path is /review/updatecomment
         else if(req.params.type === "updatecomment")
         {
+            routeFound = true;
             updateComment(req, res, requester)
             .catch((err) => {next(err)});
         }
         // if the path is /review/removecomment
         else if(req.params.type === "removecomment")
         {
+            routeFound = true;
             removeComment(req, res, requester)
             .catch((err) => {next(err)});
         }
         // if the path is /review/removepost
         else if(req.params.type === "removepost")
         {
+            routeFound = true;
             removePost(req, res, requester)
             .catch((err) => {next(err)});
         }
-        else
-        {
-            // if the route was invalid for the POST request
-            res.status(404).send({
-                message:"The review path sent to the server does not exist",
-                requester: requester
-            });
-        }
     }
-    // some unknow path given that was not a get or post request
-    else
+
+    // if the route was invalid for the GET request
+    if(!routeFound)
     {
         res.status(404).send({
             message:"The review path sent to the server does not exist",
-            requester: requester});
+            requester: requester
+        });
     }
+
 };
 
 // function to remove a review

@@ -21,16 +21,16 @@ router.get('/login/:type', function(req, res, next) {
 });
 
 // post a review
-router.post('/review',  function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
+router.post('/review', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     review(req, res, next);
 });
 
 //update or delete a review
-router.post('/review/:type/',  function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
+router.post('/review/:type/', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     review(req, res, next);
 });
 
-router.get('/review/:reviewId/:type',  function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
+router.get('/review/:reviewId/:type', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     review(req, res, next);
 })
 
@@ -97,7 +97,7 @@ router.get('/movie/:id', function(req, res, next) {
     movieHandler(req, res, next);
 });
 
-router.get('/search/:type', function(req, res, next) {
+router.get('/search/:type', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     searchHandler(req, res, next);
 });
 
