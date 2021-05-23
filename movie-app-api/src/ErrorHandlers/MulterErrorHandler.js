@@ -59,7 +59,7 @@ function multerErrorHandler(error, file, functionName) {
     let errorObj = ERRORS[error.message];
     if(errorObj === undefined)
     {
-        errorObj = errorObj["undefined"]
+        errorObj = ERRORS["default"]
     }
     let classObj = undefined;
     let functionObj = undefined;

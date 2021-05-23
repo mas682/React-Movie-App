@@ -32,15 +32,17 @@ const profileHandler = (req, res, next) => {
         }
         return;
     }
+    // set which file the request is for
+    res.locals.file = "profile";
     // if there is a signed cookie in the request
-    if(cookie != undefined)
+    if(cookie !== undefined)
     {
         // see if the cookie has a valid user
         verifyLogin(cookie).then((cookieValid) =>
         {
             // get the reviews and pass the cookie
             selectPath(JSON.parse(cookie), req, res, cookieValid, next);
-        });
+        }).catch((err) => next(err));
     }
     // if no cookie was found
     else
@@ -52,6 +54,7 @@ const profileHandler = (req, res, next) => {
 
 const selectPath = (cookie, req, res, cookieValid, next) =>
 {
+    res.locals.function = "selectPath";
     let routeFound = false;
     let foundNoCookie = false;
     if(req.method === "GET")
@@ -60,19 +63,22 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
         if(req.params.type === "reviews")
         {
             routeFound = true;
-            getReviews(cookie, req, res, cookieValid);
+            getReviews(cookie, req, res, cookieValid)
+            .catch((err) => {next(err)});
         }
         else if(req.params.type === "user_info")
         {
             routeFound = true;
-            getUserHeaderInfo(cookie, req, res, cookieValid);
+            getUserHeaderInfo(cookie, req, res, cookieValid)
+            .catch((err) => {next(err)});
         }
         else if(req.params.type === "feed")
         {
             routeFound = true;
             if(cookieValid)
             {
-                getFeed(cookie, req, res);
+                getFeed(cookie, req, res)
+                .catch((err) => {next(err)});
             }
             else
             {
@@ -84,7 +90,8 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                getFollowers(cookie, req, res);
+                getFollowers(cookie, req, res)
+                .catch((err) => {next(err)});
             }
             else
             {
@@ -96,7 +103,8 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                getFollowing(cookie, req, res);
+                getFollowing(cookie, req, res)
+                .catch((err) => {next(err)});
             }
             else
             {
@@ -112,7 +120,8 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                followUser(cookie, req, res);
+                followUser(cookie, req, res)
+                .catch((err) => {next(err)});
             }
             else
             {
@@ -125,7 +134,8 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                unfollowUser(cookie, req, res);
+                unfollowUser(cookie, req, res)
+                .catch((err) => {next(err)});
             }
             else
             {
@@ -138,7 +148,9 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                updateInfo(cookie, req, res, next);
+                throw "TEST";
+                updateInfo(cookie, req, res, next)
+                .catch((err) => {next(err)});
             }
             else
             {
@@ -150,7 +162,8 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                updatePassword(cookie, req, res);
+                updatePassword(cookie, req, res)
+                .catch((err) => {next(err)});
             }
             else
             {
@@ -162,7 +175,8 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                removeUser(cookie, req, res);
+                removeUser(cookie, req, res)
+                .catch((err) => {next(err)});
             }
             else
             {
@@ -180,7 +194,8 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
                     routeFound = true;
                     if(cookieValid)
                     {
-                        setImage(cookie, req, res, next);
+                        setImage(cookie, req, res, next)
+                        .catch((err) => {next(err)});
                     }
                     else
                     {
@@ -198,7 +213,8 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                removeProfilePicture(cookie, req, res);
+                removeProfilePicture(cookie, req, res)
+                .catch((err) => {next(err)});
             }
             else
             {
@@ -229,6 +245,7 @@ const selectPath = (cookie, req, res, cookieValid, next) =>
 // this function will return a users follwers for their page
 const getFollowers = async (cookie, req, res, cookieValid) =>
 {
+    res.locals.function = "getFollowers";
     let username = req.params.username;
     let valid = validateUsernameParameter(res, username, cookie.name, "Username is invalid");
     if(!valid) return;
@@ -255,6 +272,7 @@ const getFollowers = async (cookie, req, res, cookieValid) =>
 // this function will return a users following for their page
 const getFollowing = async (cookie, req, res) =>
 {
+    res.locals.function = "getFollowing";
     let username = req.params.username;
     let valid = validateUsernameParameter(res, username, cookie.name, "Username is invalid");
     if(!valid) return;
@@ -281,61 +299,61 @@ const getFollowing = async (cookie, req, res) =>
 // user, the number of following/followers users
 const getUserHeaderInfo = async (cookie, req, res, cookieValid) =>
 {
+    res.locals.function = "getUserHeaderInfo";
     //let username = cookie.name;
     let username = req.params.username;
     let loggedInUser = (cookieValid) ? cookie.name : "";
     let valid = validateUsernameParameter(res, username, loggedInUser, "Username is invalid");
     if(!valid) return;
     // find a user by their login
-    models.User.findByLogin(username)
-    .then(async (user)=>{
-        // if the user was not found
-        if(user === null)
-        {
-            res.status(404).send({
-                message:"Unable to find the requested user",
-                requester: loggedInUser
-            });
-            return;
-        }
-        // boolean to indicate if the requester if following the user
-        let followed = false;
-        // get the number of followers the user has
-        let followerCount = (await user.getFollowers()).length;
-        // get the number of following users the user has
-        let followingCount = (await user.getFollowing()).length;
-        let postCount = (await user.getReviews()).length;
+    let user = models.User.findByLogin(username);
+    // if the user was not found
+    if(user === null)
+    {
+        res.status(404).send({
+            message:"Unable to find the requested user",
+            requester: loggedInUser
+        });
+        return;
+    }
+    // boolean to indicate if the requester if following the user
+    let followed = false;
+    // get the number of followers the user has
+    let followerCount = (await user.getFollowers()).length;
+    // get the number of following users the user has
+    let followingCount = (await user.getFollowing()).length;
+    let postCount = (await user.getReviews()).length;
 
-        // if the current user is looking at their own page
-        if(cookieValid)
+    // if the current user is looking at their own page
+    if(cookieValid)
+    {
+        // current user looking at another page
+        if(loggedInUser !== user.username)
         {
-            // current user looking at another page
-            if(loggedInUser !== user.username)
+            // see if the user they are looking at has them as a follower
+            let following = await user.getFollowers( {where: {id: cookie.id} } );
+            // if not undefined, found requester as a follower
+            if(following[0] !== undefined)
             {
-                // see if the user they are looking at has them as a follower
-                let following = await user.getFollowers( {where: {id: cookie.id} } );
-                // if not undefined, found requester as a follower
-                if(following[0] !== undefined)
-                {
-                    followed = true;
-                }
+                followed = true;
             }
         }
-        res.status(200).send({
-            message: "User information successfully found",
-            following: followed,
-            followerCount: followerCount,
-            followingCount: followingCount,
-            requester: loggedInUser,
-            postCount: postCount,
-            picture: (user.picture === null) ? "default-pic.png" : user.picture
-        })
+    }
+    res.status(200).send({
+        message: "User information successfully found",
+        following: followed,
+        followerCount: followerCount,
+        followingCount: followingCount,
+        requester: loggedInUser,
+        postCount: postCount,
+        picture: (user.picture === null) ? "default-pic.png" : user.picture
     });
 }
 
 // function to get reviews for a specific user
 const getReviews = async (cookie, req, res, cookieValid) =>
 {
+    res.locals.function = "getReviews";
     //let username = cookie.name;
     let username = req.params.username;
     let requester = (cookieValid) ? cookie.name : "";
@@ -349,48 +367,41 @@ const getReviews = async (cookie, req, res, cookieValid) =>
     if(!valid) return;
     max = (max > 50) ? 50 : max;
     // find the user by their login
-    models.User.findByLogin(username)
-    .then(async (user)=>{
-        if(user === null)
-        {
-            res.status(404).send({
-                message: "Unable to find the requested user",
-                requester: requester
-            });
-            return;
-        }
-        if(cookieValid)
-        {
-            models.Review.findByIds(models, [user.id], cookie.id, max, offset)
-            .then((reviews)=>
-            {
-                // send the reveiws associated with the user and their id
-                res.status(200).send({
-                    message: "Reviews sucessfully found for the user",
-                    requester: requester,
-                    reviews: reviews
-                });
-            });
-        }
-        else
-        {
-            models.Review.findByIds(models, [user.id], undefined)
-            .then((reviews)=>
-            {
-                // send the reveiws associated with the user and their id
-                res.status(200).send({
-                    message: "Reviews successfully found for the user",
-                    requester: requester,
-                    reviews: reviews
-                });
-            });
-        }
-    });
+    let user = await models.User.findByLogin(username);
+    if(user === null)
+    {
+        res.status(404).send({
+            message: "Unable to find the requested user",
+            requester: requester
+        });
+        return;
+    }
+    if(cookieValid)
+    {
+        let reviews = models.Review.findByIds(models, [user.id], cookie.id, max, offset);
+        // send the reveiws associated with the user and their id
+        res.status(200).send({
+            message: "Reviews sucessfully found for the user",
+            requester: requester,
+            reviews: reviews
+        });
+    }
+    else
+    {
+        let reviews = models.Review.findByIds(models, [user.id], undefined)
+        // send the reveiws associated with the user and their id
+        res.status(200).send({
+            message: "Reviews successfully found for the user",
+            requester: requester,
+            reviews: reviews
+        });
+    }
 };
 
 // function to get the feed for a specific user
 const getFeed = async (cookie, req, res) =>
 {
+    res.locals.fucntion = "getFeed";
     let username = req.params.username;
     let requester = cookie.name;
     let max = (req.query.max === undefined) ? 50 : req.query.max;
@@ -429,8 +440,9 @@ const getFeed = async (cookie, req, res) =>
 
 // may want to change this to first get the user and everyone they follow
 // then check if the requested user is in their following users
-const followUser = (cookie, req, res) =>
+const followUser = async (cookie, req, res) =>
 {
+    res.locals.function = "followUser";
     // requesting users username
     let requestingUser = cookie.name;
     // user to follows username
@@ -438,118 +450,114 @@ const followUser = (cookie, req, res) =>
     let valid = validateUsernameParameter(res, followUname, requestingUser, "Username to follow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
-    models.User.findWithFollowing(followUname, cookie.id)
-    .then((userToFollow) => {
-        if(userToFollow === null)
+    let userToFollow = await models.User.findWithFollowing(followUname, cookie.id);
+    if(userToFollow === null)
+    {
+        res.status(404).send({
+            message: "Unable to find user to follow",
+            requester: requestingUser
+        });
+    }
+    // if the user is not already following the user
+    else if(userToFollow.dataValues.Followers.length < 1)
+    {
+        if(userToFollow.id === cookie.id)
         {
-            res.status(404).send({
-                message: "Unable to find user to follow",
+            res.status(400).send({
+                message: "User cannot follow themself",
                 requester: requestingUser
             });
-        }
-        // if the user is not already following the user
-        else if(userToFollow.dataValues.Followers.length < 1)
-        {
-            if(userToFollow.id === cookie.id)
-            {
-                res.status(400).send({
-                    message: "User cannot follow themself",
-                    requester: requestingUser
-                });
-            }
-            else
-            {
-                // add the user to the requesters following users
-                userToFollow.addFollower(cookie.id).then((result) => {
-                    if(result === undefined)
-                    {
-                        let message = "Some error occured trying to follow the user.  Error code: 1001"
-                        res.status(500).send({
-                            message: message,
-                            requester: requestingUser
-                        });
-                    }
-                    else
-                    {
-                        res.status(200).send({
-                            message: "User successfully followed",
-                            requester: requestingUser
-                        });
-                    }
-                });
-            }
         }
         else
         {
-            res.status(400).send({
-                message: "You already follow the user",
-                requester: requestingUser
+            // add the user to the requesters following users
+            userToFollow.addFollower(cookie.id).then((result) => {
+                if(result === undefined)
+                {
+                    let message = "Some error occured trying to follow the user.  Error code: 1001"
+                    res.status(500).send({
+                        message: message,
+                        requester: requestingUser
+                    });
+                }
+                else
+                {
+                    res.status(200).send({
+                        message: "User successfully followed",
+                        requester: requestingUser
+                    });
+                }
             });
         }
-
-    });
+    }
+    else
+    {
+        res.status(400).send({
+            message: "You already follow the user",
+            requester: requestingUser
+        });
+    }
 }
 
-const unfollowUser = (cookie, req, res) =>
+const unfollowUser = async (cookie, req, res) =>
 {
+    res.locals.function = "unfollowUser";
     let requestingUser = cookie.name;
     let unfollowUname = req.params.username;
     let valid = validateUsernameParameter(res, unfollowUname, requestingUser, "Username to unfollow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
-    models.User.findWithFollowing(unfollowUname, cookie.id)
-    .then((userToUnfollow) => {
-
-        if(userToUnfollow === null)
+    let userToUnfollow = await models.User.findWithFollowing(unfollowUname, cookie.id);
+    if(userToUnfollow === null)
+    {
+        res.status(404).send({
+            message: "Unable to find user to unfollow",
+            requester: requestingUser
+        });
+    }
+    else if(userToUnfollow.dataValues.Followers.length > 0)
+    {
+        if(userToUnfollow.id === cookie.id)
         {
-            res.status(404).send({
-                message: "Unable to find user to unfollow",
+            res.status(400).send({
+                message: "User cannot unfollow themself",
                 requester: requestingUser
             });
-        }
-        else if(userToUnfollow.dataValues.Followers.length > 0)
-        {
-            if(userToUnfollow.id === cookie.id)
-            {
-                res.status(400).send({
-                    message: "User cannot unfollow themself",
-                    requester: requestingUser
-                });
-            }
-            else
-            {
-                userToUnfollow.removeFollower(cookie.id).then((result) => {
-                    if(result === undefined)
-                    {
-                        let message = "Some error occured trying to unfollow the user.  Error code: 1002"
-                        res.status(500).send({
-                            message: message,
-                            requester: requestingUser
-                        });
-                    }
-                    else
-                    {
-                        res.status(200).send({
-                            message: "User successfully unfollowed",
-                            requester: requestingUser
-                        });
-                    }
-                });
-            }
         }
         else
         {
-            res.status(400).send({
-                message: "You already do not follow the user",
-                requester: requestingUser
+            userToUnfollow.removeFollower(cookie.id).then((result) => {
+                if(result === undefined)
+                {
+                    let message = "Some error occured trying to unfollow the user.  Error code: 1002"
+                    res.status(500).send({
+                        message: message,
+                        requester: requestingUser
+                    });
+                }
+                else
+                {
+                    res.status(200).send({
+                        message: "User successfully unfollowed",
+                        requester: requestingUser
+                    });
+                }
             });
         }
-    });
+    }
+    else
+    {
+        res.status(400).send({
+            message: "You already do not follow the user",
+            requester: requestingUser
+        });
+    }
 }
 
 // function to handle updating a users password
 const updatePassword = async (cookie, req, res) =>
 {
+    res.locals.function = "updatePassword";
     let requester = cookie.name;
     let username = cookie.name;
     // if the password is not provided, automatically deny
@@ -590,20 +598,7 @@ const updatePassword = async (cookie, req, res) =>
             user.password = req.body.newPass;
             user.lastLogin = new Date();
             user.passwordUpdatedAt = new Date();
-            try
-            {
-                await user.save();
-            }
-            catch (err)
-            {
-                let errorObject = JSON.parse(JSON.stringify(err));
-                res.status(500).send({
-                        message: "A unknown error occurred trying to update the users password.  Error code: 1003",
-                        requester: requester
-                    });
-                console.log("Some unknown error occurred when updating a users password (Error code: 1003): " + errorObject.name);
-                return;
-            }
+            await user.save();
             // send a updated cookie
             let value = JSON.stringify({
                 name: user.username,
@@ -638,8 +633,10 @@ const updatePassword = async (cookie, req, res) =>
 
 // function to handle updating a users information such as their
 // first name, last name, email, or username
-const updateInfo = (cookie, req, res, next) =>
+const updateInfo = async (cookie, req, res, next) =>
 {
+    // set the function
+    res.locals.function = "updateInfo";
     let requester = cookie.name;
     //let username = cookie.name;
     let username = req.params.username;
@@ -653,7 +650,6 @@ const updateInfo = (cookie, req, res, next) =>
     if(!valid) return;
     valid = validateStringParameter(res, req.body.lastName, 1, 20, requester, "Last name must be between 1-20 characters");
     if(!valid) return;
-    console.log(requester);
     if(requester !== username)
     {
         res.status(401).send({
@@ -662,97 +658,44 @@ const updateInfo = (cookie, req, res, next) =>
         });
         return;
     }
-    // find a user by their login
-    models.User.findByLogin(requester)
-    .then(async (user)=>{
-        if(user === null)
-        {
-            // sending 401 as if null user does not exist
-            res.status(401).send({
-                message: "Could not find the user to update",
-                requester: ""
-            });
-            return;
-        }
-
-        let result;
-        try {
-            result = await user.update({
-                username: req.body.username,
-                //email: req.body.email,
-                firstName: req.body.firstName,
-                lastName: req.body.lastName
-            });
-        }
-        catch (err)
-        {
-            next(err);
-            return;
-            /*
-            let errorObject = JSON.parse(JSON.stringify(err));
-            // for testing
-            sequelizeErrorHandler(errorObject, "profile", "updateInfo");
-
-            if(errorObject.name === "SequelizeUniqueConstraintError")
-            {
-                if(errorObject.original.constraint === "users_username_key")
-                {
-                    res.status(409).send({
-                        message: "Username already in use",
-                        requester: requester
-                    });
-                }
-                /*
-                else if(errorObject.original.constraint === "users_email_key")
-                {
-                    res.status(409).send({
-                        message: "Email already associated with a user",
-                        requester: requester
-                    });
-                }
-
-                else
-                {
-                    res.status(500).send({
-                        message: "A unknown constraint error occurred trying to update the users information.  Error code: 1004",
-                        requester: requester
-                    });
-                    console.log("Some unknown constraint error occurred (Error Code: 1004): " + errorObject.original.constraint);
-                }
-            }
-            else
-            {
-                res.status(500).send({
-                    message: "A unknown error occurred trying to update the users info.  Error code: 1005",
-                    requester: requester
-                });
-                console.log("Some unknown error occurred when trying to update a users info (Error code: 1005): " + errorObject.name);
-            }
-            return;
-            */
-        }
-        // below is used to update the cookie as the values have changed
-        let value = JSON.stringify({
-            name: result.username,
-            email: result.email,
-            id: result.id,
-            created: new Date()
+    // find the user by their login
+    let user = await models.User.findByLogin(requester);
+    if(user === null)
+    {
+        // sending 401 as if null user does not exist
+        res.status(401).send({
+            message: "Could not find the user to update",
+            requester: ""
         });
-        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-        res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
+        return;
+    }
+    let result = await user.update({
+        username: req.body.username,
+        //email: req.body.email,
+        firstName: req.body.firstName,
+        lastName: req.body.lastName
+    });
+    // below is used to update the cookie as the values have changed
+    let value = JSON.stringify({
+        name: result.username,
+        email: result.email,
+        id: result.id,
+        created: new Date()
+    });
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
 
-        let updatedUser = {
-            username: result.username,
-            email: result.email,
-            firstName: result.firstName,
-            lastName: result.lastName,
-            test: test
-        };
-        res.status(200).send({
-            message: "User info successfully updated",
-            requester: updatedUser.username,
-            user: updatedUser
-        });
+    let updatedUser = {
+        username: result.username,
+        email: result.email,
+        firstName: result.firstName,
+        lastName: result.lastName,
+        test: test
+    };
+    res.status(200).send({
+        message: "User info successfully updated",
+        requester: updatedUser.username,
+        user: updatedUser
     });
 }
 
@@ -760,6 +703,7 @@ const updateInfo = (cookie, req, res, next) =>
 // function to handle updating a users password
 const removeUser = async (cookie, req, res) =>
 {
+    res.locals.function = "removeUser";
     let requester = cookie.name;
     let password = req.body.password;
     let userNameToRemove = req.params.username;
@@ -845,6 +789,7 @@ const removeUser = async (cookie, req, res) =>
 // function to handle validating a user can update their profile pic
 const setImage = async (cookie, req, res, next) =>
 {
+    res.locals.function = "setImage";
     let requester = cookie.name;
     let valid = validateUsernameParameter(res, req.params.username, requester, "Invalid username found in the url");
     if(!valid) return;
@@ -866,6 +811,7 @@ const setImage = async (cookie, req, res, next) =>
 // function to remove a users profile picture
 const removeProfilePicture = async(cookie, req, res) =>
 {
+    res.locals.function = "removeProfilePicture";
     let requester = cookie.name;
     let valid = validateUsernameParameter(res, req.params.username, requester, "Invalid username found in the url");
     if(!valid) return;
@@ -902,38 +848,18 @@ const removeProfilePicture = async(cookie, req, res) =>
             // if true, successfully removed or did not exist
             if(result)
             {
-                try
-                {
-                    let result = await user.update({
-                        picture: null
-                    });
-                    status = 200;
-                    message = "User picture successfully removed";
-                }
-                catch(err)
-                {
-                    let errorObject = JSON.parse(JSON.stringify(err));
-                    if(errorObject.name === 'SequelizeUniqueConstraintError')
-                    {
-                        console.log("Some unexpected constraint error occurred when uploading a new user image (Error code: 1007): " + errorObject.original.constraint);
-                        console.log(errorObject);
-                        status = 500;
-                        message = "Some unexpected error occurred on the server when trying to remove the users profile picture.  Error code: 1007";
-                    }
-                    else
-                    {
-                        console.log("Some unkown error occurred (Error Code: 1008): " + errorObject.name);
-                        console.log(err);
-                        status = 500;
-                        message = "Some unexpected error occurred on the server when trying to remove the users profile picture. Error code: 1008";
-                    }
-                }
+                let result = await user.update({
+                    picture: null
+                });
+                status = 200;
+                message = "User picture successfully removed";
             }
             else
             {
                 status = 500;
                 message = "Some unexpected error occurred on the server when removing the profile picture. Error code: 1009";
-                console.log(message);
+                let logMessage = ("(Error code: 1009).  Some unexpected error occurred on the server when removing the profile picture.")
+                console.log(logMessage);
             }
         }
     }
@@ -949,6 +875,7 @@ const removeProfilePicture = async(cookie, req, res) =>
 // function to handle updating database once image has been uploaded
 const updateImage = async(cookie, req, res) =>
 {
+    res.locals.function = "updateImage";
     // try to update the users picture
     // handle errors on updating database
     let requester = cookie.name;
@@ -976,6 +903,7 @@ const updateImage = async(cookie, req, res) =>
     else
     {
         let oldPicture = user.picture;
+        // this try/catch MUST stay as it is doing more than just catching the error
         try
         {
             let result = await user.update({
@@ -991,6 +919,7 @@ const updateImage = async(cookie, req, res) =>
         }
         catch(err)
         {
+
             let errorObject = JSON.parse(JSON.stringify(err));
             if(errorObject.name === 'SequelizeUniqueConstraintError')
             {
@@ -998,13 +927,13 @@ const updateImage = async(cookie, req, res) =>
                 {
                     // this should just about never occur
                     // if here, a picture was overwritten...
-                    console.log("User picture name conflicts with an existing image name (Error code: 1010): " + newPicture);
+                    console.log("(Error code: 1010) User picture name conflicts with an existing image name: " + newPicture);
                     status = 500;
                     message = "Some unexpected error occurred on the server. Error code: 1010"
                 }
                 else
                 {
-                    console.log("Some unexpected constraint error occurred when uploading a new user image (Error code: 1011): " + errorObject.original.constraint);
+                    console.log("(Error code: 1011) Some unexpected constraint error occurred");
                     console.log(errorObject);
                     status = 500;
                     message = "Some unexpected error occurred on the server.  Error code: 1011";
@@ -1013,7 +942,7 @@ const updateImage = async(cookie, req, res) =>
             }
             else
             {
-                console.log("Some unkown error occurred (Error code: 1012): " + errorObject.name);
+                console.log("(Error code: 1012) Some unkown error occurred");
                 console.log(err);
                 status = 500;
                 message = "Some unexpected error occurred on the server.  Error code: 1012";

@@ -6,10 +6,10 @@ import {getErrorHandler} from '../src/ErrorHandlers/errorReceiver.js';
 
 
 const unexpectedErrorHandler = (err, req, res, next) => {
-    let result = getErrorHandler(err, "fileHandler", "imageHandler");
+    let result = getErrorHandler(err, res.locals.file, res.locals.function);
     if(result.log)
     {
-        console.log(result.logMessage);
+        console.log(result.logMessage + "\nFile: " + res.locals.file + " Function: " + res.locals.function);
         console.log(JSON.parse(JSON.stringify(err)));
     }
 
@@ -31,6 +31,8 @@ const unexpectedErrorHandler = (err, req, res, next) => {
         });
     }
 
+    // for testing
+    requester = "_theonenonly";
     res.status(status).send({
         message: message,
         requester: requester

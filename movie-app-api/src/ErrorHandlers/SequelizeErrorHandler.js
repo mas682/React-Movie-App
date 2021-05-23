@@ -1,65 +1,3 @@
-/*
-    Plan:
-    keep in mind you want to be able to adjust the model in the future.....
-    may want to do monitoring based off these outputs...
-
-    will have a object that has keys for the various error types such as
-    SequelizeErrors, AWS Errors, Multer errors, etc.
-    each key will point to a instance of a class for that error
-    in each class:
-        - ERRORS will hold some key to determine what the error is
-        - ERROR_CODES will hold the output for the errors
-            1 is the key to ERRORS
-            default message is a default value to use
-            output is a boolean of if it should be logged
-            unique is a boolean of if errorCodes should be searched (may not need)
-            errorCodes is a object that holds:
-                the first key is the file name
-                the second key is the function name
-                the error code to use
-                the message to use
-                may want output as well?
-                may let message be undefined, in which case use the default..
-                same for errorCode?
-            if a file or function returns undefined from errorcodes, use the default
-            output
-            have a function that you can call to get the value back
-            may not even need a class but still debatable
-            a undefined key in ERROR_CODES means the constraint could not be matched to
-            any errors
-
-            exammple:
-            "ForeignKey": {
-                "reviews_userId_fkey":{
-                    defaultMessage:"User associated with the review does not exist",
-                    logMessage: undefined,
-                    defaultStatus: 401,
-                    defaultErrorCode: ...
-                    log: true,
-                    functions: {
-                        reviewCreator: {
-                            createReview: {
-                                errorCode: undefined,
-                                message: undefined,
-                                logMessage: undefined,
-                                log: undefined,
-                                status: undefined
-                            }
-                        }
-                    }
-                }
-            }
-
-            if values in errorCodes are undefined, use defaults...
-            may want to add default error code?
-            if default is undefined and one from errorCodes is undefined, ignore
-
-
-
-
-*/
-
-
 const ERRORS = {
     "ForeignKey": {
         "reviews_userId_fkey":{
@@ -117,7 +55,7 @@ const ERRORS = {
             defaultLogMessage: "Some unexpected foreign key constraint error occurred",
             defaultStatus: 500,
             defaultLog: true,
-            defaultErrorCode: undefined,
+            defaultErrorCode: 1801,
             functions: {
                 review: {
                     postComment: {
@@ -184,7 +122,7 @@ const ERRORS = {
             functions: {
                 profile: {
                     updateImage: {
-                        errorCode: 1010
+                        errorCode: 1010,
                     }
                 }
             }
@@ -218,7 +156,7 @@ const ERRORS = {
             defaultLogMessage: "Some unexpected unique constraint error occurred",
             defaultStatus: 500,
             defaultLog: true,
-            defaultErrorCode: undefined,
+            defaultErrorCode: 1802,
             functions: {
                 // these will need fixed as error code is the same for both...
                 reviewCreator: {
@@ -248,13 +186,21 @@ const ERRORS = {
             }
         }
     },
-    undefined: {
+    default: {
         defaultMessage: "Some unexpected error occurred",
         defaultLogMessage: undefined,
         defaultStatus: 500,
         defaultLog: true,
-        defaultErrorCode: undefined,
-        functions: {}
+        defaultErrorCode: 1800,
+        functions: {
+            profile: {
+                updateInfo: {
+                    errorCode: 1005
+                },
+                removeProfilePicture: {},
+                updateImage: {}
+            },
+        }
     }
 }
 
@@ -274,30 +220,32 @@ function sequelizeErrorHandler(error, file, functionName) {
     }
     else
     {
-        errorType = "undefined";
+        errorType = "default";
     }
 
     // the high level type of error, ex. ForeignKey, UniqueConstraint, undefined
     let errorClass = ERRORS[errorType];
     let errorObj;
-    if(errorType === "undefined")
+    if(errorType === "default")
     {
         errorObj = errorClass;
     }
     else
     {
         // the exact error, ex. users_email_key
-        errorObj = errorClass[errorKey]
+        errorObj = errorClass[errorKey];
         if(errorObj === undefined)
         {
-            errorObj = errorClass["undefined"]
+            errorObj = errorClass["default"]
         }
     }
     let classObj = undefined;
     let functionObj = undefined;
-    if(Object.keys(errorObj.functions).length > 1)
+    if(Object.keys(errorObj.functions).length > 0)
     {
         classObj = errorObj.functions[file];
+        console.log(file);
+        console.log(classObj);
         // find the specific class obj if there is one
         if(classObj !== undefined)
         {
@@ -347,6 +295,7 @@ function getOutput(errorObj, functionObj)
         errorCode = (functionObj.errorCode === undefined) ? errorCode : functionObj.errorCode;
         status = (functionObj.status === undefined) ? status : functionObj.status;
     }
+    console.log(functionObj);
 
 
     // if there is a error code, append it to the message

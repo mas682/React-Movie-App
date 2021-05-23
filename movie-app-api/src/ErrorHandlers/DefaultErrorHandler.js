@@ -1,46 +1,5 @@
+
 const ERRORS = {
-    "InvalidAccessKeyId":{
-        defaultMessage:"Some unexpected error occurred on the server",
-        defaultLogMessage: "AWS s3 access key invalid",
-        defaultStatus: 500,
-        defaultLog: true,
-        defaultErrorCode: undefined,
-        functions: {
-            fileHandler: {
-                imageHandler: {
-                    errorCode: 1702
-                }
-            }
-        }
-    },
-    "SignatureDoesNotMatch":{
-        defaultMessage:"Some unexpected error occurred on the server",
-        defaultLogMessage: "AWS s3 signature does not match",
-        defaultStatus: 500,
-        defaultLog: true,
-        defaultErrorCode: undefined,
-        functions: {
-            fileHandler: {
-                imageHandler: {
-                    errorCode: 1703
-                }
-            }
-        }
-    },
-    "NoSuchBucket":{
-        defaultMessage:"Some unexpected error occurred on the server",
-        defaultLogMessage: "AWS s3 bucket could not be found",
-        defaultStatus: 500,
-        defaultLog: true,
-        defaultErrorCode: undefined,
-        functions: {
-            fileHandler: {
-                imageHandler: {
-                    errorCode: 1704
-                }
-            }
-        }
-    },
     default: {
         defaultMessage:"Some unexpected error occurred on the server",
         defaultLogMessage: "Some unexpected error occurred",
@@ -50,7 +9,6 @@ const ERRORS = {
         functions: {
             fileHandler: {
                 imageHandler: {
-                    errorCode: 1705
                 }
             }
         }
@@ -59,13 +17,9 @@ const ERRORS = {
 
 
 
-function awsErrorHandler(error, file, functionName) {
+function defaultErrorHandler(error, file, functionName) {
     // the high level type of error, ex. ForeignKey, UniqueConstraint, undefined
-    let errorObj = ERRORS[error.code];
-    if(errorObj === undefined)
-    {
-        errorObj = ERRORS["default"]
-    }
+    let errorObj = ERRORS["default"];
     let classObj = undefined;
     let functionObj = undefined;
     if(Object.keys(errorObj.functions).length > 0)
@@ -100,7 +54,6 @@ function awsErrorHandler(error, file, functionName) {
 // the function is defined but has no properties
 function getOutput(errorObj, functionObj)
 {
-
     let output = {
         message: "",
         status: undefined,
@@ -120,7 +73,6 @@ function getOutput(errorObj, functionObj)
         logMessage = (functionObj.logMessage === undefined) ? logMessage : functionObj.logMessage;
         errorCode = (functionObj.errorCode === undefined) ? errorCode : functionObj.errorCode;
         status = (functionObj.status === undefined) ? status : functionObj.status;
-        console.log(functionObj);
     }
 
 
@@ -151,4 +103,4 @@ function getOutput(errorObj, functionObj)
     return output;
 }
 
-export {awsErrorHandler};
+export {defaultErrorHandler};

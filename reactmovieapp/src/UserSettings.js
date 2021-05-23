@@ -283,7 +283,7 @@ class UserSettings extends React.Component {
 			}
 			else if(status === 409)
 			{
-				if(message === "Username already in use")
+				if(message === "Username is already in use")
 				{
 					this.setState({
 						awaitingResults: false,
@@ -431,10 +431,12 @@ class UserSettings extends React.Component {
         }
         else
         {
+			let error =  newKey + "Error";
             // restore the old value
             this.setState({
                 [type]:value,
-                [newKey]: this.state[oldKey]
+                [newKey]: this.state[oldKey],
+				[error]: ""
             });
         }
     }

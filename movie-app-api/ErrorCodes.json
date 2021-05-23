@@ -89,16 +89,12 @@
             "Description": "A user tried to unfollow another user but the update to the database failed",
             "function": "unfollowUser"
         },
-        "1003":{
-            "Description": "A user tried to update their password but the update to the database failed",
-            "function": "updatePassword"
-        },
         "1004":{
             "Description":"A user tried to update their information but some unexpected constraint error occurred",
             "function":"updateInfo"
         },
         "1005":{
-            "Description":"A user tried to update their information but the update to the database failed",
+            "Description":"A user tried to update their information but some unexpected database failure occurred",
             "function":"updateInfo"
         },
         "1006":{
@@ -216,6 +212,17 @@
         "1400": {
             "Description":"A unexpected error occurred on the server and was caught",
             "function":"unexpectedErrorHandler"
+        }
+    },
+    "sequelizeErrorHandler.js":{
+        "1800":{
+            "Description":"Some unexpected sequelize error occurred"
+        },
+        "1801":{
+            "Description":"Some unexpected foreign key constraint error occurred"
+        },
+        "1802":{
+            "Description":"Some unexpected unique constraint error occurred"
         }
     }
 }

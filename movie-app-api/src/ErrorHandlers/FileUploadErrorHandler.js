@@ -60,7 +60,7 @@ function fileUploadErrorHandler(error, file, functionName) {
     let errorObj = ERRORS[error.code];
     if(errorObj === undefined)
     {
-        errorObj = errorObj["undefined"]
+        errorObj = ERROS["default"]
     }
     let classObj = undefined;
     let functionObj = undefined;

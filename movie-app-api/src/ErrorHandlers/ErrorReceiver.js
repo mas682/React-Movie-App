@@ -3,6 +3,7 @@ import {awsErrorHandler} from './awsErrorHandler.js';
 import {fileUploadErrorHandler} from './fileUploadErrorHandler.js';
 import {multerErrorHandler} from './multerErrorHandler.js';
 import {sequelizeErrorHandler} from './sequelizeErrorHandler.js';
+import {defaultErrorHandler} from './defaultErrorHandler.js';
 
 function getErrorHandler(error, file, functionName)
 {
@@ -11,8 +12,7 @@ function getErrorHandler(error, file, functionName)
     let errorKey = "";
     if(errorObject === undefined && errorType === undefined)
     {
-        // default
-        return;
+        return defaultErrorHandler(errorObject, file, functionName);
     }
     else if(errorType !== undefined && errorType.includes("Sequelize"))
     {
@@ -34,8 +34,7 @@ function getErrorHandler(error, file, functionName)
     else
     {
         // default
-        errorKey = "default";
-        return;
+        return defaultErrorHandler(errorObject, file, functionName);
     }
 }
 
