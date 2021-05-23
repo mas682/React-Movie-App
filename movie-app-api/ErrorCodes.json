@@ -162,10 +162,6 @@
             "Description":"A user tried to post a comment on a review post but a unknown constraint error occurred",
             "function":"postComment"
         },
-        "1204":{
-            "Description":"A user tried to post a comment on a review post but the update to the database failed",
-            "function":"postComment"
-        },
         "1205":{
             "Description":"A user tried to update a comment on a review post but the update to the database failed",
             "function":"updateComment"

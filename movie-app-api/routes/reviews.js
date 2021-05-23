@@ -6,43 +6,26 @@ import {createReview, updateReview} from './reviewCreator.js';
 // function to post a reviews
 const review = (req, res, next) =>
 {
-    // get the signed cookies in the request if there are any
-    let cookie = req.signedCookies.MovieAppCookie;
-    cookie = (cookie === false) ? undefined : cookie;
-    // variable to indicate if user logged in
-    let valid = false;
-    // if there is a signed cookie in the request
-    if(cookie != undefined)
+    let requester = res.locals.requester;
+    res.locals.file = "reviews";
+    if(requester !== "")
     {
-        // see if the cookie has a valid user
-        verifyLogin(cookie).then((cookieValid) =>
-        {
-            if(cookieValid)
-            {
-                // get the reviews and pass the cookie
-                selectPath(JSON.parse(cookie), req, res);
-            }
-            // cookie not valid
-            else
-            {
-                res.status(401).send({
-                    message:"You are not logged in",
-                    requester: ""});
-            }
-        });
+        // get the reviews and pass the cookie
+        selectPath(requester, req, res);
     }
     // if no cookie was found
     else
     {
         res.status(401).send({
             message: "You are not logged in",
-            requester: ""});
+            requester: requester});
     }
 
 };
 
-const selectPath = (cookie, req, res) =>
+const selectPath = (requester, req, res) =>
 {
+    res.locals.function = "selectPath";
     if(req.method === "GET")
     {
         let routeFound = false;
@@ -51,7 +34,8 @@ const selectPath = (cookie, req, res) =>
             if(req.params.type === "getcomments")
             {
                 routeFound = true;
-                getComments(req, res, cookie);
+                getComments(req, res, requester)
+                .catch((err) => {next(err)});
             }
         }
         // if the route was invalid for the GET request
@@ -59,64 +43,71 @@ const selectPath = (cookie, req, res) =>
         {
             res.status(404).send({
                 message:"The review path sent to the server does not exist",
-                requester: cookie.name
+                requester: requester
             });
         }
     }
     else if(req.method === "POST")
     {
-        console.log(req.params.type);
-        console.log(req.body);
         if(Object.keys(req.params).length == 0)
         {
-            createReview(cookie, req, res);
+            createReview(requester, req, res)
+            .catch((err) => {next(err)});
         }
         // if the path is /review/update
         else if(req.params.type === "update")
         {
-            updateReview(cookie, req, res);
+            updateReview(requester, req, res)
+            .catch((err) => {next(err)});
         }
         // if the path is /review/add_like
         else if(req.params.type === "addlike")
         {
-            addLike(cookie, req, res);
+            addLike(requester, req, res)
+            .catch((err) => {next(err)});
         }
         // if the path is /review/removelike
         else if(req.params.type === "removelike")
         {
-            removeLike(cookie, req, res);
+            removeLike(requester, req, res)
+            .catch((err) => {next(err)});
         }
         // if the path is /review/getlikes
         else if(req.params.type === "getlikes")
         {
-            getLikes(cookie, req, res);
+            getLikes(requester, req, res)
+            .catch((err) => {next(err)});
         }
         // if the path is /review/postcomment
         else if(req.params.type === "postcomment")
         {
-            postComment(req, res, cookie);
+            postComment(req, res, requester)
+            .catch((err) => {next(err)});
         }
         // if the path is /review/updatecomment
         else if(req.params.type === "updatecomment")
         {
-            updateComment(req, res, cookie);
+            updateComment(req, res, requester)
+            .catch((err) => {next(err)});
         }
         // if the path is /review/removecomment
         else if(req.params.type === "removecomment")
         {
-            removeComment(req, res, cookie);
+            removeComment(req, res, requester)
+            .catch((err) => {next(err)});
         }
         // if the path is /review/removepost
         else if(req.params.type === "removepost")
         {
-            removePost(req, res, cookie);
+            removePost(req, res, requester)
+            .catch((err) => {next(err)});
         }
         else
         {
             // if the route was invalid for the POST request
             res.status(404).send({
                 message:"The review path sent to the server does not exist",
-                requester: cookie.name
+                requester: requester
             });
         }
     }
@@ -125,18 +116,19 @@ const selectPath = (cookie, req, res) =>
     {
         res.status(404).send({
             message:"The review path sent to the server does not exist",
-            requester: cookie.name});
+            requester: requester});
     }
 };
 
 // function to remove a review
 // the body of the request must include:
 // reviewId - the id the post
-const removePost = async (req, res, cookie) =>
+const removePost = async (req, res, requester) =>
 {
+    res.locals.function = "removePost";
     // also need to verify this is the user that posted the comment...
     let reviewId = req.body.reviewId;
-    let valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID is invalid");
+    let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
 
     // try to get the review
@@ -145,17 +137,17 @@ const removePost = async (req, res, cookie) =>
     {
         res.status(404).send({
             message: "Review could not be found",
-            requester: cookie.name
+            requester: requester
         });
     }
     else
     {
         // currently only let the user who posted the review remove it
-        if(cookie.id !== review.user.id)
+        if(res.locals.userId !== review.user.id)
         {
             res.status(401).send({
                 message: "You cannot remove another users post",
-                requester: cookie.name
+                requester: requester
             });
         }
         else
@@ -167,14 +159,14 @@ const removePost = async (req, res, cookie) =>
                 console.log(message);
                 res.status(500).send({
                     message: message,
-                    requester: cookie.name
+                    requester: requester
                 });
             }
             else
             {
                 res.status(200).send({
                     message: "Review successfully removed",
-                    requester: cookie.name
+                    requester: requester
                 });
             }
         }
@@ -184,138 +176,132 @@ const removePost = async (req, res, cookie) =>
 // function to add a like to a review post
 // the body of the request must include:
 // reviewId - the id of the review being liked
-const addLike = (cookie, req, res) =>
+const addLike = async (requester, req, res) =>
 {
+    res.locals.function = "addLike";
     // get the requesters id
-    let userId = cookie.id;
+    let userId = res.locals.userId;
     let reviewId = req.body.reviewId;
-    let valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID is invalid");
+    let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
     // get the review
-    models.Review.getReviewWithLikedUser(reviewId, userId, models)
-    .then((review) => {
-        if(review === null)
+    let review = await models.Review.getReviewWithLikedUser(reviewId, userId, models);
+    if(review === null)
+    {
+        res.status(404).send({
+            message: "The review could not be found",
+            requester: requester
+        });
+        return;
+    }
+    else if(review.dataValues.likes.length < 1)
+    {
+        // may want to only let a user like their friends posts???
+        // add the like to the review based off the users id
+        let result = await review.addLike(userId, { through: {uid: userId }});
+        // if undefined, a association already exists
+        if(result === undefined)
         {
-            res.status(404).send({
-                message: "The review could not be found",
-                requester: cookie.name
-            });
-            return;
-        }
-        else if(review.dataValues.likes.length < 1)
-        {
-            // may want to only let a user like their friends posts???
-            // add the like to the review based off the users id
-            review.addLike(userId, { through: {uid: userId }})
-            .then((result) => {
-                // if undefined, a association already exists
-                if(result === undefined)
-                {
-                    let message = "Some error occurred trying to like the post.  Error code: 1201"
-                    res.status(500).send({
-                        message: message,
-                        requester: cookie.name
-                    });
-                }
-                else
-                {
-                    res.status(200).send({
-                        message: "Post liked",
-                        requester: cookie.name
-                    });
-                }
+            let message = "Some error occurred trying to like the post.  Error code: 1201"
+            res.status(500).send({
+                message: message,
+                requester: requester
             });
         }
         else
         {
-            res.status(400).send({
-                message: "Post already liked",
-                requester: cookie.name
+            res.status(200).send({
+                message: "Post liked",
+                requester: requester
             });
         }
-    });
+    }
+    else
+    {
+        res.status(400).send({
+            message: "Post already liked",
+            requester: requester
+        });
+    }
 };
 
 
 // function to remove a like from a review post
 // the body of the request must include:
 // reviewId - the id of the review being unliked
-const removeLike = (cookie, req, res) =>
+const removeLike = async (requester, req, res) =>
 {
+    res.locals.function = "removeLike";
     // the id of the requester
-    let userId = cookie.id;
+    let userId = res.locals.userId;
     let reviewId = req.body.reviewId;
-    let valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID is invalid");
+    let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
     // get the review
-    models.Review.getReviewWithLikedUser(reviewId, userId, models)
-    .then((review) => {
-        if(review === null)
+    let review = await models.Review.getReviewWithLikedUser(reviewId, userId, models);
+    if(review === null)
+    {
+        res.status(404).send({
+            message: "The review could not be found",
+            requester: requester
+        });
+        return;
+    }
+    else if(review.dataValues.likes.length > 0)
+    {
+        // may want to only let a user unlike their friends posts???
+        // remove the like from the post based off the requesters id
+        let result = await review.removeLike(userId);
+        // if undefined, a association already exists
+        if(result === undefined)
         {
-            res.status(404).send({
-                message: "The review could not be found",
-                requester: cookie.name
-            });
-            return;
-        }
-        else if(review.dataValues.likes.length > 0)
-        {
-            // may want to only let a user unlike their friends posts???
-            // remove the like from the post based off the requesters id
-            review.removeLike(userId)
-            .then((result) => {
-                // if undefined, a association already exists
-                if(result === undefined)
-                {
-                    let message = "Some error occurred trying to remove like from the post.  Error code: 1202"
-                    res.status(500).send({
-                        message: message,
-                        requester: cookie.name
-                    });
-                }
-                else
-                {
-                    res.status(200).send({
-                        message: "Post like removed",
-                        requester: cookie.name
-                    });
-                }
+            let message = "Some error occurred trying to remove like from the post.  Error code: 1202"
+            res.status(500).send({
+                message: message,
+                requester: requester
             });
         }
         else
         {
-            res.status(400).send({
-                message: "Post already not liked",
-                requester: cookie.name
+            res.status(200).send({
+                message: "Post like removed",
+                requester: requester
             });
         }
-
-    });
+    }
+    else
+    {
+        res.status(400).send({
+            message: "Post already not liked",
+            requester: requester
+        });
+    }
 }
 
 // this function gets the users who liked a post
 // the request must include the reviewId in the body
 // the user must also be logged in to access the likes of a review
-const getLikes = async (cookie, req, res) =>
+const getLikes = async (requester, req, res) =>
 {
+    res.locals.function = "getLikes";
     let reviewId = req.body.reviewId;
-    let valid = validateIntegerParameter(res, reviewId, cookie.name, "The review ID is invalid");
+    let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
     // test to make sure valid number as well
     // holds the ids of the users who are already followed
-    let usersWhoLiked = await models.Review.getLikes(reviewId, cookie.id, models);
+    let usersWhoLiked = await models.Review.getLikes(reviewId, res.locals.userId, models);
     if(usersWhoLiked === null)
     {
         res.status(404).send({
             message: "The review could not be found",
-            requester: cookie.name
+            requester: requester
          });
     }
     else
     {
         res.status(200).send({
             message: "Review likes found",
-            requester: cookie.name,
+            requester: requester,
             users: usersWhoLiked
          });
     }
@@ -327,17 +313,17 @@ const getLikes = async (cookie, req, res) =>
 // the body of the request must include:
 // reviewId - the id of the review being comment on
 // comment - the comment to add to the post
-const postComment = async (req, res, cookie) =>
+const postComment = async (req, res, requester) =>
 {
+    res.locals.function = "postComment";
     let comment = req.body.comment;
-    let requester = cookie.name;
     // for now, comments can be as long as possible but should limit in future..
     let valid = validateStringParameter(res, comment, 1, undefined, requester, "You cannot post a empty comment");
     if(!valid) return;
     let reviewId = req.body.reviewId;
     valid = validateIntegerParameter(res, reviewId, requester, "The review ID for the comment is invalid");
     if(!valid) return;
-    let review = await models.Review.getReviewForComment(reviewId, cookie.id, undefined, models);
+    let review = await models.Review.getReviewForComment(reviewId, res.locals.userId, undefined, models);
     if(review === null)
     {
         res.status(404).send({
@@ -348,53 +334,11 @@ const postComment = async (req, res, cookie) =>
     }
     else
     {
-        let newComment;
-        try
-        {
-            newComment = await models.Comment.create({
-                value: comment,
-                userId: cookie.id,
-                reviewId: reviewId,
-            });
-        }
-        catch(err) {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            // may want to make this a reusable error function?
-            if(errorObject.name === "SequelizeForeignKeyConstraintError")
-            {
-                if(errorObject.original.constraint === "comments_userId_fkey")
-                {
-                    res.status(401).send({
-                        message: "User could not be found",
-                        requester: requester
-                    });
-                }
-                else if(errorObject.original.constraint === "comments_reviewId_fkey")
-                {
-                    res.status(404).send({
-                        message: "The review could not be found",
-                        requester: requester
-                    });
-                }
-                else
-                {
-                    res.status(500).send({
-                        message: "A unknown error occurred trying to post a comment to the review.  Error code: 1203",
-                        requester: requester
-                    });
-                    console.log("Some unknown constraint error occurred (Error code: 1203): " + errorObject.original.constraint);
-                }
-            }
-            else
-            {
-                console.log("Some unknown error occurred during posting a comment (Error code: 1204): " + errorObject.name);
-                res.status(500).send({
-                    message: "A unknown error occurred trying to post a comment to the review.  Error code: 1204",
-                    requester: requester
-                });
-            }
-            return;
-        }
+        let newComment = await models.Comment.create({
+            value: comment,
+            userId: res.locals.userId,
+            reviewId: reviewId,
+        });
         res.status(201).send({
             message: "Comment successfully posted",
             requester: requester
@@ -406,11 +350,11 @@ const postComment = async (req, res, cookie) =>
 // the body of the request must include:
 // commentId - the id the comment
 // comment - the comment to add to the post
-const updateComment = async (req, res, cookie) =>
+const updateComment = async (req, res, requester) =>
 {
+    res.locals.function = "updateComment";
     let commentId = req.body.commentId;
     let updatedComment = req.body.comment;
-    let requester = cookie.name;
     let valid = validateStringParameter(res, updatedComment, 1, undefined, requester, "You cannot post a empty comment");
     if(!valid) return;
     valid = validateIntegerParameter(res, commentId, requester, "The comment ID to update is invalid");
@@ -427,7 +371,7 @@ const updateComment = async (req, res, cookie) =>
     else
     {
         // if you are not the user that posted the comment
-        if(cookie.name !== comment.user.username)
+        if(requester !== comment.user.username)
         {
             res.status(401).send({
                 message: "You cannot update another users comment",
@@ -436,20 +380,7 @@ const updateComment = async (req, res, cookie) =>
         }
         else
         {
-            let result;
-            try
-            {
-                result = await comment.update({value: updatedComment});
-            }
-            catch(err)
-            {
-                let message = "Comment update failed due to a server issue.  Error code: 1205"
-                res.status(500).send({
-                    message: message,
-                    requester: requester
-                });
-                return;
-            }
+            let result = await comment.update({value: updatedComment});
             if(result === undefined || result === null)
             {
                 // update returns a updated instance of the comment
@@ -475,10 +406,10 @@ const updateComment = async (req, res, cookie) =>
 // function to remove an existing comment from a review post
 // the body of the request must include:
 // commentId - the id the comment
-const removeComment = async (req, res, cookie) =>
+const removeComment = async (req, res, requester) =>
 {
+    res.locals.function = "removeComment";
     let commentId = req.body.commentId;
-    let requester = cookie.name;
     let valid = validateIntegerParameter(res, commentId, requester, "The comment ID to remove is invalid");
     if(!valid) return;
     // try to get the comment
@@ -493,7 +424,7 @@ const removeComment = async (req, res, cookie) =>
     else
     {
         // if you are not the user that posted the comment
-        if(cookie.name !== comment.user.username)
+        if(requester !== comment.user.username)
         {
             // get the review to see who posted it
             let review = await models.Review.findOne({
@@ -508,7 +439,7 @@ const removeComment = async (req, res, cookie) =>
                     requester: requester
                 });
             }
-            else if(review.userId === cookie.id)
+            else if(review.userId === res.locals.userId)
             {
                 commentRemoval(res, comment, requester);
             }
@@ -529,20 +460,8 @@ const removeComment = async (req, res, cookie) =>
 
 const commentRemoval = async (res, comment, requester) =>
 {
-    let result;
-    try
-    {
-        result = await comment.destroy();
-    }
-    catch(err)
-    {
-        let message = "Comment removal failed due to a server issue.  Error code: 1206"
-        res.status(500).send({
-            message: message,
-            requester: requester
-        });
-        return;
-    }
+    res.locals.function = "commentRemoval";
+    let result = await comment.destroy();
     if(result === undefined || result === null)
     {
         // update returns a updated instance of the comment
@@ -566,13 +485,13 @@ const commentRemoval = async (res, comment, requester) =>
 // function to get comments for a review post
 // the body of the request must include:
 // reviewId - the id of the review to get its comments
-const getComments = async(req, res, cookie) =>
+const getComments = async(req, res, requester) =>
 {
-    let requester = cookie.name;
+    res.locals.function = "getComments";
     let reviewId = req.params.reviewId;
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID to get the comments is invalid");
     if(!valid) return;
-    let comments = await models.Review.getReviewComments(reviewId, cookie.id, models);
+    let comments = await models.Review.getReviewComments(reviewId, res.locals.userId, models);
     if(comments === null)
     {
         res.status(404).send({

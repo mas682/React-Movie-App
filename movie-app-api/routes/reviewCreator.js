@@ -52,6 +52,8 @@ const validateReviewParameters = (res, requester, userId, rating, reviewText, go
 // bad - a comma seperated string of bad tags
 const createReview = async (cookie, req, res) =>
 {
+    res.locals.file = "reviewCreator";
+    res.locals.function = "createReview"
     let userId = cookie.id;
     let requester = cookie.name;
     let rating = req.body.rating;
@@ -64,37 +66,26 @@ const createReview = async (cookie, req, res) =>
     let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, false, undefined, false);
     if(!valid) return;
 
-    let review;
-    try {
-        review = await models.Review.findOrCreate({
-            where: {
-                userId: userId,
-                movieId: movieId
-            },
-            defaults: {
-                rating: rating,
-                review: reviewText,
-            }
-        });
-        // if the review was not created
-        if(!review[1])
-        {
-            res.status(400).send({
-                message: "A review for this movie by the current user already exists.",
-                requester: requester
-            });
-            return;
+    let review = await models.Review.findOrCreate({
+        where: {
+            userId: userId,
+            movieId: movieId
+        },
+        defaults: {
+            rating: rating,
+            review: reviewText,
         }
-        review = review[0];
-    } catch(err)
+    });
+    // if the review was not created
+    if(!review[1])
     {
-        let errorResult = reviewErrorHandler(err);
-        res.status(errorResult.status).send({
-            message: errorResult.message,
+        res.status(400).send({
+            message: "A review for this movie by the current user already exists.",
             requester: requester
         });
         return;
     }
+    review = review[0];
     if(review === null)
     {
         let message = "Review creation failed for some unexpected reason.  Error code: 1101"
@@ -103,7 +94,8 @@ const createReview = async (cookie, req, res) =>
             message: message,
             requester: requester
         });
-        console.log(message);
+        let logMessage = "(Error code: 1101) Review creation failed for some unexpected reason"
+        console.log(logMessage);
     }
     else
     {
@@ -157,6 +149,8 @@ const createReview = async (cookie, req, res) =>
 // badTagStrings - array of tag strings to add
 const updateReview = async (cookie, req, res) =>
 {
+    res.locals.file = "reviewCreator";
+    res.locals.function = "updateReview"
     let userId = cookie.id;
     let requester = cookie.name;
     let rating = req.body.rating;
@@ -190,26 +184,14 @@ const updateReview = async (cookie, req, res) =>
     // may want to set a boolean client side to see if this changed at all for efficiency
     // otherwise, will just about always have to update..
     let reviewChange = (review.review.legnth === 0 && reviewText.length === 0) ? false : true;
-    let result;
     if(reviewChange)
     {
-        try
-        {
-            result = await review.update({
-                review: reviewText,
-                userId: userId,
-                rating: rating
-            });
-        }
-        catch(err)
-        {
-            let errorResult = reviewErrorHandler(err);
-            res.status(errorResult.status).send({
-                message: errorResult.message,
-                requester: requester
-            });
-            return;
-        }
+
+        let result = await review.update({
+            review: reviewText,
+            userId: userId,
+            rating: rating
+        });
         if(result === undefined || result === null)
         {
             // update should return a updated instance of the review
@@ -419,58 +401,6 @@ const validateReviewTagCount = (res, tagCount, requester, message) =>
     }
     return true;
 };
-
-// function to handle catch block of review creation or update
-const reviewErrorHandler = (err) =>
-{
-    let status;
-    let message;
-    console.log("Error occured during review creation or update");
-    let errorObject = JSON.parse(JSON.stringify(err));
-    if(errorObject.name === "SequelizeForeignKeyConstraintError")
-    {
-        if(errorObject.original.constraint === "reviews_userId_fkey")
-        {
-            status = 401;
-            message = "User associated with the review does not exist";
-        }
-        else if(errorObject.original.constraint === "reviews_movieId_fkey")
-        {
-            status = 404;
-            message = "Movie associated with the review does not exist";
-        }
-        else
-        {
-            console.log("Some unexpected foreign key constraint error occurred (Error code: 1101): " + errorObject.original.constraint);
-            console.log(err);
-            status = 500;
-            message = "Some unexpected constraint error occurred on the server. Error code: 1101";
-        }
-    }
-    else if(errorObject.name === "SequelizeUniqueConstraintError")
-    {
-        if(errorObject.original.constraint === "reviews_userId_movieId_key")
-        {
-            status = 400;
-            message = "A review for this movie by the current user already exists."
-        }
-        else
-        {
-            console.log("Some unexpected unique key constraint error occurred (Error code: 1102): " + errorObject.original.constraint);
-            console.log(err);
-            status = 500;
-            message = "Some unexpected constraint error occurred on the server.  Error code: 1102";
-        }
-    }
-    else
-    {
-        console.log("Some unknown error occurred (Error code: 1103): " + errorObject.name);
-        console.log(err);
-        status = 500;
-        message = "Some unexpected error occurred on the server.  Error code: 1103";
-    }
-    return {status: status, message: message};
-}
 
 // function to add good tags to a review
 // goodString is a comma seperarted string of good tags
