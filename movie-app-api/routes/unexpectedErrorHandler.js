@@ -10,7 +10,15 @@ const unexpectedErrorHandler = (err, req, res, next) => {
     if(result.log)
     {
         console.log(result.logMessage + "\nFile: " + res.locals.file + " Function: " + res.locals.function);
-        console.log(JSON.parse(JSON.stringify(err)));
+        let errorObj = JSON.parse(JSON.stringify(err));
+        if(Object.keys(errorObj).length < 1)
+        {
+            console.log(err);
+        }
+        else
+        {
+            console.log(errorObj);
+        }
     }
 
     let cookie = req.signedCookies.MovieAppCookie;

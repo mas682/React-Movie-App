@@ -244,8 +244,6 @@ function sequelizeErrorHandler(error, file, functionName) {
     if(Object.keys(errorObj.functions).length > 0)
     {
         classObj = errorObj.functions[file];
-        console.log(file);
-        console.log(classObj);
         // find the specific class obj if there is one
         if(classObj !== undefined)
         {
@@ -295,7 +293,6 @@ function getOutput(errorObj, functionObj)
         errorCode = (functionObj.errorCode === undefined) ? errorCode : functionObj.errorCode;
         status = (functionObj.status === undefined) ? status : functionObj.status;
     }
-    console.log(functionObj);
 
 
     // if there is a error code, append it to the message
@@ -321,7 +318,6 @@ function getOutput(errorObj, functionObj)
     output.logMessage = logMessage;
     output.message = message;
 
-    console.log(output);
     return output;
 }
 
