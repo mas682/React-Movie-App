@@ -67,7 +67,7 @@ const verifyLogin2= async (req, res, next, type)=>
     let valid = false;
     let cookie = req.signedCookies.MovieAppCookie;
     cookie = (cookie === false) ? undefined : cookie;
-    cookie = JSON.parse(cookie);
+    cookie = (cookie === undefined) ? undefined : JSON.parse(cookie);
     let user;
     if(cookie !== undefined)
     {

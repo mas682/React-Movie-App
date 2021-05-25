@@ -1,6 +1,6 @@
 import models, { sequelize } from './src/models';
 import {badPageHandler} from './routes/badPageHandler.js';
-import {unexpectedErrorHandler} from './routes/unexpectedErrorHandler.js';
+import {errorHandler} from './routes/errorHandler.js';
 
 const config = require('./Config.json');
 const errors = require('./ErrorCodes.json');
@@ -50,7 +50,7 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
-    unexpectedErrorHandler(err, req, res, next);
+    errorHandler(err, req, res, next);
 });
 
 module.exports = app;

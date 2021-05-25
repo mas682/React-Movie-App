@@ -1,11 +1,7 @@
 import {verifyLogin} from './globals.js';
 import {getErrorHandler} from '../src/ErrorHandlers/errorReceiver.js';
 
-
-// handles routes that do not exist
-
-
-const unexpectedErrorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, next) => {
     let result = getErrorHandler(err, res.locals.file, res.locals.function);
     if(result.log)
     {
@@ -20,6 +16,9 @@ const unexpectedErrorHandler = (err, req, res, next) => {
             console.log(errorObj);
         }
     }
+
+    // will have to change this to setting requester to res.loals.requester
+    // but if res.locals.requester is undefined, set to ""
 
     let cookie = req.signedCookies.MovieAppCookie;
     cookie = (cookie === false) ? undefined : cookie;
@@ -40,7 +39,7 @@ const unexpectedErrorHandler = (err, req, res, next) => {
     }
 
     // for testing
-    requester = "_theonenonly";
+    //requester = "_theonenonly";
     res.status(status).send({
         message: message,
         requester: requester
@@ -48,4 +47,4 @@ const unexpectedErrorHandler = (err, req, res, next) => {
 }
 
 
-export {unexpectedErrorHandler};
+export {errorHandler};

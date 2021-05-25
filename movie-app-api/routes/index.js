@@ -35,7 +35,7 @@ router.get('/review/:reviewId/:type', function(req, res, next) { verifyLogin2(re
 })
 
 // used to create a account
-router.post('/signup/:type', function(req, res, next) {
+router.post('/signup/:type', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     signUp(req, res, next);
 });
 
