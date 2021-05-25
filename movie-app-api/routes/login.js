@@ -1,5 +1,4 @@
 import models, { sequelize } from '../src/models';
-import {verifyLogin} from './globals.js';
 import {customAlphabet} from 'nanoid';
 const Op = require('Sequelize').Op;
 import {validateStringParameter, validateEmailParameter, validateUsernameParameter,
@@ -11,36 +10,18 @@ const moment = require('moment');
 
 // function to see if a user can login and returns a cookie to use
 const login = (req, res, next) => {
-    // get the signed cookies in the request if there are any
-    let cookie = req.signedCookies.MovieAppCookie;
-    cookie = (cookie === false) ? undefined : cookie;
-    // if there is a signed cookie in the request
-    if(cookie !== undefined)
-    {
-        // see if the cookie has a valid user
-        verifyLogin(cookie).then((cookieValid) =>
-        {
-            if(cookieValid)
-            {
-                selectPath(JSON.parse(cookie), req, res, cookieValid);
-            }
-            else
-            {
-                selectPath(undefined, req, res, false);
-            }
-        });
-    }
-    // if no cookie was found
-    else
-    {
-        selectPath(undefined, req, res, false);
-    }
+    let requester = res.locals.requester;
+    // set which file the request is for
+    res.locals.file = "login";
+    selectPath(requester, req, res, next);
 };
 
 
-const selectPath = (cookie, req, res, cookieValid) =>
+const selectPath = (requester, req, res) =>
 {
+    res.locals.function = "selectPath";
     let routeFound = false;
+    let cookieValid = (requester === "") ? false : true;
     if(req.method === "POST")
     {
         if(req.params.type === "authenticate")
@@ -50,12 +31,13 @@ const selectPath = (cookie, req, res, cookieValid) =>
             {
                 res.status(200).send({
                     message: "User authenticated",
-                    requester: cookie.name,
+                    requester: requester,
                 });
             }
             else
             {
-                checkLogin(req, res);
+                checkLogin(req, res)
+                .catch((err) => {next(err)});
             }
         }
         else if(req.params.type === "forgot_password")
@@ -65,12 +47,13 @@ const selectPath = (cookie, req, res, cookieValid) =>
             {
                 res.status(401).send({
                     message: "User already logged in",
-                    requester: cookie.name,
+                    requester: requester,
                 });
             }
             else
             {
-                forgotPassword(req, res);
+                forgotPassword(req, res)
+                .catch((err) => {next(err)});
             }
         }
         else if(req.params.type === "validate_passcode")
@@ -80,12 +63,13 @@ const selectPath = (cookie, req, res, cookieValid) =>
             {
                 res.status(401).send({
                     message: "User already logged in",
-                    requester: cookie.name,
+                    requester: requester,
                 });
             }
             else
             {
-                validatePassCode(req, res);
+                validatePassCode(req, res)
+                .catch((err) => {next(err)});
             }
         }
     }
@@ -98,21 +82,20 @@ const selectPath = (cookie, req, res, cookieValid) =>
             {
                 res.status(200).send({
                     message: "User logged in",
-                    requester: cookie.name
+                    requester: requester
                 });
             }
             else
             {
                 res.status(401).send({
                     message: "User not logged in",
-                    requester: ""
+                    requester: requester
                 });
             }
         }
     }
     if(!routeFound)
     {
-        let requester = cookieValid ? cookie.name : "";
         res.status(404).send({
             message:"The login path sent to the server does not exist",
             requester: requester
@@ -120,8 +103,9 @@ const selectPath = (cookie, req, res, cookieValid) =>
     }
 }
 
-const checkLogin = (req, res) =>
+const checkLogin = async (req, res) =>
 {
+    res.locals.function = "checkLogin";
     // check login and generate cookie if login allowed
     let password = req.body.password;
     let username = req.body.username;
@@ -136,67 +120,65 @@ const checkLogin = (req, res) =>
     valid = validateStringParameter(res, password, 6, 15, "", "Password must be between 6-15 characters");
     if(!valid) return;
     // find a user by their login
-    models.User.findByLogin(req.body.username)
-    .then(async (user)=>{
-        // make sure the user is not null, not locked out of account
-        let userValid = await validateUser(res, username, user, true);
-        console.log("User valid: " + userValid);
-        if(!userValid) return;
-        // if the password is correct
-        if(user.password === password)
+    let user = await models.User.findByLogin(req.body.username);
+    // make sure the user is not null, not locked out of account
+    let userValid = await validateUser(res, username, user, true);
+    if(!userValid) return;
+    // if the password is correct
+    if(user.password === password)
+    {
+        //console.log(new Date(user.createdAt.toString()).toString());
+        try
         {
-            //console.log(new Date(user.createdAt.toString()).toString());
-            try
-            {
-                let result = await user.update({
-                    lastLogin: new Date(),
-                    passwordAttempts: 0,
-                    verificationAttempts: 0,
-                    verificationLocked: null
-                });
-            }
-            catch (err)
-            {
-                let errorObject = JSON.parse(JSON.stringify(err));
-                console.log("Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name);
-                console.log(err);
-            }
-            // create the valie to put into the cookie
-            let value = JSON.stringify({
-                name: user.username,
-                email: user.email,
-                id: user.id,
-                created: new Date()
-              });
-            // create the cookie with expiration in 1 day
-            res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-            res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
-            let userJson = "{\"user\":\"" + user.username + "\"}";
-            setTimeout(() =>{
-                res.status(200).send({
-                    message: "User authenticated",
-                    requester: user.username,
-                });
-            }, 3000);
-        }
-        else
-        {
-            let attempts = await updateUserLoginAttempts(user, username);
-            let message = "Incorrect password"
-            if(attempts >= 5)
-            {
-                message = message + ".  User account is currently locked due to too many login attempts"
-            }
-            res.status(401).send({
-                message: message,
-                requester: ""
+            let result = await user.update({
+                lastLogin: new Date(),
+                passwordAttempts: 0,
+                verificationAttempts: 0,
+            verificationLocked: null
             });
         }
-    });
+        catch (err)
+        {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            console.log("Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name);
+            console.log(err);
+        }
+        // create the valie to put into the cookie
+        let value = JSON.stringify({
+            name: user.username,
+            email: user.email,
+            id: user.id,
+            created: new Date()
+          });
+        // create the cookie with expiration in 1 day
+        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+        res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
+        let userJson = "{\"user\":\"" + user.username + "\"}";
+        setTimeout(() =>{
+            res.status(200).send({
+                message: "User authenticated",
+                requester: user.username,
+            });
+        }, 3000);
+    }
+    else
+    {
+        let attempts = await updateUserLoginAttempts(user, username);
+        let message = "Incorrect password"
+        if(attempts >= 5)
+        {
+            message = message + ".  User account is currently locked due to too many login attempts"
+        }
+        res.status(401).send({
+            message: message,
+            requester: ""
+        });
+    }
 };
 
 const forgotPassword = async (req, res) =>
 {
+    res.locals.function = "forgotPassword";
     let username = req.body.username;
     let valid = validateUsernameParameter(undefined, username, "", "");
     // if not a valid username, check to see if valid email
@@ -215,46 +197,18 @@ const forgotPassword = async (req, res) =>
     let tempVerificationCode = validationResult.tempVerificationCode;
     if(codeExists)
     {
-        try
-        {
-            result = await tempVerificationCode.update({
-                code: nanoid(),
-                codesResent: tempVerificationCode.codesResent + 1,
-                verificationAttempts: 0
-            });
-        }
-        catch (err)
-        {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            res.status(500).send({
-                    message: "A unknown error occurred trying to update the users verification code.  Error code: 1600",
-                    requester: ""
-                });
-            console.log("Some unknown error occurred (Error code: 1600): " + errorObject.name);
-            console.log(err);
-            return;
-        }
+        result = await tempVerificationCode.update({
+            code: nanoid(),
+            codesResent: tempVerificationCode.codesResent + 1,
+            verificationAttempts: 0
+        });
     }
     else
     {
-        try
-        {
-            result = await models.TempVerificationCodes.create({
-                userId: user.id,
-                code: nanoid()
-            });
-        }
-        catch (err)
-        {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            res.status(500).send({
-                    message: "A unknown error occurred trying to create the users verification code.  Error code: 1601",
-                    requester: ""
-                });
-            console.log("Some unknown error occurred (Error code: 1601): " + errorObject.name);
-            console.log(err);
-            return;
-        }
+        result = await models.TempVerificationCodes.create({
+            userId: user.id,
+            code: nanoid()
+        });
     }
 
     if(result === undefined || result === null)
@@ -280,7 +234,7 @@ const forgotPassword = async (req, res) =>
             });
         }
         else
-        {   
+        {
             res.status(500).send({
                 message: "Verification email not sent.  Error code: 1602",
                 requester: ""
@@ -292,6 +246,7 @@ const forgotPassword = async (req, res) =>
 
 const validatePassCode = async (req, res) =>
 {
+    res.locals.function = "validatePassCode";
     let username = req.body.username;
     let verificationCode = req.body.verificationCode;
     let valid = validateUsernameParameter(undefined, username, "", "");
@@ -405,6 +360,7 @@ const validatePassCode = async (req, res) =>
 
 const sendVerificationEmail = async (verificationCode, email) =>
 {
+    res.locals.function = "sendVerificationEmail";
     let subject = "Movie-Fanatics Temporary Verification Code";
     let title = subject;
     let body = `<h2 style="color: #333; font-size: 1.25em;">Movie-Fanatics Verificaiton Code</h2>
@@ -420,6 +376,7 @@ const sendVerificationEmail = async (verificationCode, email) =>
 // updateAttempts is a boolean to update user password attempts on failure
 const validateUser = async (res, username, user, updateAttempts) =>
 {
+    res.locals.function = "validateUser";
     // false on failure
     let result = true;
     let message = "";
@@ -455,6 +412,7 @@ const validateUser = async (res, username, user, updateAttempts) =>
 }
 
 const validateUserForVerification = async (user, res, resendCode) => {
+    res.locals.function = "validateUserForVerification";
     // false on failure
     let result = true;
     let message = "";

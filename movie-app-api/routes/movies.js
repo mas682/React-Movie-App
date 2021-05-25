@@ -21,17 +21,20 @@ const selectPath = (requester, req, res, next) =>
 	{
 		if(req.params.type === "get_movie_titles")
 		{
-			getMovieTitles(requester, req, res);
+			getMovieTitles(requester, req, res)
+			.catch((err) => {next(err)});
 			routeFound = true;
 		}
 		else if(req.params.type === "get_movie_tags")
 		{
-			getMovieTagSuggestions(requester, req, res);
+			getMovieTagSuggestions(requester, req, res)
+			.catch((err) => {next(err)});
 			routeFound = true;
 		}
 		else if(req.params.id !== undefined)
 		{
-			getMovieInfo(requester, req, res);
+			getMovieInfo(requester, req, res)
+			.catch((err) => {next(err)});
 			routeFound = true;
 		}
 		else if(req.params.type === "my_watch_list")
@@ -39,7 +42,8 @@ const selectPath = (requester, req, res, next) =>
 			routeFound = true;
 			if(cookieValid)
 			{
-				getWatchList(requester, req, res);
+				getWatchList(requester, req, res)
+				.catch((err) => {next(err)});
 			}
 			else
 			{
@@ -51,7 +55,8 @@ const selectPath = (requester, req, res, next) =>
 			routeFound = true;
 			if(cookieValid)
 			{
-				getWatchedList(requester, req, res);
+				getWatchedList(requester, req, res)
+				.catch((err) => {next(err)});
 			}
 			else
 			{
@@ -61,7 +66,8 @@ const selectPath = (requester, req, res, next) =>
 		else if(req.params.type === "featured")
 		{
 			routeFound = true;
-			getFeaturedMovies(requester, req, res);
+			getFeaturedMovies(requester, req, res)
+			.catch((err) => {next(err)});
 		}
 	}
 	else if(req.method === "POST")
@@ -71,7 +77,8 @@ const selectPath = (requester, req, res, next) =>
 			routeFound = true;
 			if(cookieValid)
 			{
-				addToWatchList(requester, req, res);
+				addToWatchList(requester, req, res)
+				.catch((err) => {next(err)});
 			}
 			else
 			{
@@ -83,7 +90,8 @@ const selectPath = (requester, req, res, next) =>
 			routeFound = true;
 			if(cookieValid)
 			{
-				removeFromWatchList(requester, req, res);
+				removeFromWatchList(requester, req, res)
+				.catch((err) => {next(err)});
 			}
 			else
 			{
@@ -95,7 +103,8 @@ const selectPath = (requester, req, res, next) =>
 			routeFound = true;
 			if(cookieValid)
 			{
-				addToWatched(requester, req, res);
+				addToWatched(requester, req, res)
+				.catch((err) => {next(err)});
 			}
 			else
 			{
@@ -107,7 +116,8 @@ const selectPath = (requester, req, res, next) =>
 			routeFound = true;
 			if(cookieValid)
 			{
-				removeFromWatched(requester, req, res);
+				removeFromWatched(requester, req, res)
+				.catch((err) => {next(err)});
 			}
 			else
 			{

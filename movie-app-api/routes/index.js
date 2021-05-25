@@ -12,11 +12,11 @@ import {searchHandler} from './search.js';
 import {imageHandler} from './fileHandler.js'
 
 // used when trying to login
-router.post('/login/:type', function(req, res, next) {
+router.post('/login/:type', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     login(req, res, next);
 });
 
-router.get('/login/:type', function(req, res, next) {
+router.get('/login/:type', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     login(req, res, next);
 });
 
