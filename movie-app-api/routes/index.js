@@ -80,20 +80,20 @@ router.delete('/profile/:username/:type', function(req, res, next) { verifyLogin
 
 
 // used to return the movies from the API call to the screen
-router.get('/movies/:type', function(req, res, next) {
+router.get('/movies/:type', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     movieHandler(req, res, next);
 });
 
-router.post('/movies/:type', function(req, res, next) {
+router.post('/movies/:type', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     movieHandler(req, res, next);
 });
 
 // used to return the movies from the API call to the screen
-router.get('/movie/:type/*', function(req, res, next) {
+router.get('/movie/:type/*', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     movieHandler(req, res, next);
 });
 
-router.get('/movie/:id', function(req, res, next) {
+router.get('/movie/:id', function(req, res, next) { verifyLogin2(req, res, next, "profile") }, function(req, res, next) {
     movieHandler(req, res, next);
 });
 

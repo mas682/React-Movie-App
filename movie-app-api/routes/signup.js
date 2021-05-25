@@ -1,5 +1,4 @@
 import models, { sequelize } from '../src/models';
-import {verifyLogin} from './globals.js';
 import {customAlphabet} from 'nanoid';
 const Op = require('Sequelize').Op;
 const nanoid = customAlphabet('1234567890', 6);
@@ -13,7 +12,7 @@ import {emailHandler} from './EmailHandler.js';
 const signUp = (req, res, next) => {
     let requester = res.locals.requester;
     // set which file the request is for
-    res.locals.file = "signUp";
+    res.locals.file = "signup";
     if(requester !== "")
     {
         res.status(401).send({
@@ -126,6 +125,7 @@ const createTempUser = async (requester, req, res) =>
 // function to create a temp user before their email is verified
 const resendVerificationCode = async (requester, req, res) =>
 {
+    res.locals.function = "resendVerificationCode";
     let username = req.body.username;
     let email = req.body.email;
     let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
@@ -201,6 +201,7 @@ const resendVerificationCode = async (requester, req, res) =>
 // function to create a user once their email is verified
 const createUser = async (requester, req, res) =>
 {
+    res.locals.function = "createUser";
     let username = req.body.username;
     let email = req.body.email;
     let verificationCode = req.body.verificationCode;
@@ -341,6 +342,7 @@ const createUser = async (requester, req, res) =>
 // function to remove a temp user
 const removeTempUser = async (requester, req, res) =>
 {
+    res.locals.function = "removeTempUser";
     let username = req.body.username;
     let email = req.body.email;
     let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
@@ -380,6 +382,7 @@ const removeTempUser = async (requester, req, res) =>
 
 const sendVerificationEmail = async (verificationCode, email) =>
 {
+    res.locals.function = "sendVerificationEmail";
     let header = "Movie Fanatics Verification Code";
     let subject = "Movie-Fanatics Email Verification";
     let title = subject;

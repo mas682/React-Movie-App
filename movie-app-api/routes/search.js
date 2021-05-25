@@ -1,4 +1,4 @@
-import {verifyLogin, validateStringParameter, validateIntegerParameter} from './globals.js';
+import {validateStringParameter, validateIntegerParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
 const Op = require('Sequelize').Op;
 
@@ -7,7 +7,7 @@ const Op = require('Sequelize').Op;
 const searchHandler = (req, res, next) => {
 	let requester = res.locals.requester;
 	// set which file the request is for
-	res.locals.file = "profile";
+	res.locals.file = "search";
 	selectPath(requester, req, res, next);
 };
 

@@ -1,5 +1,5 @@
 import models, { sequelize } from '../src/models';
-import {verifyLogin, validateIntegerParameter, validateStringParameter} from './globals.js';
+import {validateIntegerParameter, validateStringParameter} from './globals.js';
 import {createReview, updateReview} from './reviewCreator.js';
 
 
