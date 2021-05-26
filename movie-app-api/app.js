@@ -1,4 +1,5 @@
 import models, { sequelize } from './src/models';
+import {verifyLogin} from './routes/globals.js';
 import {badPageHandler} from './routes/badPageHandler.js';
 import {errorHandler} from './routes/errorHandler.js';
 
@@ -44,9 +45,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-    badPageHandler(req, res, next);
-});
+app.use(
+    function(req, res, next) { verifyLogin(req, res, next) },
+    function(req, res, next) { badPageHandler(req, res, next)}
+ );
 
 // error handler
 app.use(function(err, req, res, next) {

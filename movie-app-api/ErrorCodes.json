@@ -3,7 +3,10 @@
 
     },
     "emailHandler.js": {
-
+        "2000": {
+            "Description":"Attempted to send a email to a user but it failed to be sent for some reason",
+            "function": "emailHandler"
+        }
     },
     "fileHandler.js": {
         "1700":{
@@ -33,6 +36,14 @@
         "1705":{
             "Description":"When a user was uploading a file, a unique file name could not be found after 5 tries",
             "function":"imageHandler"
+        },
+        "1706":{
+            "Description":"When removing a image, some unexpected error occurred",
+            "function":"removeImage"
+        },
+        "1707":{
+            "Description":"When a user was uploading a image, some error occurred when checking the database to see if that file exists",
+            "function":"multerS3"
         }
     },
     "getUserInfo.js":{
@@ -56,6 +67,18 @@
         "1602":{
             "Description":"A error occurred sending out a users verification code",
             "function":"forgotPassword"
+        },
+        "1603":{
+            "Description":"A error occurred when updating a users record when they just logged in.  Database was not able to update last login, password attempts, etc.",
+            "function":"checkLogin"
+        },
+        "1604":{
+            "Description":"A error occurred when updating a users verifcation attempts on a failed attempt",
+            "function":"validatePassCode"
+        },
+        "1605":{
+            "Description":"A error occurred when updating a users verifcation attempts when they just validated the verification code",
+            "function":"validatePassCode"
         }
     },
     "movies.js":{
@@ -142,6 +165,14 @@
         "1103":{
             "Description":"Some unexpected error occurred on the database when a user tried to update or create a review",
             "function":"reviewErrorHandler"
+        },
+        "1104":{
+            "Description":"Some unexpected constraint error occurred when adding a tag to a review",
+            "function":"createReviewTagAssociation"
+        },
+        "1105":{
+            "Description":"Some unexpected error occurred when adding a tag to a review",
+            "function":"createReviewTagAssociation"
         }
 
     },
@@ -204,12 +235,6 @@
             "function":"removeTempUser"
         }
     },
-    "unexpectedErrorHandler.js":{
-        "1400": {
-            "Description":"A unexpected error occurred on the server and was caught",
-            "function":"unexpectedErrorHandler"
-        }
-    },
     "sequelizeErrorHandler.js":{
         "1800":{
             "Description":"Some unexpected sequelize error occurred"
@@ -219,6 +244,11 @@
         },
         "1802":{
             "Description":"Some unexpected unique constraint error occurred"
+        }
+    },
+    "defaultErrorHandler.js":{
+        "1900":{
+            "Description":"Some unexpected error occurred"
         }
     }
 }

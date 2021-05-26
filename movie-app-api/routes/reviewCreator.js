@@ -127,7 +127,6 @@ const createReview = async (cookie, req, res) =>
         failed = validateAddTagResult(warnings, res, requester);
         if(failed) return;
         let errorMessages = generateAddTagErrorMessages(warnings);
-        console.log(warnings);
         res.status(201).send({
             message: "Review successfully created",
             requester: requester,
@@ -247,7 +246,6 @@ const updateReview = async (cookie, req, res) =>
     failed = validateAddTagResult(warnings, res, requester);
     if(failed) return;
     let errorMessages = generateAddTagErrorMessages(warnings);
-    console.log(warnings);
     let updatedReview = await models.Review.findByIdWithLikes(models, review.id, userId);
     if(updatedReview === null || updatedReview === undefined || updatedReview.length < 1)
     {
@@ -526,7 +524,6 @@ const createReviewTagAssociation = async (review, tagId, userId, type) => {
         }
     } catch (err)
     {
-        console.log("Error occured adding tag to review");
         let errorObject = JSON.parse(JSON.stringify(err));
         if(errorObject.name === "SequelizeForeignKeyConstraintError")
         {
@@ -545,14 +542,14 @@ const createReviewTagAssociation = async (review, tagId, userId, type) => {
             else
             {
                 serverError = true;
-                console.log("Some unknown constraint error occurred: " + errorObject.original.constraint);
-                console.log(err);
+                console.log("(Error code: 1104) Some unknown constraint error occurred: " + errorObject.original.constraint);
+                console.log(errorObject);
             }
         }
         else
         {
             serverError = true;
-            console.log("Some unknown error occurred during posting a comment: " + errorObject.name);
+            console.log("(Error code: 1105) Some unknown error occurred during posting a tag: " + errorObject.name);
             console.log(err);
         }
         successful = false;
@@ -596,7 +593,7 @@ const generateAddTagErrorMessages = (warnings) => {
     let errors = [];
     if(warnings.duplicate || warnings.tagAlreadyAssociated)
     {
-        errors.push("Duplicate tag(s) were found during when associating them with the review");
+        errors.push("Duplicate tag(s) were found when associating them with the review");
     }
     if(warnings.tagCreationFailure)
     {
@@ -604,7 +601,7 @@ const generateAddTagErrorMessages = (warnings) => {
     }
     else if(warnings.tagAssociationFailure)
     {
-        errors.push("At least one tag could not be found when associating the tags with the review");
+        errors.push("At least one tag could not be found when associating the tag with the review");
     }
     else if(warnings.serverError)
     {

@@ -114,7 +114,7 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
         return true;
     })
     .catch((error) => {
-        console.log("Email not sent");
+        console.log("(Error code: 2000)  Email not sent");
         console.log(error);
         return false;
     });

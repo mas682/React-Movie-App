@@ -313,7 +313,8 @@ const addToWatchList = async (requester, req, res) =>
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watch list.  Error code: 1500";
-			console.log(message);
+			let logMessage = "(Error code: 1500) A error occurred trying to add the movie to the users watch list."
+			console.log(logMessage);
             // if undefined, usually means the association already exists..
             res.status(500).send({
                 message: message,
@@ -407,7 +408,8 @@ const addToWatched = async (requester, req, res) =>
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watched list.  Error code: 1502"
-			console.log(message);
+			let logMessage = "(Error code: 1502) A error occurred trying to add the movie to the users watched list."
+			console.log(logMessage);
             // if undefined, usually means the association already exists..
             res.status(500).send({
                 message: message,
@@ -454,7 +456,8 @@ const removeFromWatched = async (requester, req, res) =>
         if(result === undefined)
         {
 			let message = "A error occurred trying to remove the movie from the users watched list.  Error code: 1503"
-			console.log(message);
+			let logMessage = "(Error code: 1503) A error occurred trying to remove the movie from the users watched list."
+			console.log(logMessage);
             // if undefined, usually means the association already exists..
             res.status(500).send({
                 message: message,

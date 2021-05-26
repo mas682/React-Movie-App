@@ -127,21 +127,20 @@ const checkLogin = async (req, res) =>
     // if the password is correct
     if(user.password === password)
     {
-        //console.log(new Date(user.createdAt.toString()).toString());
         try
         {
             let result = await user.update({
                 lastLogin: new Date(),
                 passwordAttempts: 0,
                 verificationAttempts: 0,
-            verificationLocked: null
+                verificationLocked: null
             });
         }
         catch (err)
         {
             let errorObject = JSON.parse(JSON.stringify(err));
-            console.log("Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name);
-            console.log(err);
+            console.log("(Error code: 1603) Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name);
+            console.log(errorObject);
         }
         // create the valie to put into the cookie
         let value = JSON.stringify({
@@ -297,9 +296,8 @@ const validatePassCode = async (req, res) =>
         catch (err)
         {
             let errorObject = JSON.parse(JSON.stringify(err));
-            console.log("Error updating a users verification attempts");
+            console.log("(Error code: 1604) Error updating a users verification attempts");
             console.log(errorObject);
-            console.log(err);
         }
         let message = "Verification code is invalid";
         if(user.verificationAttempts >= 9)
@@ -336,9 +334,8 @@ const validatePassCode = async (req, res) =>
         catch (err)
         {
             let errorObject = JSON.parse(JSON.stringify(err));
-            console.log("Error updating a users verification attempts");
+            console.log("(Error code: 1605) Error updating a users verification attempts");
             console.log(errorObject);
-            console.log(err);
         }
         let value = JSON.stringify({
             name: user.username,
@@ -448,8 +445,6 @@ const validateUserForVerification = async (user, res, resendCode) => {
         });
         if(tempVerificationCode !== null)
         {
-            console.log(new Date(tempVerificationCode.expiresAt).toString());
-            console.log(new Date().toString());
             // if attempting to resend the code
             if(resendCode && tempVerificationCode.codesResent >= 2)
             {

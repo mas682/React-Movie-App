@@ -153,7 +153,8 @@ const removePost = async (req, res, requester) =>
             if(result === undefined)
             {
                 let message = "Server failed to delete review for some unkown reason.  Error code: 1200";
-                console.log(message);
+                let logMessage = "(Error code: 1200) Server failed to delete review for some unkown reason."
+                console.log(logMessage);
                 res.status(500).send({
                     message: message,
                     requester: requester

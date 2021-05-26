@@ -57,6 +57,7 @@ const selectPath = (requester, req, res, next) =>
 // limits the number returned to 5 per type
 const getAllRelatedItems = async (requester, req, res) =>
 {
+	res.locals.function = "getAllRelatedItems";
 	let defaultMax = 25;
 	let value = req.query.value;
 	let count = (req.query.max === undefined) ? defaultMax : req.query.max;
@@ -81,6 +82,7 @@ const getAllRelatedItems = async (requester, req, res) =>
 // with various parameters
 const queryMoviesByTitle = async (requester, req, res) =>
 {
+	res.locals.function = "queryMoviesByTitle";
 	let title = req.query.value;
 	let count = (req.query.max === undefined) ? 50 : req.query.max;
 	let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
@@ -103,6 +105,7 @@ const queryMoviesByTitle = async (requester, req, res) =>
 
 const getMovies = async (requester, req, res) =>
 {
+	res.locals.function = "getMovies";
 	// consider limiting number of query keys or query length...
 	let username = requester;
 	let max = (req.query.max === undefined) ? 50 : req.query.max;
@@ -135,6 +138,7 @@ const getMovies = async (requester, req, res) =>
 
 const getUsers = async (requester, req, res) =>
 {
+	res.locals.function = "getUsers";
 	let defaultMax = 25;
 	let defaultOffset = 0;
 	let userToFind = req.query.value;

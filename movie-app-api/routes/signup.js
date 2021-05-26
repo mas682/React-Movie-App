@@ -113,7 +113,8 @@ const createTempUser = async (requester, req, res) =>
         else
         {
             let message = "Verification email not sent.  Error code: 1302";
-            console.log(message);
+            let logMessage = "(Error code: 1302) Verifcation email not sent";
+            console.log(logMessage);
             res.status(500).send({
                 message: message,
                 requester: ""
@@ -188,7 +189,8 @@ const resendVerificationCode = async (requester, req, res) =>
         else
         {
             let message = "Verification email not sent.  Error code: 1304";
-            console.log(message);
+            let logMessage = "(Error code: 1304) Verifcation email not sent"
+            console.log(logMessage);
             res.status(500).send({
                 message: message,
                 requester: ""

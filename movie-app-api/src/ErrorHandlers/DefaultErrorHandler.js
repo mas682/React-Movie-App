@@ -5,7 +5,7 @@ const ERRORS = {
         defaultLogMessage: "Some unexpected error occurred",
         defaultStatus: 500,
         defaultLog: true,
-        defaultErrorCode: undefined,
+        defaultErrorCode: 1900,
         functions: {
             fileHandler: {
                 imageHandler: {}

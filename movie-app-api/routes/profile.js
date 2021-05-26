@@ -25,7 +25,8 @@ const profileHandler = (req, res, next) => {
                 message: message,
                 requester: requester
             });
-            console.log(message);
+            let logMessage = "(Error code: 1000) Some unexpected error occurred on the server";
+            console.log(logMessage);
         }
         return;
     }
@@ -222,7 +223,7 @@ const selectPath = (requester, req, res, next) =>
 };
 
 // this function will return a users follwers for their page
-const getFollowers = async (requeste, req, res) =>
+const getFollowers = async (requester, req, res) =>
 {
     res.locals.function = "getFollowers";
     let username = req.params.username;
@@ -377,7 +378,7 @@ const getReviews = async (requester, req, res, cookieValid) =>
 // function to get the feed for a specific user
 const getFeed = async (requester, req, res) =>
 {
-    res.locals.fucntion = "getFeed";
+    res.locals.function = "getFeed";
     let username = req.params.username;
     let max = (req.query.max === undefined) ? 50 : req.query.max;
     let offset = (req.query.offset === undefined) ? 0 : req.query.offset;
@@ -446,23 +447,22 @@ const followUser = async (requester, req, res) =>
         else
         {
             // add the user to the requesters following users
-            userToFollow.addFollower(res.locals.userId).then((result) => {
-                if(result === undefined)
-                {
-                    let message = "Some error occured trying to follow the user.  Error code: 1001"
-                    res.status(500).send({
-                        message: message,
-                        requester: requestingUser
-                    });
-                }
-                else
-                {
-                    res.status(200).send({
-                        message: "User successfully followed",
-                        requester: requestingUser
-                    });
-                }
-            });
+            let result = await userToFollow.addFollower(res.locals.userId);
+            if(result === undefined)
+            {
+                let message = "Some error occured trying to follow the user.  Error code: 1001"
+                res.status(500).send({
+                    message: message,
+                    requester: requestingUser
+                });
+            }
+            else
+            {
+                res.status(200).send({
+                    message: "User successfully followed",
+                    requester: requestingUser
+                });
+            }
         }
     }
     else
@@ -501,23 +501,22 @@ const unfollowUser = async (requester, req, res) =>
         }
         else
         {
-            userToUnfollow.removeFollower(res.locals.userId).then((result) => {
-                if(result === undefined)
-                {
-                    let message = "Some error occured trying to unfollow the user.  Error code: 1002"
-                    res.status(500).send({
-                        message: message,
-                        requester: requestingUser
-                    });
-                }
-                else
-                {
-                    res.status(200).send({
-                        message: "User successfully unfollowed",
-                        requester: requestingUser
-                    });
-                }
-            });
+            let result = await userToUnfollow.removeFollower(res.locals.userId);
+            if(result === undefined)
+            {
+                let message = "Some error occured trying to unfollow the user.  Error code: 1002"
+                res.status(500).send({
+                    message: message,
+                    requester: requestingUser
+                });
+            }
+            else
+            {
+                res.status(200).send({
+                    message: "User successfully unfollowed",
+                    requester: requestingUser
+                });
+            }
         }
     }
     else
@@ -726,6 +725,8 @@ const removeUser = async (requester, req, res) =>
         let result = await userToRemove.destroy();
         if(result === undefined)
         {
+            let logMessage = "(Error code: 1006) Error in database occurred removing a user";
+            console.log(logMessage);
             let message = "Server failed to remove user for some unkown reason.  Error code: 1006";
             res.status(500).send({
                 message: message,
@@ -826,7 +827,7 @@ const removeProfilePicture = async(requester, req, res) =>
             {
                 status = 500;
                 message = "Some unexpected error occurred on the server when removing the profile picture. Error code: 1009";
-                let logMessage = ("(Error code: 1009).  Some unexpected error occurred on the server when removing the profile picture.")
+                let logMessage = "(Error code: 1009).  Some unexpected error occurred on the server when removing a users profile picture";
                 console.log(logMessage);
             }
         }
@@ -909,7 +910,7 @@ const updateImage = async(requester, req, res) =>
             }
             else
             {
-                console.log("(Error code: 1012) Some unkown error occurred");
+                console.log("(Error code: 1012) Some unexpected error occurred");
                 console.log(err);
                 status = 500;
                 message = "Some unexpected error occurred on the server.  Error code: 1012";
