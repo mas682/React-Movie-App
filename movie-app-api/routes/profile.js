@@ -7,7 +7,7 @@ import {removeImage} from './fileHandler.js';
 
 // function to get the reviews associated with a users profile
 const profileHandler = (req, res, next) => {
-    let requester = res.locals.requester;
+    let requester = (req.session.user === undefined) ? "" : req.session.user;
     // set which file the request is for
     res.locals.file = "profile";
     // if calling another function after already authenticated before
@@ -157,7 +157,7 @@ const selectPath = (requester, req, res, next) =>
             routeFound = true;
             if(cookieValid)
             {
-                removeUser(requester, req, res)
+                removeUser(requester, req, res, next)
                 .catch((err) => {next(err)});
             }
             else
@@ -231,7 +231,7 @@ const getFollowers = async (requester, req, res) =>
     if(!valid) return;
     // returns a empty array if no followers
     // null if invalid user
-    let followers = await models.User.getFollowers(username, res.locals.userId, models);
+    let followers = await models.User.getFollowers(username, req.session.userId, models);
     if(followers === null)
     {
         res.status(404).send({
@@ -256,7 +256,7 @@ const getFollowing = async (requester, req, res) =>
     let username = req.params.username;
     let valid = validateUsernameParameter(res, username, requester, "Username is invalid");
     if(!valid) return;
-    let following = await models.User.getFollowing(username, res.locals.userId, models);
+    let following = await models.User.getFollowing(username, req.session.userId, models);
     if(following === null)
     {
         res.status(404).send({
@@ -310,7 +310,7 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
         if(loggedInUser !== user.username)
         {
             // see if the user they are looking at has them as a follower
-            let following = await user.getFollowers( {where: {id: res.locals.userId} } );
+            let following = await user.getFollowers( {where: {id: req.session.userId} } );
             // if not undefined, found requester as a follower
             if(following[0] !== undefined)
             {
@@ -355,7 +355,7 @@ const getReviews = async (requester, req, res, cookieValid) =>
     }
     if(cookieValid)
     {
-        let reviews = await models.Review.findByIds(models, [user.id], res.locals.userId, max, offset);
+        let reviews = await models.Review.findByIds(models, [user.id], req.session.userId, max, offset);
         // send the reveiws associated with the user and their id
         res.status(200).send({
             message: "Reviews sucessfully found for the user",
@@ -403,7 +403,7 @@ const getFeed = async (requester, req, res) =>
     // this will always return an array, even if the user does not exist
     // if the user does not exist, it will just be a empty array
     // if verified the user is logged in, should not really be an issue
-    let reviews = await models.Review.getUserReviewFeed(models, res.locals.userId, max, offset);
+    let reviews = await models.Review.getUserReviewFeed(models, req.session.userId, max, offset);
 
     res.status(200).send({
         message: "Users feed successfully found",
@@ -426,7 +426,7 @@ const followUser = async (requester, req, res) =>
     let valid = validateUsernameParameter(res, followUname, requestingUser, "Username to follow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
-    let userToFollow = await models.User.findWithFollowing(followUname, res.locals.userId);
+    let userToFollow = await models.User.findWithFollowing(followUname, req.session.userId);
     if(userToFollow === null)
     {
         res.status(404).send({
@@ -437,7 +437,7 @@ const followUser = async (requester, req, res) =>
     // if the user is not already following the user
     else if(userToFollow.dataValues.Followers.length < 1)
     {
-        if(userToFollow.id === res.locals.userId)
+        if(userToFollow.id === req.session.userId)
         {
             res.status(400).send({
                 message: "User cannot follow themself",
@@ -447,7 +447,7 @@ const followUser = async (requester, req, res) =>
         else
         {
             // add the user to the requesters following users
-            let result = await userToFollow.addFollower(res.locals.userId);
+            let result = await userToFollow.addFollower(req.session.userId);
             if(result === undefined)
             {
                 let message = "Some error occured trying to follow the user.  Error code: 1001"
@@ -482,7 +482,7 @@ const unfollowUser = async (requester, req, res) =>
     let valid = validateUsernameParameter(res, unfollowUname, requestingUser, "Username to unfollow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
-    let userToUnfollow = await models.User.findWithFollowing(unfollowUname, res.locals.userId);
+    let userToUnfollow = await models.User.findWithFollowing(unfollowUname, req.session.userId);
     if(userToUnfollow === null)
     {
         res.status(404).send({
@@ -492,7 +492,7 @@ const unfollowUser = async (requester, req, res) =>
     }
     else if(userToUnfollow.dataValues.Followers.length > 0)
     {
-        if(userToUnfollow.id === res.locals.userId)
+        if(userToUnfollow.id === req.session.userId)
         {
             res.status(400).send({
                 message: "User cannot unfollow themself",
@@ -501,7 +501,7 @@ const unfollowUser = async (requester, req, res) =>
         }
         else
         {
-            let result = await userToUnfollow.removeFollower(res.locals.userId);
+            let result = await userToUnfollow.removeFollower(req.session.userId);
             if(result === undefined)
             {
                 let message = "Some error occured trying to unfollow the user.  Error code: 1002"
@@ -572,15 +572,11 @@ const updatePassword = async (requester, req, res) =>
             user.lastLogin = new Date();
             user.passwordUpdatedAt = new Date();
             await user.save();
-            // send a updated cookie
-            let value = JSON.stringify({
-                name: user.username,
-                email: user.email,
-                id: user.id,
-                created: new Date()
-            });
-            res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-            res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
+            //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+            // update the session
+            req.session.userId = user.id;
+            req.session.user = user.username;
+            req.session.admin = user.admin;
             res.status(200).send({
                 message: "Password updated",
                 requester: requester
@@ -653,8 +649,13 @@ const updateInfo = async (requester, req, res, next) =>
         id: result.id,
         created: new Date()
     });
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
+    //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    // update session
+    // may want to delete all other sessions for this user?
+    req.session.userId = user.id;
+    req.session.user = user.username;
+    req.session.admin = user.admin;
+
 
     let updatedUser = {
         username: result.username,
@@ -672,7 +673,7 @@ const updateInfo = async (requester, req, res, next) =>
 
 
 // function to handle updating a users password
-const removeUser = async (requester, req, res) =>
+const removeUser = async (requester, req, res, next) =>
 {
     res.locals.function = "removeUser";
     let password = req.body.password;
@@ -738,8 +739,9 @@ const removeUser = async (requester, req, res) =>
             // if the user just deleted themself, return a empty cookie
             if(currentUser)
             {
-                res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-                res.cookie('MovieAppCookie', null, {domain: 'localhost', path: '/', maxAge: 0, signed: true});
+                //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+                // delete the session
+                await req.session.destory().promise();
                 requester = "";
             }
             res.status(200).send({

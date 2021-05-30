@@ -2,7 +2,7 @@ import models, { sequelize } from '../src/models';
 
 // function to get information associated with the user who has the cookie
 const getUserInfo = (req, res, next) => {
-    let requester = res.locals.requester;
+    let requester = (req.session.user === undefined) ? "" : req.session.user;
     // set which file the request is for
     res.locals.file = "getUserInfo";
     res.locals.function = "getUserInfo";

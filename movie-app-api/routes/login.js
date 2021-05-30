@@ -10,14 +10,14 @@ const moment = require('moment');
 
 // function to see if a user can login and returns a cookie to use
 const login = (req, res, next) => {
-    let requester = res.locals.requester;
+    let requester = (req.session.user === undefined) ? "" : req.session.user;
     // set which file the request is for
     res.locals.file = "login";
     selectPath(requester, req, res, next);
 };
 
 
-const selectPath = (requester, req, res) =>
+const selectPath = (requester, req, res, next) =>
 {
     res.locals.function = "selectPath";
     let routeFound = false;
@@ -142,17 +142,14 @@ const checkLogin = async (req, res) =>
             console.log("(Error code: 1603) Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name);
             console.log(errorObject);
         }
-        // create the valie to put into the cookie
-        let value = JSON.stringify({
-            name: user.username,
-            email: user.email,
-            id: user.id,
-            created: new Date()
-          });
         // create the cookie with expiration in 1 day
-        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-        res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
-        let userJson = "{\"user\":\"" + user.username + "\"}";
+        //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+        let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        console.log("IP: " + ip);
+        req.session.userId = user.id;
+        req.session.user = user.username;
+        req.session.created = new Date();
+        req.session.admin = user.admin;
         setTimeout(() =>{
             res.status(200).send({
                 message: "User authenticated",
@@ -337,14 +334,11 @@ const validatePassCode = async (req, res) =>
             console.log("(Error code: 1605) Error updating a users verification attempts");
             console.log(errorObject);
         }
-        let value = JSON.stringify({
-            name: user.username,
-            email: user.email,
-            id: user.id,
-            created: new Date()
-          });
-        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-        res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
+        //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+        req.session.userId = user.id;
+        req.session.user = user.username;
+        req.session.created = new Date();
+        req.session.admin = user.admin;
         console.log("Adding 2 second delay");
         setTimeout(() =>{
             res.status(200).send({

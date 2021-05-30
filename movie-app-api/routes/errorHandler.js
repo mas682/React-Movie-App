@@ -17,7 +17,7 @@ const errorHandler = (err, req, res, next) => {
         }
     }
 
-    let requester = (res.locals.requester === undefined) ? "" : res.locals.requester;
+    let requester = (req.session.user === undefined) ? "" : req.session.user;
     let status = result.status;
     let message = result.message;
 

@@ -10,61 +10,6 @@ const moment = require('moment');
 // used to sign the cookie
 //router.use(cookieParser('somesecrettosigncookie'));
 
-// function to be used to verify that the cookie is valid
-// currently just checks to see if the user exists
-// may also want to add time to cookie value? but may be unneccessary
-const verifyLogin= async (req, res, next, type)=>
-{
-    res.locals.file = "globals";
-    res.locals.function = "verifyLogin";
-    let valid = false;
-    let cookie = req.signedCookies.MovieAppCookie;
-    cookie = (cookie === false) ? undefined : cookie;
-    cookie = (cookie === undefined) ? undefined : JSON.parse(cookie);
-    let user;
-    if(cookie !== undefined)
-    {
-        // should be in try catch
-        // get the values from the cookie
-        // see if the user is valid
-        user = await models.User.findByLogin(cookie.name);
-        if(user !== null)
-        {
-            // if the password was changed since the cookie was created
-            if(new Date(cookie.created) < new Date(user.passwordUpdatedAt))
-            {
-                console.log("Cookie invalid");
-            }
-            else if(moment(new Date(user.lastLogin)).add(1, 'd').toDate() < new Date())
-            {
-                console.log("Cookie invalid");
-            }
-            else if(user.passwordAttempts >= 5)
-            {
-                console.log("Cookie invalid");
-            }
-            else
-            {
-                valid = true;
-            }
-        }
-        else
-        {
-            console.log("Cookie invalid");
-        }
-    }
-    if(valid)
-    {
-        res.locals.requester = user.username;
-        res.locals.userId = user.id;
-    }
-    else {
-        res.locals.requester = "";
-        res.locals.userId = undefined;
-    }
-    next();
-};
-
 // function to increment user login attempts
 const updateUserLoginAttempts = async (user, username) => {
     try
@@ -259,5 +204,5 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
     return true;
 };
 
-export {router, verifyLogin, validateIntegerParameter, validateUsernameParameter,
+export {router, validateIntegerParameter, validateUsernameParameter,
      validateStringParameter, validateEmailParameter, updateUserLoginAttempts};

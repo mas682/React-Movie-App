@@ -6,7 +6,7 @@ import {createReview, updateReview} from './reviewCreator.js';
 // function to post a reviews
 const review = (req, res, next) =>
 {
-    let requester = res.locals.requester;
+    let requester = (req.session.user === undefined) ? "" : req.session.user;
     res.locals.file = "reviews";
     if(requester !== "")
     {
@@ -140,7 +140,7 @@ const removePost = async (req, res, requester) =>
     else
     {
         // currently only let the user who posted the review remove it
-        if(res.locals.userId !== review.user.id)
+        if(req.session.userId !== review.user.id)
         {
             res.status(401).send({
                 message: "You cannot remove another users post",
@@ -178,7 +178,7 @@ const addLike = async (requester, req, res) =>
 {
     res.locals.function = "addLike";
     // get the requesters id
-    let userId = res.locals.userId;
+    let userId = req.session.userId;
     let reviewId = req.body.reviewId;
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
@@ -231,7 +231,7 @@ const removeLike = async (requester, req, res) =>
 {
     res.locals.function = "removeLike";
     // the id of the requester
-    let userId = res.locals.userId;
+    let userId = req.session.userId;
     let reviewId = req.body.reviewId;
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
@@ -287,7 +287,7 @@ const getLikes = async (requester, req, res) =>
     if(!valid) return;
     // test to make sure valid number as well
     // holds the ids of the users who are already followed
-    let usersWhoLiked = await models.Review.getLikes(reviewId, res.locals.userId, models);
+    let usersWhoLiked = await models.Review.getLikes(reviewId, req.session.userId, models);
     if(usersWhoLiked === null)
     {
         res.status(404).send({
@@ -321,7 +321,7 @@ const postComment = async (req, res, requester) =>
     let reviewId = req.body.reviewId;
     valid = validateIntegerParameter(res, reviewId, requester, "The review ID for the comment is invalid");
     if(!valid) return;
-    let review = await models.Review.getReviewForComment(reviewId, res.locals.userId, undefined, models);
+    let review = await models.Review.getReviewForComment(reviewId, req.session.userId, undefined, models);
     if(review === null)
     {
         res.status(404).send({
@@ -334,7 +334,7 @@ const postComment = async (req, res, requester) =>
     {
         let newComment = await models.Comment.create({
             value: comment,
-            userId: res.locals.userId,
+            userId: req.session.userId,
             reviewId: reviewId,
         });
         res.status(201).send({
@@ -437,7 +437,7 @@ const removeComment = async (req, res, requester) =>
                     requester: requester
                 });
             }
-            else if(review.userId === res.locals.userId)
+            else if(review.userId === req.session.userId)
             {
                 commentRemoval(res, comment, requester);
             }
@@ -489,7 +489,7 @@ const getComments = async(req, res, requester) =>
     let reviewId = req.params.reviewId;
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID to get the comments is invalid");
     if(!valid) return;
-    let comments = await models.Review.getReviewComments(reviewId, res.locals.userId, models);
+    let comments = await models.Review.getReviewComments(reviewId, req.session.userId, models);
     if(comments === null)
     {
         res.status(404).send({

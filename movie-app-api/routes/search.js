@@ -5,7 +5,7 @@ const Op = require('Sequelize').Op;
 
 // function to get movies and return them to the client
 const searchHandler = (req, res, next) => {
-	let requester = res.locals.requester;
+	let requester = (req.session.user === undefined) ? "" : req.session.user;
 	// set which file the request is for
 	res.locals.file = "search";
 	selectPath(requester, req, res, next);

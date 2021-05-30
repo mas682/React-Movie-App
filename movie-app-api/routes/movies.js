@@ -5,7 +5,7 @@ const Op = require('Sequelize').Op;
 
 // function to get movies and return them to the client
 const movieHandler = (req, res, next) => {
-	let requester = res.locals.requester;
+	let requester = (req.session.user === undefined) ? "" : req.session.user;
 	// set which file the request is for
 	res.locals.file = "movies";
 	selectPath(requester, req, res, next);
@@ -263,7 +263,7 @@ const getWatchList = async(requester, req, res) =>
 	if(!valid) return;
 	max = (max > 50) ? 50 : max;
 	// returns an empty array if no movies found that are associted with the user even if the userId doesn't exist
-	let movies = await models.User.getWatchList(res.locals.userId, models, max, offset);
+	let movies = await models.User.getWatchList(req.session.userId, models, max, offset);
 	res.status(200).send({
 		message: "Users watch list successfully found",
 		requester: requester,
@@ -281,7 +281,7 @@ const getWatchedList = async(requester, req, res) =>
 	valid = validateIntegerParameter(res, offset, requester, "The offset for the movies to return is invalid", 0, undefined);
 	if(!valid) return;
 	max = (max > 50) ? 50 : max;
-	let movies = await models.User.getWatchedList(res.locals.userId, models, max, offset);
+	let movies = await models.User.getWatchedList(req.session.userId, models, max, offset);
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
 	res.status(200).send({
 		message: "Users watched list successfully found",
@@ -297,7 +297,7 @@ const addToWatchList = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
     if(!valid) return;
     // get the movie along with the user if they alraedy have it on their watch list
-    let movie = await models.Movies.getMovieWithUserWatchList(movieId, res.locals.userId, models);
+    let movie = await models.Movies.getMovieWithUserWatchList(movieId, req.session.userId, models);
     if(movie === null || movie === undefined)
     {
         res.status(404).send({
@@ -309,7 +309,7 @@ const addToWatchList = async (requester, req, res) =>
     if(movie.dataValues.UserWatchLists.length < 1)
     {
         //let result = await user.addWatchList(movie.id);
-        let result = await movie.addUserWatchLists(res.locals.userId);
+        let result = await movie.addUserWatchLists(req.session.userId);
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watch list.  Error code: 1500";
@@ -345,7 +345,7 @@ const removeFromWatchList = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
     if(!valid) return;
     // get the movie along with the user if they alraedy have it on their watch list
-    let movie = await models.Movies.getMovieWithUserWatchList(movieId, res.locals.userId, models);
+    let movie = await models.Movies.getMovieWithUserWatchList(movieId, req.session.userId, models);
     if(movie === null || movie === undefined)
     {
         res.status(404).send({
@@ -357,7 +357,7 @@ const removeFromWatchList = async (requester, req, res) =>
     if(movie.dataValues.UserWatchLists.length > 0)
     {
         //let result = await user.addWatchList(movie.id);
-        let result = await movie.removeUserWatchLists(res.locals.userId);
+        let result = await movie.removeUserWatchLists(req.session.userId);
         if(result === undefined)
         {
 			let message = "A error occurred trying to remove the movie from the users watch list.  Error code: 1501"
@@ -392,7 +392,7 @@ const addToWatched = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
     if(!valid) return;
     // get the movie along with the user if they alraedy have it on their watch list
-    let movie = await models.Movies.getMovieWtithUserWatched(movieId, res.locals.userId, models);
+    let movie = await models.Movies.getMovieWtithUserWatched(movieId, req.session.userId, models);
     if(movie === null || movie === undefined)
     {
         res.status(404).send({
@@ -404,7 +404,7 @@ const addToWatched = async (requester, req, res) =>
     if(movie.dataValues.UsersWhoWatched.length < 1)
     {
         //let result = await user.addWatchList(movie.id);
-        let result = await movie.addUsersWhoWatched(res.locals.userId);
+        let result = await movie.addUsersWhoWatched(req.session.userId);
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watched list.  Error code: 1502"
@@ -440,7 +440,7 @@ const removeFromWatched = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
     if(!valid) return;
     // get the movie along with the user if they alraedy have it on their watch list
-    let movie = await models.Movies.getMovieWtithUserWatched(movieId, res.locals.userId, models);
+    let movie = await models.Movies.getMovieWtithUserWatched(movieId, req.session.userId, models);
     if(movie === null || movie === undefined)
     {
         res.status(404).send({
@@ -452,7 +452,7 @@ const removeFromWatched = async (requester, req, res) =>
     if(movie.dataValues.UsersWhoWatched.length > 0)
     {
         //let result = await user.addWatchList(movie.id);
-        let result = await movie.removeUsersWhoWatched(res.locals.userId);
+        let result = await movie.removeUsersWhoWatched(req.session.userId);
         if(result === undefined)
         {
 			let message = "A error occurred trying to remove the movie from the users watched list.  Error code: 1503"
@@ -483,6 +483,8 @@ const removeFromWatched = async (requester, req, res) =>
 
 const getFeaturedMovies = async(requester, req, res) =>
 {
+	let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+	console.log("IP: " + ip);
 	res.locals.function = "getFeaturedMovies";
 	let movies = await models.FeaturedMovies.getMovies(models);
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist

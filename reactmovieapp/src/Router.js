@@ -93,7 +93,7 @@ class Routes extends React.Component
             // make the cookie invalid if the user was signed out
             if(username === "")
             {
-                document.cookie = "MovieAppCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                //document.cookie = "MovieAppCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             }
             this.setState({
                 currentUser: username,

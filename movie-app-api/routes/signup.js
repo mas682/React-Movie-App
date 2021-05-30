@@ -299,9 +299,12 @@ const createUser = async (requester, req, res) =>
     {
         // delete the user out of the UserVerificationCodes table
         tempUser.destroy();
-        let value = JSON.stringify({name: user.username, email: user.email, id: user.id});
-        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-        res.cookie('MovieAppCookie', value, {domain: 'localhost', path: '/', maxAge: 86400000, signed: true});
+        //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+        // create users session
+        req.session.userId = user.id;
+        req.session.user = user.username;
+        req.session.created = new Date();
+        req.session.admin = user.admin;
         console.log("Adding 5 second delay");
         setTimeout(() =>{
             res.status(201).send({

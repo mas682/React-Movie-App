@@ -1,5 +1,4 @@
 import models, { sequelize } from './src/models';
-import {verifyLogin} from './routes/globals.js';
 import {badPageHandler} from './routes/badPageHandler.js';
 import {errorHandler} from './routes/errorHandler.js';
 
@@ -14,6 +13,12 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var app = express();
 const fetch = require('node-fetch');
+
+
+const redis = require('redis');
+const session = require('express-session');
+let RedisStore = require('connect-redis')(session);
+let redisClient = redis.createClient();
 
 // to run, npm run server
 
@@ -38,8 +43,26 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser(config.app.cookieKey));
 app.use(express.static(path.join(__dirname, 'public')));
+
+//app.use(cookieParser(config.app.cookieKey));
+app.use(
+    session({
+        //secret: ['veryimportantsecret','notsoimportantsecret','highlyprobablysecret'],
+        secret: config.app.cookieKey,
+        name: config.app.cookieName,
+        saveUninitialized: false,
+        cookie: {
+            httpOnly: true,
+            // should be true
+            secure: false,
+            sameSite: true,
+            maxAge: 600000 // Time is in miliseconds
+        },
+        store: new RedisStore({ client: redisClient ,ttl: 86400}),
+        resave: false
+    })
+);
 
 // all routes to the server will go through this router
 app.use('/', indexRouter);
