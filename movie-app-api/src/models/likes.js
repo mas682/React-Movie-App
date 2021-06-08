@@ -1,4 +1,3 @@
-
 const like = (sequelize, DataTypes) => {
     const Likes = sequelize.define('like', {
         userId: {

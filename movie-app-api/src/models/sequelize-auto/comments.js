@@ -31,6 +31,7 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'comments',
     schema: 'public',
+    hasTrigger: true,
     timestamps: true,
     indexes: [
       {
@@ -38,6 +39,12 @@ module.exports = function(sequelize, DataTypes) {
         unique: true,
         fields: [
           { name: "id" },
+        ]
+      },
+      {
+        name: "fki_comments_reviewId_fkey",
+        fields: [
+          { name: "reviewId" },
         ]
       },
     ]

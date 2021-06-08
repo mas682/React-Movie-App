@@ -8,7 +8,7 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true
     },
     value: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(20),
       allowNull: true,
       unique: "movieTags_value_key"
     }
@@ -16,6 +16,7 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'movieTags',
     schema: 'public',
+    hasTrigger: true,
     timestamps: true,
     indexes: [
       {

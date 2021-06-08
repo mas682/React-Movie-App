@@ -1,10 +1,13 @@
 var DataTypes = require("sequelize").DataTypes;
+var _FeaturedMovies = require("./FeaturedMovies");
 var _Genres = require("./Genres");
 var _MovieGenreTables = require("./MovieGenreTables");
 var _MoviesProviders = require("./MoviesProviders");
 var _Retailers = require("./Retailers");
 var _ReviewBadTags = require("./ReviewBadTags");
 var _ReviewGoodTags = require("./ReviewGoodTags");
+var _TempVerificationCodes = require("./TempVerificationCodes");
+var _UserSessions = require("./UserSessions");
 var _UserVerificationCodes = require("./UserVerificationCodes");
 var _UserVerificationQuestions = require("./UserVerificationQuestions");
 var _UsersFriends = require("./UsersFriends");
@@ -19,12 +22,15 @@ var _users = require("./users");
 var _usersWhoWatcheds = require("./usersWhoWatcheds");
 
 function initModels(sequelize) {
+  var FeaturedMovies = _FeaturedMovies(sequelize, DataTypes);
   var Genres = _Genres(sequelize, DataTypes);
   var MovieGenreTables = _MovieGenreTables(sequelize, DataTypes);
   var MoviesProviders = _MoviesProviders(sequelize, DataTypes);
   var Retailers = _Retailers(sequelize, DataTypes);
   var ReviewBadTags = _ReviewBadTags(sequelize, DataTypes);
   var ReviewGoodTags = _ReviewGoodTags(sequelize, DataTypes);
+  var TempVerificationCodes = _TempVerificationCodes(sequelize, DataTypes);
+  var UserSessions = _UserSessions(sequelize, DataTypes);
   var UserVerificationCodes = _UserVerificationCodes(sequelize, DataTypes);
   var UserVerificationQuestions = _UserVerificationQuestions(sequelize, DataTypes);
   var UsersFriends = _UsersFriends(sequelize, DataTypes);
@@ -64,6 +70,8 @@ function initModels(sequelize) {
   movieTags.hasMany(ReviewBadTags, { as: "ReviewBadTags", foreignKey: "movieTagId"});
   ReviewGoodTags.belongsTo(movieTags, { as: "movieTag", foreignKey: "movieTagId"});
   movieTags.hasMany(ReviewGoodTags, { as: "ReviewGoodTags", foreignKey: "movieTagId"});
+  FeaturedMovies.belongsTo(movies, { as: "movie", foreignKey: "movieId"});
+  movies.hasOne(FeaturedMovies, { as: "FeaturedMovie", foreignKey: "movieId"});
   MovieGenreTables.belongsTo(movies, { as: "movie", foreignKey: "movieId"});
   movies.hasMany(MovieGenreTables, { as: "MovieGenreTables", foreignKey: "movieId"});
   MoviesProviders.belongsTo(movies, { as: "Movie", foreignKey: "MovieId"});
@@ -86,6 +94,10 @@ function initModels(sequelize) {
   users.hasMany(ReviewBadTags, { as: "ReviewBadTags", foreignKey: "userId"});
   ReviewGoodTags.belongsTo(users, { as: "user", foreignKey: "userId"});
   users.hasMany(ReviewGoodTags, { as: "ReviewGoodTags", foreignKey: "userId"});
+  TempVerificationCodes.belongsTo(users, { as: "user", foreignKey: "userId"});
+  users.hasMany(TempVerificationCodes, { as: "TempVerificationCodes", foreignKey: "userId"});
+  UserSessions.belongsTo(users, { as: "user", foreignKey: "userId"});
+  users.hasMany(UserSessions, { as: "UserSessions", foreignKey: "userId"});
   UserVerificationQuestions.belongsTo(users, { as: "user", foreignKey: "userId"});
   users.hasMany(UserVerificationQuestions, { as: "UserVerificationQuestions", foreignKey: "userId"});
   UsersFriends.belongsTo(users, { as: "followed", foreignKey: "followedId"});
@@ -104,12 +116,15 @@ function initModels(sequelize) {
   users.hasMany(usersWhoWatcheds, { as: "usersWhoWatcheds", foreignKey: "userId"});
 
   return {
+    FeaturedMovies,
     Genres,
     MovieGenreTables,
     MoviesProviders,
     Retailers,
     ReviewBadTags,
     ReviewGoodTags,
+    TempVerificationCodes,
+    UserSessions,
     UserVerificationCodes,
     UserVerificationQuestions,
     UsersFriends,

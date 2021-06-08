@@ -1,6 +1,12 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('ReviewGoodTags', {
+  return sequelize.define('TempVerificationCodes', {
+    id: {
+      autoIncrement: true,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true
+    },
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -9,37 +15,36 @@ module.exports = function(sequelize, DataTypes) {
         key: 'id'
       }
     },
-    reviewId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      references: {
-        model: 'reviews',
-        key: 'id'
-      }
+    code: {
+      type: DataTypes.STRING(6),
+      allowNull: false
     },
-    movieTagId: {
+    verificationAttempts: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      references: {
-        model: 'movieTags',
-        key: 'id'
-      }
+      defaultValue: 0
+    },
+    codesResent: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    expiresAt: {
+      type: DataTypes.DATE,
+      allowNull: false
     }
   }, {
     sequelize,
-    tableName: 'ReviewGoodTags',
+    tableName: 'TempVerificationCodes',
     schema: 'public',
     hasTrigger: true,
     timestamps: true,
     indexes: [
       {
-        name: "ReviewGoodTags_pkey",
+        name: "TempVerificationCodes_pkey",
         unique: true,
         fields: [
-          { name: "reviewId" },
-          { name: "movieTagId" },
+          { name: "id" },
         ]
       },
     ]

@@ -31,6 +31,7 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'ReviewBadTags',
     schema: 'public',
+    hasTrigger: true,
     timestamps: true,
     indexes: [
       {

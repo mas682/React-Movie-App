@@ -23,6 +23,7 @@ module.exports = function(sequelize, DataTypes) {
     sequelize,
     tableName: 'likes',
     schema: 'public',
+    hasTrigger: true,
     timestamps: true,
     indexes: [
       {

@@ -8,25 +8,25 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: true
     },
     username: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(20),
       allowNull: false,
       unique: "users_username_key"
     },
     email: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(50),
       allowNull: false,
       unique: "users_email_key"
     },
     password: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(44),
       allowNull: false
     },
     firstName: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(30),
       allowNull: false
     },
     lastName: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(30),
       allowNull: false
     },
     profileDescription: {
@@ -46,17 +46,42 @@ module.exports = function(sequelize, DataTypes) {
     lastLogin: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.literal('CURRENT_DATE')
+      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
     },
     passwordUpdatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: Sequelize.literal('CURRENT_DATE')
+      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+    },
+    verificationLocked: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    verificationAttempts: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    passwordAttempts: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    picture: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      unique: "users_picture_key"
+    },
+    salt: {
+      type: DataTypes.STRING(44),
+      allowNull: false,
+      unique: "users_salt_key"
     }
   }, {
     sequelize,
     tableName: 'users',
     schema: 'public',
+    hasTrigger: true,
     timestamps: true,
     indexes: [
       {
@@ -67,10 +92,24 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
+        name: "users_picture_key",
+        unique: true,
+        fields: [
+          { name: "picture" },
+        ]
+      },
+      {
         name: "users_pkey",
         unique: true,
         fields: [
           { name: "id" },
+        ]
+      },
+      {
+        name: "users_salt_key",
+        unique: true,
+        fields: [
+          { name: "salt" },
         ]
       },
       {

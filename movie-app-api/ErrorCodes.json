@@ -147,6 +147,10 @@
         "1012":{
             "Description":"Some unexpected error occurred when a user tried to update their picture on the database",
             "function":"updateImage"
+        },
+        "1013":{
+            "Description":"The salt used to encrypt the users password was already in use",
+            "function":"updatePassword"
         }
     },
     "reviewCreator.js":{
@@ -233,6 +237,10 @@
         "1306": {
             "Description":"When removing a temporary user the update to the database failed",
             "function":"removeTempUser"
+        },
+        "1307": {
+            "Description":"A user was attempting to sign up but the salt to encrypt their password was already in use",
+            "function":"createTempUser"
         }
     },
     "sequelizeErrorHandler.js":{

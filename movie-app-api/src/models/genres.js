@@ -1,5 +1,3 @@
-
-
 const genre = (sequelize, DataTypes) => {
     const Genre = sequelize.define('Genre', {
         id: {

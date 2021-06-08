@@ -151,6 +151,34 @@ const ERRORS = {
                 }
             }
         },
+        "UserVerificationCodes_salt_key":{
+            defaultMessage: "Some unexpected error occurred on the server",
+            defaultLogMessage: "The salt to encrypt a temp users password was already in use",
+            defaultStatus: 500,
+            defaultLog: true,
+            defaultErrorCode: undefined,
+            functions: {
+                signup: {
+                    createTempUser: {
+                        errorCode: 1307
+                    }
+                }
+            }
+        },
+        "users_salt_key":{
+            defaultMessage: "Some unexpected error occurred on the server",
+            defaultLogMessage: "The salt used to encrypt a users password was already in use",
+            defaultStatus: 500,
+            defaultLog: true,
+            defaultErrorCode: undefined,
+            functions: {
+                profile: {
+                    updatePassword: {
+                        errorCode: 1307
+                    }
+                }
+            }
+        },
         default: {
             defaultMessage: "Some unexpected error occurred on the server",
             defaultLogMessage: "Some unexpected unique constraint error occurred",

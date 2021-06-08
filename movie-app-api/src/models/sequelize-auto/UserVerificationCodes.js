@@ -13,17 +13,42 @@ module.exports = function(sequelize, DataTypes) {
     },
     userEmail: {
       type: DataTypes.STRING(30),
-      allowNull: false,
-      unique: "UserVerificationCodes_userEmail_key"
+      allowNull: false
     },
     username: {
       type: DataTypes.STRING(20),
+      allowNull: false
+    },
+    verificationAttempts: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      unique: "UserVerificationCodes_username_key"
+      defaultValue: 0
+    },
+    codesResent: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
     },
     code: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING(6),
       allowNull: false
+    },
+    password: {
+      type: DataTypes.STRING(44),
+      allowNull: false
+    },
+    firstName: {
+      type: DataTypes.STRING(30),
+      allowNull: false
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    salt: {
+      type: DataTypes.STRING(44),
+      allowNull: false,
+      unique: "UserVerificationCodes_salt_key"
     }
   }, {
     sequelize,
@@ -40,17 +65,10 @@ module.exports = function(sequelize, DataTypes) {
         ]
       },
       {
-        name: "UserVerificationCodes_userEmail_key",
+        name: "UserVerificationCodes_salt_key",
         unique: true,
         fields: [
-          { name: "userEmail" },
-        ]
-      },
-      {
-        name: "UserVerificationCodes_username_key",
-        unique: true,
-        fields: [
-          { name: "username" },
+          { name: "salt" },
         ]
       },
     ]

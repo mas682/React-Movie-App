@@ -11,12 +11,14 @@ CREATE TABLE public."UserVerificationCodes"
     "verificationAttempts" integer NOT NULL DEFAULT 0,
     "codesResent" integer NOT NULL DEFAULT 0,
     "expiresAt" timestamp with time zone NOT NULL,
-    password character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    password character varying(44) COLLATE pg_catalog."default" NOT NULL,
+    salt character varying(44) COLLATE pg_catalog."default" NOT NULL,
     "firstName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
     "lastName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
-    CONSTRAINT "UserVerificationCodes_pkey" PRIMARY KEY (id)
+    CONSTRAINT "UserVerificationCodes_pkey" PRIMARY KEY (id),
+    CONSTRAINT "UserVerificationCodes_salt_key" UNIQUE (salt)
 )
 
 TABLESPACE pg_default;
@@ -53,6 +55,16 @@ CREATE TRIGGER set_timestamp
     ON public."UserVerificationCodes"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();
+
+-- Trigger: validate_salt_not_found
+
+-- DROP TRIGGER validate_salt_not_found ON public."UserVerificationCodes";
+
+CREATE TRIGGER validate_salt_not_found
+    BEFORE INSERT OR UPDATE OF salt
+    ON public."UserVerificationCodes"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_validate_salt_not_found_users();
 
 -- Trigger: valide_user_not_found
 

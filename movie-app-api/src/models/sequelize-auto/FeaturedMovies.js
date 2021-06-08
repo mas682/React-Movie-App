@@ -1,45 +1,45 @@
 const Sequelize = require('sequelize');
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('ReviewGoodTags', {
-    userId: {
+  return sequelize.define('FeaturedMovies', {
+    id: {
+      autoIncrement: true,
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: 'users',
-        key: 'id'
-      }
+      primaryKey: true
     },
-    reviewId: {
+    movieId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
       references: {
-        model: 'reviews',
+        model: 'movies',
         key: 'id'
-      }
+      },
+      unique: "FeaturedMovies_uniq_key"
     },
-    movieTagId: {
+    order: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      primaryKey: true,
-      references: {
-        model: 'movieTags',
-        key: 'id'
-      }
+      defaultValue: 0
     }
   }, {
     sequelize,
-    tableName: 'ReviewGoodTags',
+    tableName: 'FeaturedMovies',
     schema: 'public',
     hasTrigger: true,
     timestamps: true,
     indexes: [
       {
-        name: "ReviewGoodTags_pkey",
+        name: "FeaturedMovies_pkey",
         unique: true,
         fields: [
-          { name: "reviewId" },
-          { name: "movieTagId" },
+          { name: "id" },
+        ]
+      },
+      {
+        name: "FeaturedMovies_uniq_key",
+        unique: true,
+        fields: [
+          { name: "movieId" },
         ]
       },
     ]

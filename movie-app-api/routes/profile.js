@@ -2,6 +2,7 @@ import {validateUsernameParameter, validateIntegerParameter,
     validateStringParameter, validateEmailParameter, updateUserLoginAttempts} from './globals.js';
 import models, { sequelize } from '../src/models';
 import {removeImage} from './fileHandler.js';
+import {hash, checkHashedValue} from '../src/crypto.js';
 
 
 
@@ -566,9 +567,13 @@ const updatePassword = async (requester, req, res) =>
             });
             return;
         }
-        if(user.password === req.body.oldPassword)
+        let result = checkHashedValue(req.body.oldPassword, "password", user.salt);
+        if(user.password === result.value)
         {
-            user.password = req.body.newPass;
+            let password = req.body.newPass;
+            let result = hash(password, "password");
+            user.salt = result.salt;
+            user.password = result.value;
             user.lastLogin = new Date();
             user.passwordUpdatedAt = new Date();
             await user.save();

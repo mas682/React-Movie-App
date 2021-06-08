@@ -6,6 +6,7 @@ import {validateStringParameter, validateEmailParameter, validateUsernameParamet
 import {emailHandler} from './EmailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
+import {checkHashedValue} from '../src/crypto.js';
 
 
 // function to see if a user can login and returns a cookie to use
@@ -124,8 +125,9 @@ const checkLogin = async (req, res) =>
     // make sure the user is not null, not locked out of account
     let userValid = await validateUser(res, username, user, true);
     if(!userValid) return;
+    let result = checkHashedValue(password, "password", user.salt);
     // if the password is correct
-    if(user.password === password)
+    if(result.value === user.password)
     {
         try
         {
@@ -150,6 +152,7 @@ const checkLogin = async (req, res) =>
         req.session.user = user.username;
         req.session.created = new Date();
         req.session.admin = user.admin;
+        // going to also include iv for user here after encrypted...
         setTimeout(() =>{
             res.status(200).send({
                 message: "User authenticated",

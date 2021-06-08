@@ -20,8 +20,12 @@ const user = (sequelize, DataTypes) => {
           unique: "users_email_key"
         },
         password: {
-          type: DataTypes.STRING(20),
+          type: DataTypes.STRING(44),
           allowNull: false
+        },
+        salt: {
+            type: DataTypes.STRING(44),
+            allowNull: false
         },
         firstName: {
           type: DataTypes.STRING(20),

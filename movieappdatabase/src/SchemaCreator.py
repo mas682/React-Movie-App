@@ -88,6 +88,8 @@ if __name__ == '__main__':
         '../triggerFunctions/trigger_set_created_timestamp.sql',
         '../triggerFunctions/trigger_set_verification_code_expiration.sql',
         '../triggerFunctions/trigger_validate_user_not_found.sql',
+        '../triggerFunctions/trigger_validate_salt_not_found_temp_users',
+        '../triggerFunctions/trigger_validate_salt_not_found_users',
         '../Sequences/comments_id_seq.sql',
         '../Sequences/Genres_id_seq.sql',
         '../Sequences/movieTags_id_seq.sql',
@@ -117,6 +119,7 @@ if __name__ == '__main__':
         '../tables/UserVerificationCodes.sql',
         '../tables/UserVerificationQuestions.sql',
         '../tables/VerificationQuestions.sql',
-        '../tables/FeaturedMovies.sql'
+        '../tables/FeaturedMovies.sql',
+        '../tables/UserSessions.sql'
     ]
     controllerFunction(fileNames)

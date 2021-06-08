@@ -2,6 +2,9 @@ import {validateIntegerParameter, validateUsernameParameter, validateStringParam
 import models, { sequelize } from '../src/models';
 const Op = require('Sequelize').Op;
 
+// for testing
+import {hash, encrypt, decrypt} from '../src/crypto.js';
+
 
 // function to get movies and return them to the client
 const movieHandler = (req, res, next) => {
@@ -483,8 +486,13 @@ const removeFromWatched = async (requester, req, res) =>
 
 const getFeaturedMovies = async(requester, req, res) =>
 {
-	let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-	console.log("IP: " + ip);
+	// for testing
+	let val = hash("testpass", "password");
+	let result1 = encrypt("testencryption....", "session");
+	console.log(result1);
+	let result2 = decrypt(result1.encryptedData, result1.iv, "session");
+	console.log(result2);
+	//console.log(val);
 	res.locals.function = "getFeaturedMovies";
 	let movies = await models.FeaturedMovies.getMovies(models);
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist

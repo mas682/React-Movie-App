@@ -6,11 +6,12 @@ const moment = require('moment');
 import {validateStringParameter, validateUsernameParameter, validateEmailParameter,
         validateIntegerParameter} from './globals.js';
 import {emailHandler} from './EmailHandler.js';
+import {hash} from '../src/crypto.js';
 
 
 // function to create an account
 const signUp = (req, res, next) => {
-    let requester = res.locals.requester;
+    let requester = (req.session.user === undefined) ? "" : req.session.user;
     // set which file the request is for
     res.locals.file = "signup";
     if(requester !== "")
@@ -89,17 +90,23 @@ const createTempUser = async (requester, req, res) =>
     if(!valid) return;
     valid = validateStringParameter(res, lastName, 1, 20, "", "Last name must be between 1-20 characters");
     if(!valid) return;
+
+    let hashResult = hash(password, "password");
+    console.log(hashResult.salt);
+
     let result = await models.UserVerificationCodes.create({
         userEmail: email,
         username: username,
         code: nanoid(),
-        password: password,
+        password: hashResult.value,
+        salt: hashResult.salt,
         firstName: firstName,
         lastName: lastName
     });
+
     // may want to verify result not null? or undefined?
     // then send email to user
-    let emailResult = await sendVerificationEmail(result.code, result.userEmail);
+    let emailResult = await sendVerificationEmail(result.code, result.userEmail, res);
     console.log("Code: " + result.code);
     console.log("Adding 5 second delay");
     setTimeout(() =>{
@@ -175,7 +182,7 @@ const resendVerificationCode = async (requester, req, res) =>
         });
     }
 
-    let emailResult = await sendVerificationEmail(result.code, result.userEmail);
+    let emailResult = await sendVerificationEmail(result.code, result.userEmail, res);
     console.log("Code: " + result.code);
     console.log("Adding 5 second delay");
     setTimeout(() =>{
@@ -283,6 +290,11 @@ const createUser = async (requester, req, res) =>
         }
     }
 
+    // delete the user out of the UserVerificationCodes table
+    // could have a race condition issue here if user not totally out of database before doing the
+    // create
+    await tempUser.destroy();
+
     // find the a user with the username or email sent
     const [user, created] = await models.User.findOrCreate({where: {[Op.or]: [{username: username}, {email: email}]},
         defaults: {
@@ -291,15 +303,13 @@ const createUser = async (requester, req, res) =>
             password: tempUser.password,
             firstName: tempUser.firstName,
             lastName: tempUser.lastName,
+            salt: tempUser.salt,
             verified: true
         }}
     );
     // if the user did not already exist and was successfully created
     if(created)
     {
-        // delete the user out of the UserVerificationCodes table
-        tempUser.destroy();
-        //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
         // create users session
         req.session.userId = user.id;
         req.session.user = user.username;
@@ -316,8 +326,6 @@ const createUser = async (requester, req, res) =>
     // the user existed
     else
     {
-        // delete the user out of the UserVerificationCodes table
-        tempUser.destroy();
         if(user.username == req.body.username)
         {
             res.status(409).send({
@@ -385,7 +393,7 @@ const removeTempUser = async (requester, req, res) =>
 };
 
 
-const sendVerificationEmail = async (verificationCode, email) =>
+const sendVerificationEmail = async (verificationCode, email, res) =>
 {
     res.locals.function = "sendVerificationEmail";
     let header = "Movie Fanatics Verification Code";
