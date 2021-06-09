@@ -6,7 +6,7 @@ import {validateStringParameter, validateEmailParameter, validateUsernameParamet
 import {emailHandler} from './EmailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
-import {checkHashedValue} from '../src/crypto.js';
+import {checkHashedValue, encrypt, decrypt} from '../src/crypto.js';
 
 
 // function to see if a user can login and returns a cookie to use
@@ -122,6 +122,16 @@ const checkLogin = async (req, res) =>
     if(!valid) return;
     // find a user by their login
     let user = await models.User.findByLogin(req.body.username);
+    let user2 = await models.User.findOne({
+        where: { username: req.body.username },
+        include: {
+            model: models.UserSessions,
+            as: "sessions",
+            // include the user
+            required: false
+        },
+    });
+    console.log(user2);
     // make sure the user is not null, not locked out of account
     let userValid = await validateUser(res, username, user, true);
     if(!userValid) return;
@@ -152,6 +162,32 @@ const checkLogin = async (req, res) =>
         req.session.user = user.username;
         req.session.created = new Date();
         req.session.admin = user.admin;
+        console.log(req.session.id);
+        let encResult = encrypt(req.session.id, "session");
+        console.log(encResult);
+        await models.UserSessions.create({
+            session: encResult.encryptedData,
+            iv: encResult.iv,
+            userId: user.id,
+            expiresAt: moment(new Date()).add(60, 'm').toDate()
+        });
+        /*
+            plan:
+            when checking session on request, if session older than x hours, refresh id
+                - will have to remove session from database
+                - will pull based on user id and iv
+                - then add new user id/iv pair to database
+            need a max expiration date
+                - maybe 2 days?
+                    - ex. if user is active, new session will be constantly generated
+                    - every x hours
+                    - but say they are inactive for 6 hours, will still allow cookie to
+                    - be valid, but on the first request they send, issue a new one
+                    - unless they are passed the max expiration date, in which case they
+                    - must login
+                - will need a job to clean up table so that expired sessions are removed from
+                - database
+        */
         // going to also include iv for user here after encrypted...
         setTimeout(() =>{
             res.status(200).send({

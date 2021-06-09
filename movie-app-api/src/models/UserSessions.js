@@ -1,13 +1,14 @@
-const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('UserSessions', {
+
+
+const userSessions = (sequelize, DataTypes) => {
+  const UserSessions = sequelize.define('UserSessions', {
     session: {
-      type: DataTypes.STRING(32),
+      type: DataTypes.STRING(64),
       allowNull: false,
       unique: "UserSessions_session_userId_key"
     },
     iv: {
-      type: DataTypes.STRING(32),
+      type: DataTypes.STRING(24),
       allowNull: false,
       unique: "UserSessions_iv_key"
     },
@@ -25,7 +26,12 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
-    }
+  },
+  expiresAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+  }
   }, {
     sequelize,
     tableName: 'UserSessions',
@@ -64,4 +70,12 @@ module.exports = function(sequelize, DataTypes) {
       },
     ]
   });
+
+  UserSessions.associate = models => {
+      UserSessions.belongsTo(models.User, {as: "user", onDelete: 'CASCADE', foreignKey: "userId"});
+  };
+
+  return UserSessions;
 };
+
+export default userSessions;

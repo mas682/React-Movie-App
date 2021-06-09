@@ -24,7 +24,8 @@ const models = {
     ReviewBadTags: sequelize.import('./reviewBadTags'),
     UserVerificationCodes: sequelize.import('./UserVerificationCodes'),
     TempVerificationCodes: sequelize.import('./TempVerificationCodes'),
-    FeaturedMovies: sequelize.import('./FeaturedMovies')
+    FeaturedMovies: sequelize.import('./FeaturedMovies'),
+    UserSessions: sequelize.import('./UserSessions')
 };
 
 Object.keys(models).forEach(key => {

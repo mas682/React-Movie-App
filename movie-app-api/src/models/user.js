@@ -155,6 +155,7 @@ const user = (sequelize, DataTypes) => {
         User.hasMany(models.Review, { as: "userReviews", foreignKey: "userId"});
         User.hasMany(models.UserWatchList, { as: "userWatchLists", foreignKey: "userId"});
         User.hasMany(models.UsersWhoWatched, { as: "usersWhoWatcheds", foreignKey: "userId"});
+        User.hasMany(models.UserSessions, {as: "sessions", onDelete: 'CASCADE', foreignKey: "userId"});
     };
 
     // method to find a user by username or email if email were in the

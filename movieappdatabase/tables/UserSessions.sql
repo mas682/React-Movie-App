@@ -5,11 +5,12 @@
 CREATE TABLE public."UserSessions"
 (
     id bigint NOT NULL DEFAULT nextval('"UserSessions_id_seq"'::regclass),
-    session character varying(32) COLLATE pg_catalog."default" NOT NULL,
+    session character varying(64) COLLATE pg_catalog."default" NOT NULL,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
-    iv character varying(32) COLLATE pg_catalog."default" NOT NULL,
+    iv character varying(24) COLLATE pg_catalog."default" NOT NULL,
     "userId" bigint NOT NULL,
+    "expiresAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "UserSessions_pkey" PRIMARY KEY (id),
     CONSTRAINT "UserSessions_iv_key" UNIQUE (iv),
     CONSTRAINT "UserSessions_session_key" UNIQUE (session),
