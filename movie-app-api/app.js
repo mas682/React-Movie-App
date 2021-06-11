@@ -10,6 +10,7 @@ var path = require('path');
 var logger = require('morgan');
 var cors = require('cors');
 var indexRouter = require('./routes/index');
+const moment = require('moment');
 var app = express();
 const fetch = require('node-fetch');
 
@@ -55,7 +56,8 @@ app.use(
             // should be true
             secure: false,
             sameSite: true,
-            maxAge: 600000 // Time is in miliseconds
+            //maxAge: 600000, // Time is in miliseconds,
+            expires: moment(new Date()).add(10, 'm').toDate()
         },
         store: new RedisStore({ client: redisClient ,ttl: 86400}),
         resave: false

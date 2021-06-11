@@ -7,6 +7,7 @@ import {emailHandler} from './EmailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
 import {checkHashedValue, encrypt, decrypt} from '../src/crypto.js';
+import {createSession} from '../src/sessions.js';
 
 
 // function to see if a user can login and returns a cookie to use
@@ -154,41 +155,9 @@ const checkLogin = async (req, res) =>
             console.log("(Error code: 1603) Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name);
             console.log(errorObject);
         }
-        // create the cookie with expiration in 1 day
-        //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-        let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-        console.log("IP: " + ip);
-        req.session.userId = user.id;
-        req.session.user = user.username;
-        req.session.created = new Date();
-        req.session.admin = user.admin;
-        console.log(req.session.id);
-        let encResult = encrypt(req.session.id, "session");
-        console.log(encResult);
-        await models.UserSessions.create({
-            session: encResult.encryptedData,
-            iv: encResult.iv,
-            userId: user.id,
-            expiresAt: moment(new Date()).add(60, 'm').toDate()
-        });
-        /*
-            plan:
-            when checking session on request, if session older than x hours, refresh id
-                - will have to remove session from database
-                - will pull based on user id and iv
-                - then add new user id/iv pair to database
-            need a max expiration date
-                - maybe 2 days?
-                    - ex. if user is active, new session will be constantly generated
-                    - every x hours
-                    - but say they are inactive for 6 hours, will still allow cookie to
-                    - be valid, but on the first request they send, issue a new one
-                    - unless they are passed the max expiration date, in which case they
-                    - must login
-                - will need a job to clean up table so that expired sessions are removed from
-                - database
-        */
-        // going to also include iv for user here after encrypted...
+        // create session for user
+        createSession(user, req);
+
         setTimeout(() =>{
             res.status(200).send({
                 message: "User authenticated",
