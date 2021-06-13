@@ -6,14 +6,17 @@ const config = require('../Config.json');
 
 
 
-const createSession = async(user, req) =>
+const createSession = async(user, req, res) =>
 {
+    res.locals.function = "regenerateSession";
+    res.locals.file = "sessions.js";
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     let duration = config.sessions.maxDuration * -1;
     req.session.userId = user.id;
     req.session.user = user.username;
     req.session.created = (moment(req.session.cookie._expires).add(duration, 'ms')).toDate();
     req.session.admin = user.admin;
+    req.session.ip = ip;
     // get the number of minutes to subtract from the expiration
     let minutesToSubtract = (config.sessions.maxDurationMinutes - config.sessions.refreshMinutes) * -1;
     // _expires refers to when the cookie expires here
@@ -21,65 +24,119 @@ const createSession = async(user, req) =>
     req.session.refreshAt = moment(req.session.cookie._expires).add(minutesToSubtract, 'm').toDate();
     console.log(req.session);
     let expiration = moment(req.session.cookie._expires).toString();
-    console.log("Cookie created: " + moment(req.session.created).toString());
-    console.log("Cookie expires: " + expiration)
+    console.log("Session created: " + moment(req.session.created).toString());
+    console.log("Session expires: " + expiration);
     console.log("Refresh at: " + (moment(req.session.cookie._expires).add(minutesToSubtract, 'm')).toString());
     // encrypt the session to store in the database
     let encryptedRes = encrypt(req.session.id, "session");
     console.log(encryptedRes);
-    await models.UserSessions.create({
+    let newSession = await models.UserSessions.create({
         session: encryptedRes.encryptedData,
         iv: encryptedRes.iv,
         userId: user.id,
-        expiresAt: req.session._expires
+        expiresAt: req.session.cookie._expires
     });
+    req.session.sessionId = newSession.id;
+    console.log("New session id: " + req.session.sessionId);
+    // save the session now so the session creation time is right
+    await saveSession(req);
 }
 
 // function to check if a session needs to be regenerated
 // const checkSession
 
 
-// const regenerateSession
-/* see movies.js...
-let sessionUserId = req.session.userId;
-let sessionUser = req.session.user;
-let created = req.session.created;
-let admin = req.session.admin;
-let expires = req.session.expires;
-// _expires here refers to when the cookie was created
-console.log(moment(req.session._expires).toString());
-let movies = await models.FeaturedMovies.getMovies(models);
-let maxage = req.session.cookie.originalMaxAge;
-req.session.regenerate(() => {
+const regenerateSession = async(req, res) =>
+{
+    res.locals.function = "regenerateSession";
+    res.locals.file = "sessions.js";
+    // extract the values out of the session to put in the new session
+    let sessionUserId = req.session.userId;
+    if(sessionUserId === undefined) return;
+    let sessionUser = req.session.user;
+    let created = req.session.created;
+    let admin = req.session.admin;
+    let oldSessionId = req.session.sessionId;
+    // may want to validate what ip this came from...
+    let ip = req.session.ip;
+    console.log("Old session expires: " + moment(req.session.cookie._expires).toString());
+    // make sure this is throwing a error....
+    await sessionGenerator(req);
+    // at this point, have a session with a new id
+    req.session.userId = sessionUserId;
+    req.session.user = sessionUser;
+    req.session.created = created;
+    req.session.admin = admin;
+    req.session.cookie.maxAge = config.sessions.maxDuration;
+    // when the session should be refreshed
+    let minutesToSubtract = (config.sessions.maxDurationMinutes - config.sessions.refreshMinutes) * -1;
+    console.log("New session expires at: " + (moment(req.session.cookie._expires).toString()));
+    console.log("Refresh at: " + (moment(req.session.cookie._expires).add(minutesToSubtract, 'm')).toString());
+    req.session.refreshAt = (moment(req.session.cookie._expires).add(minutesToSubtract, 'm')).toDate();
 
-    console.log(requester);
-    if(requester !== "")
-    {
-        req.session.userId = sessionUserId;
-        req.session.user = sessionUser;
-        req.session.created = created;
-        req.session.admin = admin;
-        // when the session should be refreshed
-        req.session.refreshAt = (moment(req.session._expires).add(1,'m')).toDate();
-        //req.session._expires = moment(new Date()).add(2, 'h');
-        req.session.cookie.originalMaxAge = 600000;
-    }
-    //need to determine if just using maxAge is okay as setting expires works both times..
-    console.log(req.session);
-    // see what the new cookie expires at value should be
-    console.log("Cookie expires: " + (moment(req.session._expires).add(600000,'ms')).toString());
-    console.log("Refresh at: " + (moment(req.session._expires).add(1,'m')).toString())
-    // returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
-    res.status(200).send({
-        message: "Featured movies successfully found",
-        requester: requester,
-        movies: movies
+    // need to delete the old session in the database and add the new one...
+    console.log("Old session id: " + oldSessionId);
+    let result = await models.UserSessions.destroy({
+        where: {
+            id:1
+        }
     });
+    if(result !== 1)
+    {
+        console.log("(Error code: 2100) Some unexpected result was returned when removing a users session: ");
+        console.log(result);
+    }
 
-})
+    // encrypt the session to store in the database
+    let encryptedRes = encrypt(req.session.id, "session");
+    req.session.iv = encryptedRes.iv;
+    console.log(encryptedRes);
+    let newSession = await models.UserSessions.create({
+        session: encryptedRes.encryptedData,
+        iv: encryptedRes.iv,
+        userId: sessionUserId,
+        expiresAt: req.session.cookie._expires
+    });
+    req.session.sessionId = newSession.id;
+    console.log("New session id: " + req.session.sessionId);
+
+}
+
+async function sessionGenerator(req)
+{
+    let promise = await new Promise((resolve, reject) => {
+        req.session.regenerate((err) => {
+                if(err)
+                {
+                    reject(err);
+                }
+                resolve();
+            });
+    })
+    .catch((err) => {
+        throw err;
+    });
+    return promise;
+}
+
+async function saveSession(req)
+{
+    let promise = await new Promise((resolve, reject) => {
+        req.session.save((err) => {
+                if(err)
+                {
+                    reject(err);
+                }
+                resolve();
+            });
+    })
+    .catch((err) => {
+        throw err;
+    });
+    return promise;
+}
 
 
-*/
 
 
 // may want to make this a reusable function to remove multiple sessions?
@@ -93,4 +150,4 @@ req.session.regenerate(() => {
 
 
 
-export {createSession};
+export {createSession, regenerateSession};

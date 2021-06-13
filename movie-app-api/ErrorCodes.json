@@ -258,5 +258,11 @@
         "1900":{
             "Description":"Some unexpected error occurred"
         }
+    },
+    "sessions.js":{
+        "2100":{
+            "Description": "When generating a new session for a user, there was a error removing the old session",
+            "function":"regenerateSession"
+        }
     }
 }

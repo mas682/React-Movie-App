@@ -5,6 +5,7 @@ const Op = require('Sequelize').Op;
 // for testing
 import {hash, encrypt, decrypt} from '../src/crypto.js';
 const moment = require('moment');
+import {regenerateSession} from '../src/sessions.js';
 
 
 // function to get movies and return them to the client
@@ -487,15 +488,8 @@ const removeFromWatched = async (requester, req, res) =>
 
 const getFeaturedMovies = async(requester, req, res) =>
 {
-	// for testing
-	let val = hash("testpass", "password");
-	let result1 = encrypt("testencryption....", "session");
-	console.log(result1);
-	let result2 = decrypt(result1.encryptedData, result1.iv, "session");
-	console.log(result2);
-	//console.log(val);
 	res.locals.function = "getFeaturedMovies";
-	console.log(req.session);
+	//console.log(req.session);
 	//req.session.cookie.expiresAt = moment(new Date()).add(60, 'm').toDate();
 	let sessionUserId = req.session.userId;
 	let sessionUser = req.session.user;
@@ -503,9 +497,11 @@ const getFeaturedMovies = async(requester, req, res) =>
 	let admin = req.session.admin;
 	let expires = req.session.expires;
 	// _expires here refers to when the cookie was created
-	console.log(moment(req.session._expires).toString());
+	//console.log(moment(req.session._expires).toString());
 	let movies = await models.FeaturedMovies.getMovies(models);
 	let maxage = req.session.cookie.originalMaxAge;
+	await regenerateSession(req, res);
+	/*
 	req.session.regenerate(() => {
 
 		console.log(requester);
@@ -533,14 +529,13 @@ const getFeaturedMovies = async(requester, req, res) =>
 		});
 
 	})
-	/*
+	*/
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
 	res.status(200).send({
 		message: "Featured movies successfully found",
 		requester: requester,
 		movies: movies
 	});
-	*/
 };
 
 

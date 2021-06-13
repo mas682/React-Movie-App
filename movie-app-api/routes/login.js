@@ -132,7 +132,6 @@ const checkLogin = async (req, res) =>
             required: false
         },
     });
-    console.log(user2);
     // make sure the user is not null, not locked out of account
     let userValid = await validateUser(res, username, user, true);
     if(!userValid) return;
@@ -156,14 +155,14 @@ const checkLogin = async (req, res) =>
             console.log(errorObject);
         }
         // create session for user
-        createSession(user, req);
+        await createSession(user, req, res);
 
         setTimeout(() =>{
             res.status(200).send({
                 message: "User authenticated",
                 requester: user.username,
             });
-        }, 3000);
+        }, 0);
     }
     else
     {
