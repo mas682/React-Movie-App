@@ -8,7 +8,7 @@ CREATE TABLE public."JobDetails"
     "startTime" timestamp with time zone,
     "lastActive" timestamp with time zone,
     finished timestamp with time zone,
-    state character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    state character varying(30) COLLATE pg_catalog."default" NOT NULL,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
     id bigint NOT NULL DEFAULT nextval('"JobDetails_id_seq"'::regclass),

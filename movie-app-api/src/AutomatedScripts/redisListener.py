@@ -6,8 +6,11 @@ import time
 from multiprocessing import Process, Pipe
 import logging
 import os
+from datetime import datetime
 
 from config import config
+
+from Database import Database
 
 
 def redisListener(queue):
@@ -72,11 +75,43 @@ def checkStatus(recv_proc, sender_proc):
 
 
 
+
+#next steps...
+#need to make a reusable function to connect to database - done
+#then need a reusable function to check if job should run from database
+#then need a reusable function to update ScheduledJobs table
+# add lock files...
+#also need a function to update JobDetails table
+#then fix all the redis stuff..
+
+
 if __name__ == '__main__':
     logpath = os.path.dirname(os.path.realpath(__file__))
     filename = os.path.basename(__file__)
     logFile = filename.replace("py", "log")
     fullLogPath = logpath + "\\" + logFile
+    lockFileName = filename + ".loc"
+    lockFilePath = logpath + "\\" + lockFileName
+    lockExists = False
+    if(os.path.exists(lockFilePath)):
+        print("Lock exists...")
+        lockExists = True
+    else:
+        print("Lock does not exist")
+
+    lockFile = None
+    #try:
+    lockFile = open(lockFilePath, "w+")
+    #except:
+    #    print("Error occurred opening lock file...")
+
+    if(not lockExists):
+        lockFile.write("Starting controller function at: " + str(datetime.now()) + "\n")
+    else:
+        lockFile.write("Skipping execution at: " + str(datetime.now() + " as lock file exists") + "\n")
+        exit("Lock file already exists")
+
+
 
     logging.basicConfig(filename=fullLogPath, filemode='a', level=logging.INFO,
     format='%(levelname)s: %(asctime)s.%(msecs)03d | %(caller)s | %(message)s',
@@ -84,6 +119,26 @@ if __name__ == '__main__':
     logger = logging.getLogger()
     logger.info("TEST", extra={"caller": "Controller"})
     logger.info("Test2", extra={"caller": "Sender"})
+
+
+    db = Database(config())
+    result = db.connect()
+    print("Connection result:")
+    print(str(result))
+    db.getJobEnabled(2)
+    result = db.startJob(2)
+    print("START JOB RESULT:")
+    print(result)
+    jobDetailsId = result["jobDetailsId"]
+    result = db.updateRunningJob(2, jobDetailsId)
+    print("Update running job result:")
+    print(result)
+    result = db.stopJob(2, jobDetailsId, "Finished Unsuccessfully")
+    print("Stop Job Result:")
+    print(result)
+    result = db.disconnect()
+    print("Disconnect job result:")
+    print(str(result))
 
     recv_conn, sender_conn = Pipe(False)
     # pipe between
