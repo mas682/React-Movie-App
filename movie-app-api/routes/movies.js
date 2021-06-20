@@ -5,7 +5,7 @@ const Op = require('Sequelize').Op;
 // for testing
 import {hash, encrypt, decrypt} from '../src/crypto.js';
 const moment = require('moment');
-import {regenerateSession} from '../src/sessions.js';
+import {regenerateSession, checkSession} from '../src/sessions.js';
 
 
 // function to get movies and return them to the client
@@ -500,7 +500,7 @@ const getFeaturedMovies = async(requester, req, res) =>
 	//console.log(moment(req.session._expires).toString());
 	let movies = await models.FeaturedMovies.getMovies(models);
 	let maxage = req.session.cookie.originalMaxAge;
-	await regenerateSession(req, res);
+	//await checkSession(req, res);
 	/*
 	req.session.regenerate(() => {
 

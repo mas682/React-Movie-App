@@ -13,12 +13,14 @@ var indexRouter = require('./routes/index');
 const moment = require('moment');
 var app = express();
 const fetch = require('node-fetch');
+import {regenerateSession, checkSession} from './src/sessions.js';
 
 
 const redis = require('redis');
 const session = require('express-session');
 let RedisStore = require('connect-redis')(session);
 let redisClient = redis.createClient();
+const sessionHelpers = require('./src/sessions.js');
 
 // to run, npm run server
 
@@ -51,18 +53,22 @@ app.use(
         secret: config.app.cookieKey,
         name: config.app.cookieName,
         saveUninitialized: false,
+        rolling: true,
         cookie: {
             httpOnly: true,
             // should be true
             secure: false,
             sameSite: true,
-            //maxAge: 600000, // Time is in miliseconds,
-            expires: moment(new Date()).add(10, 'm').toDate()
+            maxAge: 600000, // Time is in miliseconds,
+            // to set a expiration date...
+            //expires: moment(new Date()).add(10, 'm').toDate()
         },
         store: new RedisStore({ client: redisClient ,ttl: 86400}),
         resave: false
     })
 );
+
+app.use(sessionHelpers.checkSession);
 
 // all routes to the server will go through this router
 app.use('/', indexRouter);

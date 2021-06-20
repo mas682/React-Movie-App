@@ -101,6 +101,7 @@ if __name__ == '__main__':
         '../Sequences/UserVerificationQuestions_id_seq.sql',
         '../Sequences/VerificationQuestions_id_seq.sql',
         '../Sequences/FeaturedMovies_id_seq.sql',
+        '../Sequences/ScheduledJobs_id_seq.sql',
         '../tables/Users.sql',
         '../tables/Movies.sql',
         '../tables/Reviews.sql',
@@ -120,6 +121,7 @@ if __name__ == '__main__':
         '../tables/UserVerificationQuestions.sql',
         '../tables/VerificationQuestions.sql',
         '../tables/FeaturedMovies.sql',
-        '../tables/UserSessions.sql'
+        '../tables/UserSessions.sql',
+        '..tables/ScheduledJobs.sql'
     ]
     controllerFunction(fileNames)
