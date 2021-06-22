@@ -93,47 +93,80 @@ if __name__ == '__main__':
     lockFileName = filename + ".loc"
     lockFilePath = logpath + "\\" + lockFileName
     lockExists = False
+    jobId = 2
+
+    logging.basicConfig(filename=fullLogPath, filemode='a', level=logging.INFO,
+    format='%(levelname)s: %(asctime)s.%(msecs)03d | %(caller)s | %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger()
+
+    # connect to the database
+    db = Database(config())
+    result = db.connect()
+    # if the connection failed
+    if(result["connection"] is None or result["cur"] is None or len(result["failedOutput"]) > 0):
+        print("Connection to database failed...")
+        logger.info("Failed to establish connection to database when starting script", extra={"caller": "Controller"})
+        for line in result["failedOutput"]:
+            logger.info(line, extra={"caller": "Controller"})
+        db.disconnect()
+        exit()
+
+    # start the job
+    result = db.startJob(jobId)
+    if(len(result["failedOutput"]) > 0):
+        print("Failed to start job")
+        logger.info("Failed to start the job with the following error(s):", extra={"caller": "Controller"})
+        for line in result["failedOutput"]:
+            logger.info(line, extra={"caller": "Controller"})
+        exit()
+    elif(result["jobDetailsId"] == -1):
+        print("Failed to start job with a -1 job details id")
+        logger.info("A job details id of -1 was returned when trying to start the job", extra={"caller": "Controller"})
+        exit()
+    elif(not result["enabled"]):
+        print("Job is not enabled")
+        # may want to log this but for now just exit
+        exit()
+
+    jobDetailsId = result["jobDetailsId"]
+
+    # at this point, the job is marked as started
     if(os.path.exists(lockFilePath)):
         print("Lock exists...")
         lockExists = True
     else:
         print("Lock does not exist")
 
-    lockFile = None
-    #try:
-    lockFile = open(lockFilePath, "w+")
-    #except:
-    #    print("Error occurred opening lock file...")
+    with open(lockFilePath, "w+") as lockFile:
+        if(not lockExists):
+            lockFile.write("Starting controller function at: " + str(datetime.now()) + "\n")
+            lockFile.close()
+        else:
+            # check number of lines in lock file...
+            lockFile.write("Skipping execution at: " + str(datetime.now()) + " as lock file exists\n")
+            lockFile.close()
 
-    if(not lockExists):
-        lockFile.write("Starting controller function at: " + str(datetime.now()) + "\n")
-    else:
-        lockFile.write("Skipping execution at: " + str(datetime.now() + " as lock file exists") + "\n")
-        exit("Lock file already exists")
+    if(lockExists):
+        result = db.stopJob(jobDetailsId, "Finished - Locked")
+        if(len(result["failedOutput"]) > 0):
+            logger.info("Failed to mark job with the job details id of(" + str(jobDetailsId) + " as finished)", extra={"caller": "Controller"})
+            for line in result["failedOutput"]:
+                logger.info(line, extra={"caller": "Controller"})
+            result = db.disconnect()
+            if(len(result["failedOutput"]) > 0):
+                logger.info("Failed to disconnect from the database)", extra={"caller": "Controller"})
+                for line in result["failedOutput"]:
+                    logger.info(line, extra={"caller": "Controller"})
+        exit()
+
+    # break everything above into functions somehow...
 
 
-
-    logging.basicConfig(filename=fullLogPath, filemode='a', level=logging.INFO,
-    format='%(levelname)s: %(asctime)s.%(msecs)03d | %(caller)s | %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S')
-    logger = logging.getLogger()
-    logger.info("TEST", extra={"caller": "Controller"})
-    logger.info("Test2", extra={"caller": "Sender"})
-
-
-    db = Database(config())
-    result = db.connect()
-    print("Connection result:")
-    print(str(result))
-    db.getJobEnabled(2)
-    result = db.startJob(2)
-    print("START JOB RESULT:")
-    print(result)
-    jobDetailsId = result["jobDetailsId"]
-    result = db.updateRunningJob(2, jobDetailsId)
+    result = db.updateRunningJob(jobDetailsId)
     print("Update running job result:")
     print(result)
-    result = db.stopJob(2, jobDetailsId, "Finished Unsuccessfully")
+    result = db.stopJob(jobDetailsId, "Finished Unsuccessfully")
     print("Stop Job Result:")
     print(result)
     result = db.disconnect()
@@ -208,3 +241,6 @@ if __name__ == '__main__':
         # if a negative value, terminated by some signal
         print(str(sender_proc.is_alive()))
         print(str(sender_proc.exitcode))
+
+    # remove the loc file
+    os.remove(lockFilePath)

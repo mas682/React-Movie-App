@@ -7,8 +7,6 @@ CREATE TABLE public."ScheduledJobs"
     "jobName" character varying(50) COLLATE pg_catalog."default" NOT NULL,
     "jobDescription" character varying(100) COLLATE pg_catalog."default",
     "lastRun" timestamp with time zone,
-    "lastActive" timestamp with time zone,
-    "lastFinished" timestamp with time zone,
     "nextRun" timestamp with time zone,
     "Enabled" boolean NOT NULL DEFAULT false,
     "createdAt" timestamp with time zone NOT NULL,

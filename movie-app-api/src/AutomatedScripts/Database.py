@@ -14,8 +14,6 @@ class Database:
 
     def connect(self):
         failedOutput = []
-        successfulOutput = []
-        failedOutput.append("Connecting to database\n")
         try:
             print(self._host)
             self._connection=psycopg2.connect(host=self._host,port=self._port,database=self._database,user=self._user,password=self._password)
@@ -38,15 +36,20 @@ class Database:
         failedOutput.append("\nDisconnectiong from database\n")
         try:
             # close the communication with the PostgreSQL
-            self._cur.close()
+            if(self._cur is not None):
+                self._cur.close()
         except (Exception, psycopg2.DatabaseError) as error:
             failedOutput.append("An error occurred closing the cursor to the database: \n")
             failedOutput.append(str(error))
             failedOutput.append("\n")
         finally:
             if self._connection is not None:
-                self._connection.close()
-                failedOutput.append('Database connection closed\n')
+                try:
+                    self._connection.close()
+                except (Exception, psycopg2.DatabaseError) as error:
+                    failedOutput.append("An error occurred closing the connection to the database: \n")
+                    failedOutput.append(str(error))
+                    failedOutput.append("\n")
         self._connection = None
         self._cur = None
         return {"failedOutput": failedOutput}
@@ -82,11 +85,9 @@ class Database:
             self._cur.execute("""
                 UPDATE public."ScheduledJobs"
                    SET
-                         "lastRun"=CURRENT_TIMESTAMP,
-    	                 "lastActive"=CURRENT_TIMESTAMP,
-                         "lastFinished"=null
+                         "lastRun"=CURRENT_TIMESTAMP
                    WHERE id=""" + id + """ and "Enabled" = True
-                   Returning "Enabled","lastActive";
+                   Returning "Enabled","lastRun";
             """)
             result = self._cur.fetchall()
             if(len(result) > 0):
@@ -118,79 +119,41 @@ class Database:
 
     # this function updates the database to indicate this job is still active
     # and this returns whether the database still has this job enabled
-    def updateRunningJob(self, id, jobDetailsId):
+    def updateRunningJob(self, jobDetailsId):
         failedOutput = []
-        enabled = False
-        lastActive = None
-        id = str(id)
         jobDetailsId = str(jobDetailsId)
+
         try:
             self._cur.execute("""
-                UPDATE public."ScheduledJobs"
-	               SET
-		                 "lastActive"=CURRENT_TIMESTAMP
-	               WHERE id=""" + id + """
-	               Returning "Enabled", "lastActive";
+                UPDATE public."JobDetails"
+                   SET
+                         "lastActive"=CURRENT_TIMESTAMP
+                   WHERE id=""" + jobDetailsId + """;
             """)
-            result = self._cur.fetchall()
-            if(len(result) > 0):
-                if(result[0][0]):
-                    enabled = True
         except (Exception, psycopg2.DatabaseError) as error:
-            failedOutput.append("An error occurred trying to update the status of the job with id(" + id  + ")\n")
+            failedOutput.append("An error occurred trying to update the job details of the job with job detials id(" + jobDetailsId  + ")\n")
             failedOutput.append(str(error))
 
-        # if last active is not none, could successfully update database
-        if(lastActive is not None):
-            try:
-                self._cur.execute("""
-                    UPDATE public."JobDetails"
-                       SET
-        	                 "lastActive"=CURRENT_TIMESTAMP
-                       WHERE id=""" + jobDetailsId + """;
-                """)
-            except (Exception, psycopg2.DatabaseError) as error:
-                failedOutput.append("An error occurred trying to update the job details of the job with job detials id(" + jobDetailsId  + ")\n")
-                failedOutput.append(str(error))
-
-        return {"failedOutput": failedOutput, "enabled": enabled}
+        return {"failedOutput": failedOutput}
 
 
     # function to update a database to indicate a job finsihed
     # state is the state of the job finishing...successful, failed, etc.
-    def stopJob(self, id, jobDetailsId, state):
+    def stopJob(self, jobDetailsId, state):
         failedOutput = []
-        endTime = None
-        id = str(id)
         jobDetailsId = str(jobDetailsId)
+
         try:
             self._cur.execute("""
-                UPDATE public."ScheduledJobs"
-                   SET
-    	                 "lastActive"=CURRENT_TIMESTAMP,
-                         "lastFinished"=CURRENT_TIMESTAMP
-                   WHERE id=""" + id + """
-                   Returning "lastFinished";
+                UPDATE public."JobDetails"
+                           SET
+            	                 "lastActive"=CURRENT_TIMESTAMP,
+                                 "finished"=CURRENT_TIMESTAMP,
+                                 "state"='""" + state + """'
+                           WHERE id=""" + jobDetailsId + """;
             """)
-            result = self._cur.fetchall()
-            if(len(result) > 0):
-                endTime = str(result[0][0])
         except (Exception, psycopg2.DatabaseError) as error:
-            failedOutput.append("An error occurred trying mark the job with the job id(" + id  + ") as finished\n")
+            failedOutput.append("An error occurred trying mark the job with the job details id(" + jobDetailsId  + ") as finished\n")
             failedOutput.append(str(error))
-
-        if(endTime is not None):
-            try:
-                self._cur.execute("""
-                    UPDATE public."JobDetails"
-                               SET
-                	                 "lastActive"='""" + endTime + """',
-                                     "finished"='""" + endTime + """',
-                                     "state"='""" + state + """'
-                               WHERE id=""" + jobDetailsId + """;
-                """)
-            except (Exception, psycopg2.DatabaseError) as error:
-                failedOutput.append("An error occurred trying mark the job with the job details id(" + jobDetailsId  + ") as finished\n")
-                failedOutput.append(str(error))
 
         return {"failedOutput":failedOutput}
