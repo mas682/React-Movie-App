@@ -11,6 +11,7 @@ from datetime import datetime
 from config import config
 
 from Database import Database
+import Utils
 
 
 def redisListener(queue):
@@ -75,104 +76,7 @@ def checkStatus(recv_proc, sender_proc):
 
 
 
-
-#next steps...
-#need to make a reusable function to connect to database - done
-#then need a reusable function to check if job should run from database
-#then need a reusable function to update ScheduledJobs table
-# add lock files...
-#also need a function to update JobDetails table
-#then fix all the redis stuff..
-
-
-if __name__ == '__main__':
-    logpath = os.path.dirname(os.path.realpath(__file__))
-    filename = os.path.basename(__file__)
-    logFile = filename.replace("py", "log")
-    fullLogPath = logpath + "\\" + logFile
-    lockFileName = filename + ".loc"
-    lockFilePath = logpath + "\\" + lockFileName
-    lockExists = False
-    jobId = 2
-
-    logging.basicConfig(filename=fullLogPath, filemode='a', level=logging.INFO,
-    format='%(levelname)s: %(asctime)s.%(msecs)03d | %(caller)s | %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S')
-    logger = logging.getLogger()
-
-    # connect to the database
-    db = Database(config())
-    result = db.connect()
-    # if the connection failed
-    if(result["connection"] is None or result["cur"] is None or len(result["failedOutput"]) > 0):
-        print("Connection to database failed...")
-        logger.info("Failed to establish connection to database when starting script", extra={"caller": "Controller"})
-        for line in result["failedOutput"]:
-            logger.info(line, extra={"caller": "Controller"})
-        db.disconnect()
-        exit()
-
-    # start the job
-    result = db.startJob(jobId)
-    if(len(result["failedOutput"]) > 0):
-        print("Failed to start job")
-        logger.info("Failed to start the job with the following error(s):", extra={"caller": "Controller"})
-        for line in result["failedOutput"]:
-            logger.info(line, extra={"caller": "Controller"})
-        exit()
-    elif(result["jobDetailsId"] == -1):
-        print("Failed to start job with a -1 job details id")
-        logger.info("A job details id of -1 was returned when trying to start the job", extra={"caller": "Controller"})
-        exit()
-    elif(not result["enabled"]):
-        print("Job is not enabled")
-        # may want to log this but for now just exit
-        exit()
-
-    jobDetailsId = result["jobDetailsId"]
-
-    # at this point, the job is marked as started
-    if(os.path.exists(lockFilePath)):
-        print("Lock exists...")
-        lockExists = True
-    else:
-        print("Lock does not exist")
-
-    with open(lockFilePath, "w+") as lockFile:
-        if(not lockExists):
-            lockFile.write("Starting controller function at: " + str(datetime.now()) + "\n")
-            lockFile.close()
-        else:
-            # check number of lines in lock file...
-            lockFile.write("Skipping execution at: " + str(datetime.now()) + " as lock file exists\n")
-            lockFile.close()
-
-    if(lockExists):
-        result = db.stopJob(jobDetailsId, "Finished - Locked")
-        if(len(result["failedOutput"]) > 0):
-            logger.info("Failed to mark job with the job details id of(" + str(jobDetailsId) + " as finished)", extra={"caller": "Controller"})
-            for line in result["failedOutput"]:
-                logger.info(line, extra={"caller": "Controller"})
-            result = db.disconnect()
-            if(len(result["failedOutput"]) > 0):
-                logger.info("Failed to disconnect from the database)", extra={"caller": "Controller"})
-                for line in result["failedOutput"]:
-                    logger.info(line, extra={"caller": "Controller"})
-        exit()
-
-    # break everything above into functions somehow...
-
-
-    result = db.updateRunningJob(jobDetailsId)
-    print("Update running job result:")
-    print(result)
-    result = db.stopJob(jobDetailsId, "Finished Unsuccessfully")
-    print("Stop Job Result:")
-    print(result)
-    result = db.disconnect()
-    print("Disconnect job result:")
-    print(str(result))
-
+def main():
     recv_conn, sender_conn = Pipe(False)
     # pipe between
     parent_sender_conn, sender_parent_conn = Pipe()
@@ -243,4 +147,80 @@ if __name__ == '__main__':
         print(str(sender_proc.exitcode))
 
     # remove the loc file
-    os.remove(lockFilePath)
+    #os.remove(lockFilePath)
+
+
+#next steps...
+#then fix all the redis stuff..
+
+
+if __name__ == '__main__':
+    logpath = os.path.dirname(os.path.realpath(__file__))
+    filename = os.path.basename(__file__)
+    logFile = filename.replace("py", "log")
+    fullLogPath = logpath + "\\" + logFile
+    lockFileName = filename + ".loc"
+    lockFilePath = logpath + "\\" + lockFileName
+    lockExists = False
+    jobId = 2
+    failed = False
+
+    logging.basicConfig(filename=fullLogPath, filemode='a', level=logging.INFO,
+    format='%(levelname)s: %(asctime)s.%(msecs)03d | %(caller)s | %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S')
+    # added to log message to indicate which process wrote this
+    extras = {"caller":"Controller"}
+    logger = logging.getLogger()
+
+    # connect to the database
+    db = Database(config())
+    result = Utils.connectToDatabase(db, logger, extras)
+    if(not result["created"]): exit(1)
+
+    # start the job
+    jobDetailsId = Utils.startJob(db, logger, jobId, extras)
+    if(jobDetailsId < 0): exit(1)
+
+    # at this point, the job is marked as started
+    lockExists = Utils.getLockFile(lockFilePath, 12)
+    if(lockExists):
+        result = Utils.stopJob(db, logger, jobDetailsId, "Finished - Locked", extras)
+        if(result):
+            exit()
+        else:
+            exit(1)
+
+    result = "Finished Unsuccessfully"
+    # call scripts main function....
+    try:
+        print("Calling main script")
+        # result = ...
+        # this should be returned by the main function
+        result = "Finished Successfully"
+
+    except:
+        print("Some error occurred in the main script")
+        # log the errors here...
+        # do a throw in the try to test
+
+
+    # if an error occurrs outside of the try/catches, you have amuch bigger with the database
+    # can't capture this as their is some issue with the databse or the credentials themselves
+
+    # clean up
+    if(result == "Finished Successfully"):
+        # remove lock file
+        try:
+            os.remove(lockFilePath)
+        except:
+            logger.info("Failed to remove lock file", extra=extras)
+
+    result = Utils.stopJob(db, logger, jobDetailsId, result, extras)
+    if(not result): failed = True
+    result = Utils.disconnectFromDatabase(db, logger, extras)
+    if(not result): failed = True
+
+    if(failed):
+        exit(1)
+    else:
+        exit()

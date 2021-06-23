@@ -15,7 +15,6 @@ class Database:
     def connect(self):
         failedOutput = []
         try:
-            print(self._host)
             self._connection=psycopg2.connect(host=self._host,port=self._port,database=self._database,user=self._user,password=self._password)
             # automatically commit changes
             self._connection.autocommit = True
@@ -33,7 +32,6 @@ class Database:
 
     def disconnect(self):
         failedOutput = []
-        failedOutput.append("\nDisconnectiong from database\n")
         try:
             # close the communication with the PostgreSQL
             if(self._cur is not None):
