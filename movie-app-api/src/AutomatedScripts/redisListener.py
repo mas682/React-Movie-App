@@ -7,6 +7,8 @@ from multiprocessing import Process, Pipe
 import logging
 import os
 from datetime import datetime
+import sys
+import traceback
 
 from config import config
 
@@ -164,6 +166,8 @@ if __name__ == '__main__':
     lockExists = False
     jobId = 2
     failed = False
+    startTime = datetime.now()
+    print("Script starting at: " + str(startTime))
 
     logging.basicConfig(filename=fullLogPath, filemode='a', level=logging.INFO,
     format='%(levelname)s: %(asctime)s.%(msecs)03d | %(caller)s | %(message)s',
@@ -182,7 +186,7 @@ if __name__ == '__main__':
     if(jobDetailsId < 0): exit(1)
 
     # at this point, the job is marked as started
-    lockExists = Utils.getLockFile(lockFilePath, 12)
+    lockExists = Utils.getLockFile(lockFilePath, 2)
     if(lockExists):
         result = Utils.stopJob(db, logger, jobDetailsId, "Finished - Locked", extras)
         if(result):
@@ -196,12 +200,13 @@ if __name__ == '__main__':
         print("Calling main script")
         # result = ...
         # this should be returned by the main function
+        #raise NameError('HiThere')
         result = "Finished Successfully"
 
     except:
         print("Some error occurred in the main script")
-        # log the errors here...
-        # do a throw in the try to test
+        traceback.print_exc()
+        logger.info("An unexpected error occurred in the main script:", exc_info=sys.exc_info(), extra=extras)
 
 
     # if an error occurrs outside of the try/catches, you have amuch bigger with the database
@@ -219,6 +224,10 @@ if __name__ == '__main__':
     if(not result): failed = True
     result = Utils.disconnectFromDatabase(db, logger, extras)
     if(not result): failed = True
+
+    startTime = datetime(month=6,day=22,year=2021)
+    endTime = datetime.now()
+    Utils.getTimeDifference(startTime, endTime)
 
     if(failed):
         exit(1)

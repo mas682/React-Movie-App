@@ -3,3 +3,4 @@ Config.json
 *.loc
 *.log
 __pycache__
+*.pyc
