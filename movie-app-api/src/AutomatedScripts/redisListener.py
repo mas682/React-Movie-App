@@ -10,8 +10,8 @@ from datetime import datetime
 import sys
 import traceback
 
+# my imports
 from config import config
-
 from Database import Database
 import Utils
 
@@ -67,21 +67,37 @@ def receiver(connection, parent_conn):
 
 
 # function to make sure processes still running and that the job itself should still be running
-def checkStatus(recv_proc, sender_proc):
+def checkStatus(recv_proc, sender_proc, logger, extras):
+    enabled = True
     if(not recv_proc.is_alive()):
-        return False
+        logger.info("The receiver process shut off with the following exit code: " + recv_proc.exitcode, exc_info=sys.exc_info(), extra=extras)
+        enabled =  False
     if(not sender_proc.is_alive()):
-        print(str(sender_proc.exitcode))
-        return False
+        logger.info("The receiver process shut off with the following exit code: " + sender_proc.exitcode, exc_info=sys.exc_info(), extra=extras)
+        enabled =  False
     # make a call to database to see if this job is still turned on
-    return True
+    return enabled
 
 
 
-def main():
+def main(logger, db, extras, jobId):
+    enabled = Utils.getJobEnabled(db, logger, jobId, extras)
+    if(enabled["error"]):
+        print("An error occurred when trying to determine if the job is enabled")
+        # stop the process...
+        # mark job as failed
+    elif(not enabled["enabled"]):
+        print("The job is not enabled")
+        # stop the process
+        # mark the job as finished successfully
+    else:
+        print("Job is enabled")
+
+    # pipe between two child processes
     recv_conn, sender_conn = Pipe(False)
-    # pipe between
+    # pipe between parent and sender child process
     parent_sender_conn, sender_parent_conn = Pipe()
+    # pipe between parent and receiver process
     parent_recv_conn, recv_parent_conn = Pipe()
 
     # create the sender process
@@ -95,17 +111,33 @@ def main():
 
     exitLoop = False
     message = ""
+    enabled = True
+    error = False
     # loop to check the state of everything every so often
     while counter < 5:
         print("Counter: " + str(counter))
-        # want to log when the processes started
-        # and when they processes shut off and why
-        if(not checkStatus(recv_proc, sender_proc)):
+        # make sure processes are running
+        if(not checkStatus(recv_proc, sender_proc, logger, extras)):
             exitLoop = True
-        # this can cause a lockout if the sender died...
-        #if(sender_proc.is_alive()):
-        print("Receiver is alive: " + str(recv_proc.is_alive()))
-        print("Sender is alive: " + str(sender_proc.is_alive()))
+            error = True
+
+        # make sure job is enabled
+        enabled = Utils.getJobEnabled(db, logger, jobId, extras)
+        if(enabled["error"]):
+            print("An error occurred when trying to determine if the job is enabled")
+            error = True
+            exitLoop = True
+            enabled = False
+        elif(not enabled["enabled"]):
+            # this is not a error
+            print("The job is not enabled")
+            exitLoop = True
+            enabled = False
+        else:
+            # for testing
+            print("Job is enabled")
+
+        # get any error output from child processes
         # need to call this instead of recv as recv will block until data is found...
         dataFound = parent_sender_conn.poll(timeout=1)
         while dataFound:
@@ -113,8 +145,21 @@ def main():
             if(dataFound):
                 message = parent_sender_conn.recv()
             if(message):
-                print("Message received in controller: " + message)
+                print("Message received in controller from sender process: " + message)
             dataFound = parent_sender_conn.poll(timeout=1)
+
+        # get any error output from child processes
+        # need to call this instead of recv as recv will block until data is found...
+        dataFound = parent_recv_conn.poll(timeout=1)
+        while dataFound:
+            message = ""
+            if(dataFound):
+                message = parent_recv_conn.recv()
+            if(message):
+                print("Message received in controller from receiver process: " + message)
+            dataFound = parent_recv_conn.poll(timeout=1)
+
+
         if(exitLoop):
             break
         counter += 1
@@ -165,9 +210,15 @@ if __name__ == '__main__':
     lockFilePath = logpath + "\\" + lockFileName
     lockExists = False
     jobId = 2
+    # used if a fatal error occurred
     failed = False
+    # used if loc file existed
+    lockedError = False
+    # used if job not enabled or could not be found
+    jobStartError = False
     startTime = datetime.now()
-    print("Script starting at: " + str(startTime))
+    result = ""
+    print("\nScript starting at: " + str(startTime))
 
     logging.basicConfig(filename=fullLogPath, filemode='a', level=logging.INFO,
     format='%(levelname)s: %(asctime)s.%(msecs)03d | %(caller)s | %(message)s',
@@ -183,49 +234,60 @@ if __name__ == '__main__':
 
     # start the job
     jobDetailsId = Utils.startJob(db, logger, jobId, extras)
-    if(jobDetailsId < 0): exit(1)
+    if(jobDetailsId < -1):
+        failed = True
+        jobStartError = True
+    elif(jobDetailsId == -1):
+        # job not enabled
+        jobStartError = True
 
-    # at this point, the job is marked as started
-    lockExists = Utils.getLockFile(lockFilePath, 2)
-    if(lockExists):
-        result = Utils.stopJob(db, logger, jobDetailsId, "Finished - Locked", extras)
-        if(result):
-            exit()
-        else:
-            exit(1)
+    # if the job was marked as started
+    if(not jobStartError):
+        try:
+            lockExists = Utils.getLockFile(lockFilePath, 2)
+        except:
+            traceback.print_exc()
+            logger.info("An error occurred when attempting to obtain the lock file", exc_info=sys.exc_info(), extra=extras)
+            lockedError = True
+            result = "Finished - Locking Error"
+        if(lockExists):
+            result = "Finished - Locked"
+            lockedError = True
 
-    result = "Finished Unsuccessfully"
-    # call scripts main function....
-    try:
-        print("Calling main script")
-        # result = ...
-        # this should be returned by the main function
-        #raise NameError('HiThere')
-        result = "Finished Successfully"
-
-    except:
-        print("Some error occurred in the main script")
-        traceback.print_exc()
-        logger.info("An unexpected error occurred in the main script:", exc_info=sys.exc_info(), extra=extras)
+    # if the job was marked as started and the file is locked to this process
+    if(not jobStartError and not lockedError):
+        try:
+            print("******************************** Main Script ********************************************")
+            main(logger, db, extras, jobId)
 
 
-    # if an error occurrs outside of the try/catches, you have amuch bigger with the database
-    # can't capture this as their is some issue with the databse or the credentials themselves
+            # this should be returned by the main function
+            result = "Finished Successfully"
+        except:
+            print("Some error occurred in the main script")
+            traceback.print_exc()
+            logger.info("An unexpected error occurred in the main script:", exc_info=sys.exc_info(), extra=extras)
+            result = "Finished Unsuccessfully"
+            failed  = True
+        print("***************************** Main Script Finished **************************************")
 
     # clean up
-    if(result == "Finished Successfully"):
+    if(result == "Finished Successfully" and not failed and not jobStartError and not lockedError):
         # remove lock file
         try:
             os.remove(lockFilePath)
+            #print("Not removing")
         except:
             logger.info("Failed to remove lock file", extra=extras)
 
-    result = Utils.stopJob(db, logger, jobDetailsId, result, extras)
-    if(not result): failed = True
+    # if the job was marked as started
+    if(not jobStartError):
+        result = Utils.stopJob(db, logger, jobDetailsId, result, extras)
+        if(not result): failed = True
+
     result = Utils.disconnectFromDatabase(db, logger, extras)
     if(not result): failed = True
 
-    startTime = datetime(month=6,day=22,year=2021)
     endTime = datetime.now()
     Utils.getTimeDifference(startTime, endTime)
 

@@ -56,7 +56,7 @@ class Database:
         if(len(result) > 0):
             enabled = True
 
-        return {"enabled": enabled}
+        return enabled
 
     # this will update the database to create a record of a running job
     def startJob(self, id):

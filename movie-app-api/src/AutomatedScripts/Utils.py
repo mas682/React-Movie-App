@@ -38,14 +38,15 @@ def startJob(db, logger, jobId, extras={}):
     except:
         traceback.print_exc()
         logger.info("An error occurred when attempting to start the job with the id of: " + str(jobId), exc_info=sys.exc_info(), extra=extras)
-        return -1
+        return -3
 
-    if(result["jobDetailsId"] == -1):
+    if(result["jobDetailsId"] == -1 and result["enabled"]):
         print("Failed to start job with a -1 job details id")
         logger.info("A job details id of -1 was returned when trying to start the job", extra=extras)
-        return -1
+        return -2
     elif(not result["enabled"]):
         print("Job is not enabled")
+        logger.info("A job with id of " + str(jobId) + " is either not enabled or does not exist", extra=extras)
         # may want to log this but for now just exit
         return -1
 
@@ -90,6 +91,19 @@ def stopJob(db, logger, jobDetailsId, state, extras={}):
         return False
     return True
 
+def getJobEnabled(db, logger, id, extras={}):
+    enabled = False
+    error = False
+    try:
+        enabled = db.getJobEnabled(id)
+    except:
+        traceback.print_exc()
+        logger.info("An error occurred trying to determine if the job with id of " + str(id) + " is enabled", exc_info=sys.exc_info(), extra=extras)
+        error = True
+
+    return {"enabled": enabled, "error": error}
+
+
 
 def getTimeDifference(startTime, endTime):
         totalTime = endTime - startTime
@@ -98,7 +112,7 @@ def getTimeDifference(startTime, endTime):
         minutes = remainingSeconds // 60
         seconds = remainingSeconds % 60
         milliseconds = totalTime.microseconds // 1000
-        print("\n********************************************************************************`")
+        print("\n******* SCRIPT EXECUTION TIME: *******")
         print("Script started at: " + str(startTime))
         print("Script ended at: " + str(endTime))
         print("Script duration:")
