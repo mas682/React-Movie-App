@@ -35,20 +35,36 @@ def redisListener(queue):
 
 
 def sender(connection, parent_conn):
-    # the sender will be the redisListener
-    # if some error occurs, need to shut this process and the other one off...
-    messages = ["1", "2", "3", "end"]
-    counter = 0
-    for value in messages:
-        print("Message sent: " + value)
-        connection.send(value)
-        time.sleep(2)
-        try:
+    try:
+        # the sender will be the redisListener
+        # if some error occurs, need to shut this process and the other one off...
+        messages = ["1", "2", "3", "end"]
+        counter = 0
+        for value in messages:
+            print("Message sent: " + value)
+            connection.send(value)
+            time.sleep(2)
             raise Exception("Error test")
-        except(Exception) as error:
-            parent_conn.send(str(error))
-            #print("Caught")
-            #print(str(error))
+
+        #params = config()
+        #r = redis.Redis(**params)
+        #p = r.pubsub()
+        #p.subscribe("__keyevent@0__:expired")
+        #
+        #print("Sleeping")
+        #time.sleep(45)
+        #print("awake")
+        #
+        #while True:
+        #    message = p.get_message()
+        #    if message:
+        #        print(message)
+        #    time.sleep(0.001)
+    except:
+        print("An error occurred in the sender process:")
+        traceback.print_exc()
+        result = traceback.format_exc()
+        parent_conn.send(result)
     print("Sender finished...")
 
 
@@ -70,29 +86,36 @@ def receiver(connection, parent_conn):
 def checkStatus(recv_proc, sender_proc, logger, extras):
     enabled = True
     if(not recv_proc.is_alive()):
-        logger.info("The receiver process shut off with the following exit code: " + recv_proc.exitcode, exc_info=sys.exc_info(), extra=extras)
+        logger.info("The receiver process shut off with the following exit code: " + str(recv_proc.exitcode), extra=extras)
         enabled =  False
     if(not sender_proc.is_alive()):
-        logger.info("The receiver process shut off with the following exit code: " + sender_proc.exitcode, exc_info=sys.exc_info(), extra=extras)
+        logger.info("The sender process shut off with the following exit code: " + str(sender_proc.exitcode), extra=extras)
         enabled =  False
     # make a call to database to see if this job is still turned on
     return enabled
 
 
+# function to log any output from child processes when a error occurs
+def checkProcessOutput(pipe, logger, extras, processExtras, defaultMessage):
+    exitLoop = False
+    # get any error output from child processes
+    dataFound = pipe.poll(timeout=2)
+    if(dataFound):
+        logger.info(defaultMessage, extra=extras)
+        exitLoop = True
+    while dataFound:
+        message = ""
+        if(dataFound):
+            message = pipe.recv()
+        if(message):
+            logger.info("\n" + message, extra=processExtras)
+        dataFound = pipe.poll(timeout=2)
+
+    return exitLoop
+
+
 
 def main(logger, db, extras, jobId):
-    enabled = Utils.getJobEnabled(db, logger, jobId, extras)
-    if(enabled["error"]):
-        print("An error occurred when trying to determine if the job is enabled")
-        # stop the process...
-        # mark job as failed
-    elif(not enabled["enabled"]):
-        print("The job is not enabled")
-        # stop the process
-        # mark the job as finished successfully
-    else:
-        print("Job is enabled")
-
     # pipe between two child processes
     recv_conn, sender_conn = Pipe(False)
     # pipe between parent and sender child process
@@ -107,15 +130,15 @@ def main(logger, db, extras, jobId):
     recv_proc = Process(target=receiver, args=(recv_conn,recv_parent_conn), daemon=True)
     sender_proc.start()
     recv_proc.start()
-    counter = 0
 
     exitLoop = False
     message = ""
     enabled = True
     error = False
+    senderExtras = {"caller":"Sender"}
+    receiverExtras = {"caller":"Receiver"}
     # loop to check the state of everything every so often
-    while counter < 5:
-        print("Counter: " + str(counter))
+    while not exitLoop:
         # make sure processes are running
         if(not checkStatus(recv_proc, sender_proc, logger, extras)):
             exitLoop = True
@@ -133,36 +156,23 @@ def main(logger, db, extras, jobId):
             print("The job is not enabled")
             exitLoop = True
             enabled = False
-        else:
-            # for testing
-            print("Job is enabled")
 
-        # get any error output from child processes
-        # need to call this instead of recv as recv will block until data is found...
-        dataFound = parent_sender_conn.poll(timeout=1)
-        while dataFound:
-            message = ""
-            if(dataFound):
-                message = parent_sender_conn.recv()
-            if(message):
-                print("Message received in controller from sender process: " + message)
-            dataFound = parent_sender_conn.poll(timeout=1)
+        # get any error output from the redis listener process
+        defaultMessage = "An error message was received from the process receiving data from redis:"
+        result = checkProcessOutput(parent_sender_conn, logger, extras, senderExtras, defaultMessage)
+        if(result):
+            exitLoop = True
+            error = True
 
-        # get any error output from child processes
-        # need to call this instead of recv as recv will block until data is found...
-        dataFound = parent_recv_conn.poll(timeout=1)
-        while dataFound:
-            message = ""
-            if(dataFound):
-                message = parent_recv_conn.recv()
-            if(message):
-                print("Message received in controller from receiver process: " + message)
-            dataFound = parent_recv_conn.poll(timeout=1)
-
+        # get any error output from the database updating process
+        defaultMessage = "An error message was received from the process that updates the database:"
+        result = checkProcessOutput(parent_recv_conn, logger, extras, receiverExtras, defaultMessage)
+        if(result):
+            exitLoop = True
+            error = True
 
         if(exitLoop):
             break
-        counter += 1
         if(not exitLoop):
             try:
                 if(sender_proc.is_alive()):
@@ -174,7 +184,7 @@ def main(logger, db, extras, jobId):
 
     print("Main loop finished")
     if(recv_proc.is_alive()):
-        print("Terminating process")
+        print("Terminating receiver process")
         recv_proc.kill()
         # give the process time to be killed
         time.sleep(2)
@@ -184,7 +194,7 @@ def main(logger, db, extras, jobId):
         print(str(recv_proc.exitcode))
 
     if(sender_proc.is_alive()):
-        print("Terminating process")
+        print("Terminating sender process")
         sender_proc.kill()
         # give the process time to be killed
         time.sleep(2)
@@ -193,12 +203,10 @@ def main(logger, db, extras, jobId):
         print(str(sender_proc.is_alive()))
         print(str(sender_proc.exitcode))
 
-    # remove the loc file
-    #os.remove(lockFilePath)
-
-
-#next steps...
-#then fix all the redis stuff..
+    if(error):
+        return "Finished Unsuccessfully"
+    else:
+        return "Finished Successfully"
 
 
 if __name__ == '__main__':
@@ -258,11 +266,11 @@ if __name__ == '__main__':
     if(not jobStartError and not lockedError):
         try:
             print("******************************** Main Script ********************************************")
-            main(logger, db, extras, jobId)
+            #main(logger, db, extras, jobId)
 
 
             # this should be returned by the main function
-            result = "Finished Successfully"
+            result = main(logger, db, extras, jobId)
         except:
             print("Some error occurred in the main script")
             traceback.print_exc()
@@ -276,12 +284,12 @@ if __name__ == '__main__':
         # remove lock file
         try:
             os.remove(lockFilePath)
-            #print("Not removing")
         except:
             logger.info("Failed to remove lock file", extra=extras)
 
     # if the job was marked as started
     if(not jobStartError):
+        print(result)
         result = Utils.stopJob(db, logger, jobDetailsId, result, extras)
         if(not result): failed = True
 
