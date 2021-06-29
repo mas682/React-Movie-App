@@ -1,7 +1,6 @@
 
 import models, { sequelize } from '../src/models';
 const moment = require('moment');
-import {encrypt, decrypt} from '../src/crypto.js';
 const config = require('../Config.json');
 
 
@@ -27,12 +26,8 @@ const createSession = async(user, req, res) =>
     console.log("Session created: " + moment(req.session.created).toString());
     console.log("Session expires: " + expiration);
     //console.log("Refresh at: " + (moment(req.session.cookie._expires).add(minutesToSubtract, 'm')).toString());
-    // encrypt the session to store in the database
-    let encryptedRes = encrypt(req.session.id, "session");
-    console.log(encryptedRes);
     let newSession = await models.UserSessions.create({
-        session: encryptedRes.encryptedData,
-        iv: encryptedRes.iv,
+        session: req.session.id,
         userId: user.id,
         expiresAt: req.session.cookie._expires
     });
@@ -75,7 +70,7 @@ const checkSession = async(req, res, next) =>
     next();
 }
 
-
+/*
 so redis has a command expires that will expire the key for you which is how connect-redis expires the keys...
 you could create hash tables for users -> keys in redis but it would be hard to tell when the user no longer
 has the session in the list
@@ -95,6 +90,7 @@ reverse look up table???
 with new model, updating expires time constantly....very costly to update database each time
 so either store in redis? or do something else
 
+*/
 
 
 const regenerateSession = async(req, res) =>
@@ -138,13 +134,8 @@ const regenerateSession = async(req, res) =>
         console.log(result);
     }
 
-    // encrypt the session to store in the database
-    let encryptedRes = encrypt(req.session.id, "session");
-    req.session.iv = encryptedRes.iv;
-    console.log(encryptedRes);
     let newSession = await models.UserSessions.create({
-        session: encryptedRes.encryptedData,
-        iv: encryptedRes.iv,
+        session: req.session.id,
         userId: sessionUserId,
         expiresAt: req.session.cookie._expires
     });

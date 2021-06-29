@@ -15,6 +15,8 @@ from config import config
 from Database import Database
 import Utils
 
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
 
 def redisListener(queue):
     params = config()
@@ -34,32 +36,24 @@ def redisListener(queue):
         time.sleep(0.001)
 
 
-def sender(connection, parent_conn):
+def redisListener(connection, parent_conn):
     try:
-        # the sender will be the redisListener
-        # if some error occurs, need to shut this process and the other one off...
-        messages = ["1", "2", "3", "end"]
-        counter = 0
-        for value in messages:
-            print("Message sent: " + value)
-            connection.send(value)
-            time.sleep(2)
-            raise Exception("Error test")
+        params = config(section="redis")
+        r = redis.Redis(**params)
+        p = r.pubsub()
+        p.subscribe("__keyevent@0__:expired")
 
-        #params = config()
-        #r = redis.Redis(**params)
-        #p = r.pubsub()
-        #p.subscribe("__keyevent@0__:expired")
-        #
-        #print("Sleeping")
-        #time.sleep(45)
-        #print("awake")
-        #
-        #while True:
-        #    message = p.get_message()
-        #    if message:
-        #        print(message)
-        #    time.sleep(0.001)
+        counter = 0
+        while True:
+            message = p.get_message()
+            if message:
+                # send the message to the other process...
+                print(message)
+                if(counter > 0):
+                    connection.send(message)
+                else:
+                    counter = 1
+            time.sleep(0.001)
     except:
         print("An error occurred in the sender process:")
         traceback.print_exc()
@@ -69,16 +63,45 @@ def sender(connection, parent_conn):
 
 
 def receiver(connection, parent_conn):
-    message = ""
-    counter = 0
-    while True:
-        if counter == 0:
-            time.sleep(6)
-        message = connection.recv()
-        print("Message received: " + message)
-        if(message == "end"):
-            break
-        counter = 1
+    try:
+        db = Database(config())
+        # need to fix this to handle errors...
+        result = db.connect()
+        cursor = result["cur"]
+        # need to encrypt string passed from other side to get key into database...
+        message = ""
+        while True:
+            dataFound = connection.poll(timeout=1)
+            while dataFound:
+                message = ""
+                if(dataFound):
+                    message = connection.recv()
+                if(message):
+                    print("Message in receiver: " + str(message))
+                    # need to ignore messages that say subscribe or unsubscribe...
+                    key = message["data"].decode()
+                    if(len(key) > 5):
+                        key = key[5:]
+                        cursor.execute("""
+                            DELETE FROM public."UserSessions"
+                            WHERE session = '""" + key + """'
+                        """)
+                dataFound = connection.poll(timeout=1)
+    except:
+        print("An error occurred in the receiver process:")
+        traceback.print_exc()
+        result = traceback.format_exc()
+        parent_conn.send(result)
+
+    # try to disconnect from the database
+    try:
+        db.disconnect()
+    except:
+        print("An error occurred in the receiver process:")
+        traceback.print_exc()
+        result = traceback.format_exc()
+        parent_conn.send(result)
+
     print("Receiver finished")
 
 
@@ -115,7 +138,7 @@ def checkProcessOutput(pipe, logger, extras, processExtras, defaultMessage):
 
 
 
-def main(logger, db, extras, jobId):
+def main(logger, db, extras, jobId, jobDetailsId):
     # pipe between two child processes
     recv_conn, sender_conn = Pipe(False)
     # pipe between parent and sender child process
@@ -125,7 +148,7 @@ def main(logger, db, extras, jobId):
 
     # create the sender process
     # daemon = True so that the parent process will terminate it if it is terminated
-    sender_proc = Process(target=sender, args=(sender_conn, sender_parent_conn), name="sender", daemon=True)
+    sender_proc = Process(target=redisListener, args=(sender_conn, sender_parent_conn), name="redisListener", daemon=True)
     # create the receiver process
     recv_proc = Process(target=receiver, args=(recv_conn,recv_parent_conn), daemon=True)
     sender_proc.start()
@@ -135,7 +158,7 @@ def main(logger, db, extras, jobId):
     message = ""
     enabled = True
     error = False
-    senderExtras = {"caller":"Sender"}
+    senderExtras = {"caller":"redisListener"}
     receiverExtras = {"caller":"Receiver"}
     # loop to check the state of everything every so often
     while not exitLoop:
@@ -174,9 +197,15 @@ def main(logger, db, extras, jobId):
         if(exitLoop):
             break
         if(not exitLoop):
+            # update database to indicate job still running
+            failed = Utils.updateRunningJob(db, logger, jobDetailsId, extras)
+            if(failed):
+                print("Failed to update dataase indicating job is still running...")
+                error = True
+                break
             try:
                 if(sender_proc.is_alive()):
-                    sender_proc.join(timeout=4)
+                    sender_proc.join(timeout=60)
             except:
                 print("Error caught")
 
@@ -270,7 +299,7 @@ if __name__ == '__main__':
 
 
             # this should be returned by the main function
-            result = main(logger, db, extras, jobId)
+            result = main(logger, db, extras, jobId, jobDetailsId)
         except:
             print("Some error occurred in the main script")
             traceback.print_exc()

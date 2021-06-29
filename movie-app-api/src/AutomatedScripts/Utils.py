@@ -103,6 +103,17 @@ def getJobEnabled(db, logger, id, extras={}):
 
     return {"enabled": enabled, "error": error}
 
+def updateRunningJob(db, logger, id, extras={}):
+    error = False
+    try:
+        db.updateRunningJob(id)
+    except:
+        traceback.print_exc()
+        logger.info("An error occurred trying to mark the job with id of " + str(id) + " as still running", exc_info=sys.exc_info(), extra=extras)
+        error = True
+
+    return error
+
 
 
 def getTimeDifference(startTime, endTime):

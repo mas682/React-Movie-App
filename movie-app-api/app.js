@@ -59,7 +59,8 @@ app.use(
             // should be true
             secure: false,
             sameSite: true,
-            maxAge: 600000, // Time is in miliseconds,
+            //maxAge: 600000, // Time is in miliseconds,
+            maxAge: 15000, // Time is in miliseconds,
             // to set a expiration date...
             //expires: moment(new Date()).add(10, 'm').toDate()
         },

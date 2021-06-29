@@ -8,11 +8,9 @@ CREATE TABLE public."UserSessions"
     session character varying(64) COLLATE pg_catalog."default" NOT NULL,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
-    iv character varying(24) COLLATE pg_catalog."default" NOT NULL,
     "userId" bigint NOT NULL,
     "expiresAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "UserSessions_pkey" PRIMARY KEY (id),
-    CONSTRAINT "UserSessions_iv_key" UNIQUE (iv),
     CONSTRAINT "UserSessions_session_key" UNIQUE (session),
     CONSTRAINT "UserSessions_session_userId_key" UNIQUE ("userId", session),
     CONSTRAINT "UserSession_userId_fkey" FOREIGN KEY ("userId")

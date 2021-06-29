@@ -7,11 +7,6 @@ const userSessions = (sequelize, DataTypes) => {
       allowNull: false,
       unique: "UserSessions_session_userId_key"
     },
-    iv: {
-      type: DataTypes.STRING(24),
-      allowNull: false,
-      unique: "UserSessions_iv_key"
-    },
     userId: {
       type: DataTypes.BIGINT,
       allowNull: false,
@@ -39,13 +34,6 @@ const userSessions = (sequelize, DataTypes) => {
     hasTrigger: true,
     timestamps: true,
     indexes: [
-      {
-        name: "UserSessions_iv_key",
-        unique: true,
-        fields: [
-          { name: "iv" },
-        ]
-      },
       {
         name: "UserSessions_pkey",
         unique: true,

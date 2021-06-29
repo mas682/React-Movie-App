@@ -28,7 +28,6 @@ class Database:
         return {"connection": self._connection, "cur": self._cur}
 
     def disconnect(self):
-        failedOutput = []
         try:
             # close the communication with the PostgreSQL
             if(self._cur is not None):
@@ -98,7 +97,7 @@ class Database:
     # and this returns whether the database still has this job enabled
     def updateRunningJob(self, jobDetailsId):
         jobDetailsId = str(jobDetailsId)
-
+        print("Job details id: " + jobDetailsId)
         self._cur.execute("""
             UPDATE public."JobDetails"
                SET
