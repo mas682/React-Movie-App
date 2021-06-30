@@ -2,7 +2,7 @@ import psycopg2
 from psycopg2.extras import DictCursor
 
 class Database:
-    def __init__(self, connectionParams):
+    def __init__(self, connectionParams, applicationName):
         self._host = connectionParams["host"]
         self._port = connectionParams["port"]
         self._database = connectionParams["database"]
@@ -10,11 +10,12 @@ class Database:
         self._password = connectionParams["password"]
         self._connection = None
         self._cur = None
+        self._application = applicationName
 
 
     def connect(self):
         try:
-            self._connection=psycopg2.connect(host=self._host,port=self._port,database=self._database,user=self._user,password=self._password)
+            self._connection=psycopg2.connect(host=self._host,port=self._port,database=self._database,user=self._user,password=self._password, application_name=self._application)
             # automatically commit changes
             self._connection.autocommit = True
             self._cur = self._connection.cursor(cursor_factory=DictCursor)
@@ -97,7 +98,6 @@ class Database:
     # and this returns whether the database still has this job enabled
     def updateRunningJob(self, jobDetailsId):
         jobDetailsId = str(jobDetailsId)
-        print("Job details id: " + jobDetailsId)
         self._cur.execute("""
             UPDATE public."JobDetails"
                SET

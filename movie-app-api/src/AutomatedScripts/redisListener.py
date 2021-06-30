@@ -1,6 +1,5 @@
 # pip install redis is needed...
 
-
 import redis
 import time
 from multiprocessing import Process, Pipe
@@ -15,27 +14,6 @@ from config import config
 from Database import Database
 import Utils
 
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-
-
-def redisListener(queue):
-    params = config()
-    r = redis.Redis(**params)
-    p = r.pubsub()
-
-    p.subscribe("__keyevent@0__:expired")
-
-    print("Sleeping")
-    time.sleep(45)
-    print("awake")
-
-    while True:
-        message = p.get_message()
-        if message:
-            print(message)
-        time.sleep(0.001)
-
-
 def redisListener(connection, parent_conn):
     try:
         params = config(section="redis")
@@ -43,16 +21,11 @@ def redisListener(connection, parent_conn):
         p = r.pubsub()
         p.subscribe("__keyevent@0__:expired")
 
-        counter = 0
         while True:
             message = p.get_message()
             if message:
                 # send the message to the other process...
-                print(message)
-                if(counter > 0):
-                    connection.send(message)
-                else:
-                    counter = 1
+                connection.send(message)
             time.sleep(0.001)
     except:
         print("An error occurred in the sender process:")
@@ -62,9 +35,9 @@ def redisListener(connection, parent_conn):
     print("Sender finished...")
 
 
-def receiver(connection, parent_conn):
+def dataProcessor(connection, parent_conn):
     try:
-        db = Database(config())
+        db = Database(config(), "RedisListener - Data Processor")
         # need to fix this to handle errors...
         result = db.connect()
         cursor = result["cur"]
@@ -77,15 +50,22 @@ def receiver(connection, parent_conn):
                 if(dataFound):
                     message = connection.recv()
                 if(message):
-                    print("Message in receiver: " + str(message))
-                    # need to ignore messages that say subscribe or unsubscribe...
-                    key = message["data"].decode()
-                    if(len(key) > 5):
-                        key = key[5:]
-                        cursor.execute("""
-                            DELETE FROM public."UserSessions"
-                            WHERE session = '""" + key + """'
-                        """)
+                    print("Message in data processor: " + str(message))
+                    if(message["type"] == "message"):
+                        # need to ignore messages that say subscribe or unsubscribe...
+                        key = message["data"].decode()
+                        if(len(key) > 5):
+                            key = key[5:]
+                            cursor.execute("""
+                                DELETE FROM public."UserSessions"
+                                WHERE session = '""" + key + """'
+                            """)
+                            print("Key (" + key + ") removed or did not exist")
+                        else:
+                            print("Invalid key received: " + key)
+                    else:
+                        print("Invalid message type received")
+
                 dataFound = connection.poll(timeout=1)
     except:
         print("An error occurred in the receiver process:")
@@ -97,7 +77,7 @@ def receiver(connection, parent_conn):
     try:
         db.disconnect()
     except:
-        print("An error occurred in the receiver process:")
+        print("An error occurred in the data processor process when disconnecting from the database:")
         traceback.print_exc()
         result = traceback.format_exc()
         parent_conn.send(result)
@@ -106,13 +86,13 @@ def receiver(connection, parent_conn):
 
 
 # function to make sure processes still running and that the job itself should still be running
-def checkStatus(recv_proc, sender_proc, logger, extras):
+def checkStatus(data_process, redis_process, logger, extras):
     enabled = True
-    if(not recv_proc.is_alive()):
-        logger.info("The receiver process shut off with the following exit code: " + str(recv_proc.exitcode), extra=extras)
+    if(not data_process.is_alive()):
+        logger.info("The data processor process shut off with the following exit code: " + str(data_process.exitcode), extra=extras)
         enabled =  False
-    if(not sender_proc.is_alive()):
-        logger.info("The sender process shut off with the following exit code: " + str(sender_proc.exitcode), extra=extras)
+    if(not redis_process.is_alive()):
+        logger.info("The redis listener process shut off with the following exit code: " + str(redis_process.exitcode), extra=extras)
         enabled =  False
     # make a call to database to see if this job is still turned on
     return enabled
@@ -122,7 +102,7 @@ def checkStatus(recv_proc, sender_proc, logger, extras):
 def checkProcessOutput(pipe, logger, extras, processExtras, defaultMessage):
     exitLoop = False
     # get any error output from child processes
-    dataFound = pipe.poll(timeout=2)
+    dataFound = pipe.poll(timeout=1)
     if(dataFound):
         logger.info(defaultMessage, extra=extras)
         exitLoop = True
@@ -132,38 +112,56 @@ def checkProcessOutput(pipe, logger, extras, processExtras, defaultMessage):
             message = pipe.recv()
         if(message):
             logger.info("\n" + message, extra=processExtras)
-        dataFound = pipe.poll(timeout=2)
+        dataFound = pipe.poll(timeout=1)
 
     return exitLoop
+
+# function to terminate a process
+def terminateProcess(process, logger, extras):
+    if(process.is_alive()):
+        print("Terminating process with name: " + process.name)
+        process.kill()
+        # give the process time to be killed
+        time.sleep(2)
+        # if none, the process has yet to finish
+        # if a negative value, terminated by some signal
+        print("Process is alive: " + str(process.is_alive()))
+        print("Process exit code: " + str(process.exitcode))
+        if(process.exitcode is None):
+            logger.info("The process with name " + process.name + " and pid of " + str(process.pid) + " failed to terminate", extra=extras)
+            return False
+
+    return True
+
 
 
 
 def main(logger, db, extras, jobId, jobDetailsId):
     # pipe between two child processes
-    recv_conn, sender_conn = Pipe(False)
-    # pipe between parent and sender child process
-    parent_sender_conn, sender_parent_conn = Pipe()
-    # pipe between parent and receiver process
-    parent_recv_conn, recv_parent_conn = Pipe()
+    processor_conn, redis_conn = Pipe(False)
+    # pipe between parent and redis listener child process
+    parent_redis_conn, redis_parent_conn = Pipe(False)
+    # pipe between parent and data processor process
+    parent_processor_conn, processor_parent_conn = Pipe(False)
 
     # create the sender process
     # daemon = True so that the parent process will terminate it if it is terminated
-    sender_proc = Process(target=redisListener, args=(sender_conn, sender_parent_conn), name="redisListener", daemon=True)
+    redis_process = Process(target=redisListener, args=(redis_conn, redis_parent_conn), name="redisListener", daemon=True)
     # create the receiver process
-    recv_proc = Process(target=receiver, args=(recv_conn,recv_parent_conn), daemon=True)
-    sender_proc.start()
-    recv_proc.start()
+    data_process = Process(target=dataProcessor, args=(processor_conn,processor_parent_conn), name="dataProcessor", daemon=True)
+    redis_process.start()
+    data_process.start()
 
     exitLoop = False
     message = ""
     enabled = True
     error = False
     senderExtras = {"caller":"redisListener"}
-    receiverExtras = {"caller":"Receiver"}
+    receiverExtras = {"caller":"dataProcessor"}
     # loop to check the state of everything every so often
     while not exitLoop:
         # make sure processes are running
-        if(not checkStatus(recv_proc, sender_proc, logger, extras)):
+        if(not checkStatus(data_process, redis_process, logger, extras)):
             exitLoop = True
             error = True
 
@@ -181,15 +179,15 @@ def main(logger, db, extras, jobId, jobDetailsId):
             enabled = False
 
         # get any error output from the redis listener process
-        defaultMessage = "An error message was received from the process receiving data from redis:"
-        result = checkProcessOutput(parent_sender_conn, logger, extras, senderExtras, defaultMessage)
+        defaultMessage = "An error message was received from the redis listener process:"
+        result = checkProcessOutput(parent_redis_conn, logger, extras, senderExtras, defaultMessage)
         if(result):
             exitLoop = True
             error = True
 
         # get any error output from the database updating process
-        defaultMessage = "An error message was received from the process that updates the database:"
-        result = checkProcessOutput(parent_recv_conn, logger, extras, receiverExtras, defaultMessage)
+        defaultMessage = "An error message was received from data processor process:"
+        result = checkProcessOutput(parent_processor_conn, logger, extras, receiverExtras, defaultMessage)
         if(result):
             exitLoop = True
             error = True
@@ -204,33 +202,23 @@ def main(logger, db, extras, jobId, jobDetailsId):
                 error = True
                 break
             try:
-                if(sender_proc.is_alive()):
-                    sender_proc.join(timeout=60)
+                # check if an error occurred every 5 minutes
+                redis_process.join(timeout=300)
             except:
-                print("Error caught")
+                traceback.print_exc()
+                logger.info("An error occurred trying to call join on the redis process", exc_info=sys.exc_info(), extra=extras)
+                error = True
+                break
 
+    # give the processes time to finish
     time.sleep(1)
 
-    print("Main loop finished")
-    if(recv_proc.is_alive()):
-        print("Terminating receiver process")
-        recv_proc.kill()
-        # give the process time to be killed
-        time.sleep(2)
-        # if none, the process has yet to finish
-        # if a negative value, terminated by some signal
-        print(str(recv_proc.is_alive()))
-        print(str(recv_proc.exitcode))
+    print("Main loop finished\n")
+    result = terminateProcess(data_process, logger, extras)
+    if(not result): error = True
 
-    if(sender_proc.is_alive()):
-        print("Terminating sender process")
-        sender_proc.kill()
-        # give the process time to be killed
-        time.sleep(2)
-        # if none, the process has yet to finish
-        # if a negative value, terminated by some signal
-        print(str(sender_proc.is_alive()))
-        print(str(sender_proc.exitcode))
+    result = terminateProcess(redis_process, logger, extras)
+    if(not result): error = True
 
     if(error):
         return "Finished Unsuccessfully"
@@ -265,7 +253,7 @@ if __name__ == '__main__':
     logger = logging.getLogger()
 
     # connect to the database
-    db = Database(config())
+    db = Database(config(), "RedisListener")
     result = Utils.connectToDatabase(db, logger, extras)
     if(not result["created"]): exit(1)
 
