@@ -13,7 +13,6 @@ var indexRouter = require('./routes/index');
 const moment = require('moment');
 var app = express();
 const fetch = require('node-fetch');
-import {regenerateSession, checkSession} from './src/sessions.js';
 
 
 const redis = require('redis');
@@ -60,16 +59,14 @@ app.use(
             secure: false,
             sameSite: true,
             //maxAge: 600000, // Time is in miliseconds,
-            maxAge: 15000, // Time is in miliseconds,
-            // to set a expiration date...
-            //expires: moment(new Date()).add(10, 'm').toDate()
+            maxAge: config.sessions.maxExpiringDuration, // Time is in miliseconds,
         },
         store: new RedisStore({ client: redisClient ,ttl: 86400}),
         resave: false
     })
 );
 
-app.use(sessionHelpers.checkSession);
+//app.use(sessionHelpers.checkCookieType);
 
 // all routes to the server will go through this router
 app.use('/', indexRouter);

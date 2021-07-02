@@ -9,7 +9,6 @@ CREATE TABLE public."UserSessions"
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
     "userId" bigint NOT NULL,
-    "expiresAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "UserSessions_pkey" PRIMARY KEY (id),
     CONSTRAINT "UserSessions_session_key" UNIQUE (session),
     CONSTRAINT "UserSessions_session_userId_key" UNIQUE ("userId", session),

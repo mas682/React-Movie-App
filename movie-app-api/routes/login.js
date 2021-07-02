@@ -155,7 +155,8 @@ const checkLogin = async (req, res) =>
             console.log(errorObject);
         }
         // create session for user
-        await createSession(user, req, res);
+        // true indicates session expires...
+        await createSession(user, req, res, true);
 
         setTimeout(() =>{
             res.status(200).send({

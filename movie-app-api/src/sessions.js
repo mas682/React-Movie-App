@@ -2,96 +2,40 @@
 import models, { sequelize } from '../src/models';
 const moment = require('moment');
 const config = require('../Config.json');
+const Op = require('Sequelize').Op;
 
 
 
-const createSession = async(user, req, res) =>
+const createSession = async(user, req, res, expires) =>
 {
-    res.locals.function = "regenerateSession";
+    res.locals.function = "createSession";
     res.locals.file = "sessions.js";
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    let duration = config.sessions.maxDuration * -1;
+    let duration = config.sessions.maxExpiringDuration * -1;
     req.session.userId = user.id;
     req.session.user = user.username;
     req.session.created = (moment(req.session.cookie._expires).add(duration, 'ms')).toDate();
     req.session.admin = user.admin;
+    req.session.expires = expires;
     req.session.ip = ip;
-    // get the number of minutes to subtract from the expiration
-    let minutesToSubtract = (config.sessions.maxDurationMinutes - config.sessions.refreshMinutes) * -1;
-    // _expires refers to when the cookie expires here
-    // refreshAt is when the session should be regenerated, which is before the cookie will expire
-    //req.session.refreshAt = moment(req.session.cookie._expires).add(minutesToSubtract, 'm').toDate();
+    // if the user wants a non expiring token
+    if(!expires)
+    {
+        req.session.cookie.maxAge = maxNonExpiringDuration;
+    }
     console.log(req.session);
     let expiration = moment(req.session.cookie._expires).toString();
     console.log("Session created: " + moment(req.session.created).toString());
     console.log("Session expires: " + expiration);
-    //console.log("Refresh at: " + (moment(req.session.cookie._expires).add(minutesToSubtract, 'm')).toString());
     let newSession = await models.UserSessions.create({
         session: req.session.id,
-        userId: user.id,
-        expiresAt: req.session.cookie._expires
+        userId: user.id
     });
     req.session.sessionId = newSession.id;
-    console.log("New session id: " + req.session.sessionId);
+    console.log("New session id in database: " + req.session.sessionId);
     // save the session now so the session creation time is right
     await saveSession(req);
 }
-
-
-// function to check if a session needs to be regenerated
-// const checkSession
-const checkSession = async(req, res, next) =>
-{
-    let sessionUserId = req.session.userId;
-    if(sessionUserId === undefined)
-    {
-        next();
-        return;
-    }
-    //if(moment(req.session.refreshAt).isSame(moment()) || moment(req.session.refreshAt).isBefore(moment()))
-    //{
-    //    console.log("Regenerate session!");
-    //    await regenerateSession(req, res);
-    //}
-    //else
-    //{
-        // this else is for testing...
-        //console.log("Not refreshing");
-        //console.log("Refreshes at: " + moment(req.session.refreshAt).toString());
-        let date = moment();
-        console.log("Current time: " + date.toString());
-        console.log("Old session expires: " + moment(req.session.cookie._expires).toString());
-        console.log("Session id: " + req.session.id);
-        console.log("Session creation: " + req.session.created);
-        console.log(req.session.cookie);
-        // use this for non expiring sessions...
-        //req.session.cookie.maxAge = 6000000;
-//    }
-    next();
-}
-
-/*
-so redis has a command expires that will expire the key for you which is how connect-redis expires the keys...
-you could create hash tables for users -> keys in redis but it would be hard to tell when the user no longer
-has the session in the list
-
-whenever a user requests their sessions check for them all...
-if one does not exist remove it...
-could also schedule a job to do cleanup in user lists every so often????
-go through the user lists and see if the sessions exists...if not remove...
-could be very costly though...
-
-alternatives:...
-use a actual database...
-
-
-need to figure out how you are going to know which sessions belong to which users...
-reverse look up table???
-with new model, updating expires time constantly....very costly to update database each time
-so either store in redis? or do something else
-
-*/
-
 
 const regenerateSession = async(req, res) =>
 {
@@ -104,6 +48,7 @@ const regenerateSession = async(req, res) =>
     let created = req.session.created;
     let admin = req.session.admin;
     let oldSessionId = req.session.sessionId;
+    let expires = req.session.expires;
     // may want to validate what ip this came from...
     let ip = req.session.ip;
     console.log("Old session expires: " + moment(req.session.cookie._expires).toString());
@@ -114,18 +59,21 @@ const regenerateSession = async(req, res) =>
     req.session.user = sessionUser;
     req.session.created = created;
     req.session.admin = admin;
-    req.session.cookie.maxAge = config.sessions.maxDuration;
+    req.session.expires = expires;
+    if(!expires)
+    {
+        req.session.cookie.maxAge = config.sessions.maxNonExpiringDuration;
+    }
+    // may not need this part?
+    req.session.cookie.maxAge = config.sessions.maxExpiringDuration;
     // when the session should be refreshed
-    let minutesToSubtract = (config.sessions.maxDurationMinutes - config.sessions.refreshMinutes) * -1;
     console.log("New session expires at: " + (moment(req.session.cookie._expires).toString()));
-    console.log("Refresh at: " + (moment(req.session.cookie._expires).add(minutesToSubtract, 'm')).toString());
-    req.session.refreshAt = (moment(req.session.cookie._expires).add(minutesToSubtract, 'm')).toDate();
 
     // need to delete the old session in the database and add the new one...
     console.log("Old session id: " + oldSessionId);
     let result = await models.UserSessions.destroy({
         where: {
-            id:1
+            id:oldSessionId
         }
     });
     if(result !== 1)
@@ -136,8 +84,7 @@ const regenerateSession = async(req, res) =>
 
     let newSession = await models.UserSessions.create({
         session: req.session.id,
-        userId: sessionUserId,
-        expiresAt: req.session.cookie._expires
+        userId: sessionUserId
     });
     req.session.sessionId = newSession.id;
     console.log("New session id: " + req.session.sessionId);
@@ -177,12 +124,39 @@ async function saveSession(req)
     return promise;
 }
 
-
-
-
 // may want to make this a reusable function to remove multiple sessions?
 // const removeSession
 
+const removeSession = async(req, res) =>
+{
+
+}
+
+// remove all the sessions for a specific user
+// userId is the id of the user whose session should be removed
+// excluded is an array of session id's to not remove
+//     - this is mainly for when regenerating a users session due to some account update
+const removeAllSessions = async(req, res, userId, excluded) =>
+{
+    res.locals.function = "removeAllSessions";
+    res.locals.file = "sessions.js";
+    //1. get the users sessions
+    let sessions = await models.UserSessions.findAll({
+        where: {
+            [Op.and]: [
+                {userId: userId},
+                {id: {[Op.notIn]: excluded}}
+            ]
+        }
+    });
+    console.log("Users sessions: ");
+    console.log(sessions);
+    //2. remove the sessions from redis
+        // - have to get RedisStore from app.js here somehow??? or create a connection here too..
+    //3. try to remove the sessions that were successfully removed from redis from the db
+    //4. make sure to inform of any errors...
+
+}
 
 // const getSessions
 
@@ -191,4 +165,4 @@ async function saveSession(req)
 
 
 
-export {createSession, regenerateSession, checkSession};
+export {createSession, regenerateSession, removeAllSessions};

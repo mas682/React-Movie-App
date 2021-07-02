@@ -21,11 +21,6 @@ const userSessions = (sequelize, DataTypes) => {
       type: DataTypes.BIGINT,
       allowNull: false,
       primaryKey: true
-  },
-  expiresAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
   }
   }, {
     sequelize,

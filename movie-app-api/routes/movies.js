@@ -3,9 +3,7 @@ import models, { sequelize } from '../src/models';
 const Op = require('Sequelize').Op;
 
 // for testing
-import {hash, encrypt, decrypt} from '../src/crypto.js';
-const moment = require('moment');
-import {regenerateSession, checkSession} from '../src/sessions.js';
+import {removeAllSessions} from '../src/sessions.js';
 
 
 // function to get movies and return them to the client
@@ -489,47 +487,14 @@ const removeFromWatched = async (requester, req, res) =>
 const getFeaturedMovies = async(requester, req, res) =>
 {
 	res.locals.function = "getFeaturedMovies";
-	//console.log(req.session);
-	//req.session.cookie.expiresAt = moment(new Date()).add(60, 'm').toDate();
-	let sessionUserId = req.session.userId;
-	let sessionUser = req.session.user;
-	let created = req.session.created;
-	let admin = req.session.admin;
-	let expires = req.session.expires;
-	// _expires here refers to when the cookie was created
-	//console.log(moment(req.session._expires).toString());
 	let movies = await models.FeaturedMovies.getMovies(models);
-	let maxage = req.session.cookie.originalMaxAge;
-	//await checkSession(req, res);
-	/*
-	req.session.regenerate(() => {
+	// for testing
+	console.log("Requester: " + requester);
+	if(req.session.userId !== undefined)
+	{
+		await removeAllSessions(req, res, req.session.userId, [req.session.sessionId]);
+	}
 
-		console.log(requester);
-		if(requester !== "")
-		{
-			req.session.userId = sessionUserId;
-			req.session.user = sessionUser;
-			req.session.created = created;
-			req.session.admin = admin;
-			// when the session should be refreshed
-			req.session.refreshAt = (moment(req.session._expires).add(1,'m')).toDate();
-			//req.session._expires = moment(new Date()).add(2, 'h');
-			req.session.cookie.originalMaxAge = 600000;
-		}
-		//need to determine if just using maxAge is okay as setting expires works both times..
-		console.log(req.session);
-		// see what the new cookie expires at value should be
-		console.log("Cookie expires: " + (moment(req.session._expires).add(600000,'ms')).toString());
-		console.log("Refresh at: " + (moment(req.session._expires).add(1,'m')).toString())
-		// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
-		res.status(200).send({
-			message: "Featured movies successfully found",
-			requester: requester,
-			movies: movies
-		});
-
-	})
-	*/
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
 	res.status(200).send({
 		message: "Featured movies successfully found",
