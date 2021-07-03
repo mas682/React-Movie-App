@@ -21,25 +21,6 @@ let redisClient = redis.createClient();
 const session = require('express-session');
 // create the redis store
 let redisStore = require('./src/redisStore.js').createStore(session, redisClient);
-let s =     session({
-        //secret: ['veryimportantsecret','notsoimportantsecret','highlyprobablysecret'],
-        secret: config.app.cookieKey,
-        name: config.app.cookieName,
-        saveUninitialized: false,
-        rolling: true,
-        cookie: {
-            httpOnly: true,
-            // should be true
-            secure: false,
-            sameSite: true,
-            //maxAge: 600000, // Time is in miliseconds,
-            maxAge: config.sessions.maxExpiringDuration, // Time is in miliseconds,
-        },
-        store: redisStore,
-        resave: false
-    });
-
-console.log(s);
 
 
 // to run, npm run server

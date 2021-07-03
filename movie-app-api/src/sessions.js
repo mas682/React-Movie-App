@@ -4,6 +4,7 @@ const moment = require('moment');
 const config = require('../Config.json');
 const Op = require('Sequelize').Op;
 let redisStore = require('../src/redisStore.js');
+let redis = require('../src/redis.js');
 
 
 
@@ -160,6 +161,23 @@ async function removeSession(store, session)
     return promise;
 }
 
+async function removePart2(client, sessions)
+{
+    let promise = await new Promise((resolve, reject) => {
+        client.del(sessions, (err, result) => {
+                if(err)
+                {
+                    reject(err);
+                }
+                resolve(result);
+            });
+    })
+    .catch((err) => {
+        throw err;
+    });
+    return promise;
+}
+
 // remove all the sessions for a specific user
 // userId is the id of the user whose session should be removed
 // excluded is an array of session id's to not remove
@@ -183,11 +201,25 @@ const removeAllSessions = async(req, res, userId, excluded) =>
     let ses = await getSessions(store);
     console.log("All sessions: ");
     console.log(ses);
-    let removed = await removeSession(store, 'g08so2giZs7cRNBc29Qp68m9ith4-M_E');
-    console.log("Removal result: ");
+    //let removed = await removeSession(store, 'g08so2giZs7cRNBc29Qp68m9ith4-M_E');
+    //console.log("Removal result: ");
     // returns 1 if removed, 0 if not there, error if something else happens
-    console.log(removed);
+    //console.log(removed);
+
+    let client = redis.getClient();
+    let remove = ["sess:S8fNU2YjJaRdKaPGJRoCvo5H4Idt1w2L","sess:BYcU4dlrT1ykBwRY8dkUr9xV3QcjmvAb",
+                    "sess:-MJYd-B5sVqBVIj7cxjz-1LItloAQ16P", "g08so2giZs7cRNBc29Qp68m9ith4-M_E"];
+    // returns number of keys removed, if not found, 0 returned for value
+    let result = await removePart2(client, remove);
+    console.log("Removal result: ");
+    console.log(result);
     //2. remove the sessions from redis
+        // for deletion...you may want to delete multiple at a time so you
+            // are doing less calls to redis
+            // will save a little overhead...
+            // but you may lose the 1/0 result that is output for each one..
+            // but as long as no error may be fine..
+
 
     //3. try to remove the sessions that were successfully removed from redis from the db
     //4. make sure to inform of any errors...
