@@ -151,8 +151,10 @@ const removeAllSessions = async(req, res, userId, excluded) =>
     });
     console.log("Users sessions: ");
     console.log(sessions);
+    console.log(req.session);
     //2. remove the sessions from redis
         // - have to get RedisStore from app.js here somehow??? or create a connection here too..
+    //    left off here, in app.js. and movies.js
     //3. try to remove the sessions that were successfully removed from redis from the db
     //4. make sure to inform of any errors...
 

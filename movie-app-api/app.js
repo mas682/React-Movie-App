@@ -3,7 +3,6 @@ import {badPageHandler} from './routes/badPageHandler.js';
 import {errorHandler} from './routes/errorHandler.js';
 
 const config = require('./Config.json');
-const errors = require('./ErrorCodes.json');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -14,12 +13,16 @@ const moment = require('moment');
 var app = express();
 const fetch = require('node-fetch');
 
-
-const redis = require('redis');
-const session = require('express-session');
-let RedisStore = require('connect-redis')(session);
+//const sessionHelpers = require('./src/sessions.js');
+// create the redis client
+let redis = require('./src/redis.js');
 let redisClient = redis.createClient();
-const sessionHelpers = require('./src/sessions.js');
+
+const session = require('express-session');
+// create the redis store
+let redisStore = require('./src/redisStore.js').createStore(session, redisClient);
+
+
 
 // to run, npm run server
 
@@ -61,7 +64,7 @@ app.use(
             //maxAge: 600000, // Time is in miliseconds,
             maxAge: config.sessions.maxExpiringDuration, // Time is in miliseconds,
         },
-        store: new RedisStore({ client: redisClient ,ttl: 86400}),
+        store: redisStore,
         resave: false
     })
 );
