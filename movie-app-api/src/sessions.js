@@ -3,6 +3,8 @@ import models, { sequelize } from '../src/models';
 const moment = require('moment');
 const config = require('../Config.json');
 const Op = require('Sequelize').Op;
+let redisStore = require('../src/redisStore.js');
+
 
 
 
@@ -124,12 +126,38 @@ async function saveSession(req)
     return promise;
 }
 
-// may want to make this a reusable function to remove multiple sessions?
-// const removeSession
-
-const removeSession = async(req, res) =>
+async function getSessions(store)
 {
+    let promise = await new Promise((resolve, reject) => {
+        store.ids((err, keys) => {
+                if(err)
+                {
+                    reject(err);
+                }
+                resolve(keys);
+            });
+    })
+    .catch((err) => {
+        throw err;
+    });
+    return promise;
+}
 
+async function removeSession(store, session)
+{
+    let promise = await new Promise((resolve, reject) => {
+        store.destroy(session, (err, result) => {
+                if(err)
+                {
+                    reject(err);
+                }
+                resolve(result);
+            });
+    })
+    .catch((err) => {
+        throw err;
+    });
+    return promise;
 }
 
 // remove all the sessions for a specific user
@@ -151,10 +179,16 @@ const removeAllSessions = async(req, res, userId, excluded) =>
     });
     console.log("Users sessions: ");
     console.log(sessions);
-    console.log(req.session);
+    let store = redisStore.getStore();
+    let ses = await getSessions(store);
+    console.log("All sessions: ");
+    console.log(ses);
+    let removed = await removeSession(store, 'g08so2giZs7cRNBc29Qp68m9ith4-M_E');
+    console.log("Removal result: ");
+    // returns 1 if removed, 0 if not there, error if something else happens
+    console.log(removed);
     //2. remove the sessions from redis
-        // - have to get RedisStore from app.js here somehow??? or create a connection here too..
-    //    left off here, in app.js. and movies.js
+
     //3. try to remove the sessions that were successfully removed from redis from the db
     //4. make sure to inform of any errors...
 
