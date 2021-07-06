@@ -54,14 +54,16 @@ app.use(
         secret: config.app.cookieKey,
         name: config.app.cookieName,
         saveUninitialized: false,
+        //unset:
         rolling: true,
         cookie: {
+            // needs to be set to true to prevent javascript from accessing client side
             httpOnly: true,
-            // should be true
+            // should be true to help avoid man in the middle attacks
             secure: false,
-            sameSite: true,
-            //maxAge: 600000, // Time is in miliseconds,
             maxAge: config.sessions.maxExpiringDuration, // Time is in miliseconds,
+            //domain: 'http://localhost:3000/',
+            sameSite: 'lax'
         },
         store: redisStore,
         resave: false

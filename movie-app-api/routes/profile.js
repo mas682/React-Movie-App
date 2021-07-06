@@ -3,7 +3,7 @@ import {validateUsernameParameter, validateIntegerParameter,
 import models, { sequelize } from '../src/models';
 import {removeImage} from './fileHandler.js';
 import {hash, checkHashedValue} from '../src/crypto.js';
-import {regenerateSession} from '../src/sessions.js';
+import {regenerateSession, removeAllSessions} from '../src/sessions.js';
 
 
 
@@ -577,14 +577,14 @@ const updatePassword = async (requester, req, res) =>
             user.password = result.value;
             user.lastLogin = new Date();
             user.passwordUpdatedAt = new Date();
+            // remove all existing sessions except for this one
+            await removeAllSessions(req, res, user.id, [req.session.id]);
             await user.save();
-            //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
             // update the session
             req.session.userId = user.id;
             req.session.user = user.username;
             req.session.admin = user.admin;
             await regenerateSession(req, res);
-            // also need to remove any other existing sessions for the user...
 
             res.status(200).send({
                 message: "Password updated",

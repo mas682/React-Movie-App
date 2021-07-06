@@ -3,6 +3,12 @@ import {getErrorHandler} from '../src/ErrorHandlers/errorReceiver.js';
 
 const errorHandler = (err, req, res, next) => {
     let result = getErrorHandler(err, res.locals.file, res.locals.function);
+    // if the error occurred while regenerating a session, destroy the session
+    if(res.locals.regeneratingSession !== undefined && res.locals.regeneratingSession)
+    {
+        console.log("Destorying users session");
+        req.session.destroy();
+    }
     if(result.log)
     {
         console.log(result.logMessage + "\nFile: " + res.locals.file + " Function: " + res.locals.function);
@@ -17,7 +23,7 @@ const errorHandler = (err, req, res, next) => {
         }
     }
 
-    let requester = (req.session.user === undefined) ? "" : req.session.user;
+    let requester = (req.session === undefined || req.session.user === undefined) ? "" : req.session.user;
     let status = result.status;
     let message = result.message;
 

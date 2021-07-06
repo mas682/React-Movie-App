@@ -2,10 +2,6 @@ import {validateIntegerParameter, validateUsernameParameter, validateStringParam
 import models, { sequelize } from '../src/models';
 const Op = require('Sequelize').Op;
 
-// for testing
-import {removeAllSessions} from '../src/sessions.js';
-
-
 // function to get movies and return them to the client
 const movieHandler = (req, res, next) => {
 	let requester = (req.session.user === undefined) ? "" : req.session.user;
@@ -488,13 +484,6 @@ const getFeaturedMovies = async(requester, req, res) =>
 {
 	res.locals.function = "getFeaturedMovies";
 	let movies = await models.FeaturedMovies.getMovies(models);
-	// for testing
-	console.log("Requester: " + requester);
-	if(req.session.userId !== undefined)
-	{
-		await removeAllSessions(req, res, req.session.userId, [req.session.sessionId]);
-	}
-
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
 	res.status(200).send({
 		message: "Featured movies successfully found",
