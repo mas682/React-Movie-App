@@ -10,6 +10,7 @@ import SignInPopup from './SignIn.js';
 import SignUpPopup from './SignUp.js';
 import SearchDropDown from './SearchDropDown.js';
 import ForgotPasswordPopup from './ForgotPasswordPopUp.js';
+import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 class Header extends React.Component {
     constructor(props){
@@ -55,6 +56,7 @@ class Header extends React.Component {
         this.generateSearchClickURL = this.generateSearchClickURL.bind(this);
         this.searchEnterHandler = this.searchEnterHandler.bind(this);
         this.searchCloseHandler = this.searchCloseHandler.bind(this);
+        this.logoutResultsHandler = this.logoutResultsHandler.bind(this);
     }
 
     signUpRemoveFunction = () =>
@@ -342,14 +344,34 @@ class Header extends React.Component {
 
     logout()
     {
-        document.cookie = "MovieAppCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        this.setState({currentUser: "", loggedIn: false});
-        this.props.updateLoggedIn("");
-        // clear the messages being displayed..
-        this.props.setMessages({
-            message: undefined,
-            clearMessages: true
+        let url = "http://localhost:9000/login/logout";
+        apiGetJsonRequest(url).then((result) =>{
+            let status = result[0];
+            let message = result[1].message;
+            let requester = result[1].requester;
+            this.logoutResultsHandler(status, message, requester);
         });
+    }
+
+    logoutResultsHandler(status, message, requester)
+    {
+        if(status === 200 || status === 401)
+        {
+            console.log(document.cookie);
+            document.cookie = "MF_API=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            this.setState({currentUser: "", loggedIn: false});
+            this.props.updateLoggedIn("");
+            // clear the messages being displayed..
+            this.props.setMessages({
+                message: undefined,
+                clearMessages: true
+            });
+        }
+        else
+        {
+            this.props.updateLoggedIn(requester);
+            this.props.setMessages({messages: [{message: message, type: "failure", timeout: 5000}]});
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState)

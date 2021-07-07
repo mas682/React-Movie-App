@@ -7,23 +7,25 @@ let redisStore = require('../src/redisStore.js');
 let redis = require('../src/redis.js');
 
 
-
-
 const createSession = async(user, req, res, expires) =>
 {
+    console.log("Creating session...")
     res.locals.function = "createSession";
     res.locals.file = "sessions.js";
 
     let counter = 0;
     let newSession;
     // try to generate the session up to 5 times if the session id is in use
+    res.locals.regeneratingSession = true;
     while(counter < 5)
     {
         try{
-            let newSession = await models.UserSessions.create({
+            newSession = await models.UserSessions.create({
                 session: req.session.id,
                 userId: user.id
             });
+            // break out of loop
+            counter = 5;
         }
         catch (err)
         {
@@ -43,6 +45,7 @@ const createSession = async(user, req, res, expires) =>
         }
         counter = counter + 1;
     }
+    res.locals.regenerateSession = false;
     let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     let duration = config.sessions.maxExpiringDuration * -1;
     req.session.userId = user.id;
@@ -68,6 +71,7 @@ const createSession = async(user, req, res, expires) =>
 
 const regenerateSession = async(req, res) =>
 {
+    console.log("Regenerating session...");
     res.locals.function = "regenerateSession";
     res.locals.file = "sessions.js";
     // used for error handling to keep track if session should be destroyed
@@ -94,10 +98,11 @@ const regenerateSession = async(req, res) =>
         try{
             // store the new session in the database
             newSession = await models.UserSessions.create({
-                //session: req.session.id,
-                session: 'J2D9fdnlfwxJ4FBXSG-G0aXuvB4XQcad',
+                session: req.session.id,
                 userId: sessionUserId
             });
+            // break out of loop
+            counter = 5;
         }
         catch (err)
         {
@@ -145,6 +150,23 @@ const regenerateSession = async(req, res) =>
         console.log("(Error code: 2100) Some unexpected result was returned when removing a users session: ");
         console.log(result);
     }
+}
+
+async function destroySession(req)
+{
+    let promise = await new Promise((resolve, reject) => {
+        req.session.destroy((err) => {
+                if(err)
+                {
+                    reject(err);
+                }
+                resolve();
+            });
+    })
+    .catch((err) => {
+        throw err;
+    });
+    return promise;
 }
 
 async function sessionGenerator(req)
@@ -286,4 +308,4 @@ async function removeAllSessions(req, res, userId, excluded)
 
 
 
-export {createSession, regenerateSession, removeAllSessions};
+export {createSession, regenerateSession, removeAllSessions, destroySession};

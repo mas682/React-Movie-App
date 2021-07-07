@@ -1,13 +1,14 @@
 import {verifyLogin} from './globals.js';
 import {getErrorHandler} from '../src/ErrorHandlers/errorReceiver.js';
+import {destroySession} from '../src/sessions.js';
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = async(err, req, res, next) => {
     let result = getErrorHandler(err, res.locals.file, res.locals.function);
     // if the error occurred while regenerating a session, destroy the session
     if(res.locals.regeneratingSession !== undefined && res.locals.regeneratingSession)
     {
         console.log("Destorying users session");
-        req.session.destroy();
+        await req.session.destroy();
     }
     if(result.log)
     {

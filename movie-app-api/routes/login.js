@@ -7,7 +7,7 @@ import {emailHandler} from './EmailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
 import {checkHashedValue, encrypt, decrypt} from '../src/crypto.js';
-import {createSession} from '../src/sessions.js';
+import {createSession, destroySession} from '../src/sessions.js';
 
 
 // function to see if a user can login and returns a cookie to use
@@ -95,6 +95,22 @@ const selectPath = (requester, req, res, next) =>
                 });
             }
         }
+        else if(req.params.type === "logout")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                logout(req, res)
+                .catch((err) => {next(err)});
+            }
+            else
+            {
+                res.status(401).send({
+                    message: "User not logged in",
+                    requester: requester
+                });
+            }
+        }
     }
     if(!routeFound)
     {
@@ -103,6 +119,27 @@ const selectPath = (requester, req, res, next) =>
             requester: requester
         });
     }
+}
+
+// function to remove a users session on logout
+const logout = async(req, res) =>
+{
+    res.locals.function = "logout"
+    let sessionId = req.session.id;
+    let userId = req.session.userId;
+    // remove the session from redis
+    await destroySession(req);
+    // remove the session from the database
+    await models.UserSessions.destroy({
+        where: {
+            session: sessionId,
+            userId: userId
+        }
+    });
+    res.status(200).clearCookie(cookieName).send({
+        message: "User successfully logged out",
+        requester: ""
+    });
 }
 
 const checkLogin = async (req, res) =>

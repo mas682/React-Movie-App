@@ -9,7 +9,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     expiresAt: {
       type: DataTypes.DATE,
-      allowNull: false
+      //allowNull: false
     },
     userEmail: {
       type: DataTypes.STRING(30),

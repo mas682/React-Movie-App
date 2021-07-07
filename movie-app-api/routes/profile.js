@@ -728,10 +728,16 @@ const removeUser = async (requester, req, res, next) =>
         });
         return;
     }
+    // hash the users password that was passed in
+    let result = checkHashedValue(password, "password", user.salt);
+    password = result.value;
     // check the users password against the requesters password
     let passwordValid = (currentUser) ? (userToRemove.password === password) : (user.password === password);
     if(passwordValid)
     {
+        // remove all existing sessions for the user
+        await removeAllSessions(req, res, userToRemove.id, []);
+        // remove the user
         let result = await userToRemove.destroy();
         if(result === undefined)
         {
@@ -748,9 +754,6 @@ const removeUser = async (requester, req, res, next) =>
             // if the user just deleted themself, return a empty cookie
             if(currentUser)
             {
-                //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-                // delete the session
-                await req.session.destory().promise();
                 requester = "";
             }
             res.status(200).send({

@@ -7,7 +7,7 @@ import {validateStringParameter, validateUsernameParameter, validateEmailParamet
         validateIntegerParameter} from './globals.js';
 import {emailHandler} from './EmailHandler.js';
 import {hash} from '../src/crypto.js';
-
+import {createSession} from '../src/sessions.js';
 
 // function to create an account
 const signUp = (req, res, next) => {
@@ -310,11 +310,7 @@ const createUser = async (requester, req, res) =>
     // if the user did not already exist and was successfully created
     if(created)
     {
-        // create users session
-        req.session.userId = user.id;
-        req.session.user = user.username;
-        req.session.created = new Date();
-        req.session.admin = user.admin;
+        await createSession(user, req, res, true);
         console.log("Adding 5 second delay");
         setTimeout(() =>{
             res.status(201).send({

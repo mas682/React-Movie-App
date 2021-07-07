@@ -125,7 +125,7 @@ class Landing extends React.Component {
 	async sendApiRequest(url, type)
 	{
 		await apiGetJsonRequest(url).then((result)=>{
-			let status = result.[0];
+			let status = result[0];
 			let message = result[1].message;
 			let requester = result[1].requester;
 			this.getMoviesResultsHandler(status, message, requester, result, type);
