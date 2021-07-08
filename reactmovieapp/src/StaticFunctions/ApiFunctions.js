@@ -66,8 +66,6 @@ const apiPostJsonRequest = (url, parameters, headers, json) =>
         };
     }
 
-    console.log(requestOptions);
-
     let status = 0;
     return fetch(url, requestOptions)
         .then(res => {

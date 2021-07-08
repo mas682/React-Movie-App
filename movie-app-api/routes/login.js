@@ -8,7 +8,7 @@ const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
 import {checkHashedValue, encrypt, decrypt} from '../src/crypto.js';
 import {createSession, destroySession} from '../src/sessions.js';
-
+const config = require('../Config.json');
 
 // function to see if a user can login and returns a cookie to use
 const login = (req, res, next) => {
@@ -136,7 +136,20 @@ const logout = async(req, res) =>
             userId: userId
         }
     });
-    res.status(200).clearCookie(cookieName).send({
+
+    // set the cookie options so the browser may remove the cookie
+    // needs to match cookie for sessions
+    let options = {
+        httpOnly: true,
+        // should be true
+        secure: false,
+        sameSite: 'lax',
+        path: '/'
+    }
+    // mark the cookie as expired
+    res.clearCookie(config.app.cookieName, options);
+
+    res.status(200).send({
         message: "User successfully logged out",
         requester: ""
     });

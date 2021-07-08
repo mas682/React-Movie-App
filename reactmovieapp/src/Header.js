@@ -357,8 +357,7 @@ class Header extends React.Component {
     {
         if(status === 200 || status === 401)
         {
-            console.log(document.cookie);
-            document.cookie = "MF_API=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            //document.cookie = "MF_API=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             this.setState({currentUser: "", loggedIn: false});
             this.props.updateLoggedIn("");
             // clear the messages being displayed..

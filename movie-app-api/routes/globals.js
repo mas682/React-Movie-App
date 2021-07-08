@@ -4,9 +4,11 @@
 
 var express = require('express');
 import models, { sequelize } from '../src/models';
-//var cookieParser = require('cookie-parser');
 var router = express.Router();
 const moment = require('moment');
+const config = require('../Config.json');
+
+
 // used to sign the cookie
 //router.use(cookieParser('somesecrettosigncookie'));
 
@@ -204,5 +206,28 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
     return true;
 };
 
+
+// function called on all requests except for ones where creating a session
+// used to tell client to remove cookie if there is no valid session associated
+// with the cookie
+// even if this is called when creating a session, the session is created after
+// so this should not cause any issues
+const clearCookie = (req, res, next) => {
+    // if there is no session associated with the cookie and a cookie is provided
+    if(req.session.user === undefined && req.headers.cookie !== undefined)
+    {
+        // set the cookie options so the browser may remove the cookie
+        let options = {
+            httpOnly: req.session.cookie.httpOnly,
+            secure: req.session.cookie.secure,
+            sameSite: req.session.cookie.sameSite,
+            path: req.session.cookie.path
+        }
+        res.clearCookie(config.app.cookieName, options);
+    }
+    next();
+}
+
 export {router, validateIntegerParameter, validateUsernameParameter,
-     validateStringParameter, validateEmailParameter, updateUserLoginAttempts};
+     validateStringParameter, validateEmailParameter, updateUserLoginAttempts
+    , clearCookie};

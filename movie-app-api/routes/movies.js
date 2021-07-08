@@ -1,6 +1,5 @@
 import {validateIntegerParameter, validateUsernameParameter, validateStringParameter} from './globals.js';
 import models, { sequelize } from '../src/models';
-const Op = require('Sequelize').Op;
 
 // function to get movies and return them to the client
 const movieHandler = (req, res, next) => {
@@ -483,8 +482,6 @@ const removeFromWatched = async (requester, req, res) =>
 const getFeaturedMovies = async(requester, req, res) =>
 {
 	res.locals.function = "getFeaturedMovies";
-	console.log("Featured movies");
-	console.log(req.session);
 	let movies = await models.FeaturedMovies.getMovies(models);
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
 	res.status(200).send({
