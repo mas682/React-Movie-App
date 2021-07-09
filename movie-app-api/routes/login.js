@@ -2,7 +2,7 @@ import models, { sequelize } from '../src/models';
 import {customAlphabet} from 'nanoid';
 const Op = require('Sequelize').Op;
 import {validateStringParameter, validateEmailParameter, validateUsernameParameter,
-        validateIntegerParameter, updateUserLoginAttempts} from './globals.js';
+        validateIntegerParameter, updateUserLoginAttempts, validateBooleanParameter} from './globals.js';
 import {emailHandler} from './EmailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
@@ -161,6 +161,7 @@ const checkLogin = async (req, res) =>
     // check login and generate cookie if login allowed
     let password = req.body.password;
     let username = req.body.username;
+    let stayLoggedIn = req.body.stayLoggedIn;
     // set to 30 as if allowing email will have to be longer
     let valid = validateUsernameParameter(undefined, username, "", "");
     // if not a valid username, check to see if valid email
@@ -170,6 +171,8 @@ const checkLogin = async (req, res) =>
         if(!valid) return;
     }
     valid = validateStringParameter(res, password, 6, 15, "", "Password must be between 6-15 characters");
+    if(!valid) return;
+    valid = validateBooleanParameter(res, stayLoggedIn, "", "Stay logged in must be either true or false");
     if(!valid) return;
     // find a user by their login
     let user = await models.User.findByLogin(req.body.username);
@@ -205,8 +208,7 @@ const checkLogin = async (req, res) =>
             console.log(errorObject);
         }
         // create session for user
-        // true indicates session expires...
-        await createSession(user, req, res, true);
+        await createSession(user, req, res, !stayLoggedIn);
 
         setTimeout(() =>{
             res.status(200).send({

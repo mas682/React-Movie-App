@@ -30,6 +30,22 @@ const updateUserLoginAttempts = async (user, username) => {
 }
 
 
+// function to validate that a parameter is a actual boolean value
+const validateBooleanParameter = (res, value, requester, message) => {
+    if(value === false || value === true)
+    {
+        return true;
+    }
+    else
+    {
+        res.status(400).send({
+            message: message,
+            requester: requester
+        });
+        return false;
+    }
+}
+
 // function to validate that a parameter is actually a integer
 // res is the response to use
 // value is the parameter value
@@ -230,4 +246,4 @@ const clearCookie = (req, res, next) => {
 
 export {router, validateIntegerParameter, validateUsernameParameter,
      validateStringParameter, validateEmailParameter, updateUserLoginAttempts
-    , clearCookie};
+    , clearCookie, validateBooleanParameter};

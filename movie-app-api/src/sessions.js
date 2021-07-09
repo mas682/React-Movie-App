@@ -57,7 +57,7 @@ const createSession = async(user, req, res, expires) =>
     // if the user wants a non expiring token
     if(!expires)
     {
-        req.session.cookie.maxAge = maxNonExpiringDuration;
+        req.session.cookie.maxAge = config.sessions.maxNonExpiringDuration;
     }
     console.log(req.session);
     let expiration = moment(req.session.cookie._expires).toString();

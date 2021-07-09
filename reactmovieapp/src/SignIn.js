@@ -20,7 +20,9 @@ class SignInPopup extends React.Component {
 			passwordError: "",
 			messages: [],
 			messageId: -1,
-			awaitingResults: false
+			awaitingResults: false,
+			// boolean for if the token should be persistent or not
+			rememberUser: false
 		};
 		this.openModal = this.openModal.bind(this);
 		this.closeModal = this.closeModal.bind(this);
@@ -31,6 +33,7 @@ class SignInPopup extends React.Component {
 		this.showForgotPassword = this.showForgotPassword.bind(this);
 		this.generateLoadingContent = this.generateLoadingContent.bind(this);
 		this.genereateLoginForm = this.genereateLoginForm.bind(this);
+		this.rememberUserHandler = this.rememberUserHandler.bind(this);
 	}
 
 	openModal() {
@@ -53,6 +56,11 @@ class SignInPopup extends React.Component {
 	{
 		this.props.showForgotPassword();
 		this.closeModal();
+	}
+
+	rememberUserHandler(event)
+	{
+		this.setState({rememberUser: event.target.checked});
 	}
 
 	changeHandler(event) {
@@ -95,7 +103,8 @@ class SignInPopup extends React.Component {
 		{
 			let params = {
 				username: this.state.username,
-				password: this.state.password
+				password: this.state.password,
+				stayLoggedIn: this.state.rememberUser
 			};
 			this.setState({
 				awaitingResults: true,
@@ -132,6 +141,14 @@ class SignInPopup extends React.Component {
 				this.setState({
 					awaitingResults: false,
 					passwordError: message
+				});
+			}
+			else if(message === "Stay logged in must be either true or false")
+			{
+				this.setState({
+					awaitingResults: false,
+					messageId: this.state.messageId + 1,
+					messages: [{type: "failure", message: message}]
 				});
 			}
 
@@ -280,7 +297,7 @@ class SignInPopup extends React.Component {
 				</div>
 				<div className="rememberForgot">
 					<label className={style.rememberText}>Remember Me
-						<input className="checkbox" type="checkbox"></input>
+						<input className="checkbox" type="checkbox" onClick={this.rememberUserHandler}></input>
 					</label>
 					<div className={style.forgotText}><button className="logInLink" onClick={this.showForgotPassword}>Forgot Password?</button></div>
 				</div>
