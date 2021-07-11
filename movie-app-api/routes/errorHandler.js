@@ -21,6 +21,7 @@ const errorHandler = async(err, req, res, next) => {
         else
         {
             console.log(errorObj);
+            console.log(err);
         }
     }
 

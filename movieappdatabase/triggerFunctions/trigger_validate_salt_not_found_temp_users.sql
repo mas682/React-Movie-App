@@ -22,7 +22,7 @@ begin
 			,MESSAGE='salt must be unique'
 			,COLUMN='salt'
 			,detail='Key (salt)=(' || new.salt ||') already exists'
-			,TABLE='users'
+			,TABLE='Users'
 			,SCHEMA='public';
   	else
 		return new;

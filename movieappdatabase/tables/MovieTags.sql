@@ -1,8 +1,8 @@
--- Table: public.movieTags
+-- Table: public.MovieTags
 
--- DROP TABLE public."movieTags";
+-- DROP TABLE public."MovieTags";
 
-CREATE TABLE public."movieTags"
+CREATE TABLE public."MovieTags"
 (
     id integer NOT NULL DEFAULT nextval('"movieTags_id_seq"'::regclass),
     value character varying(20) COLLATE pg_catalog."default",
@@ -14,26 +14,25 @@ CREATE TABLE public."movieTags"
 
 TABLESPACE pg_default;
 
-ALTER TABLE public."movieTags"
+ALTER TABLE public."MovieTags"
     OWNER to postgres;
-
 
 -- Trigger: set_createdAt
 
--- DROP TRIGGER "set_createdAt" ON public."movieTags";
+-- DROP TRIGGER "set_createdAt" ON public."MovieTags";
 
 CREATE TRIGGER "set_createdAt"
     BEFORE INSERT
-    ON public."movieTags"
+    ON public."MovieTags"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_created_timestamp();
 
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."movieTags";
+-- DROP TRIGGER set_timestamp ON public."MovieTags";
 
 CREATE TRIGGER set_timestamp
-    BEFORE INSERT OR UPDATE 
-    ON public."movieTags"
+    BEFORE INSERT OR UPDATE
+    ON public."MovieTags"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();

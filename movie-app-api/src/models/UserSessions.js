@@ -55,7 +55,7 @@ const userSessions = (sequelize, DataTypes) => {
   });
 
   UserSessions.associate = models => {
-      UserSessions.belongsTo(models.User, {as: "user", onDelete: 'CASCADE', foreignKey: "userId"});
+      UserSessions.belongsTo(models.Users, {as: "user", onDelete: 'CASCADE', foreignKey: "userId"});
   };
 
   return UserSessions;

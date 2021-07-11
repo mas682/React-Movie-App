@@ -1,8 +1,8 @@
--- Table: public.users
+-- Table: public.Users
 
--- DROP TABLE public.users;
+-- DROP TABLE public."Users";
 
-CREATE TABLE public.users
+CREATE TABLE public."Users"
 (
     id integer NOT NULL DEFAULT nextval('users_id_seq'::regclass),
     username character varying(20) COLLATE pg_catalog."default" NOT NULL,
@@ -31,32 +31,35 @@ CREATE TABLE public.users
 
 TABLESPACE pg_default;
 
-ALTER TABLE public.users
+ALTER TABLE public."Users"
     OWNER to postgres;
 
 -- Trigger: set_createdAt
 
--- DROP TRIGGER "set_createdAt" ON public.users;
+-- DROP TRIGGER "set_createdAt" ON public."Users";
 
 CREATE TRIGGER "set_createdAt"
     BEFORE INSERT
-    ON public.users
+    ON public."Users"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_created_timestamp();
 
+-- Trigger: set_timestamp
+
+-- DROP TRIGGER set_timestamp ON public."Users";
+
 CREATE TRIGGER set_timestamp
-    BEFORE UPDATE
-    ON public.users
+    BEFORE INSERT OR UPDATE
+    ON public."Users"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();
 
-
 -- Trigger: validate_salt_not_found
 
--- DROP TRIGGER validate_salt_not_found ON public.users;
+-- DROP TRIGGER validate_salt_not_found ON public."Users";
 
 CREATE TRIGGER validate_salt_not_found
     BEFORE INSERT OR UPDATE OF salt
-    ON public.users
+    ON public."Users"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_validate_salt_not_found_temp_users();

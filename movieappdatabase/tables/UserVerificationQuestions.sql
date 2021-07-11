@@ -18,7 +18,7 @@ CREATE TABLE public."UserVerificationQuestions"
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     CONSTRAINT "UserVerificationQuestions_userId_fkey" FOREIGN KEY ("userId")
-        REFERENCES public.users (id) MATCH SIMPLE
+        REFERENCES public."Users" (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )
@@ -37,7 +37,6 @@ CREATE TRIGGER "set_createdAt"
     ON public."UserVerificationQuestions"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
 
 -- Trigger: set_timestamp
 

@@ -175,8 +175,8 @@ const checkLogin = async (req, res) =>
     valid = validateBooleanParameter(res, stayLoggedIn, "", "Stay logged in must be either true or false");
     if(!valid) return;
     // find a user by their login
-    let user = await models.User.findByLogin(req.body.username);
-    let user2 = await models.User.findOne({
+    let user = await models.Users.findByLogin(req.body.username);
+    let user2 = await models.Users.findOne({
         where: { username: req.body.username },
         include: {
             model: models.UserSessions,
@@ -244,7 +244,7 @@ const forgotPassword = async (req, res) =>
         if(!valid) return;
     }
     // find a user by their login
-    let user = await models.User.findByLogin(req.body.username);
+    let user = await models.Users.findByLogin(req.body.username);
     let validationResult = await validateUserForVerification(user, res, true);
     let result = validationResult.result;
     if(!result) return;
@@ -318,7 +318,7 @@ const validatePassCode = async (req, res) =>
     valid = validateIntegerParameter(res, verificationCode, "", "Verification code invalid", undefined, undefined);
     if(!valid) return;
     // find a user by their login
-    let user = await models.User.findByLogin(req.body.username);
+    let user = await models.Users.findByLogin(req.body.username);
     let validationResult = await validateUserForVerification(user, res, false);
     let result = validationResult.result;
     // if a valid validation record does not exist, return

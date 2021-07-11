@@ -11,7 +11,7 @@ CREATE TABLE public."FeaturedMovies"
     CONSTRAINT "FeaturedMovies_pkey" PRIMARY KEY (id),
     CONSTRAINT "FeaturedMovies_uniq_key" UNIQUE ("movieId"),
     CONSTRAINT "FeaturedMovies_movieId_fkey" FOREIGN KEY ("movieId")
-        REFERENCES public.movies (id) MATCH SIMPLE
+        REFERENCES public."Movies" (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )

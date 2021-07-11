@@ -39,7 +39,7 @@ const getUser = async (requester, res) =>
 {
     res.locals.function = "getUser";
     // find a user by their login
-    let user = await models.User.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester);
     // if the user was not found
     if(user === null)
     {

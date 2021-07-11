@@ -4,16 +4,16 @@
 
 CREATE TABLE public."UserSessions"
 (
-    id bigint NOT NULL DEFAULT nextval('"UserSessions_id_seq"'::regclass),
     session character varying(64) COLLATE pg_catalog."default" NOT NULL,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
     "userId" bigint NOT NULL,
+    id bigint NOT NULL DEFAULT nextval('"UserSessions_id_seq"'::regclass),
     CONSTRAINT "UserSessions_pkey" PRIMARY KEY (id),
     CONSTRAINT "UserSessions_session_key" UNIQUE (session),
     CONSTRAINT "UserSessions_session_userId_key" UNIQUE ("userId", session),
     CONSTRAINT "UserSession_userId_fkey" FOREIGN KEY ("userId")
-        REFERENCES public.users (id) MATCH SIMPLE
+        REFERENCES public."Users" (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )

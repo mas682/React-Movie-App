@@ -1,5 +1,5 @@
-const movieGenreTable = (sequelize, DataTypes) => {
-    const MovieGenreTable = sequelize.define('MovieGenreTable',{
+const movieGenres = (sequelize, DataTypes) => {
+    const MovieGenres = sequelize.define('MovieGenres',{
         GenreId: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -20,12 +20,12 @@ const movieGenreTable = (sequelize, DataTypes) => {
         }
       }, {
         sequelize,
-        tableName: 'MovieGenreTables',
+        tableName: 'MovieGenres',
         schema: 'public',
         timestamps: false,
         indexes: [
           {
-            name: "MovieGenreTables_pkey",
+            name: "MovieGenres_pkey",
             unique: true,
             fields: [
               { name: "GenreId" },
@@ -35,13 +35,13 @@ const movieGenreTable = (sequelize, DataTypes) => {
         ]
     });
 
-    MovieGenreTable.associate = models => {
-        MovieGenreTable.belongsTo(models.Genre, {foreignKey: "GenreId"});
-        MovieGenreTable.belongsTo(models.Movies, {foreignKey: "movieId"});
+    MovieGenres.associate = models => {
+        MovieGenres.belongsTo(models.Genres, {foreignKey: "GenreId"});
+        MovieGenres.belongsTo(models.Movies, {foreignKey: "movieId"});
     };
 
 
-        return MovieGenreTable;
+        return MovieGenres;
 };
 
-export default movieGenreTable;
+export default movieGenres;

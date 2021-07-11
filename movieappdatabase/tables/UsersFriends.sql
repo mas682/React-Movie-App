@@ -10,11 +10,11 @@ CREATE TABLE public."UsersFriends"
     "followerId" integer NOT NULL,
     CONSTRAINT "UsersFriends_pkey" PRIMARY KEY ("followedId", "followerId"),
     CONSTRAINT "UsersFriends_followedId_fkey" FOREIGN KEY ("followedId")
-        REFERENCES public.users (id) MATCH SIMPLE
+        REFERENCES public."Users" (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     CONSTRAINT "UsersFriends_followerId_fkey" FOREIGN KEY ("followerId")
-        REFERENCES public.users (id) MATCH SIMPLE
+        REFERENCES public."Users" (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )
@@ -39,7 +39,7 @@ CREATE TRIGGER "set_createdAt"
 -- DROP TRIGGER set_timestamp ON public."UsersFriends";
 
 CREATE TRIGGER set_timestamp
-    BEFORE INSERT OR UPDATE 
+    BEFORE INSERT OR UPDATE
     ON public."UsersFriends"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();

@@ -20,7 +20,7 @@ const userWatchList = (sequelize, DataTypes) => {
         }
       }, {
         sequelize,
-        tableName: 'userWatchLists',
+        tableName: 'UserWatchLists',
         schema: 'public',
         timestamps: true,
         indexes: [
@@ -36,7 +36,7 @@ const userWatchList = (sequelize, DataTypes) => {
     });
 
     UserWatchList.associate = models => {
-        UserWatchList.belongsTo(models.User, { as: "user", foreignKey: "userId"});
+        UserWatchList.belongsTo(models.Users, { as: "user", foreignKey: "userId"});
         UserWatchList.belongsTo(models.Movies, { as: "movie", foreignKey: "movieId"});
     }
 

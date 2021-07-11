@@ -68,7 +68,7 @@ const getAllRelatedItems = async (requester, req, res) =>
 	count = (count > defaultMax) ? defaultMax : count;
 	// find the movies containing the value
 	let movies = await models.Movies.findByTitle(value, count, 0);
-    let users = await models.User.findUsers(value, count, 0);
+    let users = await models.Users.findUsers(value, count, 0);
 	res.status(200).send({
 		requester: requester,
 		message: "Search results successfully found",
@@ -154,7 +154,7 @@ const getUsers = async (requester, req, res) =>
 	if(!valid) return;
 	// if the count is a integer, make sure it is not larger than the max value
 	count = (count > defaultMax) ? defaultMax : count;
-	let users = await models.User.findUsers(userToFind, count, offset);
+	let users = await models.Users.findUsers(userToFind, count, offset);
 	res.status(200).send({
 		message: "Search results successfully found",
 		requester: requester,

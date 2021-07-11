@@ -1,10 +1,10 @@
--- Table: public.movies
+-- Table: public.Movies
 
--- DROP TABLE public.movies;
+-- DROP TABLE public."Movies";
 
-CREATE TABLE public.movies
+CREATE TABLE public."Movies"
 (
-	id integer NOT NULL DEFAULT nextval('movies_id_seq'::regclass),
+    id integer NOT NULL DEFAULT nextval('movies_id_seq'::regclass),
     title character varying(255) COLLATE pg_catalog."default",
     revenue integer,
     director character varying(255) COLLATE pg_catalog."default",
@@ -24,38 +24,38 @@ CREATE TABLE public.movies
     status character varying(255) COLLATE pg_catalog."default",
     homepage character varying(255) COLLATE pg_catalog."default",
     imdb_id character varying(100) COLLATE pg_catalog."default",
-	tmdb_id integer NOT NULL,
+    tmdb_id integer NOT NULL,
     "originalLanguage" character varying(20) COLLATE pg_catalog."default",
-	"userRating" numeric(10, 2) NOT NULL DEFAULT 0,
-	"totalUserRatings"  bigint NOT NULL DEFAULT 0,
-	"createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	"updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userRating" numeric(10,2) NOT NULL DEFAULT 0.0,
+    "totalUserRatings" bigint NOT NULL DEFAULT 0,
     CONSTRAINT movies_pkey PRIMARY KEY (id),
-	CONSTRAINT movies_imdb_id_key UNIQUE (imdb_id),
-	CONSTRAINT movies_tmdb_id_key UNIQUE (tmdb_id)
+    CONSTRAINT movies_imdb_id_key UNIQUE (imdb_id),
+    CONSTRAINT movies_tmdb_id_key UNIQUE (tmdb_id)
 )
 
 TABLESPACE pg_default;
 
-ALTER TABLE public.movies
+ALTER TABLE public."Movies"
     OWNER to postgres;
 
 -- Trigger: set_createdAt
 
--- DROP TRIGGER "set_createdAt" ON public.movies;
+-- DROP TRIGGER "set_createdAt" ON public."Movies";
 
 CREATE TRIGGER "set_createdAt"
     BEFORE INSERT
-    ON public.movies
+    ON public."Movies"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_created_timestamp();
 
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public.movies;
+-- DROP TRIGGER set_timestamp ON public."Movies";
 
 CREATE TRIGGER set_timestamp
     BEFORE UPDATE
-    ON public.movies
+    ON public."Movies"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();

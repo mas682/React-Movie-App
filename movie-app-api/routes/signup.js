@@ -296,7 +296,7 @@ const createUser = async (requester, req, res) =>
     await tempUser.destroy();
 
     // find the a user with the username or email sent
-    const [user, created] = await models.User.findOrCreate({where: {[Op.or]: [{username: username}, {email: email}]},
+    const [user, created] = await models.Users.findOrCreate({where: {[Op.or]: [{username: username}, {email: email}]},
         defaults: {
             username: username,
             email: email,

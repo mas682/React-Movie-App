@@ -9,7 +9,7 @@ CREATE FUNCTION public.trigger_delete_movie_rating()
     VOLATILE NOT LEAKPROOF
 AS $BODY$
 BEGIN
-	UPDATE public.movies
+	UPDATE public."Movies"
 	SET
 		"userRating" = CASE
 					       WHEN "totalUserRatings" = 1 or "userRating" = 0 THEN 0
@@ -17,7 +17,7 @@ BEGIN
 					   END,
 		"totalUserRatings" = "totalUserRatings" - 1
  	where "id" = old."movieId";
-    RETURN new;
+	RETURN old;
 END;
 $BODY$;
 

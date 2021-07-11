@@ -9,7 +9,7 @@ CREATE FUNCTION public.trigger_set_movie_rating()
     VOLATILE NOT LEAKPROOF
 AS $BODY$
 BEGIN
-	UPDATE public.movies
+	UPDATE public."Movies"
 	SET
 		"userRating" = CASE
 					       WHEN "totalUserRatings" = 0 or "userRating" = 0 THEN new.rating

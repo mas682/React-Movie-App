@@ -33,7 +33,7 @@ def connect(successfulOutput, failedOutput):
 def insertMovie(cur, insertValue, updateValue, successfulOutput, failedOutput):
     id = -2
     try:
-        cur.execute("""INSERT INTO public.movies(
+        cur.execute("""INSERT INTO public."Movies"(
                     title, revenue, director, "runTime", rating, trailer, "backgroundImage",
                     "releaseDate", overview, poster, "premiereReleaseDate", "theaterLimitedReleaseDate",
                     "theaterReleaseDate", "digitalReleaseDate", "physicalReleaseDate", "tvReleaseDate",

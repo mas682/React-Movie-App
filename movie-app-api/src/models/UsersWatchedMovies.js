@@ -1,5 +1,5 @@
-const usersWhoWatched = (sequelize, DataTypes) => {
-    const UsersWhoWatched = sequelize.define('usersWhoWatched', {
+const usersWatchedMovies = (sequelize, DataTypes) => {
+    const UsersWatchedMovies = sequelize.define('UsersWatchedMovies', {
         userId: {
           type: DataTypes.INTEGER,
           allowNull: false,
@@ -20,12 +20,12 @@ const usersWhoWatched = (sequelize, DataTypes) => {
         }
       }, {
         sequelize,
-        tableName: 'usersWhoWatcheds',
+        tableName: 'UsersWatchedMovies',
         schema: 'public',
         timestamps: true,
         indexes: [
           {
-            name: "usersWhoWatcheds_pkey",
+            name: "UsersWatchedMovies_pkey",
             unique: true,
             fields: [
               { name: "userId" },
@@ -35,12 +35,12 @@ const usersWhoWatched = (sequelize, DataTypes) => {
         ]
      });
 
-     UsersWhoWatched.associate = models => {
-         UsersWhoWatched.belongsTo(models.Movies, { as: "movie", foreignKey: "movieId"});
-         UsersWhoWatched.belongsTo(models.User, { as: "user", foreignKey: "userId"});
+     UsersWatchedMovies.associate = models => {
+         UsersWatchedMovies.belongsTo(models.Movies, { as: "movie", foreignKey: "movieId"});
+         UsersWatchedMovies.belongsTo(models.Users, { as: "user", foreignKey: "userId"});
      };
 
-    return UsersWhoWatched;
+    return UsersWatchedMovies;
 };
 
-export default usersWhoWatched;
+export default usersWatchedMovies;

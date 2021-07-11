@@ -233,7 +233,7 @@ const getFollowers = async (requester, req, res) =>
     if(!valid) return;
     // returns a empty array if no followers
     // null if invalid user
-    let followers = await models.User.getFollowers(username, req.session.userId, models);
+    let followers = await models.Users.getFollowers(username, req.session.userId, models);
     if(followers === null)
     {
         res.status(404).send({
@@ -258,7 +258,7 @@ const getFollowing = async (requester, req, res) =>
     let username = req.params.username;
     let valid = validateUsernameParameter(res, username, requester, "Username is invalid");
     if(!valid) return;
-    let following = await models.User.getFollowing(username, req.session.userId, models);
+    let following = await models.Users.getFollowing(username, req.session.userId, models);
     if(following === null)
     {
         res.status(404).send({
@@ -287,7 +287,7 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
     let valid = validateUsernameParameter(res, username, loggedInUser, "Username is invalid");
     if(!valid) return;
     // find a user by their login
-    let user = await models.User.findByLogin(username);
+    let user = await models.Users.findByLogin(username);
     // if the user was not found
     if(user === null)
     {
@@ -346,7 +346,7 @@ const getReviews = async (requester, req, res, cookieValid) =>
     if(!valid) return;
     max = (max > 50) ? 50 : max;
     // find the user by their login
-    let user = await models.User.findByLogin(username);
+    let user = await models.Users.findByLogin(username);
     if(user === null)
     {
         res.status(404).send({
@@ -357,7 +357,7 @@ const getReviews = async (requester, req, res, cookieValid) =>
     }
     if(cookieValid)
     {
-        let reviews = await models.Review.findByIds(models, [user.id], req.session.userId, max, offset);
+        let reviews = await models.Reviews.findByIds(models, [user.id], req.session.userId, max, offset);
         // send the reveiws associated with the user and their id
         res.status(200).send({
             message: "Reviews sucessfully found for the user",
@@ -367,7 +367,7 @@ const getReviews = async (requester, req, res, cookieValid) =>
     }
     else
     {
-        let reviews = await models.Review.findByIds(models, [user.id], undefined)
+        let reviews = await models.Reviews.findByIds(models, [user.id], undefined)
         // send the reveiws associated with the user and their id
         res.status(200).send({
             message: "Reviews successfully found for the user",
@@ -405,7 +405,7 @@ const getFeed = async (requester, req, res) =>
     // this will always return an array, even if the user does not exist
     // if the user does not exist, it will just be a empty array
     // if verified the user is logged in, should not really be an issue
-    let reviews = await models.Review.getUserReviewFeed(models, req.session.userId, max, offset);
+    let reviews = await models.Reviews.getUserReviewFeed(models, req.session.userId, max, offset);
 
     res.status(200).send({
         message: "Users feed successfully found",
@@ -428,7 +428,7 @@ const followUser = async (requester, req, res) =>
     let valid = validateUsernameParameter(res, followUname, requestingUser, "Username to follow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
-    let userToFollow = await models.User.findWithFollowing(followUname, req.session.userId);
+    let userToFollow = await models.Users.findWithFollowing(followUname, req.session.userId);
     if(userToFollow === null)
     {
         res.status(404).send({
@@ -484,7 +484,7 @@ const unfollowUser = async (requester, req, res) =>
     let valid = validateUsernameParameter(res, unfollowUname, requestingUser, "Username to unfollow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
-    let userToUnfollow = await models.User.findWithFollowing(unfollowUname, req.session.userId);
+    let userToUnfollow = await models.Users.findWithFollowing(unfollowUname, req.session.userId);
     if(userToUnfollow === null)
     {
         res.status(404).send({
@@ -559,7 +559,7 @@ const updatePassword = async (requester, req, res) =>
     }
     else
     {
-        let user = await models.User.findByLogin(requester);
+        let user = await models.Users.findByLogin(requester);
         if(user === null)
         {
             res.status(404).send({
@@ -635,7 +635,7 @@ const updateInfo = async (requester, req, res, next) =>
         return;
     }
     // find the user by their login
-    let user = await models.User.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester);
     if(user === null)
     {
         // sending 401 as if null user does not exist
@@ -699,7 +699,7 @@ const removeUser = async (requester, req, res, next) =>
         return;
     }
     // get the requester
-    let user = await models.User.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester);
     let userToRemove = user;
     let currentUser = (userNameToRemove === requester);
     // if the password is not provided, automatically deny
@@ -717,7 +717,7 @@ const removeUser = async (requester, req, res, next) =>
         {
             // update the user to remove to the correct user if the requester
             // is an admin
-            userToRemove = await models.User.findByLogin(userNameToRemove);
+            userToRemove = await models.Users.findByLogin(userNameToRemove);
         }
     }
     if(userToRemove === null)
@@ -809,7 +809,7 @@ const removeProfilePicture = async(requester, req, res) =>
     let status;
     let message;
     // find the user
-    let user = await models.User.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester);
     if(user === null)
     {
         // need to remove the file as the user no longer exists
@@ -873,7 +873,7 @@ const updateImage = async(requester, req, res) =>
         return;
     }
     // find the user
-    let user = await models.User.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester);
     let newPicture = req.locals.filename;
     if(user === null)
     {

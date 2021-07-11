@@ -62,7 +62,7 @@ const review = (sequelize, DataTypes) => {
         },
       }, {
         sequelize,
-        tableName: 'reviews',
+        tableName: 'Reviews',
         schema: 'public',
         hasTrigger: true,
         timestamps: true,
@@ -89,17 +89,17 @@ const review = (sequelize, DataTypes) => {
         // each review is associated with a movie
         Review.belongsTo(models.Movies, {as: "movie", foreignKey: "movieId", onDelete: 'CASCADE'});
         // each review is associated with a user
-        Review.belongsTo(models.User, {as: "user", onDelete: 'CASCADE', foreignKey: "userId"});
+        Review.belongsTo(models.Users, {as: "user", onDelete: 'CASCADE', foreignKey: "userId"});
         // each review can have many comments
-        Review.hasMany(models.Comment, {foreignKey: "reviewId"});
+        Review.hasMany(models.Comments, {foreignKey: "reviewId"});
         // each review can have many likes
-        Review.belongsToMany(models.User, {as:"likes", through: models.Like, foreignKey: "reviewId", otherKey: "userId", onDelete: 'CASCADE'});
+        Review.belongsToMany(models.Users, {as:"likes", through: models.Likes, foreignKey: "reviewId", otherKey: "userId", onDelete: 'CASCADE'});
         // each review can have many good tags
-        Review.belongsToMany(models.MovieTag, {as: "goodTags", through: models.ReviewGoodTags, foreignKey: "reviewId", otherKey: "movieTagId", onDelete: 'CASCADE'});
-        Review.belongsToMany(models.MovieTag, {as: "badTags", through: models.ReviewBadTags, foreignKey: "reviewId", otherKey: "movieTagId", onDelete: 'CASCADE'});
+        Review.belongsToMany(models.MovieTags, {as: "goodTags", through: models.ReviewGoodTags, foreignKey: "reviewId", otherKey: "movieTagId", onDelete: 'CASCADE'});
+        Review.belongsToMany(models.MovieTags, {as: "badTags", through: models.ReviewBadTags, foreignKey: "reviewId", otherKey: "movieTagId", onDelete: 'CASCADE'});
         Review.hasMany(models.ReviewBadTags, {as: "reviewBadTags", foreignKey: "reviewId"});
         Review.hasMany(models.ReviewGoodTags, {as: "reviewGoodTags", foreignKey: "reviewId"});
-        Review.hasMany(models.Like, {as: "reviewLikes",foreignKey: "reviewId"});
+        Review.hasMany(models.Likes, {as: "reviewLikes",foreignKey: "reviewId"});
     };
 
     // function to get reviews for a set of users
@@ -110,13 +110,13 @@ const review = (sequelize, DataTypes) => {
     {
         let includeArray = [
             {
-                model: models.User,
+                model: models.Users,
                 as: "user",
                 attributes: ["username", "picture"],
                 duplicating: false
             },
             {
-                model: models.MovieTag,
+                model: models.MovieTags,
                 as: "goodTags",
                 // included the id to make one less query needed to find tag
                 attributes:["id", "value"],
@@ -125,7 +125,7 @@ const review = (sequelize, DataTypes) => {
                 duplicating: false
             },
             {
-                model: models.MovieTag,
+                model: models.MovieTags,
                 as: "badTags",
                 // included the id to make one less query needed to find tag
                 attributes: ["id", "value"],
@@ -133,7 +133,7 @@ const review = (sequelize, DataTypes) => {
                 duplicating: false
             },
             {
-                model: models.User,
+                model: models.Users,
                 as: "likes",
                 required: false,
                 attributes: [],
@@ -190,12 +190,12 @@ const review = (sequelize, DataTypes) => {
     {
         let includeArray = [
             {
-                model: models.User,
+                model: models.Users,
                 as: "user",
                 attributes: ["username", "id"]
             },
             {
-                model: models.MovieTag,
+                model: models.MovieTags,
                 as: "goodTags",
                 // included the id to make one less query needed to find tag
                 attributes:["id", "value"],
@@ -203,14 +203,14 @@ const review = (sequelize, DataTypes) => {
                 through: {attributes: []}
             },
             {
-                model: models.MovieTag,
+                model: models.MovieTags,
                 as: "badTags",
                 // included the id to make one less query needed to find tag
                 attributes: ["id", "value"],
                 through: {attributes: []}
             },
             {
-                model: models.User,
+                model: models.Users,
                 as: "likes",
                 required: false,
                 attributes: [],
@@ -264,7 +264,7 @@ const review = (sequelize, DataTypes) => {
             // include the following models with the specified attributes
             include:[
                 {
-                    model: models.MovieTag,
+                    model: models.MovieTags,
                     as: "goodTags",
                     // included the id to make one less query needed to find tag
                     attributes:["id", "value"],
@@ -272,7 +272,7 @@ const review = (sequelize, DataTypes) => {
                     through: {attributes: []}
                 },
                 {
-                    model: models.MovieTag,
+                    model: models.MovieTags,
                     as: "badTags",
                     // included the id to make one less query needed to find tag
                     attributes: ["id", "value"],
@@ -286,11 +286,11 @@ const review = (sequelize, DataTypes) => {
     // function to get a review and include a specific user who liked it
     Review.getReviewWithLikedUser = async (reviewId, userId, models) =>
     {
-        return models.Review.findOne({
+        return models.Reviews.findOne({
             where: {id: reviewId},
             include: [
                 {
-                    model: models.User,
+                    model: models.Users,
                     as: "likes",
                     where: {id: userId},
                     required: false
@@ -305,7 +305,7 @@ const review = (sequelize, DataTypes) => {
     // check to see if the userId follows them when getting the review
     Review.getReviewForComment = async(reviewId, userId, commentId, models) =>
     {
-        return models.Review.findOne({
+        return models.Reviews.findOne({
             where: {id: reviewId},
             include: []
         });
@@ -319,15 +319,15 @@ const review = (sequelize, DataTypes) => {
         let review = await Review.findOne({
             where: {id: reviewId},
             include: [{
-                model: models.Comment,
+                model: models.Comments,
                 attributes:["id", "value", "createdAt"],
                 include:[
                     {
-                        model: models.User,
+                        model: models.Users,
                         attributes: ["username"]
                     }]
             }],
-            order: [[models.Comment, 'createdAt', 'ASC']]
+            order: [[models.Comments, 'createdAt', 'ASC']]
         });
         // review could not be found
         if(review === null)
@@ -343,10 +343,10 @@ const review = (sequelize, DataTypes) => {
     // function to return a review and the user who created it
     Review.getReviewWithCreator = async(reviewId, models) =>
     {
-        return models.Review.findOne({
+        return models.Reviews.findOne({
             where: {id: reviewId},
             include: [{
-                model: models.User,
+                model: models.Users,
                 as: "user",
                 attributes: ["username", "id"]
             }]
@@ -364,7 +364,7 @@ const review = (sequelize, DataTypes) => {
             attributes: ["username"],
             include: [
                 {
-                    model: models.User,
+                    model: models.Users,
                     as: "Followers",
                     attributes:["username"],
                     where: {id: userId},
@@ -374,7 +374,7 @@ const review = (sequelize, DataTypes) => {
                     }
                 },
                 {
-                    model: models.Like,
+                    model: models.Likes,
                     as: "like",
                     attributes: []
                 }
@@ -392,12 +392,12 @@ const review = (sequelize, DataTypes) => {
     {
         let includeArray = [
             {
-                model: models.User,
+                model: models.Users,
                 as: "user",
                 attributes: ["username", "picture"],
                 required: true,
                 include: {
-                    model: models.User,
+                    model: models.Users,
                     as: "Followers",
                     attributes: ["username"],
                     through: {attributes: []},
@@ -408,7 +408,7 @@ const review = (sequelize, DataTypes) => {
                 duplicating: false
             },
             {
-                model: models.MovieTag,
+                model: models.MovieTags,
                 as: "goodTags",
                 // included the id to make one less query needed to find tag
                 attributes:["id", "value"],
@@ -417,7 +417,7 @@ const review = (sequelize, DataTypes) => {
                 duplicating: false
             },
             {
-                model: models.MovieTag,
+                model: models.MovieTags,
                 as: "badTags",
                 // included the id to make one less query needed to find tag
                 attributes: ["id", "value"],
@@ -425,7 +425,7 @@ const review = (sequelize, DataTypes) => {
                 duplicating: false
             },
             {
-                model: models.User,
+                model: models.Users,
                 as: "likes",
                 required: false,
                 attributes: [],

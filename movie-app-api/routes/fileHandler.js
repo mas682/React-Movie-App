@@ -35,7 +35,7 @@ const storage = multerS3({
                     filename = filename + "." + fileExt;
                     try
                     {
-                        nameInUse = await models.User.hasPictureFileName(filename);
+                        nameInUse = await models.Users.hasPictureFileName(filename);
                     }
                     catch(err)
                     {

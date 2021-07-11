@@ -66,7 +66,7 @@ const createReview = async (cookie, req, res) =>
     let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, movieId, false, undefined, false);
     if(!valid) return;
 
-    let review = await models.Review.findOrCreate({
+    let review = await models.Reviews.findOrCreate({
         where: {
             userId: userId,
             movieId: movieId
@@ -162,7 +162,7 @@ const updateReview = async (cookie, req, res) =>
     let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, undefined, true, reviewId, true);
     if(!valid) return;
 
-    let review = await models.Review.findByIdForUpdate(models, reviewId);
+    let review = await models.Reviews.findByIdForUpdate(models, reviewId);
     if(review === null || review === undefined || review.length < 1)
     {
         res.status(404).send({
@@ -246,7 +246,7 @@ const updateReview = async (cookie, req, res) =>
     failed = validateAddTagResult(warnings, res, requester);
     if(failed) return;
     let errorMessages = generateAddTagErrorMessages(warnings);
-    let updatedReview = await models.Review.findByIdWithLikes(models, review.id, userId);
+    let updatedReview = await models.Reviews.findByIdWithLikes(models, review.id, userId);
     if(updatedReview === null || updatedReview === undefined || updatedReview.length < 1)
     {
         updatedReview = undefined;
@@ -480,12 +480,12 @@ const findOrCreateTag = async (models, tag, reviewId, type) =>{
     // find the tag or create it if it does not exist
     if(typeof(tag) === "string")
     {
-        result = await models.MovieTag.findOrCreateByValue(models, tag, reviewId, type);
+        result = await models.MovieTags.findOrCreateByValue(models, tag, reviewId, type);
     }
     else
     {
         // the type of the tag is a object with {value: "tagValue", id: tagId(int)}
-        result = await models.MovieTag.findOrCreateById(models, tag, reviewId, type);
+        result = await models.MovieTags.findOrCreateById(models, tag, reviewId, type);
     }
     let newTag;
     // if the tag is already associated with the review

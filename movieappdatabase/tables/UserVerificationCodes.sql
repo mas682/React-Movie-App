@@ -5,18 +5,18 @@
 CREATE TABLE public."UserVerificationCodes"
 (
     id integer NOT NULL DEFAULT nextval('userverificationcodes_id_seq'::regclass),
-    "userEmail" character varying(30) COLLATE pg_catalog."default" NOT NULL,
-    username character varying(20) COLLATE pg_catalog."default" NOT NULL,
-    code character varying(6) COLLATE pg_catalog."default" NOT NULL,
-    "verificationAttempts" integer NOT NULL DEFAULT 0,
-    "codesResent" integer NOT NULL DEFAULT 0,
-    "expiresAt" timestamp with time zone NOT NULL,
-    password character varying(44) COLLATE pg_catalog."default" NOT NULL,
-    salt character varying(44) COLLATE pg_catalog."default" NOT NULL,
-    "firstName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
-    "lastName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
     "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
+    "expiresAt" timestamp with time zone NOT NULL,
+    "userEmail" character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    username character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    "verificationAttempts" integer NOT NULL DEFAULT 0,
+    "codesResent" integer NOT NULL DEFAULT 0,
+    code character varying(6) COLLATE pg_catalog."default" NOT NULL,
+    password character varying(44) COLLATE pg_catalog."default" NOT NULL,
+    "firstName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
+    "lastName" character varying COLLATE pg_catalog."default" NOT NULL,
+    salt character varying(44) COLLATE pg_catalog."default" NOT NULL,
     CONSTRAINT "UserVerificationCodes_pkey" PRIMARY KEY (id),
     CONSTRAINT "UserVerificationCodes_salt_key" UNIQUE (salt)
 )

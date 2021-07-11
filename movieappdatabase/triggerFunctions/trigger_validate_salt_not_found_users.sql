@@ -14,7 +14,7 @@ begin
 	select
 		into uSalt
 		salt
-  	FROM public.users
+  	FROM public."Users"
   	WHERE salt = new.salt;
 	if (uSalt = new.salt) then
 		RAISE unique_violation

@@ -17,6 +17,16 @@ TABLESPACE pg_default;
 ALTER TABLE public."Genres"
     OWNER to postgres;
 
+-- Trigger: set_createdAt
+
+-- DROP TRIGGER "set_createdAt" ON public."Genres";
+
+CREATE TRIGGER "set_createdAt"
+    BEFORE INSERT
+    ON public."Genres"
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
+
 -- Trigger: set_timestamp
 
 -- DROP TRIGGER set_timestamp ON public."Genres";
@@ -26,13 +36,3 @@ CREATE TRIGGER set_timestamp
     ON public."Genres"
     FOR EACH ROW
     EXECUTE PROCEDURE public.trigger_set_timestamp();
-
-    -- Trigger: set_createdAt
-
--- DROP TRIGGER "set_createdAt" ON public."Genres";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."Genres"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();

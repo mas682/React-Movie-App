@@ -39,7 +39,7 @@ begin
 	select
   		into uName, uEmail
 		username, email
-  	FROM public.users
+  	FROM public."Users"
   	WHERE username = new.username or email = new."userEmail";
 	if (uName = new.username) then
 		RAISE unique_violation

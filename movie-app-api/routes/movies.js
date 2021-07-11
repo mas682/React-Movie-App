@@ -187,7 +187,7 @@ const getMovieTagSuggestions = async (requester, req, res) =>
 	if(!valid) return;
 	// going to need a tag table
 	// then add tags to good/bad table like the likes table
-	let tags = await models.MovieTag.findByValue(models, value, 10);
+	let tags = await models.MovieTags.findByValue(models, value, 10);
 	if(tags === undefined)
 	{
 		res.status(404).send({
@@ -261,7 +261,7 @@ const getWatchList = async(requester, req, res) =>
 	if(!valid) return;
 	max = (max > 50) ? 50 : max;
 	// returns an empty array if no movies found that are associted with the user even if the userId doesn't exist
-	let movies = await models.User.getWatchList(req.session.userId, models, max, offset);
+	let movies = await models.Users.getWatchList(req.session.userId, models, max, offset);
 	res.status(200).send({
 		message: "Users watch list successfully found",
 		requester: requester,
@@ -279,7 +279,7 @@ const getWatchedList = async(requester, req, res) =>
 	valid = validateIntegerParameter(res, offset, requester, "The offset for the movies to return is invalid", 0, undefined);
 	if(!valid) return;
 	max = (max > 50) ? 50 : max;
-	let movies = await models.User.getWatchedList(req.session.userId, models, max, offset);
+	let movies = await models.Users.getWatchedList(req.session.userId, models, max, offset);
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
 	res.status(200).send({
 		message: "Users watched list successfully found",
@@ -304,10 +304,11 @@ const addToWatchList = async (requester, req, res) =>
         });
         return;
     }
-    if(movie.dataValues.UserWatchLists.length < 1)
+	console.log(movie.dataValues);
+    if(movie.dataValues.WatchList.length < 1)
     {
         //let result = await user.addWatchList(movie.id);
-        let result = await movie.addUserWatchLists(req.session.userId);
+        let result = await movie.addWatchList(req.session.userId);
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watch list.  Error code: 1500";
@@ -352,10 +353,10 @@ const removeFromWatchList = async (requester, req, res) =>
         });
         return;
     }
-    if(movie.dataValues.UserWatchLists.length > 0)
+    if(movie.dataValues.WatchList.length > 0)
     {
         //let result = await user.addWatchList(movie.id);
-        let result = await movie.removeUserWatchLists(req.session.userId);
+        let result = await movie.removeWatchList(req.session.userId);
         if(result === undefined)
         {
 			let message = "A error occurred trying to remove the movie from the users watch list.  Error code: 1501"
@@ -399,10 +400,10 @@ const addToWatched = async (requester, req, res) =>
         });
         return;
     }
-    if(movie.dataValues.UsersWhoWatched.length < 1)
+    if(movie.dataValues.WatchedList.length < 1)
     {
         //let result = await user.addWatchList(movie.id);
-        let result = await movie.addUsersWhoWatched(req.session.userId);
+        let result = await movie.addWatchedList(req.session.userId);
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watched list.  Error code: 1502"
@@ -447,10 +448,10 @@ const removeFromWatched = async (requester, req, res) =>
         });
         return;
     }
-    if(movie.dataValues.UsersWhoWatched.length > 0)
+    if(movie.dataValues.WatchedList.length > 0)
     {
         //let result = await user.addWatchList(movie.id);
-        let result = await movie.removeUsersWhoWatched(req.session.userId);
+        let result = await movie.removeWatchedList(req.session.userId);
         if(result === undefined)
         {
 			let message = "A error occurred trying to remove the movie from the users watched list.  Error code: 1503"

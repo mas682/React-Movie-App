@@ -63,7 +63,7 @@ const comment = (sequelize, DataTypes) => {
     },
     {
         sequelize,
-        tableName: 'comments',
+        tableName: 'Comments',
         schema: 'public',
         timestamps: true,
         indexes: [
@@ -80,8 +80,8 @@ const comment = (sequelize, DataTypes) => {
     // associate bad tags with reviews
     // each tag can belong to many reviews
     Comment.associate = models => {
-        Comment.belongsTo(models.Review, {onDelete: 'CASCADE', foreignKey: "reviewId"});
-        Comment.belongsTo(models.User, {onDelete: 'CASCADE', foreignKey: "userId"});
+        Comment.belongsTo(models.Reviews, {onDelete: 'CASCADE', foreignKey: "reviewId"});
+        Comment.belongsTo(models.Users, {onDelete: 'CASCADE', foreignKey: "userId"});
     };
 
     // function to get comments for a review post
@@ -93,7 +93,7 @@ const comment = (sequelize, DataTypes) => {
             order: [["createdAt", 'ASC']],
             include:[
                 {
-                    model: models.User,
+                    model: models.Users,
                     attributes: ["username"]
                 }
             ]
@@ -104,12 +104,12 @@ const comment = (sequelize, DataTypes) => {
     // function to get a comment and the user that created it
     Comment.findById = async (models, id) =>
     {
-        let comment = await models.Comment.findOne({
+        let comment = await models.Comments.findOne({
             where: {id: id},
             attributes:["id", "value", "createdAt", "reviewId"],
             include:[
                 {
-                    model: models.User,
+                    model: models.Users,
                     attributes: ["username"]
                 }
             ]

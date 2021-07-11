@@ -11,7 +11,7 @@ const review = (req, res, next) =>
     if(requester !== "")
     {
         // get the reviews and pass the cookie
-        selectPath(requester, req, res);
+        selectPath(requester, req, res, next);
     }
     // if no cookie was found
     else
@@ -23,20 +23,21 @@ const review = (req, res, next) =>
 
 };
 
-const selectPath = (requester, req, res) =>
+const selectPath = (requester, req, res, next) =>
 {
     res.locals.function = "selectPath";
     let routeFound = false;
     if(req.method === "GET")
     {
-        let routeFound = false;
         if(req.params.reviewId !== undefined)
         {
             if(req.params.type === "getcomments")
             {
                 routeFound = true;
                 getComments(req, res, requester)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    next(err)
+                });
             }
         }
     }
@@ -129,7 +130,7 @@ const removePost = async (req, res, requester) =>
     if(!valid) return;
 
     // try to get the review
-    let review = await models.Review.getReviewWithCreator(reviewId, models);
+    let review = await models.Reviews.getReviewWithCreator(reviewId, models);
     if(review === null)
     {
         res.status(404).send({
@@ -183,7 +184,7 @@ const addLike = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
     // get the review
-    let review = await models.Review.getReviewWithLikedUser(reviewId, userId, models);
+    let review = await models.Reviews.getReviewWithLikedUser(reviewId, userId, models);
     if(review === null)
     {
         res.status(404).send({
@@ -236,7 +237,7 @@ const removeLike = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
     // get the review
-    let review = await models.Review.getReviewWithLikedUser(reviewId, userId, models);
+    let review = await models.Reviews.getReviewWithLikedUser(reviewId, userId, models);
     if(review === null)
     {
         res.status(404).send({
@@ -287,7 +288,7 @@ const getLikes = async (requester, req, res) =>
     if(!valid) return;
     // test to make sure valid number as well
     // holds the ids of the users who are already followed
-    let usersWhoLiked = await models.Review.getLikes(reviewId, req.session.userId, models);
+    let usersWhoLiked = await models.Reviews.getLikes(reviewId, req.session.userId, models);
     if(usersWhoLiked === null)
     {
         res.status(404).send({
@@ -321,7 +322,7 @@ const postComment = async (req, res, requester) =>
     let reviewId = req.body.reviewId;
     valid = validateIntegerParameter(res, reviewId, requester, "The review ID for the comment is invalid");
     if(!valid) return;
-    let review = await models.Review.getReviewForComment(reviewId, req.session.userId, undefined, models);
+    let review = await models.Reviews.getReviewForComment(reviewId, req.session.userId, undefined, models);
     if(review === null)
     {
         res.status(404).send({
@@ -332,7 +333,7 @@ const postComment = async (req, res, requester) =>
     }
     else
     {
-        let newComment = await models.Comment.create({
+        let newComment = await models.Comments.create({
             value: comment,
             userId: req.session.userId,
             reviewId: reviewId,
@@ -358,7 +359,7 @@ const updateComment = async (req, res, requester) =>
     valid = validateIntegerParameter(res, commentId, requester, "The comment ID to update is invalid");
     if(!valid) return;
     // try to get the comment
-    let comment = await models.Comment.findById(models, commentId);
+    let comment = await models.Comments.findById(models, commentId);
     if(comment === null)
     {
         res.status(404).send({
@@ -411,7 +412,7 @@ const removeComment = async (req, res, requester) =>
     let valid = validateIntegerParameter(res, commentId, requester, "The comment ID to remove is invalid");
     if(!valid) return;
     // try to get the comment
-    let comment = await models.Comment.findById(models, commentId);
+    let comment = await models.Comments.findById(models, commentId);
     if(comment === null)
     {
         res.status(404).send({
@@ -425,7 +426,7 @@ const removeComment = async (req, res, requester) =>
         if(requester !== comment.user.username)
         {
             // get the review to see who posted it
-            let review = await models.Review.findOne({
+            let review = await models.Reviews.findOne({
                 where: {id: comment.reviewId},
                 attributes: ["userId"]
             });
@@ -489,9 +490,11 @@ const getComments = async(req, res, requester) =>
     let reviewId = req.params.reviewId;
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID to get the comments is invalid");
     if(!valid) return;
-    let comments = await models.Review.getReviewComments(reviewId, req.session.userId, models);
+    let comments = await models.Reviews.getReviewComments(reviewId, req.session.userId, models);
+    console.log(comments);
     if(comments === null)
     {
+        console.log("1");
         res.status(404).send({
             message: "Review could not be found",
             requester: requester

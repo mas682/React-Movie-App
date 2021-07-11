@@ -398,11 +398,11 @@ const checkMovieOnWatchList = (movie, username) =>
     if(username === "") return false;
     let watchList = false;
     // make these two if's reusable functions...
-    if(movie.UserWatchLists !== undefined)
+    if(movie.WatchList !== undefined)
     {
-        if(movie.UserWatchLists.length > 0)
+        if(movie.WatchList.length > 0)
         {
-            if(movie.UserWatchLists[0].username === username)
+            if(movie.WatchList[0].username === username)
             {
                 watchList = true;
             }
@@ -416,11 +416,11 @@ const checkMovieOnWatchedList = (movie, username) =>
 {
     if(username === "") return false;
     let watched = false;
-    if(movie.UsersWhoWatched !== undefined)
+    if(movie.WatchedList !== undefined)
     {
-        if(movie.UsersWhoWatched.length > 0)
+        if(movie.WatchedList.length > 0)
         {
-            if(movie.UsersWhoWatched[0].username === username)
+            if(movie.WatchedList[0].username === username)
             {
                 watched = true;
             }

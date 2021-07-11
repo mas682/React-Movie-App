@@ -11,15 +11,15 @@ CREATE TABLE public."ReviewBadTags"
     "movieTagId" integer NOT NULL,
     CONSTRAINT "ReviewBadTags_pkey" PRIMARY KEY ("reviewId", "movieTagId"),
     CONSTRAINT "ReviewBadTags_movieTagId_fkey" FOREIGN KEY ("movieTagId")
-        REFERENCES public."movieTags" (id) MATCH SIMPLE
+        REFERENCES public."MovieTags" (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     CONSTRAINT "ReviewBadTags_reviewId_fkey" FOREIGN KEY ("reviewId")
-        REFERENCES public.reviews (id) MATCH SIMPLE
+        REFERENCES public."Reviews" (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     CONSTRAINT "ReviewBadTags_userId_fkey" FOREIGN KEY ("userId")
-        REFERENCES public.users (id) MATCH SIMPLE
+        REFERENCES public."Users" (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )

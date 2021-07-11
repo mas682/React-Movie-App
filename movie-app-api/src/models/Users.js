@@ -78,7 +78,7 @@ const user = (sequelize, DataTypes) => {
         }
       }, {
         sequelize,
-        tableName: 'users',
+        tableName: 'Users',
         schema: 'public',
         timestamps: true,
         indexes: [
@@ -112,13 +112,13 @@ const user = (sequelize, DataTypes) => {
     User.associate = models => {
         // the CASCADE says if the user is deleted, delete all
         // messages associated with the user
-        User.hasMany(models.Review, { onDelete: 'CASCADE' });
-        User.hasMany(models.Comment,{ onDelete: 'CASCADE' });
+        User.hasMany(models.Reviews, { onDelete: 'CASCADE' });
+        User.hasMany(models.Comments,{ onDelete: 'CASCADE' });
         User.hasMany(models.ReviewGoodTags, { foreignKey: { allowNull: false}, foreignKey: "userId"});
         User.hasMany(models.ReviewBadTags, { foreignKey: { allowNull: false}, foreignKey: "userId"});
-        User.belongsToMany(models.Review, { as: "LikedPosts", through: models.Like, onDelete: 'CASCADE' });
-        User.belongsToMany(models.Movies, {as: "WatchList", through: models.UserWatchList, onDelete: 'CASCADE', foreignKey: "userId", otherKey: "movieId" });
-        User.belongsToMany(models.Movies, {as: "WatchedMovie", through: models.UsersWhoWatched, onDelete: 'CASCADE', foreignKey: "userId", otherKey: "movieId" });
+        User.belongsToMany(models.Reviews, { as: "LikedPosts", through: models.Likes, onDelete: 'CASCADE' });
+        User.belongsToMany(models.Movies, {as: "WatchList", through: models.UserWatchLists, onDelete: 'CASCADE', foreignKey: "userId", otherKey: "movieId" });
+        User.belongsToMany(models.Movies, {as: "WatchedList", through: models.UsersWatchedMovies, onDelete: 'CASCADE', foreignKey: "userId", otherKey: "movieId" });
         // Below is used to associate users together
         // this belongsToMany sets the followed users Id to the user being followed
         User.belongsToMany(User, {
@@ -146,15 +146,15 @@ const user = (sequelize, DataTypes) => {
             foreignKey: 'followerId',
             otherKey: "followedId"
         });
-        User.belongsToMany(models.Review, { as: 'user', through: models.Like, foreignKey: "userId", otherKey: "reviewId" });
+        User.belongsToMany(models.Reviews, { as: 'user', through: models.Likes, foreignKey: "userId", otherKey: "reviewId" });
         //User.hasMany(UserVerificationQuestions, { as: "UserVerificationQuestions", foreignKey: "userId"});
         User.hasMany(models.UsersFriends, { as: "UsersFriends", foreignKey: "followedId"});
         User.hasMany(models.UsersFriends, { as: "follower_UsersFriends", foreignKey: "followerId"});
-        User.hasMany(models.Comment, { as: "userComments", foreignKey: "userId"});
-        User.hasMany(models.Like, { as: "userLikes", foreignKey: "userId"});
-        User.hasMany(models.Review, { as: "userReviews", foreignKey: "userId"});
-        User.hasMany(models.UserWatchList, { as: "userWatchLists", foreignKey: "userId"});
-        User.hasMany(models.UsersWhoWatched, { as: "usersWhoWatcheds", foreignKey: "userId"});
+        User.hasMany(models.Comments, { as: "userComments", foreignKey: "userId"});
+        User.hasMany(models.Likes, { as: "userLikes", foreignKey: "userId"});
+        User.hasMany(models.Reviews, { as: "userReviews", foreignKey: "userId"});
+        User.hasMany(models.UserWatchLists, { as: "UserWatchList", foreignKey: "userId"});
+        User.hasMany(models.UsersWatchedMovies, { as: "UserWatchedList", foreignKey: "userId"});
         User.hasMany(models.UserSessions, {as: "sessions", onDelete: 'CASCADE', foreignKey: "userId"});
     };
 
@@ -300,8 +300,8 @@ const user = (sequelize, DataTypes) => {
             offset: offset,
             include: [
                 {
-                    model: models.User,
-                    as: "UserWatchLists",
+                    model: models.Users,
+                    as: "WatchList",
                     required: true,
                     where: {id: userId},
                     attributes: ["username"],
@@ -310,8 +310,8 @@ const user = (sequelize, DataTypes) => {
                     }
                 },
                 {
-                    model: models.User,
-                    as: "UsersWhoWatched",
+                    model: models.Users,
+                    as: "WatchedList",
                     required: false,
                     where: {id: userId},
                     attributes: ["username"],
@@ -320,7 +320,7 @@ const user = (sequelize, DataTypes) => {
                     }
                 },
                 {
-                    model: models.Genre,
+                    model: models.Genres,
                     as: "Genres",
                     attributes: ["id", "value"],
                     through: {attributes: []}
@@ -337,8 +337,8 @@ const user = (sequelize, DataTypes) => {
             offset: offset,
             include: [
                 {
-                    model: models.User,
-                    as: "UserWatchLists",
+                    model: models.Users,
+                    as: "WatchList",
                     required: false,
                     where: {id: userId},
                     attributes: ["username"],
@@ -347,8 +347,8 @@ const user = (sequelize, DataTypes) => {
                     }
                 },
                 {
-                    model: models.User,
-                    as: "UsersWhoWatched",
+                    model: models.Users,
+                    as: "WatchedList",
                     required: true,
                     where: {id: userId},
                     attributes: ["username"],
@@ -357,7 +357,7 @@ const user = (sequelize, DataTypes) => {
                     }
                 },
                 {
-                    model: models.Genre,
+                    model: models.Genres,
                     as: "Genres",
                     attributes: ["id", "value"],
                     through: {attributes: []}

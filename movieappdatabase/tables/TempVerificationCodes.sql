@@ -14,7 +14,7 @@ CREATE TABLE public."TempVerificationCodes"
     "updatedAt" timestamp with time zone NOT NULL,
     CONSTRAINT "TempVerificationCodes_pkey" PRIMARY KEY (id),
     CONSTRAINT "TempVerificationCodes_userId_fkey" FOREIGN KEY ("userId")
-        REFERENCES public.users (id) MATCH SIMPLE
+        REFERENCES public."Users" (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 )

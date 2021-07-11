@@ -14,7 +14,7 @@ const movieTag = (sequelize, DataTypes) => {
         }
       }, {
         sequelize,
-        tableName: 'movieTags',
+        tableName: 'MovieTags',
         schema: 'public',
         timestamps: true,
         indexes: [
@@ -39,8 +39,8 @@ const movieTag = (sequelize, DataTypes) => {
     // associate bad tags with reviews
     // each tag can belong to many reviews
     MovieTag.associate = models => {
-        MovieTag.belongsToMany(models.Review, {as: "goodReviews", through: models.ReviewGoodTags, foreignKey: "movieTagId", otherKey: "reviewId", onDelete: 'CASCADE'});
-        MovieTag.belongsToMany(models.Review, {as: "badReviews", through: models.ReviewBadTags, foreignKey: "movieTagId", otherKey: "reviewId",  onDelete: 'CASCADE'});
+        MovieTag.belongsToMany(models.Reviews, {as: "goodReviews", through: models.ReviewGoodTags, foreignKey: "movieTagId", otherKey: "reviewId", onDelete: 'CASCADE'});
+        MovieTag.belongsToMany(models.Reviews, {as: "badReviews", through: models.ReviewBadTags, foreignKey: "movieTagId", otherKey: "reviewId",  onDelete: 'CASCADE'});
     };
 
     // function to find a tag or create one and include a review with it
@@ -52,7 +52,7 @@ const movieTag = (sequelize, DataTypes) => {
             result = await MovieTag.findOrCreate({
                 where: {value: tag},
                 include: {
-                    model: models.Review,
+                    model: models.Reviews,
                     as: "goodReviews",
                     where: {id: reviewId},
                     required: false
@@ -64,7 +64,7 @@ const movieTag = (sequelize, DataTypes) => {
             result = await MovieTag.findOrCreate({
                 where: {value: tag},
                 include: {
-                    model: models.Review,
+                    model: models.Reviews,
                     as: "badReviews",
                     where: {id: reviewId},
                     required: false
@@ -84,7 +84,7 @@ const movieTag = (sequelize, DataTypes) => {
                 where: {id: tag.id},
                 defaults: {value: tag.value},
                 include: {
-                    model: models.Review,
+                    model: models.Reviews,
                     as: "goodReviews",
                     where: {id: reviewId},
                     required: false
@@ -97,7 +97,7 @@ const movieTag = (sequelize, DataTypes) => {
                 where: {id: tag.id},
                 defaults: {value: tag.value},
                 include: {
-                    model: models.Review,
+                    model: models.Reviews,
                     as: "badReviews",
                     where: {id: reviewId},
                     required: false

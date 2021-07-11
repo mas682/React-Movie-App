@@ -44,8 +44,8 @@ const reviewBadTags = (sequelize, DataTypes) => {
     });
 
     ReviewBadTags.associate = models => {
-        ReviewBadTags.belongsTo(models.User, {foreignKey: "userId", onDelete: 'CASCADE'});
-        ReviewBadTags.belongsTo(models.Review, {foreignKey: "reviewId"});
+        ReviewBadTags.belongsTo(models.Users, {foreignKey: "userId", onDelete: 'CASCADE'});
+        ReviewBadTags.belongsTo(models.Reviews, {foreignKey: "reviewId"});
 
     };
 

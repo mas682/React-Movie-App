@@ -20,7 +20,7 @@ const like = (sequelize, DataTypes) => {
         }
         }, {
         sequelize,
-        tableName: 'likes',
+        tableName: 'Likes',
         schema: 'public',
         timestamps: true,
         indexes: [
@@ -36,7 +36,7 @@ const like = (sequelize, DataTypes) => {
         });
 
         Likes.associate = models => {
-            Likes.belongsTo(models.Review, { as: "review", foreignKey: "reviewId"});
+            Likes.belongsTo(models.Reviews, { as: "review", foreignKey: "reviewId"});
         };
 
     return Likes;

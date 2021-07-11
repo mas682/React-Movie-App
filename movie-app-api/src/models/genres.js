@@ -38,7 +38,7 @@ const genre = (sequelize, DataTypes) => {
     // associate genres with movies
     // each genre can belong to many movies
     Genre.associate = models => {
-        Genre.belongsToMany(models.Movies, {through: models.MovieGenreTable, foreignKey: "GenreId", otherKey: "movieId" });
+        Genre.belongsToMany(models.Movies, {through: models.MovieGenres, foreignKey: "GenreId", otherKey: "movieId" });
     };
 
     return Genre;

@@ -36,8 +36,8 @@ const usersFriends = (sequelize, DataTypes) => {
     });
 
     UsersFriends.associate = models => {
-        UsersFriends.belongsTo(models.User, { as: "followedFriend", foreignKey: "followedId"});
-        UsersFriends.belongsTo(models.User, { as: "followerFriend", foreignKey: "followerId"});
+        UsersFriends.belongsTo(models.Users, { as: "followedFriend", foreignKey: "followedId"});
+        UsersFriends.belongsTo(models.Users, { as: "followerFriend", foreignKey: "followerId"});
     };
 
 

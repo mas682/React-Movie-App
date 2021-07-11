@@ -109,7 +109,7 @@ const movie = (sequelize, DataTypes) => {
         }
       }, {
         sequelize,
-        tableName: 'movies',
+        tableName: 'Movies',
         schema: 'public',
         hasTrigger: true,
         timestamps: true,
@@ -141,17 +141,17 @@ const movie = (sequelize, DataTypes) => {
 
     Movie.associate = models => {
         // each movie can be associated with many reviews
-        Movie.hasMany(models.Review, {foreignKey: "movieId"});
+        Movie.hasMany(models.Reviews, {foreignKey: "movieId"});
         Movie.hasOne(models.FeaturedMovies, {foreignKey: "movieId"});
         // each movie can have many genres
-        Movie.belongsToMany(models.Genre, {through: models.MovieGenreTable, foreignKey: "movieId", otherKey: "GenreId" });
-        Movie.belongsToMany(models.User, {as: "UserWatchLists", through: models.UserWatchList, foreignKey: "movieId", otherKey: "userId", onDelete: 'CASCADE'});
-        Movie.belongsToMany(models.User, {as: "UsersWhoWatched", through: models.UsersWhoWatched, foreignKey: "movieId", otherKey: "userId", onDelete: 'CASCADE'});
-        Movie.hasMany(models.MovieGenreTable, { as: "MovieGenreTables", foreignKey: "movieId"});
-        Movie.hasMany(models.UserWatchList, {foreignKey: "movieId"});
-        Movie.hasMany(models.UsersWhoWatched, {foreignKey: "movieId"});
+        Movie.belongsToMany(models.Genres, {through: models.MovieGenres, foreignKey: "movieId", otherKey: "GenreId" });
+        Movie.belongsToMany(models.Users, {as: "WatchList", through: models.UserWatchLists, foreignKey: "movieId", otherKey: "userId", onDelete: 'CASCADE'});
+        Movie.belongsToMany(models.Users, {as: "WatchedList", through: models.UsersWatchedMovies, foreignKey: "movieId", otherKey: "userId", onDelete: 'CASCADE'});
+        Movie.hasMany(models.MovieGenres, { as: "MovieGenreTables", foreignKey: "movieId"});
+        Movie.hasMany(models.UserWatchLists, {foreignKey: "movieId"});
+        Movie.hasMany(models.UsersWatchedMovies, {foreignKey: "movieId"});
         // each movie can be associated with one featured movie
-        Movie.hasMany(models.Review, {foreignKey: "movieId"});
+        Movie.hasMany(models.Reviews, {foreignKey: "movieId"});
     };
 
     // function to get a movie and include a specific user who has it on their watch list
@@ -161,8 +161,8 @@ const movie = (sequelize, DataTypes) => {
             where: {id: movieId},
             include: [
                 {
-                    model: models.User,
-                    as: "UserWatchLists",
+                    model: models.Users,
+                    as: "WatchList",
                     where: {id: userId},
                     required: false
                 }
@@ -177,8 +177,8 @@ const movie = (sequelize, DataTypes) => {
             where: {id: movieId},
             include: [
                 {
-                    model: models.User,
-                    as: "UsersWhoWatched",
+                    model: models.Users,
+                    as: "WatchedList",
                     where: {id: userId},
                     required: false
                 }
@@ -848,7 +848,7 @@ const movie = (sequelize, DataTypes) => {
                 attributes: ["id"],
                 include: [
                     {
-                        model: models.Genre,
+                        model: models.Genres,
                         as: "Genres",
                         attributes: ["value"],
                         through: {attributes: []},
@@ -879,7 +879,7 @@ const movie = (sequelize, DataTypes) => {
             sortOrder = sort[1];
         }
         let genreQuery = {
-                model: models.Genre,
+                model: models.Genres,
                 as: "Genres",
                 attributes: ["id", "value"],
                 through: {
@@ -891,8 +891,8 @@ const movie = (sequelize, DataTypes) => {
         if(user !== undefined)
         {
             includeArray.push({
-                model: models.User,
-                as: "UserWatchLists",
+                model: models.Users,
+                as: "WatchList",
                 required: false,
                 where: {
                     username: user
@@ -903,8 +903,8 @@ const movie = (sequelize, DataTypes) => {
                 }
             });
             includeArray.push({
-                model: models.User,
-                as: "UsersWhoWatched",
+                model: models.Users,
+                as: "WatchedList",
                 required: false,
                 where: {
                     username: user
@@ -933,7 +933,7 @@ const movie = (sequelize, DataTypes) => {
 
         let includeArray = [];
         includeArray.push({
-            model: models.Genre,
+            model: models.Genres,
             as: "Genres",
             attributes: ["id", "value"],
             through: {attributes: []}
@@ -941,8 +941,8 @@ const movie = (sequelize, DataTypes) => {
         if(username !== undefined)
         {
             includeArray.push({
-                model: models.User,
-                as: "UserWatchLists",
+                model: models.Users,
+                as: "WatchList",
                 required: false,
                 where: {
                     username: username
@@ -953,8 +953,8 @@ const movie = (sequelize, DataTypes) => {
                 }
             });
             includeArray.push({
-                model: models.User,
-                as: "UsersWhoWatched",
+                model: models.Users,
+                as: "WatchedList",
                 required: false,
                 where: {
                     username: username
