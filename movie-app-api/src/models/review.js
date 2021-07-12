@@ -1,7 +1,7 @@
 const Op = require('Sequelize').Op;
 let moment = require('moment');
 const review = (sequelize, DataTypes) => {
-    const Review = sequelize.define('review', {
+    const Review = sequelize.define('Reviews', {
         id: {
           autoIncrement: true,
           type: DataTypes.INTEGER,
@@ -20,7 +20,7 @@ const review = (sequelize, DataTypes) => {
           type: DataTypes.INTEGER,
           allowNull: true,
           references: {
-            model: 'users',
+            model: 'Users',
             key: 'id'
           },
           unique: "reviews_userId_movieId_key"
@@ -29,7 +29,7 @@ const review = (sequelize, DataTypes) => {
           type: DataTypes.INTEGER,
           allowNull: true,
           references: {
-            model: 'movies',
+            model: 'Movies',
             key: 'id'
           },
           unique: "reviews_userId_movieId_key"
@@ -147,12 +147,12 @@ const review = (sequelize, DataTypes) => {
             }
 
         ];
-        let groupByArray = ["review.id", "user.id", "goodTags.id","badTags.id", "movie.id"];
+        let groupByArray = ["Reviews.id", "user.id", "goodTags.id","badTags.id", "movie.id"];
         let attributes = ["id", "rating", "review", "updatedAt", "createdAt",
-                // get the number of likes
-                [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"],
-                // check if the user liked the post
-                [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->like"."userId" = ${requesterId} THEN 1 ELSE 0 END`)), 'liked']
+        // get the number of likes
+        [sequelize.fn("COUNT", sequelize.col("likes->Likes.userId")), "likeCount"],
+        // check if the user liked the post
+        [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->Likes"."userId" = ${requesterId} THEN 1 ELSE 0 END`)), 'liked']
         ];
         if(requesterId === undefined)
         {
@@ -223,18 +223,18 @@ const review = (sequelize, DataTypes) => {
             }
 
         ];
-        let groupByArray = ["review.id", "user.id", "goodTags.id","badTags.id", "movie.id"];
+        let groupByArray = ["Reviews.id", "user.id", "goodTags.id","badTags.id", "movie.id"];
         let attributes = ["id", "rating", "review", "updatedAt", "createdAt",
-                // get the number of likes
-                [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"],
-                // check if the user liked the post
-                [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->like"."userId" = ${requesterId} THEN 1 ELSE 0 END`)), 'liked']
+            // get the number of likes
+            [sequelize.fn("COUNT", sequelize.col("likes->Likes.userId")), "likeCount"],
+            // check if the user liked the post
+            [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->Likes"."userId" = ${requesterId} THEN 1 ELSE 0 END`)), 'liked']
         ];
         if(requesterId === undefined)
         {
             attributes = ["id", "rating", "review", "updatedAt", "createdAt",
                     // get the number of likes
-                    [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"]
+                    [sequelize.fn("COUNT", sequelize.col("likes->Likes.userId")), "likeCount"]
             ]
         }
         // may need to eventually sort by time stamps if not doing it already
@@ -439,18 +439,18 @@ const review = (sequelize, DataTypes) => {
             }
 
         ];
-        let groupByArray = ["review.id", "user.id", "goodTags.id","badTags.id", "movie.id", "user->Followers.id"];
+        let groupByArray = ["Reviews.id", "user.id", "goodTags.id","badTags.id", "movie.id", "user->Followers.id"];
         let attributes = ["id", "rating", "review", "updatedAt", "createdAt",
                 // get the number of likes
-                [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"],
+                [sequelize.fn("COUNT", sequelize.col("likes->Likes.userId")), "likeCount"],
                 // check if the user liked the post
-                [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->like"."userId" = ${requesterId} THEN 1 ELSE 0 END`)), 'liked']
+                [sequelize.fn('SUM', sequelize.literal(`CASE WHEN "likes->Likes"."userId" = ${requesterId} THEN 1 ELSE 0 END`)), 'liked']
         ];
         if(requesterId === undefined)
         {
             attributes = ["id", "rating", "review", "updatedAt", "createdAt",
                     // get the number of likes
-                    [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"]
+                    [sequelize.fn("COUNT", sequelize.col("likes->Likes.userId")), "likeCount"]
             ]
         }
         // may need to eventually sort by time stamps if not doing it already

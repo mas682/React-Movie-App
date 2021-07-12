@@ -1,4 +1,4 @@
-import models, { sequelize } from '../src/models';
+const models = require('../src/sequelize.js').getClient().models;
 import {validateIntegerParameter, validateStringParameter} from './globals.js';
 import {createReview, updateReview} from './reviewCreator.js';
 
@@ -491,10 +491,8 @@ const getComments = async(req, res, requester) =>
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID to get the comments is invalid");
     if(!valid) return;
     let comments = await models.Reviews.getReviewComments(reviewId, req.session.userId, models);
-    console.log(comments);
     if(comments === null)
     {
-        console.log("1");
         res.status(404).send({
             message: "Review could not be found",
             requester: requester

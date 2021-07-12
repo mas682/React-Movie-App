@@ -1,6 +1,3 @@
-import {verifyLogin} from './globals.js';
-import models, { sequelize } from '../src/models';
-var nodemailer = require('nodemailer');
 const config = require('../Config.json');
 const sgMail = require('@sendgrid/mail');
 

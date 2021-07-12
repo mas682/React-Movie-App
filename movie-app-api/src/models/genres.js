@@ -1,5 +1,5 @@
 const genre = (sequelize, DataTypes) => {
-    const Genre = sequelize.define('Genre', {
+    const Genre = sequelize.define('Genres', {
         id: {
           autoIncrement: true,
           type: DataTypes.INTEGER,

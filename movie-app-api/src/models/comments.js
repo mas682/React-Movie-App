@@ -1,6 +1,6 @@
 let moment = require('moment');
 const comment = (sequelize, DataTypes) => {
-    const Comment = sequelize.define('comment',
+    const Comment = sequelize.define('Comments',
     {
         id: {
           autoIncrement: true,

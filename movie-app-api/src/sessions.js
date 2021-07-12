@@ -1,5 +1,5 @@
 
-import models, { sequelize } from '../src/models';
+const models = require('./sequelize.js').getClient().models;
 const moment = require('moment');
 const config = require('../Config.json');
 const Op = require('Sequelize').Op;

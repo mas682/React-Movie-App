@@ -1,6 +1,3 @@
-import {verifyLogin} from './globals.js';
-
-
 // handles routes that do not exist
 
 

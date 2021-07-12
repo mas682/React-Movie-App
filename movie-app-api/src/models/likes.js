@@ -1,5 +1,5 @@
 const like = (sequelize, DataTypes) => {
-    const Likes = sequelize.define('like', {
+    const Likes = sequelize.define('Likes', {
         userId: {
           type: DataTypes.INTEGER,
           allowNull: false,

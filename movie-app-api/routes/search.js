@@ -1,5 +1,5 @@
 import {validateStringParameter, validateIntegerParameter} from './globals.js';
-import models, { sequelize } from '../src/models';
+const models = require('../src/sequelize.js').getClient().models;
 const Op = require('Sequelize').Op;
 
 

@@ -1,5 +1,5 @@
 const userWatchList = (sequelize, DataTypes) => {
-    const UserWatchList = sequelize.define('userWatchList', {
+    const UserWatchList = sequelize.define('UserWatchLists', {
         userId: {
           type: DataTypes.INTEGER,
           allowNull: false,

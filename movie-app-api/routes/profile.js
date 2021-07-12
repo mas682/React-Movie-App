@@ -1,9 +1,9 @@
 import {validateUsernameParameter, validateIntegerParameter,
     validateStringParameter, validateEmailParameter, updateUserLoginAttempts} from './globals.js';
-import models, { sequelize } from '../src/models';
 import {removeImage} from './fileHandler.js';
 import {hash, checkHashedValue} from '../src/crypto.js';
 import {regenerateSession, removeAllSessions} from '../src/sessions.js';
+const models = require('../src/sequelize.js').getClient().models;
 
 
 
@@ -303,7 +303,7 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
     let followerCount = (await user.getFollowers()).length;
     // get the number of following users the user has
     let followingCount = (await user.getFollowing()).length;
-    let postCount = (await user.getReviews()).length;
+    let postCount = (await user.getUserReviews()).length;
 
     // if the current user is looking at their own page
     if(cookieValid)

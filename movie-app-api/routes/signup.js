@@ -1,4 +1,3 @@
-import models, { sequelize } from '../src/models';
 import {customAlphabet} from 'nanoid';
 const Op = require('Sequelize').Op;
 const nanoid = customAlphabet('1234567890', 6);
@@ -8,6 +7,7 @@ import {validateStringParameter, validateUsernameParameter, validateEmailParamet
 import {emailHandler} from './EmailHandler.js';
 import {hash} from '../src/crypto.js';
 import {createSession} from '../src/sessions.js';
+const models = require('../src/sequelize.js').getClient().models;
 
 // function to create an account
 const signUp = (req, res, next) => {

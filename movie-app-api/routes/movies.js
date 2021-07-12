@@ -1,5 +1,5 @@
 import {validateIntegerParameter, validateUsernameParameter, validateStringParameter} from './globals.js';
-import models, { sequelize } from '../src/models';
+const models = require('../src/sequelize.js').getClient().models;
 
 // function to get movies and return them to the client
 const movieHandler = (req, res, next) => {
@@ -207,7 +207,6 @@ const getMovieTagSuggestions = async (requester, req, res) =>
 		}
 		else
 		{
-			console.log(tags);
 			res.status(200).send({
 				message: "Tags successfully found",
 				requester: requester,
@@ -304,7 +303,6 @@ const addToWatchList = async (requester, req, res) =>
         });
         return;
     }
-	console.log(movie.dataValues);
     if(movie.dataValues.WatchList.length < 1)
     {
         //let result = await user.addWatchList(movie.id);

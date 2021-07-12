@@ -1,27 +1,22 @@
-import Sequelize from 'sequelize';
+//import Sequelize from 'sequelize';
 const config = require('../../Config.json');
-
-const sequelize = new Sequelize("postgres://" + config.database.username + ":" + config.database.password + "@" + config.database.host, {
-    dialect: 'postgres',
-    // shuts off logging
-    logging: false
-});
+const sequelize = require('../sequelize.js').getClient();
 
 // get the models
 const models = {
     Users: sequelize.import('./Users'),
-    Reviews: sequelize.import('./review'),
+    Reviews: sequelize.import('./Review'),
     Comments: sequelize.import('./Comments'),
     Likes: sequelize.import('./Likes'),
-    UsersFriends: sequelize.import('./usersFriendsTable'),
+    UsersFriends: sequelize.import('./UsersFriendsTable'),
     MovieGenres: sequelize.import('./MovieGenres'),
     Genres: sequelize.import('./Genres'),
     Movies: sequelize.import('./Movies'),
     UserWatchLists: sequelize.import('./UserWatchLists'),
     UsersWatchedMovies: sequelize.import('./UsersWatchedMovies'),
     MovieTags: sequelize.import('./MovieTags'),
-    ReviewGoodTags: sequelize.import('./reviewGoodTags'),
-    ReviewBadTags: sequelize.import('./reviewBadTags'),
+    ReviewGoodTags: sequelize.import('./ReviewGoodTags'),
+    ReviewBadTags: sequelize.import('./ReviewBadTags'),
     UserVerificationCodes: sequelize.import('./UserVerificationCodes'),
     TempVerificationCodes: sequelize.import('./TempVerificationCodes'),
     FeaturedMovies: sequelize.import('./FeaturedMovies'),
@@ -34,6 +29,4 @@ Object.keys(models).forEach(key => {
     }
 });
 
-export { sequelize };
-
-export default models;
+module.exports.models = models;

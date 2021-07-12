@@ -1,4 +1,3 @@
-import {verifyLogin} from './globals.js';
 import {getErrorHandler} from '../src/ErrorHandlers/errorReceiver.js';
 import {destroySession} from '../src/sessions.js';
 
@@ -8,7 +7,7 @@ const errorHandler = async(err, req, res, next) => {
     if(res.locals.regeneratingSession !== undefined && res.locals.regeneratingSession)
     {
         console.log("Destorying users session");
-        await req.session.destroy();
+        await destroySession(req);
     }
     if(result.log)
     {
@@ -36,4 +35,4 @@ const errorHandler = async(err, req, res, next) => {
 }
 
 
-export {errorHandler};
+module.exports.errorHandler = errorHandler;

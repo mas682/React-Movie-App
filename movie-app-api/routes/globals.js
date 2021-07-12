@@ -1,10 +1,7 @@
 // not sure if this is the best way to do this but this file
 // holds variables that are needed specifically for the routing files
 
-
-var express = require('express');
-import models, { sequelize } from '../src/models';
-var router = express.Router();
+const models = require('../src/sequelize.js').getClient().models;
 const moment = require('moment');
 const config = require('../Config.json');
 
@@ -244,6 +241,6 @@ const clearCookie = (req, res, next) => {
     next();
 }
 
-export {router, validateIntegerParameter, validateUsernameParameter,
+export {validateIntegerParameter, validateUsernameParameter,
      validateStringParameter, validateEmailParameter, updateUserLoginAttempts
     , clearCookie, validateBooleanParameter};

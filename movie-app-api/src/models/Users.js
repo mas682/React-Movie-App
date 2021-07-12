@@ -2,7 +2,7 @@
 const Op = require('Sequelize').Op;
 
 const user = (sequelize, DataTypes) => {
-    const User = sequelize.define('user', {
+    const User = sequelize.define('Users', {
         id: {
           autoIncrement: true,
           type: DataTypes.INTEGER,
@@ -112,7 +112,7 @@ const user = (sequelize, DataTypes) => {
     User.associate = models => {
         // the CASCADE says if the user is deleted, delete all
         // messages associated with the user
-        User.hasMany(models.Reviews, { onDelete: 'CASCADE' });
+        //User.hasMany(models.Reviews, {as: "userId", onDelete: 'CASCADE' });
         User.hasMany(models.Comments,{ onDelete: 'CASCADE' });
         User.hasMany(models.ReviewGoodTags, { foreignKey: { allowNull: false}, foreignKey: "userId"});
         User.hasMany(models.ReviewBadTags, { foreignKey: { allowNull: false}, foreignKey: "userId"});
@@ -384,7 +384,7 @@ const user = (sequelize, DataTypes) => {
             },
             order: [
                 sequelize.literal(`CASE
-                    WHEN upper("user"."username") = upper('${username}') then 0
+                    WHEN upper("Users"."username") = upper('${username}') then 0
                     ELSE 1
                     END ASC`),
                 ['username', 'ASC']

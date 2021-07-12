@@ -6,7 +6,7 @@ const multerS3 = require('multer-s3-transform');
 const sharp = require('sharp');
 import FileUploadError from '../src/FileUploadError.js';
 import { nanoid } from 'nanoid/async'
-import models, {sequelize} from '../src/models';
+const models = require('../src/sequelize.js').getClient().models;
 
 const s3Bucket = new AWS.S3({
     accessKeyId: config.aws.AWS_ACCESS_KEY_ID,

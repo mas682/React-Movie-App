@@ -1,19 +1,19 @@
-import models, { sequelize } from './src/models';
+
+const dbConnection = require('./src/sequelize.js');
+const sequelize = dbConnection.createClient();
+const models = require('./src/models/index.js');
+
 import {badPageHandler} from './routes/badPageHandler.js';
-import {errorHandler} from './routes/errorHandler.js';
+const errorHandler = require('./routes/errorHandler.js').errorHandler;
 
 const config = require('./Config.json');
-var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var logger = require('morgan');
 var cors = require('cors');
 var indexRouter = require('./routes/index');
-const moment = require('moment');
 var app = express();
-const fetch = require('node-fetch');
 
-//const sessionHelpers = require('./src/sessions.js');
 // create the redis client
 let redis = require('./src/redis.js');
 let redisClient = redis.createClient();
@@ -69,8 +69,6 @@ app.use(
         resave: false
     })
 );
-
-//app.use(sessionHelpers.checkCookieType);
 
 // all routes to the server will go through this router
 app.use('/', indexRouter);

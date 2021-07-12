@@ -1,7 +1,7 @@
 let moment = require('moment');
 const Op = require('Sequelize').Op;
 const movie = (sequelize, DataTypes) => {
-    const Movie = sequelize.define('movie', {
+    const Movie = sequelize.define('Movies', {
         id: {
           autoIncrement: true,
           type: DataTypes.INTEGER,
@@ -1000,7 +1000,7 @@ const movie = (sequelize, DataTypes) => {
                   END ASC`),
                 */
                 sequelize.literal(`CASE
-                  WHEN upper("movie"."title") = upper('${title}') then 0
+                  WHEN upper("Movies"."title") = upper('${title}') then 0
                   ELSE 1
                   END ASC`),
                 ['title', 'ASC']

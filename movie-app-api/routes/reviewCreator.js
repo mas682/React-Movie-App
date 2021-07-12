@@ -1,5 +1,5 @@
 import {validateIntegerParameter, validateStringParameter} from './globals.js';
-import models, { sequelize } from '../src/models';
+const models = require('../src/sequelize.js').getClient().models;
 
 
 // function to run all the checks when a new review comes in or if a review update comes in

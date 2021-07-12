@@ -1,4 +1,4 @@
-import {router, clearCookie} from './globals.js';
+import {clearCookie} from './globals.js';
 import {login} from './login.js';
 import {review} from './reviews.js';
 import {profileHandler} from './profile.js';
@@ -7,6 +7,7 @@ import {getUserInfo} from './getUserInfo.js';
 import {movieHandler} from './movies.js';
 import {searchHandler} from './search.js';
 import {imageHandler} from './fileHandler.js';
+const router = require('../src/expressRouter.js').createRouter();
 
 // used when trying to login
 router.post('/login/:type', function(req, res, next) { clearCookie(req, res, next) },

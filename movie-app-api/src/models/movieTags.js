@@ -1,6 +1,6 @@
 const Op = require('Sequelize').Op;
 const movieTag = (sequelize, DataTypes) => {
-    const MovieTag = sequelize.define('movieTag', {
+    const MovieTag = sequelize.define('MovieTags', {
         id: {
           autoIncrement: true,
           type: DataTypes.INTEGER,
@@ -122,7 +122,7 @@ const movieTag = (sequelize, DataTypes) => {
             attributes: ["id", "value"],
             order: [
                 sequelize.literal(`CASE
-                    WHEN upper("movieTag"."value") = upper('${value}') then 0
+                    WHEN upper("MovieTags"."value") = upper('${value}') then 0
                     ELSE 1
                     END ASC`),
                 ['value', 'ASC']
