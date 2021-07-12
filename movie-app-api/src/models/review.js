@@ -158,7 +158,7 @@ const review = (sequelize, DataTypes) => {
         {
             attributes = ["id", "rating", "review", "updatedAt", "createdAt",
                     // get the number of likes
-                    [sequelize.fn("COUNT", sequelize.col("likes->like.userId")), "likeCount"]
+                    [sequelize.fn("COUNT", sequelize.col("likes->Likes.userId")), "likeCount"]
             ]
         }
         // may need to eventually sort by time stamps if not doing it already
