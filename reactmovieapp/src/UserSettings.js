@@ -5,6 +5,7 @@ import style from './css/SettingsForm/UserSettings.module.css';
 import './css/forms.css';
 import PasswordResetPopUp from './PasswordResetPopUp.js';
 import DeleteAccountPopUp from './DeleteAccountPopUp.js';
+import PasswordValidationPopUp from './PasswordValidationPopUp.js';
 import {apiPostJsonRequest, apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 
 
@@ -36,6 +37,7 @@ class UserSettings extends React.Component {
             //editEmail: false,
 			displayPasswordResetPop: false,
 			displayRemoveAccountPopUp: false,
+			displayPasswordValidationPopUp: false,
 			currentUser: this.props.currentUser,
 			awaitingResults: false,
 			loadingError: false
@@ -51,6 +53,9 @@ class UserSettings extends React.Component {
 		this.generatePasswordPopUp = this.generatePasswordPopUp.bind(this);
 		this.updateUserResultsHandler = this.updateUserResultsHandler.bind(this);
 		this.getUserInfoResultsHandler = this.getUserInfoResultsHandler.bind(this);
+
+		this.generatePasswordValidationPopUp = this.generatePasswordValidationPopUp.bind(this);
+		this.showPasswordValidationPopUp = this.showPasswordValidationPopUp.bind(this);
 	}
 
 	async componentDidMount()
@@ -151,21 +156,10 @@ class UserSettings extends React.Component {
 		*/
         if(!error)
         {
-			let params = {
-				username: this.state.username,
-			    firstName: this.state.firstName,
-			    lastName: this.state.lastName,
-			   // email: this.state.email,
-			};
-			let url = "http://localhost:9000/profile/" + this.state.currentUser + "/update";
 			this.setState({
-				awaitingResults: true
-			});
-			apiPostJsonRequest(url, params).then((result) =>{
-				let status = result[0];
-				let message = result[1].message;
-				let requester = result[1].requester;
-				this.updateUserResultsHandler(status, message, requester, result);
+				awaitingResults: true,
+				// prompt user for password
+				displayPasswordValidationPopUp: true
 			});
         }
     }
@@ -214,6 +208,9 @@ class UserSettings extends React.Component {
 				// tested
 				else if(message === "You cannot update another users information")
 				{
+					this.setState({
+						displayPasswordValidationPopUp: false
+					});
 					// "You cannot change information for another user"
 					this.props.setMessages({
 						messages: [{type: "failure", message: message}],
@@ -230,7 +227,8 @@ class UserSettings extends React.Component {
 				if(message === "The profile path sent to the server does not exist")
 				{
 					this.setState({
-						awaitingResults: false
+						awaitingResults: false,
+						displayPasswordValidationPopUp: false
 					});
 					this.props.setMessages({
 						messages: [{type: "failure", message: message}],
@@ -249,7 +247,8 @@ class UserSettings extends React.Component {
 				{
 					this.setState({
 						awaitingResults: false,
-						usernameError: message
+						usernameError: message,
+						displayPasswordValidationPopUp: false
 					});
 				}
 				/*
@@ -265,14 +264,16 @@ class UserSettings extends React.Component {
 				{
 					this.setState({
 						awaitingResults: false,
-						firstNameError: message
+						firstNameError: message,
+						displayPasswordValidationPopUp: false
 					});
 				}
 				else if(message === "Last name must be between 1-20 characters")
 				{
 					this.setState({
 						awaitingResults: false,
-						lastNameError: message
+						lastNameError: message,
+						displayPasswordValidationPopUp: false
 					});
 				}
 				else
@@ -287,7 +288,8 @@ class UserSettings extends React.Component {
 				{
 					this.setState({
 						awaitingResults: false,
-						usernameError: message
+						usernameError: message,
+						displayPasswordValidationPopUp: false
 					});
 				}
 				/*
@@ -331,7 +333,8 @@ class UserSettings extends React.Component {
 					clearMessages: true
 				});
 				this.setState({
-					awaitingResults: false
+					awaitingResults: false,
+					displayPasswordValidationPopUp: false
 				});
 			}
 		}
@@ -393,6 +396,11 @@ class UserSettings extends React.Component {
 	removePasswordResetPopUp = () =>
 	{
 		this.setState({displayPasswordResetPop: false});
+	}
+
+	showPasswordValidationPopUp()
+	{
+		this.setState({displayPasswordValidationPopUp: !this.state.displayPasswordValidationPopUp});
 	}
 
 	showPasswordResetPopUp(event)
@@ -548,7 +556,31 @@ class UserSettings extends React.Component {
 	{
 		if(this.state.displayRemoveAccountPopUp)
 		{
-			return <DeleteAccountPopUp username={this.state.username} removeFunction={this.showRemoveAccountPopUp} updateLoggedIn={this.props.updateLoggedIn}/>;
+			return <DeleteAccountPopUp
+						username={this.state.username}
+						removeFunction={this.showRemoveAccountPopUp}
+						updateLoggedIn={this.props.updateLoggedIn}
+					/>;
+		}
+		return "";
+	}
+
+
+	generatePasswordValidationPopUp()
+	{
+		if(this.state.displayPasswordValidationPopUp)
+		{
+			return <PasswordValidationPopUp
+				currentUser={this.state.currentUser}
+				removeFunction={this.showPasswordValidationPopUp}
+				updateLoggedIn={this.props.updateLoggedIn}
+				showLoginPopUp={this.props.showLoginPopUp}
+				setMessages={this.props.setMessages}
+				updateUserResultsHandler={this.updateUserResultsHandler}
+				username={this.state.username}
+				firstName={this.state.firstName}
+				lastName={this.state.lastName}
+			/>;
 		}
 		return "";
 	}
@@ -600,6 +632,7 @@ class UserSettings extends React.Component {
         }
 		let passwordPopUp = this.generatePasswordPopUp();
 		let deleteAccountPopUp = this.generateDeleteAccountPopUp();
+		let passwordValidationPopUp = this.generatePasswordValidationPopUp();
 
 		return (
 			<div className={style.mainBodyContainer}>
@@ -632,6 +665,7 @@ class UserSettings extends React.Component {
 					</div>
 					{passwordPopUp}
 					{deleteAccountPopUp}
+					{passwordValidationPopUp}
 		    </div>
 			);
 	}

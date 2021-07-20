@@ -626,6 +626,8 @@ const updateInfo = async (requester, req, res, next) =>
     if(!valid) return;
     valid = validateStringParameter(res, req.body.lastName, 1, 20, requester, "Last name must be between 1-20 characters");
     if(!valid) return;
+    valid = validateUsernameParameter(res, req.body.password, requester, "Password must be between 6-15 characters");
+    if(!valid) return;
     if(requester !== username)
     {
         res.status(401).send({
@@ -645,39 +647,60 @@ const updateInfo = async (requester, req, res, next) =>
         });
         return;
     }
-    let result = await user.update({
-        username: req.body.username,
-        //email: req.body.email,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName
-    });
-    // below is used to update the cookie as the values have changed
-    let value = JSON.stringify({
-        name: result.username,
-        email: result.email,
-        id: result.id,
-        created: new Date()
-    });
-    //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-    // update session
-    // may want to delete all other sessions for this user?
-    req.session.userId = user.id;
-    req.session.user = user.username;
-    req.session.admin = user.admin;
+    let result = checkHashedValue(req.body.password, "password", user.salt);
+    if(user.password === result.value)
+    {
+        // remove all existing sessions except for this one
+        await removeAllSessions(req, res, user.id, [req.session.id]);
+        // update the user
+        let result = await user.update({
+            username: req.body.username,
+            //email: req.body.email,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName
+        });
+        // update the session
+        req.session.userId = user.id;
+        // the user could change so use result
+        req.session.user = result.username;
+        req.session.admin = user.admin;
 
+        // below is used to update the cookie as the values have changed
+        let value = JSON.stringify({
+            name: result.username,
+            email: result.email,
+            id: result.id,
+            created: new Date()
+        });
+        // regenerate the session
+        await regenerateSession(req, res);
 
-    let updatedUser = {
-        username: result.username,
-        email: result.email,
-        firstName: result.firstName,
-        lastName: result.lastName,
-        test: test
-    };
-    res.status(200).send({
-        message: "User info successfully updated",
-        requester: updatedUser.username,
-        user: updatedUser
-    });
+        let updatedUser = {
+            username: result.username,
+            email: result.email,
+            firstName: result.firstName,
+            lastName: result.lastName
+        };
+        res.status(200).send({
+            message: "User info successfully updated",
+            requester: updatedUser.username,
+            user: updatedUser
+        });
+    }
+    else
+    {
+        let attempts = await updateUserLoginAttempts(user, username);
+        let message = "Password incorrect";
+        if(attempts >= 5)
+        {
+            message = message + ". User account is currently locked due to too many failed password attempts";
+            requester = "";
+        }
+        res.status(401).send({
+            message: message,
+            requester: requester
+        });
+    }
 }
 
 
