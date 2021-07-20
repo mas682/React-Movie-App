@@ -13,3 +13,6 @@ command-to-run.txt
 node_modules/
 /movie-app-api/uploads
 **/node_modules
+*.pem
+*.pfx
+*.env

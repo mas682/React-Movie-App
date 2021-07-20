@@ -110,7 +110,7 @@ class SignInPopup extends React.Component {
 				awaitingResults: true,
 				messageId: -1
 			});
-			let url = "http://localhost:9000/login/authenticate";
+			let url = "https://localhost:9000/login/authenticate";
 			let result = await apiPostJsonRequest(url, params);
 			let status = result[0];
 			let message = result[1].message;

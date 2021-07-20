@@ -103,7 +103,7 @@ class CommentDisplay extends React.Component {
             });
             return;
         }
-        let url = "http://localhost:9000/review/updatecomment";
+        let url = "https://localhost:9000/review/updatecomment";
         let params = {
             comment: this.state.comment,
             commentId: this.state.commentId
@@ -185,7 +185,7 @@ class CommentDisplay extends React.Component {
     */
     async removeComment()
     {
-        let url = "http://localhost:9000/review/removecomment";
+        let url = "https://localhost:9000/review/removecomment";
         let params = {
             comment: this.state.comment,
             commentId: this.state.commentId

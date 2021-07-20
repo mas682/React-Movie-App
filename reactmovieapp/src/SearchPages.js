@@ -435,17 +435,17 @@ class SearchPage extends React.Component {
         if(type === "all")
         {
             max = 20;
-            url = "http://localhost:9000/search/query_all?value=" + value + "&offset=0&max=" + max;
+            url = "https://localhost:9000/search/query_all?value=" + value + "&offset=0&max=" + max;
         }
         else if(type === "movies")
         {
             max = 30;
-            url = "http://localhost:9000/search/movies_title?value=" + value + "&offset=" + offset + "&max=" + max;
+            url = "https://localhost:9000/search/movies_title?value=" + value + "&offset=" + offset + "&max=" + max;
         }
         else if(type === "users")
         {
             max = 30;
-            url = "http://localhost:9000/search/users?value=" + value + "&offset=" + offset + "&max=" + max;
+            url = "https://localhost:9000/search/users?value=" + value + "&offset=" + offset + "&max=" + max;
             if(value.length > 20)
             {
                 this.setState({

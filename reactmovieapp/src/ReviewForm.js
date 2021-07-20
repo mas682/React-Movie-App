@@ -257,7 +257,7 @@ class ReviewPopUp extends React.Component {
         // Simple POST request with a JSON body using fetch
         let goodTags = this.getTagsForApi(this.state.goodTags);
         let badTags = this.getTagsForApi(this.state.badTags);
-        let url = "http://localhost:9000/review";
+        let url = "https://localhost:9000/review";
         let params = {
             movie: this.state.movie.id,
             rating: this.state.rating,
@@ -290,7 +290,7 @@ class ReviewPopUp extends React.Component {
         // Simple POST request with a JSON body using fetch
         let goodTags = this.getTagsForApi(this.state.goodTags);
         let badTags = this.getTagsForApi(this.state.badTags);
-        let url = "http://localhost:9000/review/update";
+        let url = "https://localhost:9000/review/update";
         let params = {
             rating: this.state.rating,
             goodTags: goodTags.ids,
@@ -496,7 +496,7 @@ class ReviewPopUp extends React.Component {
         {
             return {};
         }
-        let url = "http://localhost:9000/movie/get_movie_titles/?title=" + value;
+        let url = "https://localhost:9000/movie/get_movie_titles/?title=" + value;
         let result = await apiGetJsonRequest(url);
         let status = result[0];
         let message = result[1].message;
@@ -529,7 +529,7 @@ class ReviewPopUp extends React.Component {
         {
             return {};
         }
-        let url = "http://localhost:9000/movie/get_movie_tags/?tag=" + value;
+        let url = "https://localhost:9000/movie/get_movie_tags/?tag=" + value;
         let result = await apiGetJsonRequest(url);
         let status = result[0];
         let message = result[1].message;

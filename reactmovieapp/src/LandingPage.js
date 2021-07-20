@@ -93,7 +93,7 @@ class Landing extends React.Component {
 	getMovies()
 	{
 		// get the featuread movies
-		let url = "http://localhost:9000/movies/featured";
+		let url = "https://localhost:9000/movies/featured";
 		this.sendApiRequest(url, "featuredMovies");
 		let date = new Date();
 		// for testing
@@ -110,12 +110,12 @@ class Landing extends React.Component {
 		date.setMonth(2);
 		date.setDate(20);
 		let endDate = moment(date).format('YYYY-MM-DD');
-		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&release_date_lte=" + endDate + "&sort=release_date_desc&poster_is_null=false&offset=0&max=24";
+		url = "https://localhost:9000/search/movies?release_date_gte=" + startDate + "&release_date_lte=" + endDate + "&sort=release_date_desc&poster_is_null=false&offset=0&max=24";
 		this.sendApiRequest(url, "newReleases");
 		// get upcoming movies
 		date.setDate(date.getDate() + 1);
 		startDate = moment(date).format('YYYY-MM-DD');
-		url = "http://localhost:9000/search/movies?release_date_gte=" + startDate + "&sort=release_date_asc&poster_is_null=false&offset=0&max=24";
+		url = "https://localhost:9000/search/movies?release_date_gte=" + startDate + "&sort=release_date_asc&poster_is_null=false&offset=0&max=24";
 		this.sendApiRequest(url, "upcomingMovies");
 		// get watch list if logged in
 		this.getWatchListMovies();
@@ -209,7 +209,7 @@ class Landing extends React.Component {
 	{
 		if(this.state.currentUser !== "")
 		{
-			let url = "http://localhost:9000/movies/my_watch_list?offset=0&max=24";
+			let url = "https://localhost:9000/movies/my_watch_list?offset=0&max=24";
 			this.sendApiRequest(url, "watchList");
 		}
 	}

@@ -86,11 +86,11 @@ class UserListPopUp extends React.Component {
         let url;
         if(this.state.type === "Followers")
         {
-            url = "http://localhost:9000/profile/" + this.state.username + "/getfollowers";
+            url = "https://localhost:9000/profile/" + this.state.username + "/getfollowers";
         }
         else
         {
-            url = "http://localhost:9000/profile/" + this.state.username + "/getfollowing";
+            url = "https://localhost:9000/profile/" + this.state.username + "/getfollowing";
         }
         let result = await apiGetJsonRequest(url)
             .then(result => {
@@ -102,7 +102,7 @@ class UserListPopUp extends React.Component {
     // function to call the api to get the users who liked the post
     async getLikes()
     {
-        let url = "http://localhost:9000/review/getlikes";
+        let url = "https://localhost:9000/review/getlikes";
         let params = {reviewId: this.state.reviewId};
         return await apiPostJsonRequest(url, params);
     }

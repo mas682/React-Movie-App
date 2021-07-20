@@ -46,7 +46,7 @@ class CommentController extends React.Component {
     // function used to send api call to the server to get the comments
     async getComments()
     {
-        let url = "http://localhost:9000/review/" + this.state.reviewId + "/getcomments";
+        let url = "https://localhost:9000/review/" + this.state.reviewId + "/getcomments";
         let result = await apiGetJsonRequest(url);
         let status = result[0];
         let message = result[1].message;

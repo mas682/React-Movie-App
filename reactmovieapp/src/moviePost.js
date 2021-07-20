@@ -279,7 +279,7 @@ class MoviePost extends React.Component {
     // function to send request to server to remove like from a post
     removeLike()
     {
-        let url = "http://localhost:9000/review/removelike";
+        let url = "https://localhost:9000/review/removelike";
         let params = {reviewId: this.state.id};
         return apiPostJsonRequest(url, params);
     }
@@ -287,7 +287,7 @@ class MoviePost extends React.Component {
     // function to send request to server to add a like to a post
     postLike()
     {
-        let url = "http://localhost:9000/review/addlike";
+        let url = "https://localhost:9000/review/addlike";
         let params = {reviewId: this.state.id};
         return apiPostJsonRequest(url, params);
     }
@@ -575,7 +575,7 @@ class MoviePost extends React.Component {
     // function to handle deleting a post
     async removePost()
     {
-        let url = "http://localhost:9000/review/removepost";
+        let url = "https://localhost:9000/review/removepost";
         let params = {reviewId: this.state.id};
         let result = await apiPostJsonRequest(url, params);
         let status = result[0];

@@ -142,7 +142,7 @@ const logout = async(req, res) =>
     let options = {
         httpOnly: true,
         // should be true
-        secure: false,
+        secure: true,
         sameSite: 'lax',
         path: '/'
     }

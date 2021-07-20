@@ -85,7 +85,7 @@ class UserFeed extends React.Component {
     async callApi(username)
     {
         let max = 10;
-        let url = "http://localhost:9000/profile/" + username + "/feed?offset=" + this.state.offset + "&max=" + max;
+        let url = "https://localhost:9000/profile/" + username + "/feed?offset=" + this.state.offset + "&max=" + max;
         let result = await apiGetJsonRequest(url);
         let status = result[0];
         let message = result[1].message;

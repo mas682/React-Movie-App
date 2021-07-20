@@ -104,7 +104,7 @@ class EditProfilePicPopUp extends React.Component {
         data.append('file', this.state.croppedImage);
         let params = data;
         let header = {};
-        let url = "http://localhost:9000/profile/" + this.state.currentUser + "/set_picture";
+        let url = "https://localhost:9000/profile/" + this.state.currentUser + "/set_picture";
         this.setState({
             awaitingResults: true,
             messageId: -1
@@ -120,7 +120,7 @@ class EditProfilePicPopUp extends React.Component {
     // function to send api request to remove profile picture
     sendRemoveRequest()
     {
-        let url = "http://localhost:9000/profile/" + this.state.currentUser + "/remove_picture";
+        let url = "https://localhost:9000/profile/" + this.state.currentUser + "/remove_picture";
         this.setState({
             awaitingResults: true,
             messageId: -1

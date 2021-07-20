@@ -144,7 +144,7 @@ class SignUpPopup extends React.Component {
                 email: this.state.email,
                 password: this.state.password
             };
-            let url = "http://localhost:9000/signup/register";
+            let url = "https://localhost:9000/signup/register";
             this.setState({
                 awaitingResults: true,
                 messageId: -1
@@ -332,7 +332,7 @@ class SignUpPopup extends React.Component {
                 email: this.state.email,
                 verificationCode: this.state.verificationCode
             };
-            let url = "http://localhost:9000/signup/create_account";
+            let url = "https://localhost:9000/signup/create_account";
             this.setState({
                 awaitingResults: true,
                 messageId: -1
@@ -355,7 +355,7 @@ class SignUpPopup extends React.Component {
                 email: this.state.email,
                 verificationCode: this.state.verificationCode
             };
-            let url = "http://localhost:9000/signup/cancel_registration";
+            let url = "https://localhost:9000/signup/cancel_registration";
             // not waiting for the result as this is really a optimization for the server
             apiPostJsonRequest(url, params).then((result)=>{
                 let status = result[0];
@@ -373,7 +373,7 @@ class SignUpPopup extends React.Component {
                 username: this.state.username,
                 email: this.state.email,
             };
-            let url = "http://localhost:9000/signup/resend_verification_code";
+            let url = "https://localhost:9000/signup/resend_verification_code";
             this.setState({
                 awaitingResults: true,
                 messageId: -1,

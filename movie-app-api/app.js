@@ -14,6 +14,14 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var app = express();
 
+// for https
+const https = require('https');
+const fs = require('fs');
+const httpsOptions = {
+    key: fs.readFileSync('./privatekey.pem'),
+    cert: fs.readFileSync('./publiccert.pem')
+}
+
 // create the redis client
 let redis = require('./src/redis.js');
 let redisClient = redis.createClient();
@@ -22,18 +30,20 @@ const session = require('express-session');
 // create the redis store
 let redisStore = require('./src/redisStore.js').createStore(session, redisClient);
 
-
 // to run, npm run server
 
 // restart db each time
 //! NEVER SET THIS TO TRUE, will remove triggers from tables
 const eraseDatabaseOnSync = false;
 
-sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
-    app.listen(9000, () =>
-        console.log(`Example app listening on port 9000!`),
-    );
-});
+sequelize.sync({ force: eraseDatabaseOnSync });
+
+
+const server = https.createServer(httpsOptions, app)
+    .listen(9000, () =>{
+        console.log('App listening on port 9000!')
+    });
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -42,7 +52,7 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'https://localhost:3000',
     credentials: true
 }));
 app.use(express.urlencoded({ extended: false }));
@@ -60,7 +70,7 @@ app.use(
             // needs to be set to true to prevent javascript from accessing client side
             httpOnly: true,
             // should be true to help avoid man in the middle attacks
-            secure: false,
+            secure: true,
             maxAge: config.sessions.maxExpiringDuration, // Time is in miliseconds,
             //domain: 'http://localhost:3000/',
             sameSite: 'lax'

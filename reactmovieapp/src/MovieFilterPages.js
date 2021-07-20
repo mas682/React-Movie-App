@@ -490,19 +490,19 @@ class MovieFilterPage extends React.Component {
         // params: title, revenue, director, runtime, rating, trailer, releasedate
         if(type === "My Watch List")
         {
-            url = "http://localhost:9000/movies/my_watch_list?offset=" + offset + "&max=30";
+            url = "https://localhost:9000/movies/my_watch_list?offset=" + offset + "&max=30";
         }
         else if(type === "My Watched Movies")
         {
-            url = "http://localhost:9000/movies/my_watched_list?offset=" + offset + "&max=30";
+            url = "https://localhost:9000/movies/my_watched_list?offset=" + offset + "&max=30";
         }
         else if(query === undefined)
         {
-            url = "http://localhost:9000/search/movies" + this.state.queryString + "&offset=" + offset + "&max=30";
+            url = "https://localhost:9000/search/movies" + this.state.queryString + "&offset=" + offset + "&max=30";
         }
         else
         {
-            url = "http://localhost:9000/search/movies" + query + "&offset=" + offset + "&max=30";;
+            url = "https://localhost:9000/search/movies" + query + "&offset=" + offset + "&max=30";;
         }
         return await apiGetJsonRequest(url);
     }

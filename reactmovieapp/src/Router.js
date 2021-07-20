@@ -137,7 +137,7 @@ class Routes extends React.Component
     async componentDidMount()
     {
         // on mount, see who is logged in as the app doesn't know at this point
-        let result = await apiGetJsonRequest("http://localhost:9000/login/authenticate");
+        let result = await apiGetJsonRequest("https://localhost:9000/login/authenticate");
         let requester = result[1].requester;
         this.updateLoggedIn(requester);
         this.setState({
