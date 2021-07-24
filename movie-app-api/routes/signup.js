@@ -84,15 +84,14 @@ const createTempUser = async (requester, req, res) =>
     if(!valid) return;
     valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
     if(!valid) return;
-    valid = validateStringParameter(res, password, 6, 15, "", "Password must be betweeen 6-15 characters");
+    valid = validateStringParameter(res, password, 6, 15, "", "Password must be betweeen 6-15 characters", true);
     if(!valid) return;
-    valid = validateStringParameter(res, firstName, 1, 20, "", "First name must be between 1-20 characters");
+    valid = validateStringParameter(res, firstName, 1, 20, "", "First name must be between 1-20 characters", true);
     if(!valid) return;
-    valid = validateStringParameter(res, lastName, 1, 20, "", "Last name must be between 1-20 characters");
+    valid = validateStringParameter(res, lastName, 1, 20, "", "Last name must be between 1-20 characters", true);
     if(!valid) return;
 
     let hashResult = hash(password, "password");
-    console.log(hashResult.salt);
 
     let result = await models.UserVerificationCodes.create({
         userEmail: email,

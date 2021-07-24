@@ -5,8 +5,8 @@
 CREATE TABLE public."Comments"
 (
     id integer NOT NULL DEFAULT nextval('comments_id_seq'::regclass),
-    value text COLLATE pg_catalog."default",
-    "createdAt" timestamp with time zone NOT NULL DEFAULT '2021-02-08 19:23:44.433-05'::timestamp with time zone,
+    value character varying(1000) COLLATE pg_catalog."default",
+    "createdAt" timestamp with time zone NOT NULL,
     "updatedAt" timestamp with time zone NOT NULL,
     "userId" integer,
     "reviewId" integer,

@@ -50,12 +50,11 @@ const validateReviewParameters = (res, requester, userId, rating, reviewText, go
 // review - the review for the movie
 // good - a comma seperated string of good tags
 // bad - a comma seperated string of bad tags
-const createReview = async (cookie, req, res) =>
+const createReview = async (requester, req, res) =>
 {
     res.locals.file = "reviewCreator";
     res.locals.function = "createReview"
-    let userId = cookie.id;
-    let requester = cookie.name;
+    let userId = req.session.userId;
     let rating = req.body.rating;
     let reviewText = req.body.review;
     let goodTags = req.body.goodTags;
@@ -146,12 +145,11 @@ const createReview = async (cookie, req, res) =>
 // badTags - a array of objects containing {value: value, id: id} of existing tags
 // goodTagStrings - array of tag strings to add
 // badTagStrings - array of tag strings to add
-const updateReview = async (cookie, req, res) =>
+const updateReview = async (requester, req, res) =>
 {
     res.locals.file = "reviewCreator";
     res.locals.function = "updateReview"
-    let userId = cookie.id;
-    let requester = cookie.name;
+    let userId = req.session.userId;
     let rating = req.body.rating;
     let reviewText = req.body.review;
     let goodTags = req.body.goodTags;

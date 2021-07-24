@@ -538,9 +538,9 @@ const updatePassword = async (requester, req, res) =>
     // if the password is not provided, automatically deny
     let valid = validateUsernameParameter(res, req.params.username, requester, "Username must be between 6-20 characters");
     if(!valid) return;
-    valid = validateStringParameter(res, req.body.oldPassword, 6, 15, requester, "Password must be betweeen 6-15 characters");
+    valid = validateStringParameter(res, req.body.oldPassword, 6, 15, requester, "Password must be betweeen 6-15 characters", true);
     if(!valid) return;
-    valid = validateStringParameter(res, req.body.newPass, 6, 15, requester, "New password must be betweeen 6-15 characters");
+    valid = validateStringParameter(res, req.body.newPass, 6, 15, requester, "New password must be betweeen 6-15 characters", true);
     if(!valid) return;
 
     if(req.params.username !== requester)
@@ -622,11 +622,11 @@ const updateInfo = async (requester, req, res, next) =>
     valid = validateEmailParameter(res, req.body.email, requester, "The email provided is not a valid email address");
     if(!valid) return;
     */
-    valid = validateStringParameter(res, req.body.firstName, 1, 20, requester, "First name must be between 1-20 characters");
+    valid = validateStringParameter(res, req.body.firstName, 1, 20, requester, "First name must be between 1-20 characters", true);
     if(!valid) return;
-    valid = validateStringParameter(res, req.body.lastName, 1, 20, requester, "Last name must be between 1-20 characters");
+    valid = validateStringParameter(res, req.body.lastName, 1, 20, requester, "Last name must be between 1-20 characters", true);
     if(!valid) return;
-    valid = validateUsernameParameter(res, req.body.password, requester, "Password must be between 6-15 characters");
+    valid = validateUsernameParameter(res, req.body.password, requester, "Password must be between 6-15 characters", true);
     if(!valid) return;
     if(requester !== username)
     {

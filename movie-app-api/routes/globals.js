@@ -5,6 +5,8 @@ const models = require('../src/sequelize.js').getClient().models;
 const moment = require('moment');
 const config = require('../Config.json');
 
+var validator = require('validator');
+
 
 // used to sign the cookie
 //router.use(cookieParser('somesecrettosigncookie'));
@@ -91,20 +93,8 @@ const validateIntegerParameter = (res, value, requester, message, minValue, maxV
 };
 
 const validateUsernameParameter = (res, username, requester, message) => {
-    if(username === undefined)
-    {
-        if(res !== undefined)
-        {
-            res.status(400).send({
-                message: message,
-                requester: requester
-            });
-        }
-        return false;
-    }
-    let userLength = username.length;
-    // limit usernames to 1-20 characters
-    if(userLength > 20 || userLength < 6)
+    if(username === undefined || typeof(username) !== "string" || username.length > 20 || username.length < 6
+    || !validator.isAlphanumeric(username, 'en-US',{"ignore": "_-$"}))
     {
         if(res !== undefined)
         {
@@ -119,52 +109,11 @@ const validateUsernameParameter = (res, username, requester, message) => {
 };
 
 const validateEmailParameter = (res, email, requester, message) => {
-    if(email === undefined)
+    if(email === undefined || typeof(email) !== "string" || email.length > 30
+        || email.length < 7 || !validator.isEmail(email, {allow_utf8_local_part: false}))
     {
         if(res !== undefined)
         {
-            res.status(400).send({
-                message: message,
-                requester: requester
-            });
-        }
-        return false;
-    }
-    let emailLength = email.length;
-    // limit usernames to 1-20 characters
-    if(emailLength > 30 || emailLength < 7)
-    {
-        if(res !== undefined)
-        {
-            res.status(400).send({
-                message: message,
-                requester: requester
-            });
-        }
-        return false;
-    }
-    else if(email.includes("@"))
-    {
-        // checks to see if email in format string@string.string
-        let validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        if(!validEmail)
-        {
-            if(res !== undefined)
-            {
-                res.status(400).send({
-                    message: message,
-                    requester: requester
-                });
-            }
-            return false;
-        }
-        return true;
-    }
-    else
-    {
-        if(res !== undefined)
-        {
-            // does not have a @ in it
             res.status(400).send({
                 message: message,
                 requester: requester
@@ -177,8 +126,8 @@ const validateEmailParameter = (res, email, requester, message) => {
 
 // function to validate that a variable is in fact a string and is not empty
 // if maxLength is undefined it will be skipped
-const validateStringParameter = (res, param, minLength, maxLength, requester, message) => {
-    if(param === undefined)
+const validateStringParameter = (res, param, minLength, maxLength, requester, message, ascii = false) => {
+    if(param === undefined || typeof(param) !== "string")
     {
         if(res !== undefined)
         {
@@ -194,19 +143,22 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
         minLength = 0;
     }
     let paramLength = param.length;
+    let valid = true;
     if(paramLength < minLength)
     {
-        if(res !== undefined)
-        {
-            res.status(400).send({
-                message: message,
-                requester: requester
-            });
-        }
-        return false;
+        valid = false;
     }
     else if((maxLength !== undefined) && (paramLength > maxLength))
     {
+        valid = false;
+    }
+    else if(ascii && !validator.isAscii(param))
+    {
+        valid = false;
+    }
+
+    if(!valid)
+    {
         if(res !== undefined)
         {
             res.status(400).send({
@@ -216,6 +168,7 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
         }
         return false;
     }
+
     return true;
 };
 

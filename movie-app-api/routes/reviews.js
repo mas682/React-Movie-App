@@ -317,7 +317,7 @@ const postComment = async (req, res, requester) =>
     res.locals.function = "postComment";
     let comment = req.body.comment;
     // for now, comments can be as long as possible but should limit in future..
-    let valid = validateStringParameter(res, comment, 1, undefined, requester, "You cannot post a empty comment");
+    let valid = validateStringParameter(res, comment, 1, 1000, requester, "You cannot post a empty comment");
     if(!valid) return;
     let reviewId = req.body.reviewId;
     valid = validateIntegerParameter(res, reviewId, requester, "The review ID for the comment is invalid");
@@ -354,7 +354,7 @@ const updateComment = async (req, res, requester) =>
     res.locals.function = "updateComment";
     let commentId = req.body.commentId;
     let updatedComment = req.body.comment;
-    let valid = validateStringParameter(res, updatedComment, 1, undefined, requester, "You cannot post a empty comment");
+    let valid = validateStringParameter(res, updatedComment, 1, 1000, requester, "You cannot post a empty comment");
     if(!valid) return;
     valid = validateIntegerParameter(res, commentId, requester, "The comment ID to update is invalid");
     if(!valid) return;

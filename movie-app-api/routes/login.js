@@ -167,7 +167,7 @@ const checkLogin = async (req, res) =>
     // if not a valid username, check to see if valid email
     if(!valid)
     {
-        valid = validateEmailParameter(undefined, username, res, "Username or email address is invalid");
+        valid = validateEmailParameter(res, username, "", "Username or email address is invalid");
         if(!valid) return;
     }
     valid = validateStringParameter(res, password, 6, 15, "", "Password must be between 6-15 characters");

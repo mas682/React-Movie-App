@@ -50,7 +50,25 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 app.use(logger('dev'));
-app.use(express.json());
+
+// parse incoming data as json
+app.use((req, res, next) => {
+  jsonHandler(express.json(), req, res, next);
+});
+
+function jsonHandler(middleware, req, res, next) {
+  middleware(req, res, (err) => {
+    if (err) {
+      return res.status(400).send({
+          message: "Invalid json found in request",
+          requester: ""
+      });
+    }
+    next();
+  });
+}
+
+
 app.use(cors({
     origin: 'https://localhost:3000',
     credentials: true

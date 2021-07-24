@@ -11,7 +11,7 @@ const comment = (sequelize, DataTypes) => {
         // create a username field
         value: {
             // set the data type to string
-            type: DataTypes.TEXT,
+            type: DataTypes.STRING(1000),
             // do not allow this to be empty
             allowNull: true
         },
