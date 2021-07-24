@@ -1,6 +1,6 @@
 //import Sequelize from 'sequelize';
 const config = require('../../Config.json');
-const sequelize = require('../sequelize.js').getClient();
+const sequelize = require('../shared/sequelize.js').getClient();
 
 // get the models
 const models = {

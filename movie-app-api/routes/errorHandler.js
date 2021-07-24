@@ -1,5 +1,5 @@
 import {getErrorHandler} from '../src/ErrorHandlers/errorReceiver.js';
-import {destroySession} from '../src/sessions.js';
+import {destroySession} from '../src/shared/sessions.js';
 
 const errorHandler = async(err, req, res, next) => {
     let result = getErrorHandler(err, res.locals.file, res.locals.function);

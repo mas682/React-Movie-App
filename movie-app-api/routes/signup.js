@@ -5,9 +5,9 @@ const moment = require('moment');
 import {validateStringParameter, validateUsernameParameter, validateEmailParameter,
         validateIntegerParameter} from './globals.js';
 import {emailHandler} from './EmailHandler.js';
-import {hash} from '../src/crypto.js';
-import {createSession} from '../src/sessions.js';
-const models = require('../src/sequelize.js').getClient().models;
+import {hash} from '../src/shared/crypto.js';
+import {createSession} from '../src/shared/sessions.js';
+const models = require('../src/shared/sequelize.js').getClient().models;
 
 // function to create an account
 const signUp = (req, res, next) => {

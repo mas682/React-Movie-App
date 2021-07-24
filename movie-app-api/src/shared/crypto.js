@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const config = require('../Config.json');
+const config = require('../../Config.json');
 
 
 const hash = (text, type) => {

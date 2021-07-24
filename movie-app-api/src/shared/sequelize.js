@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const config = require('../Config.json');
+const config = require('../../Config.json');
 let sequelize;
 
 function createClient() {

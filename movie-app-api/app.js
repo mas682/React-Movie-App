@@ -1,5 +1,16 @@
 
-const dbConnection = require('./src/sequelize.js');
+console.log("NODE_ENV: " + process.env.NODE_ENV);
+console.log("NODE_PORT: " + process.env.NODE_PORT);
+console.log("NODE_LOG_LEVEL: " + process.env.NODE_LOG_LEVEL);
+import Logger from "./src/shared/logger.js";
+Logger.error("TEST");
+Logger.warn("WARNING TEST");
+Logger.info("INFO TEST");
+Logger.http("http test");
+Logger.debug("debug test");
+
+
+const dbConnection = require('./src/shared/sequelize.js');
 const sequelize = dbConnection.createClient();
 const models = require('./src/models/index.js');
 
@@ -9,7 +20,7 @@ const errorHandler = require('./routes/errorHandler.js').errorHandler;
 const config = require('./Config.json');
 var express = require('express');
 var path = require('path');
-var logger = require('morgan');
+var morgan = require('morgan');
 var cors = require('cors');
 var indexRouter = require('./routes/index');
 var app = express();
@@ -23,12 +34,12 @@ const httpsOptions = {
 }
 
 // create the redis client
-let redis = require('./src/redis.js');
+let redis = require('./src/shared/redis.js');
 let redisClient = redis.createClient();
 
 const session = require('express-session');
 // create the redis store
-let redisStore = require('./src/redisStore.js').createStore(session, redisClient);
+let redisStore = require('./src/shared/redisStore.js').createStore(session, redisClient);
 
 // to run, npm run server
 
@@ -39,9 +50,10 @@ const eraseDatabaseOnSync = false;
 sequelize.sync({ force: eraseDatabaseOnSync });
 
 
+const port = (process.env.NODE_PORT === undefined) ? 9000 : process.env.NODE_PORT;
 const server = https.createServer(httpsOptions, app)
-    .listen(9000, () =>{
-        console.log('App listening on port 9000!')
+    .listen(port, () =>{
+        console.log("App listening on port " + port + "!")
     });
 
 
@@ -49,7 +61,7 @@ const server = https.createServer(httpsOptions, app)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(logger('dev'));
+app.use(morgan('dev'));
 
 // parse incoming data as json
 app.use((req, res, next) => {

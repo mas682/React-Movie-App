@@ -1,4 +1,4 @@
-const models = require('../src/sequelize.js').getClient().models;
+const models = require('../src/shared/sequelize.js').getClient().models;
 import {customAlphabet} from 'nanoid';
 const Op = require('Sequelize').Op;
 import {validateStringParameter, validateEmailParameter, validateUsernameParameter,
@@ -6,8 +6,8 @@ import {validateStringParameter, validateEmailParameter, validateUsernameParamet
 import {emailHandler} from './EmailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
-import {checkHashedValue} from '../src/crypto.js';
-import {createSession, destroySession} from '../src/sessions.js';
+import {checkHashedValue} from '../src/shared/crypto.js';
+import {createSession, destroySession} from '../src/shared/sessions.js';
 const config = require('../Config.json');
 
 // function to see if a user can login and returns a cookie to use

@@ -1,4 +1,4 @@
-const models = require('../src/sequelize.js').getClient().models;
+const models = require('../src/shared/sequelize.js').getClient().models;
 
 // function to get information associated with the user who has the cookie
 const getUserInfo = (req, res, next) => {

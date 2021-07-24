@@ -1,10 +1,10 @@
 
 const models = require('./sequelize.js').getClient().models;
 const moment = require('moment');
-const config = require('../Config.json');
+const config = require('../../Config.json');
 const Op = require('Sequelize').Op;
-let redisStore = require('../src/redisStore.js');
-let redis = require('../src/redis.js');
+let redisStore = require('./redisStore.js');
+let redis = require('./redis.js');
 
 
 const createSession = async(user, req, res, expires) =>

@@ -1,5 +1,5 @@
 import {validateIntegerParameter, validateUsernameParameter, validateStringParameter} from './globals.js';
-const models = require('../src/sequelize.js').getClient().models;
+const models = require('../src/shared/sequelize.js').getClient().models;
 
 // function to get movies and return them to the client
 const movieHandler = (req, res, next) => {

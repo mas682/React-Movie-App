@@ -7,7 +7,7 @@ import {getUserInfo} from './getUserInfo.js';
 import {movieHandler} from './movies.js';
 import {searchHandler} from './search.js';
 import {imageHandler} from './fileHandler.js';
-const router = require('../src/expressRouter.js').createRouter();
+const router = require('../src/shared/expressRouter.js').createRouter();
 
 // used when trying to login
 router.post('/login/:type', function(req, res, next) { clearCookie(req, res, next) },

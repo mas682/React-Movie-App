@@ -1,4 +1,4 @@
-const models = require('../src/sequelize.js').getClient().models;
+const models = require('../src/shared/sequelize.js').getClient().models;
 import {validateIntegerParameter, validateStringParameter} from './globals.js';
 import {createReview, updateReview} from './reviewCreator.js';
 

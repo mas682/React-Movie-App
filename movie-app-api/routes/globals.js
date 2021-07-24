@@ -1,7 +1,7 @@
 // not sure if this is the best way to do this but this file
 // holds variables that are needed specifically for the routing files
 
-const models = require('../src/sequelize.js').getClient().models;
+const models = require('../src/shared/sequelize.js').getClient().models;
 const moment = require('moment');
 const config = require('../Config.json');
 
