@@ -9,6 +9,8 @@ import {hash} from '../src/shared/crypto.js';
 import {createSession} from '../src/shared/sessions.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
 
+import Logger from "../src/shared/logger.js";
+
 // function to create an account
 const signUp = (req, res, next) => {
     let requester = (req.session.user === undefined) ? "" : req.session.user;
@@ -74,6 +76,7 @@ const selectPath = (requester, req, res, next) =>
 // function to create a temp user before their email is verified
 const createTempUser = async (requester, req, res) =>
 {
+    Logger.info("Sign up test");
     res.locals.function = "createTempUser";
     let username = req.body.username;
     let email = req.body.email;

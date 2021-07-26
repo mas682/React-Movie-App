@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^7.4.2",
+    "@types/morgan": "^1.9.3",
     "aws-sdk": "^2.879.0",
     "babel-preset-env": "^1.7.0",
     "connect-redis": "^5.2.0",
@@ -32,6 +33,7 @@
     "sequelize-auto": "^0.8.0",
     "sharp": "^0.28.1",
     "validator": "^13.6.0",
-    "winston": "^3.3.3"
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.5"
   }
 }
