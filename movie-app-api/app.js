@@ -4,10 +4,11 @@ console.log("NODE_PORT: " + process.env.NODE_PORT);
 console.log("NODE_LOG_LEVEL: " + process.env.NODE_LOG_LEVEL);
 import Logger from "./src/shared/logger.js";
 import morganMiddleware from "./src/shared/morganMiddleware.js";
-Logger.error("TEST");
+Logger.error("Error TEST", {function: "abc", file: "abc.js"});
 Logger.warn("WARNING TEST");
 Logger.info("INFO TEST");
-//Logger.http("http test");
+Logger.http("http test", {sessionId: 'id test'});
+Logger.http("http test");
 Logger.debug("debug test");
 
 

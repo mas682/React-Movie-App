@@ -32,19 +32,41 @@ const colors = {
 winston.addColors(colors)
 const consoleFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  winston.format.colorize({ all: true }),
   winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`,
+    (info) =>{
+        return getConsoleString(info)
+    },
   ),
+   winston.format.colorize({ all: true }),
 )
+
+function getConsoleString(info) {
+    if(info.level === 'error')
+    {
+        return `${info.timestamp}: ${info.level}: ${info.file}: ${info.message}`
+    }
+    else
+    {
+        return `${info.timestamp}: ${info.level}: ${info.message}`
+    }
+}
 
 
 function fileFormat(levels) {
     return winston.format.combine(
         filterOnly(levels),
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
+        winston.format.json()
+    );
+}
+
+
+function requestFormat(levels) {
+    return winston.format.combine(
+        filterOnly(levels),
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
         winston.format.printf(info =>
-             `${JSON.stringify({timestamp: info.timestamp, level: info.level, message: info.message})}`
+             `${JSON.stringify({timestamp: info.timestamp, level: info.level, sessionId: info.sessionId, message: info.message})}`
         )
     );
 }
@@ -53,9 +75,12 @@ function fileFormat(levels) {
 function filterOnly(levels) {
     // info is the message and it's related information
     return format(function (info) {
+        if(levels === undefined)
+        {
+            return info;
+        }
         // if the message is of type level, return it
-        console.log(info[LEVEL])
-        if (levels.includes(info[LEVEL])) {
+        else if (levels.includes(info[LEVEL])) {
             return info;
         }
         else
@@ -76,7 +101,8 @@ const transports = [
         datePattern: 'YYYY-MM-DD',
         maxSize: '20m',
         maxFiles: '30',
-        level: 'error'
+        level: 'error',
+        format: fileFormat(['error'])
     }),
     // logs for the requests that come in
     new winston.transports.DailyRotateFile({
@@ -86,7 +112,7 @@ const transports = [
         maxSize: '20m',
         maxFiles: '30',
         level: 'http',
-        format: fileFormat(['http']),
+        format: requestFormat(['http']),
     }),
     // logs for anything else
     // may need to create multiple transports for this to cover
@@ -98,11 +124,9 @@ const transports = [
         maxFiles: '30',
         level: 'warn',
         // add a filter only here but let it be warn, info, debug
-        format:filterOnly(['warn', 'info', 'debug'])
+        format:fileFormat(['warn', 'info', 'debug'])
     })
 ]
-
-console.log(moment(new Date()).add(360, 'minutes'));
 
 const Logger = winston.createLogger({
   level: level(),

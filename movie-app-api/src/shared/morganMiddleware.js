@@ -5,7 +5,9 @@ import Logger from "./logger";
 // Morgan to use our custom logger instead of the console.log.
 const stream ={
   // Use the http severity
-  write: (message) => Logger.http(message),
+  write: (message) => {
+      Logger.http(message)
+  },
 };
 
 // Skip all the Morgan http log if the
@@ -18,15 +20,32 @@ const skip = () => {
   return env !== "dev";
 };
 
+const format = (morgan, req, res)=> {
+    //console.log("HERE")
+    //console.log(morgan);
+    let method = morgan.method(req);
+    let url = morgan.url(req);
+    let status = morgan.status(req, res, 10);
+    let responseTime = morgan['response-time'](req, res);
+    let requester = undefined;
+    if(req.session !== undefined)
+    {
+        requester = req.session.userId;
+    }
+    let result = {
+        method: method,
+        url: url,
+        status: status,
+        responseTime: responseTime,
+        requesterId: requester
+    };
+    return JSON.stringify(result);
+}
+
 // Build the morgan middleware
 const morganMiddleware = morgan(
-  // Define message format string (this is the default one).
-  // The message format is made from tokens, and each token is
-  // defined inside the Morgan library.
-  // You can create your custom token to show what do you want from a request.
-  ":method :url :status :res[content-length] - :response-time ms",
-  // Options: in this case, I overwrote the stream and the skip logic.
-  // See the methods above.
+  format,
+  //":method :url :status :res[content-length] - :response-time ms",
   { stream, skip }
 );
 
