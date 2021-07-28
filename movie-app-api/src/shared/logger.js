@@ -25,7 +25,7 @@ const colors = {
   error: 'red',
   warn: 'yellow',
   info: 'green',
-  http: 'cyan',
+  http: 'white',
   debug: 'grey',
 }
 
@@ -38,12 +38,47 @@ const consoleFormat = winston.format.combine(
     },
   ),
    winston.format.colorize({ all: true }),
+   winston.format.colorize((info) => {
+       console.log(info)
+   })
 )
 
 function getConsoleString(info) {
     if(info.level === 'error')
     {
-        return `${info.timestamp}: ${info.level}: ${info.file}: ${info.message}`
+        return `${info.timestamp}| ${info.level} | File: ${info.file} | Function: ${info.function} \n${info.message}\n`
+    }
+    else if(info.level === 'http')
+    {
+        // this is all for when debugging, not to be used in prod
+        let obj = JSON.parse(info.message);
+        let color = "";
+        if(obj.type === 'response')
+        {
+            let status = parseInt(obj.status);
+            if(status >= 200 && status < 400)
+            {
+                color = "\x1b[32m";
+            }
+            else if(status >= 400 && status < 500)
+            {
+                color = "\x1b[33m";
+            }
+            else
+            {
+                color = "\x1b[31m"
+            }
+            return `${info.timestamp}| ${color}Status: ${obj.status} | Method: ${obj.method} | `
+            + `url: ${obj.url} | response time: ${obj.responseTime} | requester: ${obj.requesterId}`
+            + `| ip: ${obj.ip} | request ID: ${obj.requestId}\n`
+        }
+        else
+        {
+            color = "\x1b[36m"
+            return `${info.timestamp}| ${color}Method: ${obj.method} | url: ${obj.url} | requester: ${obj.requesterId}`
+            + `| ip: ${obj.ip} | request ID: ${obj.requestId}\n`
+        }
+        return `${info.timestamp}| ${color}Status: ${obj.status} | ${info.message}`
     }
     else
     {

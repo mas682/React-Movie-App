@@ -3,12 +3,14 @@ console.log("NODE_ENV: " + process.env.NODE_ENV);
 console.log("NODE_PORT: " + process.env.NODE_PORT);
 console.log("NODE_LOG_LEVEL: " + process.env.NODE_LOG_LEVEL);
 import Logger from "./src/shared/logger.js";
-import morganMiddleware from "./src/shared/morganMiddleware.js";
+const morgan = require('./src/shared/morganMiddleware.js');
+const addRequestId = require('express-request-id')();
+Logger.error("Error TEST", {function: "abc", file: "abc.js"});
 Logger.error("Error TEST", {function: "abc", file: "abc.js"});
 Logger.warn("WARNING TEST");
 Logger.info("INFO TEST");
-Logger.http("http test", {sessionId: 'id test'});
-Logger.http("http test");
+//Logger.http("http test", {sessionId: 'id test'});
+//Logger.http("http test");
 Logger.debug("debug test");
 
 
@@ -22,7 +24,7 @@ const errorHandler = require('./routes/errorHandler.js').errorHandler;
 const config = require('./Config.json');
 var express = require('express');
 var path = require('path');
-//var morgan = require('morgan');
+
 var cors = require('cors');
 var indexRouter = require('./routes/index');
 var app = express();
@@ -63,7 +65,13 @@ const server = https.createServer(httpsOptions, app)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(morganMiddleware);
+// add id to requests
+app.use(addRequestId);
+// log requests
+app.use(morgan.morganRequestMiddleware);
+// log responses
+app.use(morgan.morganResponseMiddleware);
+
 
 // parse incoming data as json
 app.use((req, res, next) => {
