@@ -126,7 +126,7 @@ const selectPath = (requester, req, res, next) =>
 	// if the route did not match any of the above
 	if(!routeFound)
 	{
-		res.status(404).send({
+		res.status(404).sendResponse({
 			message:"The movie path sent to the server does not exist",
 			requester: requester
 		});
@@ -134,7 +134,7 @@ const selectPath = (requester, req, res, next) =>
 	// if the route was found but cookie not found or invalid
 	else if(foundNoCookie)
 	{
-		res.status(401).send({
+		res.status(401).sendResponse({
 			message:"You are not logged in",
 			requester: requester
 		});
@@ -152,7 +152,7 @@ const getMovieTitles = async (requester, req, res) =>
 	let movies = await models.Movies.findByTitle(value, 10);
 	if(movies === undefined)
 	{
-		res.status(404).send({
+		res.status(404).sendResponse({
 			message: "Unable to find any movies matching that value",
 			requester: requester
 		});
@@ -161,14 +161,14 @@ const getMovieTitles = async (requester, req, res) =>
 	{
 		if(movies.length < 1)
 		{
-			res.status(404).send({
+			res.status(404).sendResponse({
 				message: "Unable to find any movies matching that value",
 				requester: requester
 			});
 		}
 		else
 		{
-			res.status(200).send({
+			res.status(200).sendResponse({
 				message: "Movies successfully found",
 				requester: requester,
 				movies: movies
@@ -190,7 +190,7 @@ const getMovieTagSuggestions = async (requester, req, res) =>
 	let tags = await models.MovieTags.findByValue(models, value, 10);
 	if(tags === undefined)
 	{
-		res.status(404).send({
+		res.status(404).sendResponse({
 			message: "Unable to find any tags matching that value",
 			requester: requester
 		});
@@ -200,14 +200,14 @@ const getMovieTagSuggestions = async (requester, req, res) =>
 		// not sure if this will be needed?
 		if(tags.length < 1)
 		{
-			res.status(404).send({
+			res.status(404).sendResponse({
 				message: "Unable to find any tags matching that value",
 				requester: requester
 			});
 		}
 		else
 		{
-			res.status(200).send({
+			res.status(200).sendResponse({
 				message: "Tags successfully found",
 				requester: requester,
 				tags: tags
@@ -233,14 +233,14 @@ const getMovieInfo = async(requester, req, res) =>
 	}
 	if(movie === null)
 	{
-		res.status(404).send({
+		res.status(404).sendResponse({
 			message: "Unable to find the information for the requested movie",
 			requester:  requester
 		});
 	}
 	else
 	{
-		res.status(200).send({
+		res.status(200).sendResponse({
 			message: "Movie info successfully found",
 			requester: requester,
 			movie: movie
@@ -261,7 +261,7 @@ const getWatchList = async(requester, req, res) =>
 	max = (max > 50) ? 50 : max;
 	// returns an empty array if no movies found that are associted with the user even if the userId doesn't exist
 	let movies = await models.Users.getWatchList(req.session.userId, models, max, offset);
-	res.status(200).send({
+	res.status(200).sendResponse({
 		message: "Users watch list successfully found",
 		requester: requester,
 		movies: movies
@@ -280,7 +280,7 @@ const getWatchedList = async(requester, req, res) =>
 	max = (max > 50) ? 50 : max;
 	let movies = await models.Users.getWatchedList(req.session.userId, models, max, offset);
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
-	res.status(200).send({
+	res.status(200).sendResponse({
 		message: "Users watched list successfully found",
 		requester: requester,
 		movies: movies
@@ -297,7 +297,7 @@ const addToWatchList = async (requester, req, res) =>
     let movie = await models.Movies.getMovieWithUserWatchList(movieId, req.session.userId, models);
     if(movie === null || movie === undefined)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not find the movie to add to the users watch list",
             requester: requester
         });
@@ -313,14 +313,14 @@ const addToWatchList = async (requester, req, res) =>
 			let logMessage = "(Error code: 1500) A error occurred trying to add the movie to the users watch list."
 			console.log(logMessage);
             // if undefined, usually means the association already exists..
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: requester
             });
         }
         else
         {
-            res.status(200).send({
+            res.status(200).sendResponse({
                 message: "Movie added to watch list",
                 requester: requester
             });
@@ -328,7 +328,7 @@ const addToWatchList = async (requester, req, res) =>
     }
     else
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "The movie is already on the users watch list",
             requester: requester
         });
@@ -345,7 +345,7 @@ const removeFromWatchList = async (requester, req, res) =>
     let movie = await models.Movies.getMovieWithUserWatchList(movieId, req.session.userId, models);
     if(movie === null || movie === undefined)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not find the movie to remove the movie from the users watch list",
             requester: requester
         });
@@ -359,14 +359,14 @@ const removeFromWatchList = async (requester, req, res) =>
         {
 			let message = "A error occurred trying to remove the movie from the users watch list.  Error code: 1501"
             // if undefined, usually means the association already exists..
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: requester
             });
         }
         else
         {
-            res.status(200).send({
+            res.status(200).sendResponse({
                 message: "Movie removed from watch list",
                 requester: requester
             });
@@ -374,7 +374,7 @@ const removeFromWatchList = async (requester, req, res) =>
     }
     else
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "The movie is already not on the users watch list",
             requester: requester
         });
@@ -392,7 +392,7 @@ const addToWatched = async (requester, req, res) =>
     let movie = await models.Movies.getMovieWtithUserWatched(movieId, req.session.userId, models);
     if(movie === null || movie === undefined)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not find the movie to add to the users watched list",
             requester: requester
         });
@@ -408,14 +408,14 @@ const addToWatched = async (requester, req, res) =>
 			let logMessage = "(Error code: 1502) A error occurred trying to add the movie to the users watched list."
 			console.log(logMessage);
             // if undefined, usually means the association already exists..
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: requester
             });
         }
         else
         {
-            res.status(200).send({
+            res.status(200).sendResponse({
                 message: "Movie added to watched list",
                 requester: requester
             });
@@ -423,7 +423,7 @@ const addToWatched = async (requester, req, res) =>
     }
     else
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "The movie is already on the users watched list",
             requester: requester
         });
@@ -440,7 +440,7 @@ const removeFromWatched = async (requester, req, res) =>
     let movie = await models.Movies.getMovieWtithUserWatched(movieId, req.session.userId, models);
     if(movie === null || movie === undefined)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not find the movie to remove from the users watched list",
             requester: requester
         });
@@ -456,14 +456,14 @@ const removeFromWatched = async (requester, req, res) =>
 			let logMessage = "(Error code: 1503) A error occurred trying to remove the movie from the users watched list."
 			console.log(logMessage);
             // if undefined, usually means the association already exists..
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: requester
             });
         }
         else
         {
-            res.status(200).send({
+            res.status(200).sendResponse({
                 message: "Movie removed from watched list",
                 requester: requester
             });
@@ -471,7 +471,7 @@ const removeFromWatched = async (requester, req, res) =>
     }
     else
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "The movie is already not on the users watched list",
             requester: requester
         });
@@ -483,7 +483,7 @@ const getFeaturedMovies = async(requester, req, res) =>
 	res.locals.function = "getFeaturedMovies";
 	let movies = await models.FeaturedMovies.getMovies(models);
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
-	res.status(200).send({
+	res.status(200).sendResponse({
 		message: "Featured movies successfully found",
 		requester: requester,
 		movies: movies

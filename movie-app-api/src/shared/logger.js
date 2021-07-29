@@ -4,21 +4,21 @@ require('winston-daily-rotate-file');
 const moment = require('moment');
 
 const LEVEL = Symbol.for('level');
-console.log(LEVEL);
 
 
 const levels = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  http: 3,
-  debug: 4,
+    error: 0,
+    warn: 1,
+    info: 2,
+    // only to be used to log requests/responses
+    http: 3,
+    debug: 4,
 }
 
 const level = () => {
-  const env = process.env.NODE_ENV || 'dev';
-  const isDevelopment = env === 'dev';
-  return isDevelopment ? 'debug' : 'warn';
+    const env = process.env.NODE_ENV || 'dev';
+    const isDevelopment = env === 'dev';
+    return isDevelopment ? 'debug' : 'warn';
 }
 
 const colors = {
@@ -30,17 +30,18 @@ const colors = {
 }
 
 winston.addColors(colors)
+
 const consoleFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-  winston.format.printf(
-    (info) =>{
-        return getConsoleString(info)
-    },
-  ),
-   winston.format.colorize({ all: true }),
-   winston.format.colorize((info) => {
-       console.log(info)
-   })
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
+    winston.format.printf(
+        (info) =>{
+            return getConsoleString(info)
+        },
+    ),
+    winston.format.colorize({ all: true }),
+    winston.format.colorize((info) => {
+        console.log(info)
+    })
 )
 
 function getConsoleString(info) {
@@ -69,7 +70,7 @@ function getConsoleString(info) {
                 color = "\x1b[31m"
             }
             return `${info.timestamp}| ${color}Status: ${obj.status} | Method: ${obj.method} | `
-            + `url: ${obj.url} | response time: ${obj.responseTime} | requester: ${obj.requesterId}`
+            + `url: ${obj.url} | message: ${obj.message} | response time: ${obj.responseTime} | requester: ${obj.requesterId}`
             + `| ip: ${obj.ip} | request ID: ${obj.requestId}\n`
         }
         else
@@ -100,9 +101,10 @@ function requestFormat(levels) {
     return winston.format.combine(
         filterOnly(levels),
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-        winston.format.printf(info =>
-             `${JSON.stringify({timestamp: info.timestamp, level: info.level, sessionId: info.sessionId, message: info.message})}`
-        )
+        winston.format.printf(info => {
+            let str = (info.message.length > 1) ? info.message.substring(0, info.message.length - 1) : info.message;
+            return `{"timestamp":"${info.timestamp}","message":${str}}`
+        })
     );
 }
 
@@ -145,7 +147,7 @@ const transports = [
         filename: 'requests-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
         maxSize: '20m',
-        maxFiles: '30',
+        maxFiles: '7',
         level: 'http',
         format: requestFormat(['http']),
     }),
@@ -156,7 +158,7 @@ const transports = [
         filename: 'movie-app-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
         maxSize: '20m',
-        maxFiles: '30',
+        maxFiles: '7',
         level: 'warn',
         // add a filter only here but let it be warn, info, debug
         format:fileFormat(['warn', 'info', 'debug'])
@@ -164,10 +166,9 @@ const transports = [
 ]
 
 const Logger = winston.createLogger({
-  level: level(),
-  levels,
-//  format,
-  transports,
+    level: level(),
+    levels,
+    transports,
 })
 
 export default Logger;

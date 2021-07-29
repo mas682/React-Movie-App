@@ -7,7 +7,7 @@ const badPageHandler = (req, res, next) => {
     let status = 404;
     let message = "The path sent to the server does not exist";
 
-    res.status(status).send({
+    res.status(status).sendResponse({
         message: message,
         requester: requester
     });

@@ -19,7 +19,7 @@ const getUserInfo = (req, res, next) => {
         }
         else
         {
-            res.status(404).send({
+            res.status(404).sendResponse({
                 message:"The getUserInfo path sent to the server does not exist",
                 requester: requester
             });
@@ -28,7 +28,7 @@ const getUserInfo = (req, res, next) => {
     // if no cookie was found
     else
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "You are not logged in",
             requester: ""
         });
@@ -43,7 +43,7 @@ const getUser = async (requester, res) =>
     // if the user was not found
     if(user === null)
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             requester: "",
             message: "Unable to find user associated with cookie",
         });
@@ -57,7 +57,7 @@ const getUser = async (requester, res) =>
             username: user.username,
             email: user.email
         };
-        res.status(200).send({
+        res.status(200).sendResponse({
             requester: requester,
             message: "User info successfully found",
             user: userObj

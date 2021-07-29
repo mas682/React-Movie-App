@@ -16,7 +16,7 @@ const review = (req, res, next) =>
     // if no cookie was found
     else
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "You are not logged in",
             requester: requester});
     }
@@ -110,7 +110,7 @@ const selectPath = (requester, req, res, next) =>
     // if the route was invalid for the GET request
     if(!routeFound)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message:"The review path sent to the server does not exist",
             requester: requester
         });
@@ -133,7 +133,7 @@ const removePost = async (req, res, requester) =>
     let review = await models.Reviews.getReviewWithCreator(reviewId, models);
     if(review === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Review could not be found",
             requester: requester
         });
@@ -143,7 +143,7 @@ const removePost = async (req, res, requester) =>
         // currently only let the user who posted the review remove it
         if(req.session.userId !== review.user.id)
         {
-            res.status(401).send({
+            res.status(401).sendResponse({
                 message: "You cannot remove another users post",
                 requester: requester
             });
@@ -156,14 +156,14 @@ const removePost = async (req, res, requester) =>
                 let message = "Server failed to delete review for some unkown reason.  Error code: 1200";
                 let logMessage = "(Error code: 1200) Server failed to delete review for some unkown reason."
                 console.log(logMessage);
-                res.status(500).send({
+                res.status(500).sendResponse({
                     message: message,
                     requester: requester
                 });
             }
             else
             {
-                res.status(200).send({
+                res.status(200).sendResponse({
                     message: "Review successfully removed",
                     requester: requester
                 });
@@ -187,7 +187,7 @@ const addLike = async (requester, req, res) =>
     let review = await models.Reviews.getReviewWithLikedUser(reviewId, userId, models);
     if(review === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "The review could not be found",
             requester: requester
         });
@@ -202,14 +202,14 @@ const addLike = async (requester, req, res) =>
         if(result === undefined)
         {
             let message = "Some error occurred trying to like the post.  Error code: 1201"
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: requester
             });
         }
         else
         {
-            res.status(200).send({
+            res.status(200).sendResponse({
                 message: "Post liked",
                 requester: requester
             });
@@ -217,7 +217,7 @@ const addLike = async (requester, req, res) =>
     }
     else
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "Post already liked",
             requester: requester
         });
@@ -240,7 +240,7 @@ const removeLike = async (requester, req, res) =>
     let review = await models.Reviews.getReviewWithLikedUser(reviewId, userId, models);
     if(review === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "The review could not be found",
             requester: requester
         });
@@ -255,14 +255,14 @@ const removeLike = async (requester, req, res) =>
         if(result === undefined)
         {
             let message = "Some error occurred trying to remove like from the post.  Error code: 1202"
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: requester
             });
         }
         else
         {
-            res.status(200).send({
+            res.status(200).sendResponse({
                 message: "Post like removed",
                 requester: requester
             });
@@ -270,7 +270,7 @@ const removeLike = async (requester, req, res) =>
     }
     else
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "Post already not liked",
             requester: requester
         });
@@ -291,14 +291,14 @@ const getLikes = async (requester, req, res) =>
     let usersWhoLiked = await models.Reviews.getLikes(reviewId, req.session.userId, models);
     if(usersWhoLiked === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "The review could not be found",
             requester: requester
          });
     }
     else
     {
-        res.status(200).send({
+        res.status(200).sendResponse({
             message: "Review likes found",
             requester: requester,
             users: usersWhoLiked
@@ -325,7 +325,7 @@ const postComment = async (req, res, requester) =>
     let review = await models.Reviews.getReviewForComment(reviewId, req.session.userId, undefined, models);
     if(review === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "The review could not be found",
             requester: requester
         });
@@ -338,7 +338,7 @@ const postComment = async (req, res, requester) =>
             userId: req.session.userId,
             reviewId: reviewId,
         });
-        res.status(201).send({
+        res.status(201).sendResponse({
             message: "Comment successfully posted",
             requester: requester
         });
@@ -362,7 +362,7 @@ const updateComment = async (req, res, requester) =>
     let comment = await models.Comments.findById(models, commentId);
     if(comment === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Comment could not be found",
             requester: requester
         });
@@ -372,7 +372,7 @@ const updateComment = async (req, res, requester) =>
         // if you are not the user that posted the comment
         if(requester !== comment.user.username)
         {
-            res.status(401).send({
+            res.status(401).sendResponse({
                 message: "You cannot update another users comment",
                 requester: requester
             });
@@ -384,7 +384,7 @@ const updateComment = async (req, res, requester) =>
             {
                 // update returns a updated instance of the comment
                 // if undefined, comment cannot be found
-                res.status(404).send({
+                res.status(404).sendResponse({
                     message: "Comment could not be found",
                     requester: requester
                 });
@@ -392,7 +392,7 @@ const updateComment = async (req, res, requester) =>
             else
             {
                 // could also return the comment which is the result
-                res.status(200).send({
+                res.status(200).sendResponse({
                     message: "Comment successfully updated",
                     requester: requester
                 });
@@ -415,7 +415,7 @@ const removeComment = async (req, res, requester) =>
     let comment = await models.Comments.findById(models, commentId);
     if(comment === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Comment could not be found",
             requester: requester
         });
@@ -433,7 +433,7 @@ const removeComment = async (req, res, requester) =>
             if(review === null)
             {
                 // review could not be found...
-                res.status(404).send({
+                res.status(404).sendResponse({
                     message: "The review the comment was associated with could not be found",
                     requester: requester
                 });
@@ -444,7 +444,7 @@ const removeComment = async (req, res, requester) =>
             }
             else
             {
-                res.status(401).send({
+                res.status(401).sendResponse({
                     message: "You cannot remove another users comment",
                     requester: requester
                 });
@@ -465,7 +465,7 @@ const commentRemoval = async (res, comment, requester) =>
     {
         // update returns a updated instance of the comment
         // if undefined, comment cannot be found
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Comment could not be found",
             requester: requester
         });
@@ -473,7 +473,7 @@ const commentRemoval = async (res, comment, requester) =>
     else
     {
         // could also return the comment which is the result
-        res.status(200).send({
+        res.status(200).sendResponse({
             message: "Comment successfully removed",
             requester: requester
         });
@@ -493,14 +493,14 @@ const getComments = async(req, res, requester) =>
     let comments = await models.Reviews.getReviewComments(reviewId, req.session.userId, models);
     if(comments === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Review could not be found",
             requester: requester
         });
     }
     else
     {
-        res.status(200).send({
+        res.status(200).sendResponse({
             message: "Comments successfully found",
             requester: requester,
             comments: comments

@@ -28,7 +28,7 @@ const errorHandler = async(err, req, res, next) => {
     let status = result.status;
     let message = result.message;
 
-    res.status(status).send({
+    res.status(status).sendResponse({
         message: message,
         requester: requester
     });

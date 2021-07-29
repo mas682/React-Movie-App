@@ -89,10 +89,11 @@ const selectPath = (requester, req, res, next) =>
             }
             else
             {
-                res.status(401).send({
+                res.status(401).sendResponse({
                     message: "User not logged in",
                     requester: requester
                 });
+
             }
         }
         else if(req.params.type === "logout")

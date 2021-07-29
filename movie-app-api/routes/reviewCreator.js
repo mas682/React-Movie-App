@@ -78,7 +78,7 @@ const createReview = async (requester, req, res) =>
     // if the review was not created
     if(!review[1])
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "A review for this movie by the current user already exists.",
             requester: requester
         });
@@ -89,7 +89,7 @@ const createReview = async (requester, req, res) =>
     {
         let message = "Review creation failed for some unexpected reason.  Error code: 1101"
         // review creation failed, should just about never occur
-        res.status(500).send({
+        res.status(500).sendResponse({
             message: message,
             requester: requester
         });
@@ -126,7 +126,7 @@ const createReview = async (requester, req, res) =>
         failed = validateAddTagResult(warnings, res, requester);
         if(failed) return;
         let errorMessages = generateAddTagErrorMessages(warnings);
-        res.status(201).send({
+        res.status(201).sendResponse({
             message: "Review successfully created",
             requester: requester,
             errors: errorMessages
@@ -163,7 +163,7 @@ const updateReview = async (requester, req, res) =>
     let review = await models.Reviews.findByIdForUpdate(models, reviewId);
     if(review === null || review === undefined || review.length < 1)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Review could not be found",
             requester: requester
         });
@@ -172,7 +172,7 @@ const updateReview = async (requester, req, res) =>
     review = review[0];
     if(userId !== review.userId)
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "You cannot update another users review",
             requester: requester
         });
@@ -192,7 +192,7 @@ const updateReview = async (requester, req, res) =>
         if(result === undefined || result === null)
         {
             // update should return a updated instance of the review
-            res.status(404).send({
+            res.status(404).sendResponse({
                 message: "Review could not be found",
                 requester: requester
             });
@@ -271,7 +271,7 @@ const updateReview = async (requester, req, res) =>
             movie: updatedReview.dataValues.movie
     };
 
-    res.status(201).send({
+    res.status(201).sendResponse({
         message: "Review successfully updated",
         review: output,
         requester: requester,
@@ -389,7 +389,7 @@ const validateReviewTagCount = (res, tagCount, requester, message) =>
 {
     if(tagCount > 5)
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: message,
             requester: requester
         });
@@ -577,7 +577,7 @@ const validateAddTagResult = (warnings, res, requester) => {
      }
      if(failed)
      {
-        res.status(status).send({
+        res.status(status).sendResponse({
             message: message,
             requester: requester
         });

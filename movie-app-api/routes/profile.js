@@ -23,7 +23,7 @@ const profileHandler = (req, res, next) => {
         {
             let message = "Some unexpected error occurred on the server.  Error code: 1000"
             // should never happen but just in case
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: requester
             });
@@ -209,7 +209,7 @@ const selectPath = (requester, req, res, next) =>
     // if the route did not match any of the above
     if(!routeFound)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message:"The profile path sent to the server does not exist",
             requester: requester
         });
@@ -217,7 +217,7 @@ const selectPath = (requester, req, res, next) =>
     // if the route was found but cookie not found or invalid
     else if(foundNoCookie)
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message:"You are not logged in",
             requester: requester
         });
@@ -236,14 +236,14 @@ const getFollowers = async (requester, req, res) =>
     let followers = await models.Users.getFollowers(username, req.session.userId, models);
     if(followers === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "The user could not be found",
             requester: requester
         });
     }
     else
     {
-        res.status(200).send({
+        res.status(200).sendResponse({
             message: "Users followers found",
             requester: requester,
             users: followers
@@ -261,14 +261,14 @@ const getFollowing = async (requester, req, res) =>
     let following = await models.Users.getFollowing(username, req.session.userId, models);
     if(following === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "The user could not be found",
             requester: requester
         });
     }
     else
     {
-        res.status(200).send({
+        res.status(200).sendResponse({
             message: "Users following users found",
             requester: requester,
             users: following
@@ -291,7 +291,7 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
     // if the user was not found
     if(user === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message:"Unable to find the requested user",
             requester: loggedInUser
         });
@@ -320,7 +320,7 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
             }
         }
     }
-    res.status(200).send({
+    res.status(200).sendResponse({
         message: "User information successfully found",
         following: followed,
         followerCount: followerCount,
@@ -349,7 +349,7 @@ const getReviews = async (requester, req, res, cookieValid) =>
     let user = await models.Users.findByLogin(username);
     if(user === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Unable to find the requested user",
             requester: requester
         });
@@ -359,7 +359,7 @@ const getReviews = async (requester, req, res, cookieValid) =>
     {
         let reviews = await models.Reviews.findByIds(models, [user.id], req.session.userId, max, offset);
         // send the reveiws associated with the user and their id
-        res.status(200).send({
+        res.status(200).sendResponse({
             message: "Reviews sucessfully found for the user",
             requester: requester,
             reviews: reviews
@@ -369,7 +369,7 @@ const getReviews = async (requester, req, res, cookieValid) =>
     {
         let reviews = await models.Reviews.findByIds(models, [user.id], undefined)
         // send the reveiws associated with the user and their id
-        res.status(200).send({
+        res.status(200).sendResponse({
             message: "Reviews successfully found for the user",
             requester: requester,
             reviews: reviews
@@ -395,7 +395,7 @@ const getFeed = async (requester, req, res) =>
     if(username !== requester)
     {
         // unathorized
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "You cannot access the feed of another user",
             requester: requester
         });
@@ -407,7 +407,7 @@ const getFeed = async (requester, req, res) =>
     // if verified the user is logged in, should not really be an issue
     let reviews = await models.Reviews.getUserReviewFeed(models, req.session.userId, max, offset);
 
-    res.status(200).send({
+    res.status(200).sendResponse({
         message: "Users feed successfully found",
         requester: requester,
         reviews: reviews
@@ -431,7 +431,7 @@ const followUser = async (requester, req, res) =>
     let userToFollow = await models.Users.findWithFollowing(followUname, req.session.userId);
     if(userToFollow === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Unable to find user to follow",
             requester: requestingUser
         });
@@ -441,7 +441,7 @@ const followUser = async (requester, req, res) =>
     {
         if(userToFollow.id === req.session.userId)
         {
-            res.status(400).send({
+            res.status(400).sendResponse({
                 message: "User cannot follow themself",
                 requester: requestingUser
             });
@@ -453,14 +453,14 @@ const followUser = async (requester, req, res) =>
             if(result === undefined)
             {
                 let message = "Some error occured trying to follow the user.  Error code: 1001"
-                res.status(500).send({
+                res.status(500).sendResponse({
                     message: message,
                     requester: requestingUser
                 });
             }
             else
             {
-                res.status(200).send({
+                res.status(200).sendResponse({
                     message: "User successfully followed",
                     requester: requestingUser
                 });
@@ -469,7 +469,7 @@ const followUser = async (requester, req, res) =>
     }
     else
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "You already follow the user",
             requester: requestingUser
         });
@@ -487,7 +487,7 @@ const unfollowUser = async (requester, req, res) =>
     let userToUnfollow = await models.Users.findWithFollowing(unfollowUname, req.session.userId);
     if(userToUnfollow === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Unable to find user to unfollow",
             requester: requestingUser
         });
@@ -496,7 +496,7 @@ const unfollowUser = async (requester, req, res) =>
     {
         if(userToUnfollow.id === req.session.userId)
         {
-            res.status(400).send({
+            res.status(400).sendResponse({
                 message: "User cannot unfollow themself",
                 requester: requestingUser
             });
@@ -507,14 +507,14 @@ const unfollowUser = async (requester, req, res) =>
             if(result === undefined)
             {
                 let message = "Some error occured trying to unfollow the user.  Error code: 1002"
-                res.status(500).send({
+                res.status(500).sendResponse({
                     message: message,
                     requester: requestingUser
                 });
             }
             else
             {
-                res.status(200).send({
+                res.status(200).sendResponse({
                     message: "User successfully unfollowed",
                     requester: requestingUser
                 });
@@ -523,7 +523,7 @@ const unfollowUser = async (requester, req, res) =>
     }
     else
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "You already do not follow the user",
             requester: requestingUser
         });
@@ -545,14 +545,14 @@ const updatePassword = async (requester, req, res) =>
 
     if(req.params.username !== requester)
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "The user passed in the url does not match the cookie",
             requester: requester
         });
     }
     else if(req.body.oldPassword === req.body.newPass)
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "New password is identical to the previous one sent by the user",
             requester: requester
         });
@@ -562,7 +562,7 @@ const updatePassword = async (requester, req, res) =>
         let user = await models.Users.findByLogin(requester);
         if(user === null)
         {
-            res.status(404).send({
+            res.status(404).sendResponse({
                 message: "Could not find the user to update",
                 requester: requester
             });
@@ -586,7 +586,7 @@ const updatePassword = async (requester, req, res) =>
             req.session.admin = user.admin;
             await regenerateSession(req, res);
 
-            res.status(200).send({
+            res.status(200).sendResponse({
                 message: "Password updated",
                 requester: requester
             });
@@ -600,7 +600,7 @@ const updatePassword = async (requester, req, res) =>
                 message = message + ". User account is currently locked due to too many failed password attempts";
                 requester = "";
             }
-            res.status(401).send({
+            res.status(401).sendResponse({
                 message: message,
                 requester: requester
             });
@@ -630,7 +630,7 @@ const updateInfo = async (requester, req, res, next) =>
     if(!valid) return;
     if(requester !== username)
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "You cannot update another users information",
             requester: requester
         });
@@ -641,7 +641,7 @@ const updateInfo = async (requester, req, res, next) =>
     if(user === null)
     {
         // sending 401 as if null user does not exist
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "Could not find the user to update",
             requester: ""
         });
@@ -681,7 +681,7 @@ const updateInfo = async (requester, req, res, next) =>
             firstName: result.firstName,
             lastName: result.lastName
         };
-        res.status(200).send({
+        res.status(200).sendResponse({
             message: "User info successfully updated",
             requester: updatedUser.username,
             user: updatedUser
@@ -696,7 +696,7 @@ const updateInfo = async (requester, req, res, next) =>
             message = message + ". User account is currently locked due to too many failed password attempts";
             requester = "";
         }
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: message,
             requester: requester
         });
@@ -715,7 +715,7 @@ const removeUser = async (requester, req, res, next) =>
     if(!valid) return;
     if(password === undefined || password.length < 8)
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "Password incorrect",
             requester: requester
         });
@@ -730,7 +730,7 @@ const removeUser = async (requester, req, res, next) =>
     {
         if(!user.admin)
         {
-            res.status(401).send({
+            res.status(401).sendResponse({
                 message: "You cannot remove another user",
                 requester: requester
             });
@@ -745,7 +745,7 @@ const removeUser = async (requester, req, res, next) =>
     }
     if(userToRemove === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not find the user to remove",
             requester: requester
         });
@@ -767,7 +767,7 @@ const removeUser = async (requester, req, res, next) =>
             let logMessage = "(Error code: 1006) Error in database occurred removing a user";
             console.log(logMessage);
             let message = "Server failed to remove user for some unkown reason.  Error code: 1006";
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: requester
             });
@@ -779,7 +779,7 @@ const removeUser = async (requester, req, res, next) =>
             {
                 requester = "";
             }
-            res.status(200).send({
+            res.status(200).sendResponse({
                 message: "User successfully removed",
                 requester: requester
             });
@@ -787,7 +787,7 @@ const removeUser = async (requester, req, res, next) =>
     }
     else
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "Password incorrect",
             requester: requester
         });
@@ -803,7 +803,7 @@ const setImage = async (requester, req, res, next) =>
     if(!valid) return;
     if(req.params.username !== requester)
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "The user passed in the url does not match the requester",
             requester: requester
         });
@@ -823,7 +823,7 @@ const removeProfilePicture = async(requester, req, res) =>
     if(!valid) return;
     if(req.params.username !== requester)
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "The user passed in the url does not match the requester",
             requester: requester
         });
@@ -870,7 +870,7 @@ const removeProfilePicture = async(requester, req, res) =>
         }
     }
     setTimeout(() => {
-        res.status(status).send({
+        res.status(status).sendResponse({
             message: message,
             requester: requester
         });
@@ -889,7 +889,7 @@ const updateImage = async(requester, req, res) =>
     if(req.file === undefined)
     {
         // file could not be found in request as it was not defined as file: image
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: "The new profile picture could not be found in the request",
             requester: requester
         });
@@ -956,7 +956,7 @@ const updateImage = async(requester, req, res) =>
         }
     }
     setTimeout(() => {
-        res.status(status).send({
+        res.status(status).sendResponse({
             message: message,
             requester: requester
         });

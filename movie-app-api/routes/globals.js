@@ -37,7 +37,7 @@ const validateBooleanParameter = (res, value, requester, message) => {
     }
     else
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: message,
             requester: requester
         });
@@ -53,7 +53,7 @@ const validateBooleanParameter = (res, value, requester, message) => {
 const validateIntegerParameter = (res, value, requester, message, minValue, maxValue) => {
     if(value === undefined)
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: message,
             requester: requester
         });
@@ -61,7 +61,7 @@ const validateIntegerParameter = (res, value, requester, message, minValue, maxV
     }
     else if(isNaN(value) || value.toString().length > 15)
     {
-        res.status(400).send({
+        res.status(400).sendResponse({
             message: message,
             requester: requester
         });
@@ -71,7 +71,7 @@ const validateIntegerParameter = (res, value, requester, message, minValue, maxV
     {
         if(value < minValue)
         {
-            res.status(400).send({
+            res.status(400).sendResponse({
                 message: message,
                 requester: requester
             });
@@ -82,7 +82,7 @@ const validateIntegerParameter = (res, value, requester, message, minValue, maxV
     {
         if(value > maxValue)
         {
-            res.status(400).send({
+            res.status(400).sendResponse({
                 message: message,
                 requester: requester
             });
@@ -98,7 +98,7 @@ const validateUsernameParameter = (res, username, requester, message) => {
     {
         if(res !== undefined)
         {
-            res.status(400).send({
+            res.status(400).sendResponse({
                 message: message,
                 requester: requester
             });
@@ -114,7 +114,7 @@ const validateEmailParameter = (res, email, requester, message) => {
     {
         if(res !== undefined)
         {
-            res.status(400).send({
+            res.status(400).sendResponse({
                 message: message,
                 requester: requester
             });
@@ -131,7 +131,7 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
     {
         if(res !== undefined)
         {
-            res.status(400).send({
+            res.status(400).sendResponse({
                 message: message,
                 requester: requester
             });
@@ -161,7 +161,7 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
     {
         if(res !== undefined)
         {
-            res.status(400).send({
+            res.status(400).sendResponse({
                 message: message,
                 requester: requester
             });

@@ -65,6 +65,15 @@ const server = https.createServer(httpsOptions, app)
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+// add the function sendResponse to the res object
+app.use(function(req, res, next) {
+    res.sendResponse = function(body) {
+        res.locals.message = body.message;
+        res.send(body);
+    }
+    next();
+});
+
 // add id to requests
 app.use(addRequestId);
 // log requests
@@ -95,6 +104,8 @@ app.use(cors({
     origin: 'https://localhost:3000',
     credentials: true
 }));
+
+//app.response.sendResponse = sendResponse;
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));

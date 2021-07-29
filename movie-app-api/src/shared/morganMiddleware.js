@@ -17,6 +17,7 @@ const skip = () => {
   return env !== "dev";
 };
 
+
 const format = (morgan, req, res)=> {
     let status = morgan.status(req, res, 10);
     let result = {
@@ -27,15 +28,16 @@ const format = (morgan, req, res)=> {
         responseTime: morgan['response-time'](req, res) + " ms",
         requestId: req.id,
         requesterId: (req.session !== undefined) ? req.session.userId : undefined,
-        ip: morgan['remote-addr'](req)
+        ip: morgan['remote-addr'](req),
+        message: (status === 400 || status > 401) ? res.locals.message : undefined
     };
+    // may have to change this if causing performance issues
     return JSON.stringify(result);
 }
 
 // middleware for logging requests as they come in
 const morganRequestMiddleware = morgan(
   format,
-  //":method :url :status :res[content-length] - :response-time ms",
   { stream, skip, immediate: true }
 );
 

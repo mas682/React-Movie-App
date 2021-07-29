@@ -18,7 +18,7 @@ const signUp = (req, res, next) => {
     res.locals.file = "signup";
     if(requester !== "")
     {
-        res.status(401).send({
+        res.status(401).sendResponse({
             message: "You are already logged in so you must have an account",
             requester: requester
         });
@@ -65,7 +65,7 @@ const selectPath = (requester, req, res, next) =>
     // if the route did not match any of the above
     if(!routeFound)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message:"The signup path sent to the server does not exist",
             requester: requester
         });
@@ -114,7 +114,7 @@ const createTempUser = async (requester, req, res) =>
     setTimeout(() =>{
         if(emailResult)
         {
-            res.status(201).send({
+            res.status(201).sendResponse({
                 message: "Verification email sent",
                 requester: ""
             });
@@ -124,7 +124,7 @@ const createTempUser = async (requester, req, res) =>
             let message = "Verification email not sent.  Error code: 1302";
             let logMessage = "(Error code: 1302) Verifcation email not sent";
             console.log(logMessage);
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: ""
             });
@@ -155,7 +155,7 @@ const resendVerificationCode = async (requester, req, res) =>
     });
     if(tempUser === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not find a user with the given email and username that has a valid active verification code",
             requester: ""
         });
@@ -163,7 +163,7 @@ const resendVerificationCode = async (requester, req, res) =>
     }
     else if(tempUser.codesResent >= 2 && tempUser.verificationAttempts < 3)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not send another verification code as the maximum number of codes to send out (3) has been met",
             requester: ""
         });
@@ -178,7 +178,7 @@ const resendVerificationCode = async (requester, req, res) =>
     if(result === undefined || result === null)
     {
         // if undefined, tempUser cannot be found
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "User could not be found",
             requester: requester
         });
@@ -190,7 +190,7 @@ const resendVerificationCode = async (requester, req, res) =>
     setTimeout(() =>{
         if(emailResult)
         {
-            res.status(201).send({
+            res.status(201).sendResponse({
                 message: "Verification email sent.",
                 requester: ""
             });
@@ -200,7 +200,7 @@ const resendVerificationCode = async (requester, req, res) =>
             let message = "Verification email not sent.  Error code: 1304";
             let logMessage = "(Error code: 1304) Verifcation email not sent"
             console.log(logMessage);
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: ""
             });
@@ -239,7 +239,7 @@ const createUser = async (requester, req, res) =>
     });
     if(tempUser === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not find a user with the given email and username that has a valid active verification code",
             requester: ""
         });
@@ -247,7 +247,7 @@ const createUser = async (requester, req, res) =>
     }
     else if(tempUser.verificationAttempts >= 3 && tempUser.codesResent < 2)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not verify user as a maximum of 3 attempts have been attempted for the verification code.",
             requester: ""
         });
@@ -261,7 +261,7 @@ const createUser = async (requester, req, res) =>
         {
             // delete the user out of the UserVerificationCodes table
             tempUser.destroy();
-            res.status(401).send({
+            res.status(401).sendResponse({
                 message: "Verification code is invalid.  Maximum verification attempts met",
                 requester: ""
             });
@@ -276,7 +276,7 @@ const createUser = async (requester, req, res) =>
             if(tempUser.verificationAttempts >= 3)
             {
                 // increment count number of verification attempts
-                res.status(401).send({
+                res.status(401).sendResponse({
                     message: "Verification code is invalid.  The maximum of 3 verification attempts met for " +
                     "the current code",
                     requester: ""
@@ -284,7 +284,7 @@ const createUser = async (requester, req, res) =>
                 return;
             }
             // increment count number of verification attempts
-            res.status(401).send({
+            res.status(401).sendResponse({
                 message: "Verification code is invalid",
                 requester: ""
             });
@@ -315,7 +315,7 @@ const createUser = async (requester, req, res) =>
         await createSession(user, req, res, true);
         console.log("Adding 5 second delay");
         setTimeout(() =>{
-            res.status(201).send({
+            res.status(201).sendResponse({
                 message: "User has been created",
                 requester: username
             });
@@ -326,14 +326,14 @@ const createUser = async (requester, req, res) =>
     {
         if(user.username == req.body.username)
         {
-            res.status(409).send({
+            res.status(409).sendResponse({
                 message: "Username already exists",
                 requester: ""
             });
         }
         else if(user.email == req.body.email)
         {
-            res.status(409).send({
+            res.status(409).sendResponse({
                 message: "Email already associated with a user",
                 requester: ""
             });
@@ -341,7 +341,7 @@ const createUser = async (requester, req, res) =>
         else
         {
             let message = "Someting went wrong on the server when creating the user.  Error code: 1305"
-            res.status(500).send({
+            res.status(500).sendResponse({
                 message: message,
                 requester: ""
             });
@@ -374,7 +374,7 @@ const removeTempUser = async (requester, req, res) =>
     });
     if(tempUser === null)
     {
-        res.status(404).send({
+        res.status(404).sendResponse({
             message: "Could not find a user with the given email and username that has a valid active verification code",
             requester: ""
         });
@@ -384,7 +384,7 @@ const removeTempUser = async (requester, req, res) =>
     // delete the user out of the UserVerificationCodes table
     tempUser.destroy();
 
-    res.status(200).send({
+    res.status(200).sendResponse({
         message: "Temporary user has been removed",
         requester: ""
     });

@@ -45,7 +45,7 @@ const selectPath = (requester, req, res, next) =>
 
 	if(!routeFound)
 	{
-		res.status(404).send({
+		res.status(404).sendResponse({
 			message: "The search path sent to the server does not exist",
 			requester: requester
 		});
@@ -69,7 +69,7 @@ const getAllRelatedItems = async (requester, req, res) =>
 	// find the movies containing the value
 	let movies = await models.Movies.findByTitle(value, count, 0);
     let users = await models.Users.findUsers(value, count, 0);
-	res.status(200).send({
+	res.status(200).sendResponse({
 		requester: requester,
 		message: "Search results successfully found",
 		Movies: (movies === undefined) ? [] : movies,
@@ -96,7 +96,7 @@ const queryMoviesByTitle = async (requester, req, res) =>
 	// if the count is a integer, make sure it is not larger than the max value
 	count = (count > 50) ? 50 : count;
 	let movies = await models.Movies.findByTitle(title, count, offset);
-	res.status(200).send({
+	res.status(200).sendResponse({
 		requester: requester,
 		message: "Search results successfully found",
 		Movies:(movies === undefined) ? [] : movies
@@ -120,14 +120,14 @@ const getMovies = async (requester, req, res) =>
 	if(!movies[0])
 	{
 		// send the error message
-		res.status(404).send({
+		res.status(404).sendResponse({
 			message: movies[1],
 			requester: username
 		});
 	}
 	else
 	{
-		res.status(200).send({
+		res.status(200).sendResponse({
 			message: "Movies successfully found",
 			requester: username,
 			movies: movies[1]
@@ -155,7 +155,7 @@ const getUsers = async (requester, req, res) =>
 	// if the count is a integer, make sure it is not larger than the max value
 	count = (count > defaultMax) ? defaultMax : count;
 	let users = await models.Users.findUsers(userToFind, count, offset);
-	res.status(200).send({
+	res.status(200).sendResponse({
 		message: "Search results successfully found",
 		requester: requester,
 		Users: (users === undefined) ? [] : users
