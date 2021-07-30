@@ -38,16 +38,14 @@ const consoleFormat = winston.format.combine(
             return getConsoleString(info)
         },
     ),
-    winston.format.colorize({ all: true }),
-    winston.format.colorize((info) => {
-        console.log(info)
-    })
+    winston.format.colorize({ all: true })
 )
 
 function getConsoleString(info) {
     if(info.level === 'error')
     {
-        return `${info.timestamp}| ${info.level} | File: ${info.file} | Function: ${info.function} \n${info.message}\n`
+        let message = (typeof(info.message) === "object") ? JSON.stringify(info.message) : info.message;
+        return `${info.timestamp}| ${info.level} | File: ${info.file} | Function: ${info.function} | Error code: ${info.errorCode} | \n${message}\n`
     }
     else if(info.level === 'http')
     {
@@ -95,7 +93,6 @@ function fileFormat(levels) {
         winston.format.json()
     );
 }
-
 
 function requestFormat(levels) {
     return winston.format.combine(

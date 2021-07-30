@@ -43,7 +43,7 @@ const ERRORS = {
     },
     default: {
         defaultMessage:"Some unexpected error occurred on the server",
-        defaultLogMessage: "Some unexpected error occurred",
+        defaultLogMessage: undefined,
         defaultStatus: 500,
         defaultLog: true,
         defaultErrorCode: undefined,
@@ -78,12 +78,6 @@ function awsErrorHandler(error, file, functionName) {
         }
     }
 
-    let output = {
-        message: "",
-        status: undefined,
-        log: undefined,
-        logMessage: ""
-    };
     // if there is no definition for the specific function, use defaults
     if(functionObj === undefined || Object.keys(functionObj).length < 1)
     {
@@ -120,7 +114,6 @@ function getOutput(errorObj, functionObj)
         logMessage = (functionObj.logMessage === undefined) ? logMessage : functionObj.logMessage;
         errorCode = (functionObj.errorCode === undefined) ? errorCode : functionObj.errorCode;
         status = (functionObj.status === undefined) ? status : functionObj.status;
-        console.log(functionObj);
     }
 
 
@@ -129,25 +122,13 @@ function getOutput(errorObj, functionObj)
     {
         message = message + " .  Error code: " + errorCode;
     }
-    // if the error will be logged, get the log message
-    if(log)
-    {
-        // if no log message, set it to message
-        if(logMessage === undefined)
-        {
-            logMessage = "(Error code: " + errorCode + ") " + message;
-        }
-        else
-        {
-            logMessage = "(Error code: " + errorCode + ") " + logMessage;
-        }
-    }
+
     output.status = status;
     output.log = log;
     output.logMessage = logMessage;
     output.message = message;
+    output.errorCode = errorCode;
 
-    console.log(output);
     return output;
 }
 

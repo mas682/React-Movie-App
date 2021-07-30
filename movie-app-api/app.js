@@ -5,13 +5,6 @@ console.log("NODE_LOG_LEVEL: " + process.env.NODE_LOG_LEVEL);
 import Logger from "./src/shared/logger.js";
 const morgan = require('./src/shared/morganMiddleware.js');
 const addRequestId = require('express-request-id')();
-Logger.error("Error TEST", {function: "abc", file: "abc.js"});
-Logger.error("Error TEST", {function: "abc", file: "abc.js"});
-Logger.warn("WARNING TEST");
-Logger.info("INFO TEST");
-//Logger.http("http test", {sessionId: 'id test'});
-//Logger.http("http test");
-Logger.debug("debug test");
 
 
 const dbConnection = require('./src/shared/sequelize.js');

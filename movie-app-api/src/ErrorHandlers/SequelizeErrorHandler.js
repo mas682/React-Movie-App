@@ -279,12 +279,6 @@ function sequelizeErrorHandler(error, file, functionName) {
         }
     }
 
-    let output = {
-        message: "",
-        status: undefined,
-        log: undefined,
-        logMessage: ""
-    };
     // if there is no definition for the specific function, use defaults
     if(functionObj === undefined || Object.keys(functionObj).length < 0)
     {
@@ -305,7 +299,8 @@ function getOutput(errorObj, functionObj)
         message: "",
         status: undefined,
         log: undefined,
-        logMessage: ""
+        logMessage: "",
+        errorCode: undefined
     };
     let message = errorObj.defaultMessage;
     let log = errorObj.defaultLog;
@@ -328,23 +323,12 @@ function getOutput(errorObj, functionObj)
     {
         message = message + " .  Error code: " + errorCode;
     }
-    // if the error will be logged, get the log message
-    if(log)
-    {
-        // if no log message, set it to message
-        if(logMessage === undefined)
-        {
-            logMessage = "(Error code: " + errorCode + ") " + message;
-        }
-        else
-        {
-            logMessage = "(Error code: " + errorCode + ") " + logMessage;
-        }
-    }
+
     output.status = status;
     output.log = log;
     output.logMessage = logMessage;
     output.message = message;
+    output.errorCode = errorCode;
 
     return output;
 }

@@ -482,6 +482,7 @@ const getFeaturedMovies = async(requester, req, res) =>
 {
 	res.locals.function = "getFeaturedMovies";
 	let movies = await models.FeaturedMovies.getMovies(models);
+	abc
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
 	res.status(200).sendResponse({
 		message: "Featured movies successfully found",

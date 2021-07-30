@@ -1,5 +1,6 @@
 import {getErrorHandler} from '../src/ErrorHandlers/errorReceiver.js';
 import {destroySession} from '../src/shared/sessions.js';
+import Logger from "../src/shared/logger.js";
 
 const errorHandler = async(err, req, res, next) => {
     let result = getErrorHandler(err, res.locals.file, res.locals.function);
@@ -11,16 +12,17 @@ const errorHandler = async(err, req, res, next) => {
     }
     if(result.log)
     {
-        console.log(result.logMessage + "\nFile: " + res.locals.file + " Function: " + res.locals.function);
         let errorObj = JSON.parse(JSON.stringify(err));
         if(Object.keys(errorObj).length < 1)
         {
-            console.log(err);
+            // be careful with what you are logging...
+            Logger.error(err.stack, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, errorMessage: result.logMessage, requestId: req.id});
         }
         else
         {
-            console.log(errorObj);
-            console.log(err);
+            // be careful with what you are logging...
+            Logger.error(errorObj, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, errorMessage: result.logMessage, requestId: req.id});
+            //console.log(err);
         }
     }
 

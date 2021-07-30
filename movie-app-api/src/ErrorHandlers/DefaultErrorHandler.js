@@ -2,7 +2,7 @@
 const ERRORS = {
     default: {
         defaultMessage:"Some unexpected error occurred on the server",
-        defaultLogMessage: "Some unexpected error occurred",
+        defaultLogMessage: undefined,
         defaultStatus: 500,
         defaultLog: true,
         defaultErrorCode: 1900,
@@ -31,12 +31,6 @@ function defaultErrorHandler(error, file, functionName) {
         }
     }
 
-    let output = {
-        message: "",
-        status: undefined,
-        log: undefined,
-        logMessage: ""
-    };
     // if there is no definition for the specific function, use defaults
     if(functionObj === undefined || Object.keys(functionObj).length < 1)
     {
@@ -57,7 +51,8 @@ function getOutput(errorObj, functionObj)
         message: "",
         status: undefined,
         log: undefined,
-        logMessage: ""
+        logMessage: "",
+        errorCode: undefined
     };
     let message = errorObj.defaultMessage;
     let log = errorObj.defaultLog;
@@ -74,31 +69,18 @@ function getOutput(errorObj, functionObj)
         status = (functionObj.status === undefined) ? status : functionObj.status;
     }
 
-
     // if there is a error code, append it to the message
     if(errorCode !== undefined)
     {
         message = message + " .  Error code: " + errorCode;
     }
-    // if the error will be logged, get the log message
-    if(log)
-    {
-        // if no log message, set it to message
-        if(logMessage === undefined)
-        {
-            logMessage = "(Error code: " + errorCode + ") " + message;
-        }
-        else
-        {
-            logMessage = "(Error code: " + errorCode + ") " + logMessage;
-        }
-    }
+
     output.status = status;
     output.log = log;
     output.logMessage = logMessage;
     output.message = message;
+    output.errorCode = errorCode;
 
-    console.log(output);
     return output;
 }
 
