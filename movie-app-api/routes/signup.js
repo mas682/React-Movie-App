@@ -8,8 +8,7 @@ import {emailHandler} from './EmailHandler.js';
 import {hash} from '../src/shared/crypto.js';
 import {createSession} from '../src/shared/sessions.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
-
-import Logger from "../src/shared/logger.js";
+const Logger = require("../src/shared/logger.js").getLogger();
 
 // function to create an account
 const signUp = (req, res, next) => {
@@ -76,7 +75,6 @@ const selectPath = (requester, req, res, next) =>
 // function to create a temp user before their email is verified
 const createTempUser = async (requester, req, res) =>
 {
-    Logger.info("Sign up test");
     res.locals.function = "createTempUser";
     let username = req.body.username;
     let email = req.body.email;
@@ -109,8 +107,8 @@ const createTempUser = async (requester, req, res) =>
     // may want to verify result not null? or undefined?
     // then send email to user
     let emailResult = await sendVerificationEmail(result.code, result.userEmail, res);
-    console.log("Code: " + result.code);
-    console.log("Adding 5 second delay");
+    Logger.debug("Code: " + result.code);
+    Logger.debug("Adding 5 second delay");
     setTimeout(() =>{
         if(emailResult)
         {
@@ -122,8 +120,8 @@ const createTempUser = async (requester, req, res) =>
         else
         {
             let message = "Verification email not sent.  Error code: 1302";
-            let logMessage = "(Error code: 1302) Verifcation email not sent";
-            console.log(logMessage);
+            Logger.error("Verifcation email not sent",
+                {errorCode: 1302, function: "createTempUser", file: "signup.js", requestId: req.id});
             res.status(500).sendResponse({
                 message: message,
                 requester: ""
@@ -185,8 +183,8 @@ const resendVerificationCode = async (requester, req, res) =>
     }
 
     let emailResult = await sendVerificationEmail(result.code, result.userEmail, res);
-    console.log("Code: " + result.code);
-    console.log("Adding 5 second delay");
+    Logger.debug("Code: " + result.code);
+    Logger.debug("Adding 5 second delay");
     setTimeout(() =>{
         if(emailResult)
         {
@@ -198,8 +196,8 @@ const resendVerificationCode = async (requester, req, res) =>
         else
         {
             let message = "Verification email not sent.  Error code: 1304";
-            let logMessage = "(Error code: 1304) Verifcation email not sent"
-            console.log(logMessage);
+            Logger.error("Verifcation email not sent",
+                {errorCode: 1304, function: "resendVerificationCode", file: "signup.js", requestId: req.id});
             res.status(500).sendResponse({
                 message: message,
                 requester: ""
@@ -313,7 +311,7 @@ const createUser = async (requester, req, res) =>
     if(created)
     {
         await createSession(user, req, res, true);
-        console.log("Adding 5 second delay");
+        Logger.debug("Adding 5 second delay");
         setTimeout(() =>{
             res.status(201).sendResponse({
                 message: "User has been created",

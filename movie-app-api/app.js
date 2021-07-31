@@ -2,7 +2,10 @@
 console.log("NODE_ENV: " + process.env.NODE_ENV);
 console.log("NODE_PORT: " + process.env.NODE_PORT);
 console.log("NODE_LOG_LEVEL: " + process.env.NODE_LOG_LEVEL);
-import Logger from "./src/shared/logger.js";
+
+const Log = require("./src/shared/logger.js");
+Log.createLogger();
+const Logger = Log.getLogger();
 const morgan = require('./src/shared/morganMiddleware.js');
 const addRequestId = require('express-request-id')();
 

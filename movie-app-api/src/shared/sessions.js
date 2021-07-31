@@ -1,4 +1,4 @@
-
+const Logger = require('./logger.js').getLogger();
 const models = require('./sequelize.js').getClient().models;
 const moment = require('moment');
 const config = require('../../Config.json');
@@ -9,7 +9,6 @@ let redis = require('./redis.js');
 
 const createSession = async(user, req, res, expires) =>
 {
-    console.log("Creating session...")
     res.locals.function = "createSession";
     res.locals.file = "sessions.js";
 
@@ -34,7 +33,6 @@ const createSession = async(user, req, res, expires) =>
             && errorObject.original.constraint === "UserSessions_session_key"
             && counter < 4)
             {
-                console.log("Regenerating session id as previous id was in use");
                 await sessionGenerator(req);
             }
             else
@@ -59,19 +57,14 @@ const createSession = async(user, req, res, expires) =>
     {
         req.session.cookie.maxAge = config.sessions.maxNonExpiringDuration;
     }
-    console.log(req.session);
     let expiration = moment(req.session.cookie._expires).toString();
-    console.log("Session created: " + moment(req.session.created).toString());
-    console.log("Session expires: " + expiration);
     req.session.sessionId = newSession.id;
-    console.log("New session id in database: " + req.session.sessionId);
     // save the session now so the session creation time is right
     await saveSession(req);
 }
 
 const regenerateSession = async(req, res) =>
 {
-    console.log("Regenerating session...");
     res.locals.function = "regenerateSession";
     res.locals.file = "sessions.js";
     // used for error handling to keep track if session should be destroyed
@@ -111,7 +104,6 @@ const regenerateSession = async(req, res) =>
             && errorObject.original.constraint === "UserSessions_session_key"
             && counter < 4)
             {
-                console.log("Regenerating session id as previous id was in use");
                 await sessionGenerator(req);
             }
             else
@@ -147,8 +139,8 @@ const regenerateSession = async(req, res) =>
     });
     if(result !== 1)
     {
-        console.log("(Error code: 2100) Some unexpected result was returned when removing a users session: ");
-        console.log(result);
+        Logger.error("Some unexpected result was returned when removing a users session: " + result,
+            {errorCode: 2100, function: "regenerateSession", file: "sessions.js", requestId: req.id});
     }
 }
 
@@ -287,7 +279,6 @@ async function removeAllSessions(req, res, userId, excluded)
             sessionsToRemove.push(store.prefix + session.session);
             dbSessionsToRemove.push(session.session);
         }
-        console.log(sessionsToRemove);
         let client = redis.getClient();
         // returns the number of sessions removed
         let result = await removeSessions(client, sessionsToRemove);

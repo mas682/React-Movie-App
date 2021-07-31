@@ -3,7 +3,9 @@ import {validateUsernameParameter, validateIntegerParameter,
 import {removeImage} from './fileHandler.js';
 import {hash, checkHashedValue} from '../src/shared/crypto.js';
 import {regenerateSession, removeAllSessions} from '../src/shared/sessions.js';
+import {getSanitizedOutput} from '../src/ErrorHandlers/sequelizeErrorHandler.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
+const Logger = require("../src/shared/logger.js").getLogger();
 
 
 
@@ -27,8 +29,8 @@ const profileHandler = (req, res, next) => {
                 message: message,
                 requester: requester
             });
-            let logMessage = "(Error code: 1000) Some unexpected error occurred on the server";
-            console.log(logMessage);
+            Logger.error("Some unexpected error occurred on the server",
+                {errorCode: 1000, function: "profileHandler", file: "profile.js", requestId: req.id});
         }
         return;
     }
@@ -609,7 +611,7 @@ const updatePassword = async (requester, req, res) =>
     }
 }
 
-// function to handle updating a users information such as their
+// function to handle updating a users information such as theirF
 // first name, last name, email, or username
 const updateInfo = async (requester, req, res, next) =>
 {
@@ -764,8 +766,8 @@ const removeUser = async (requester, req, res, next) =>
         let result = await userToRemove.destroy();
         if(result === undefined)
         {
-            let logMessage = "(Error code: 1006) Error in database occurred removing a user";
-            console.log(logMessage);
+            Logger.error("Error in database occurred removing a user",
+                {errorCode: 1006, function: "removeUser", file: "profile.js", requestId: req.id});
             let message = "Server failed to remove user for some unkown reason.  Error code: 1006";
             res.status(500).sendResponse({
                 message: message,
@@ -864,8 +866,8 @@ const removeProfilePicture = async(requester, req, res) =>
             {
                 status = 500;
                 message = "Some unexpected error occurred on the server when removing the profile picture. Error code: 1009";
-                let logMessage = "(Error code: 1009).  Some unexpected error occurred on the server when removing a users profile picture";
-                console.log(logMessage);
+                Logger.error("Some unexpected error occurred on the server when removing a users profile picture",
+                    {errorCode: 1009, function: "removeProfilePicture", file: "profile.js", requestId: req.id});
             }
         }
     }
@@ -932,14 +934,16 @@ const updateImage = async(requester, req, res) =>
                 {
                     // this should just about never occur
                     // if here, a picture was overwritten...
-                    console.log("(Error code: 1010) User picture name conflicts with an existing image name: " + newPicture);
+                    Logger.error("User picture name conflicts with an existing image name: " + newPicture,
+                        {errorCode: 1010, function: "updateImage", file: "profile.js", requestId: req.id});
                     status = 500;
                     message = "Some unexpected error occurred on the server. Error code: 1010"
                 }
                 else
                 {
-                    console.log("(Error code: 1011) Some unexpected constraint error occurred");
-                    console.log(errorObject);
+                    let error = getSanitizedOutput(errorObject)
+                    Logger.error("Some unexpected constraint error occurred",
+                        {errorCode: 1011, function: "updateImage", file: "profile.js", requestId: req.id, error: error});
                     status = 500;
                     message = "Some unexpected error occurred on the server.  Error code: 1011";
                     removeImage(newPicture);
@@ -947,8 +951,8 @@ const updateImage = async(requester, req, res) =>
             }
             else
             {
-                console.log("(Error code: 1012) Some unexpected error occurred");
-                console.log(err);
+                Logger.error("Some unexpected error occurred",
+                    {errorCode: 1012, function: "updateImage", file: "profile.js", requestId: req.id, error: errorObject});
                 status = 500;
                 message = "Some unexpected error occurred on the server.  Error code: 1012";
                 removeImage(newPicture);

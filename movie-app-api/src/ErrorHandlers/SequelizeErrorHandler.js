@@ -282,18 +282,42 @@ function sequelizeErrorHandler(error, file, functionName) {
     // if there is no definition for the specific function, use defaults
     if(functionObj === undefined || Object.keys(functionObj).length < 0)
     {
-        return getOutput(errorObj, undefined);
+        return getOutput(errorObj, undefined, errorType, error);
     }
     else
     {
-        return getOutput(errorObj, functionObj);
+        return getOutput(errorObj, functionObj, errorType, error);
     }
 
 }
 
+// used for unique constraints and foreignkey constraints to reduce data being logged
+function getSanitizedOutput(error)
+{
+    let errors = [];
+    for(let e of error.errors)
+    {
+        let errObj = {
+            message: e.message
+        }
+        errors.push(errObj);
+    }
+    return {
+        name: error.name,
+        errors: errors,
+        fields: error.fields,
+        code: error.original.code,
+        column: error.original.column,
+        constraint: error.original.constraint,
+        detail: error.original.detail,
+        schema: error.original.schema,
+        table: error.original.table
+    }
+}
+
 // if either the function the error occurred in is not defined or
 // the function is defined but has no properties
-function getOutput(errorObj, functionObj)
+function getOutput(errorObj, functionObj, errorType, error)
 {
     let output = {
         message: "",
@@ -324,13 +348,24 @@ function getOutput(errorObj, functionObj)
         message = message + " .  Error code: " + errorCode;
     }
 
+    let errorOutput = undefined;
+    if(log)
+    {
+        // if the object is a foreignkey or UniqueConstraint, sanitize the output
+        if(errorType === "ForeignKey" || errorType === "UniqueConstraint")
+        {
+            errorOutput = getSanitizedOutput(error);
+        }
+    }
+
     output.status = status;
     output.log = log;
     output.logMessage = logMessage;
     output.message = message;
     output.errorCode = errorCode;
+    output.error = errorOutput;
 
     return output;
 }
 
-export {sequelizeErrorHandler};
+export {sequelizeErrorHandler, getSanitizedOutput};

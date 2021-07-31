@@ -7,6 +7,7 @@ const sharp = require('sharp');
 import FileUploadError from '../src/shared/FileUploadError.js';
 import { nanoid } from 'nanoid/async'
 const models = require('../src/shared/sequelize.js').getClient().models;
+const Logger = require("../src/shared/logger.js").getLogger();
 
 const s3Bucket = new AWS.S3({
     accessKeyId: config.aws.AWS_ACCESS_KEY_ID,
@@ -40,9 +41,8 @@ const storage = multerS3({
                     catch(err)
                     {
                         let errorObject = JSON.parse(JSON.stringify(err));
-                        console.log("(Error code: 1707) Some unexpected error occurred trying to see if the file name: " + filename +
-                        " was in use for a user profile picture");
-                        console.log(errorObject);
+                        Logger.error("Some unexpected error occurred trying to see if the file name: " + filename +
+                        " was in use for a user profile picture", {errorCode: 1707, function: "storage", file: "fileHandler.js", requestId: req.id, error: errorObject})
                         cb(err, false);
                         return;
                     }
@@ -138,10 +138,9 @@ const removeImage = async(filename) =>
     }
     catch(err)
     {
-        console.log("(Error code: 1706) Error removing image from S3 bucket: " + filename);
         let errorObject = JSON.parse(JSON.stringify(err));
-        // may need some additional error catching here to get more insight into this
-        console.log(errorObject);
+        Logger.error("Error removing image from S3 bucket: " + filename,
+            {errorCode: 1706, function: "removeImage", file: "fileHandler.js", requestId: req.id, error: errorObject})
         return false;
     }
 };

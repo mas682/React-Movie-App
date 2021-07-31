@@ -4,12 +4,8 @@
 const models = require('../src/shared/sequelize.js').getClient().models;
 const moment = require('moment');
 const config = require('../Config.json');
-
+const Logger = require("../src/shared/logger.js").getLogger();
 var validator = require('validator');
-
-
-// used to sign the cookie
-//router.use(cookieParser('somesecrettosigncookie'));
 
 // function to increment user login attempts
 const updateUserLoginAttempts = async (user, username) => {
@@ -22,8 +18,8 @@ const updateUserLoginAttempts = async (user, username) => {
     catch (err)
     {
         let errorObject = JSON.parse(JSON.stringify(err));
-        console.log("Some unknown error occurred updaing the users(" + username + ") account on login failure: " + errorObject.name);
-        console.log(err);
+        Logger.error("Some unknown error occurred updaing the users(" + username + ") account on login failure: " + errorObject.name,
+            {function: "updateUserLoginAttempts", file: "globals.js", error: errorObject, errorCode: 2200})
     }
     return user.passwordAttempts;
 }

@@ -2,8 +2,9 @@ var winston = require('winston');
 const { format } = require('winston');
 require('winston-daily-rotate-file');
 const moment = require('moment');
-
 const LEVEL = Symbol.for('level');
+
+let Logger;
 
 
 const levels = {
@@ -162,10 +163,19 @@ const transports = [
     })
 ]
 
-const Logger = winston.createLogger({
-    level: level(),
-    levels,
-    transports,
-})
+function createLogger()
+{
+    Logger = winston.createLogger({
+        level: level(),
+        levels,
+        transports,
+    });
+}
 
-export default Logger;
+function getLogger()
+{
+    return Logger;
+}
+
+module.exports.createLogger = createLogger;
+module.exports.getLogger = getLogger;

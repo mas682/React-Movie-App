@@ -8,6 +8,7 @@ import {movieHandler} from './movies.js';
 import {searchHandler} from './search.js';
 import {imageHandler} from './fileHandler.js';
 const router = require('../src/shared/expressRouter.js').createRouter();
+const Logger = require("../src/shared/logger.js").getLogger();
 
 // used when trying to login
 router.post('/login/:type', function(req, res, next) { clearCookie(req, res, next) },

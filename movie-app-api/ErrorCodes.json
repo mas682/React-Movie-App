@@ -50,7 +50,10 @@
 
     },
     "globals.js":{
-
+        "2200":{
+            "Description":"Some unexpected error occurred when trying to increment a users login attempts",
+            "function":"updateUserLoginAttempts"
+        }
     },
     "index.js":{
 

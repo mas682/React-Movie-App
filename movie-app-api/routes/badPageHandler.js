@@ -1,4 +1,5 @@
 // handles routes that do not exist
+const Logger = require("../src/shared/logger.js").getLogger();
 
 
 const badPageHandler = (req, res, next) => {

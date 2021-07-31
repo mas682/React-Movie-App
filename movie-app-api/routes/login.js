@@ -9,6 +9,7 @@ const moment = require('moment');
 import {checkHashedValue} from '../src/shared/crypto.js';
 import {createSession, destroySession} from '../src/shared/sessions.js';
 const config = require('../Config.json');
+const Logger = require("../src/shared/logger.js").getLogger();
 
 // function to see if a user can login and returns a cookie to use
 const login = (req, res, next) => {
@@ -205,8 +206,8 @@ const checkLogin = async (req, res) =>
         catch (err)
         {
             let errorObject = JSON.parse(JSON.stringify(err));
-            console.log("(Error code: 1603) Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name);
-            console.log(errorObject);
+            Logger.error("Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name,
+                {errorCode: 1603, function: "checkLogin", file: "login.js", requestId: req.id, error: errorObject});
         }
         // create session for user
         await createSession(user, req, res, !stayLoggedIn);
@@ -279,8 +280,8 @@ const forgotPassword = async (req, res) =>
     }
 
     let emailResult = await sendVerificationEmail(result.code, user.email);
-    console.log("Code: " + result.code);
-    console.log("Adding 5 second delay");
+    Logger.debug("Code: " + result.code);
+    Logger.debug("Adding 5 second delay")
     setTimeout(() =>{
         if(emailResult)
         {
@@ -354,8 +355,8 @@ const validatePassCode = async (req, res) =>
         catch (err)
         {
             let errorObject = JSON.parse(JSON.stringify(err));
-            console.log("(Error code: 1604) Error updating a users verification attempts");
-            console.log(errorObject);
+            Logger.error("Error updating a users verification attempts",
+                {errorCode: 1604, function: "validatePassCode", file: "login.js", requestId: req.id, error: errorObject});
         }
         let message = "Verification code is invalid";
         if(user.verificationAttempts >= 9)
@@ -392,15 +393,15 @@ const validatePassCode = async (req, res) =>
         catch (err)
         {
             let errorObject = JSON.parse(JSON.stringify(err));
-            console.log("(Error code: 1605) Error updating a users verification attempts");
-            console.log(errorObject);
+            Logger.error("Error updating a users verification attempts",
+                {errorCode: 1605, function: "validatePassCode", file: "login.js", requestId: req.id, error: errorObject});
         }
-        //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+
         req.session.userId = user.id;
         req.session.user = user.username;
         req.session.created = new Date();
         req.session.admin = user.admin;
-        console.log("Adding 2 second delay");
+        Logger.debug("Adding 2 second delay");
         setTimeout(() =>{
             res.status(200).send({
                 message: "User authenticated",

@@ -1,5 +1,7 @@
 import {validateIntegerParameter, validateStringParameter} from './globals.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
+const Logger = require("../src/shared/logger.js").getLogger();
+import {getSanitizedOutput} from '../src/ErrorHandlers/sequelizeErrorHandler.js';
 
 
 // function to run all the checks when a new review comes in or if a review update comes in
@@ -93,8 +95,8 @@ const createReview = async (requester, req, res) =>
             message: message,
             requester: requester
         });
-        let logMessage = "(Error code: 1101) Review creation failed for some unexpected reason"
-        console.log(logMessage);
+        Logger.error("Review creation failed for some unexpected reason",
+            {errorCode: 1101, function: "createReview", file: "reviewCreator.js", requestId: req.id});
     }
     else
     {
@@ -540,15 +542,17 @@ const createReviewTagAssociation = async (review, tagId, userId, type) => {
             else
             {
                 serverError = true;
-                console.log("(Error code: 1104) Some unknown constraint error occurred: " + errorObject.original.constraint);
-                console.log(errorObject);
+                let error = getSanitizedOutput(errorObject)
+                Logger.error("Some unknown constraint error occurred: " + errorObject.original.constraint,
+                    {errorCode: 1104, function: "createReviewTagAssociation", file: "reviewCreator.js", requestId: req.id, error: error});
+
             }
         }
         else
         {
             serverError = true;
-            console.log("(Error code: 1105) Some unknown error occurred during posting a tag: " + errorObject.name);
-            console.log(err);
+            Logger.error("Some unknown error occurred during posting a tag: " + errorObject.name,
+                {errorCode: 1105, function: "createReviewTagAssociation", file: "reviewCreator.js", requestId: req.id, error: errorObject});
         }
         successful = false;
     }

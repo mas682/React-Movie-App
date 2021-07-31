@@ -1,6 +1,7 @@
 const models = require('../src/shared/sequelize.js').getClient().models;
 import {validateIntegerParameter, validateStringParameter} from './globals.js';
 import {createReview, updateReview} from './reviewCreator.js';
+const Logger = require("../src/shared/logger.js").getLogger();
 
 
 // function to post a reviews
@@ -154,8 +155,8 @@ const removePost = async (req, res, requester) =>
             if(result === undefined)
             {
                 let message = "Server failed to delete review for some unkown reason.  Error code: 1200";
-                let logMessage = "(Error code: 1200) Server failed to delete review for some unkown reason."
-                console.log(logMessage);
+                Logger.error("Server failed to delete review for some unkown reason.",
+                    {errorCode: 1200, function: "removePost", file: "reviews.js", requestId: req.id});
                 res.status(500).sendResponse({
                     message: message,
                     requester: requester

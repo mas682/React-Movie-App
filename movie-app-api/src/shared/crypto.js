@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const config = require('../../Config.json');
+const Logger = require('./logger.js').getLogger();
 
 
 const hash = (text, type) => {

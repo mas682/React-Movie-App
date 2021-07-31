@@ -1,5 +1,6 @@
 const config = require('../Config.json');
 const sgMail = require('@sendgrid/mail');
+const Logger = require("../src/shared/logger.js").getLogger();
 
 // function to get information associated with the user who has the cookie
 const emailHandler = async (recipient, subject, title, header, body, footer) => {
@@ -107,12 +108,12 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
         html: html
     };
     let result = await sgMail.send(msg).then(() =>{
-        console.log('Email sent');
+        Logger.debug('Email sent');
         return true;
     })
     .catch((error) => {
-        console.log("(Error code: 2000)  Email not sent");
-        console.log(error);
+        Logger.error("Email not sent " + JSON.stringify(error),
+         {errorCode: 2000, requestId: req.id, function: "emailHandler", file: "emailHandler.js"});
         return false;
     });
     return true;
