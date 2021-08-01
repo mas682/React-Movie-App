@@ -135,7 +135,7 @@ const transports = [
         filename: 'errors-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
         maxSize: '20m',
-        maxFiles: '30',
+        maxFiles: '14',
         level: 'error',
         format: fileFormat(['error'])
     }),
@@ -145,7 +145,7 @@ const transports = [
         filename: 'requests-%DATE%.log',
         datePattern: 'YYYY-MM-DD',
         maxSize: '20m',
-        maxFiles: '7',
+        maxFiles: '3',
         level: 'http',
         format: requestFormat(['http']),
     }),

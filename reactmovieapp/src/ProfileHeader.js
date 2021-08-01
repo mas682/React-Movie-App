@@ -5,7 +5,7 @@ import UserListPopUp from './UserListPopUp.js';
 import style from './css/userProfile.module.css';
 import './css/forms.css'
 import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
-import EditProfilePicPopUp from './EditProfilePicPopUp.js';
+import SetProfilePicPopUp from './SetProfilePicPopUp.js';
 
 
 class ProfileHeader extends React.Component {
@@ -471,7 +471,7 @@ class ProfileHeader extends React.Component {
         }
         if(this.state.showEditProfilePic)
         {
-            popup = <EditProfilePicPopUp
+            popup = <SetProfilePicPopUp
                         removeFunction={() => {this.removePopUp("showEditProfilePic")}}
                         currentUser={this.state.loggedInUser}
                         updateLoggedIn={this.props.updateLoggedIn}

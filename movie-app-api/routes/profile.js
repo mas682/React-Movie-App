@@ -14,6 +14,7 @@ const profileHandler = (req, res, next) => {
     let requester = (req.session.user === undefined) ? "" : req.session.user;
     // set which file the request is for
     res.locals.file = "profile";
+    /* DO NOT DELETE - FUNCTIONS TO USE IF ALLOWING USERS TO UPLOAD PICTURES
     // if calling another function after already authenticated before
     if(res.locals.skipAuthentication !== undefined && res.locals.skipAuthentication)
     {
@@ -34,6 +35,7 @@ const profileHandler = (req, res, next) => {
         }
         return;
     }
+    */
     // pass that cookie was not valid
     selectPath(requester, req, res, next);
 };
@@ -169,6 +171,21 @@ const selectPath = (requester, req, res, next) =>
                 foundNoCookie = true;
             }
         }
+        else if(req.params.type === "set_picture")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                setProfilePicture(requester, req, res, next)
+                .catch((err) => {next(err)});
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
+        /*
+        // used to allow users to upload their profile picture
         else
         {
             if(req.params.type === undefined)
@@ -190,7 +207,9 @@ const selectPath = (requester, req, res, next) =>
                 }
             }
         }
+        */
     }
+    /* DO NOT DELETE - FUNCTIONS TO USE IF ALLOWING USERS TO UPLOAD PICTURES
     else if(req.method === "DELETE")
     {
         // if the path is profile/username/follow
@@ -208,6 +227,7 @@ const selectPath = (requester, req, res, next) =>
             }
         }
     }
+    */
     // if the route did not match any of the above
     if(!routeFound)
     {
@@ -797,6 +817,42 @@ const removeUser = async (requester, req, res, next) =>
 
 }
 
+const setProfilePicture = async(requester, req, res, next) =>
+{
+    res.locals.function = "setProfilePicture";
+    let profilePicture = req.body.picture;
+    // max is the maxium number of profile picture options
+    let max = 12;
+    let valid = validateUsernameParameter(res, req.params.username, requester, "Invalid username found in the url");
+    if(!valid) return;
+    valid = validateIntegerParameter(res, profilePicture, requester, "The picture selected is invalid", 0, max);
+    if(!valid) return;
+    // find the user
+    let user = await models.Users.findByLogin(requester);
+    let status;
+    let message;
+    if(user === null)
+    {
+        status = 401;
+        message = "You are not logged in";
+        requester = "";
+    }
+    else
+    {
+        let result = await user.update({
+            picture: profilePicture
+        });
+        status = 200;
+        message = "User picture successfully updated";
+    }
+    res.status(status).sendResponse({
+        message: message,
+        requester: requester
+    });
+}
+
+/* DO NOT DELETE - FUNCTIONS TO USE IF ALLOWING USERS TO UPLOAD PICTURES
+
 // function to handle validating a user can update their profile pic
 const setImage = async (requester, req, res, next) =>
 {
@@ -966,5 +1022,6 @@ const updateImage = async(requester, req, res) =>
         });
     }, 5000);
 }
+*/
 
 export {profileHandler};
