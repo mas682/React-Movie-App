@@ -24,7 +24,11 @@ class SetProfilePicPopUp extends React.Component {
             croppedDimensions: undefined,
             // users existing picture or null
             existingPicture: props.userPicture,
-            awaitingRemovePicture: false
+            awaitingRemovePicture: false,
+
+            // needs set by either api call or passed in..
+            currentPicture: undefined,
+            selectedPicture: undefined
         };
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
@@ -36,6 +40,8 @@ class SetProfilePicPopUp extends React.Component {
         this.apiResultsHandler = this.apiResultsHandler.bind(this);
         this.sendRemoveRequest = this.sendRemoveRequest.bind(this);
         this.showAwaitingRemovePicture = this.showAwaitingRemovePicture.bind(this);
+
+        this.selectPicture = this.selectPicture.bind(this);
     }
 
     closeModal() {
@@ -60,6 +66,18 @@ class SetProfilePicPopUp extends React.Component {
         let name = event.target.name;
         let value = event.target.value;
         this.setState({[name]: value});
+    }
+
+    selectPicture(event, value) {
+        this.setState({
+            selectedPicture: value
+        });
+
+        /*
+        on open, highlight the current profile picture
+        if the user clicks another picture, change the highlighted picture to that one
+        and show a button that says update picture
+        */
     }
 
     // function called by DragDropFile to update image
@@ -264,25 +282,40 @@ class SetProfilePicPopUp extends React.Component {
                 </div>
             );
         }
+        let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/dEnoJ-_6jy1K2HkC5JbNv.jpg";
         let content = (
             <React.Fragment>
-                <div className="content">
+                <div className={style.content}>
                     <div className={style.mainContainer}>
                         <div className={style.inputContainer}>
                             <div className={style.selectionContainer}>
                                 <div className={style.profilePictureContainer}>
-                                    <div className={style.profilePicture}>
-                                    </div>
+                                    <img className={style.profilePicture} src={userPictureSrc} onClick={(event) => {this.selectPicture(event, 0)}}/>
                                 </div>
                                 <div className={style.profilePictureContainer}>
+                                    <img className={`${style.profilePicture} ${style.selectedPicture}`} src={userPictureSrc} />
                                 </div>
                                 <div className={style.profilePictureContainer}>
+                                    <img className={style.profilePicture} src={userPictureSrc} />
                                 </div>
                                 <div className={style.profilePictureContainer}>
+                                    <img className={style.profilePicture} src={userPictureSrc} />
                                 </div>
                                 <div className={style.profilePictureContainer}>
+                                    <img className={style.profilePicture} src={userPictureSrc} />
                                 </div>
-
+                                <div className={style.profilePictureContainer}>
+                                    <img className={style.profilePicture} src={userPictureSrc} />
+                                </div>
+                                <div className={style.profilePictureContainer}>
+                                    <img className={style.profilePicture} src={userPictureSrc} />
+                                </div>
+                                <div className={style.profilePictureContainer}>
+                                    <img className={style.profilePicture} src={userPictureSrc} />
+                                </div>
+                                <div className={style.profilePictureContainer}>
+                                    <img className={style.profilePicture} src={userPictureSrc} />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -329,12 +362,12 @@ class SetProfilePicPopUp extends React.Component {
                     onClose={this.closeModal}
                     className={className}
                     >
-                    <div className="modal">
+                    <div className={style.modal}>
                         {/* &times is the multiplication symbol (x) --> */}
-                        <a className="close" onClick={this.closeModal}>
+                        <a className={style.close} onClick={this.closeModal}>
                         &times;
                         </a>
-                        <div className="header">
+                        <div className={style.header}>
                             <h3 className="inlineH3">{header}</h3>
                         </div>
                         <div className={style.alertContent}>

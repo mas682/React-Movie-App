@@ -22,8 +22,6 @@ class MovieDisplayPopUp extends React.Component {
         /* props
         - loadData - boolean indicating if api call should be sent on component did mount to get movie data
 
-
-
         */
 
 		this.state = MovieDisplayPopUp.generateState(this.props);

@@ -368,7 +368,7 @@
     }
 }
 
-@media only screen and (max-width: 599px) {
+@media only screen and (min-width: 800px) and (max-width: 999px) {
     .modal {
       width: 100%;
       overflow-y:auto;
@@ -376,6 +376,21 @@
     }
 }
 
+@media only screen and (min-width: 600px) and (max-width: 799px) {
+    .modal {
+      width: 100%;
+      overflow-y:auto;
+      max-height: calc(100vh - 150px);
+    }
+}
+
+@media screen and (max-height: 875px) {
+    .modal {
+      width: 100%;
+      overflow-y:auto;
+      max-height: calc(100vh - 150px);
+    }
+}
 .watchListIconContainer {
     width: 50px;
     display: flex;
