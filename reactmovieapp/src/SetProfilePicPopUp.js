@@ -17,31 +17,23 @@ class SetProfilePicPopUp extends React.Component {
             showSuccessPage: false,
             awaitingResults: false,
             currentUser: props.currentUser,
-            originalImage: undefined,
-            originalImageData: undefined,
-            croppedImage: undefined,
-            croppedImageData: undefined,
-            croppedDimensions: undefined,
-            // users existing picture or null
-            existingPicture: props.userPicture,
-            awaitingRemovePicture: false,
 
             // needs set by either api call or passed in..
-            currentPicture: undefined,
-            selectedPicture: undefined
+            currentPicture: 2,
+            selectedPicture: 2,
+            hoveredPicture: undefined
         };
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
         this.showLoginPopUp = this.showLoginPopUp.bind(this);
         this.generateEditDisplay = this.generateEditDisplay.bind(this);
-        this.updateImage = this.updateImage.bind(this);
         this.sendApiRequest = this.sendApiRequest.bind(this);
-        this.removeImage = this.removeImage.bind(this);
         this.apiResultsHandler = this.apiResultsHandler.bind(this);
-        this.sendRemoveRequest = this.sendRemoveRequest.bind(this);
-        this.showAwaitingRemovePicture = this.showAwaitingRemovePicture.bind(this);
 
         this.selectPicture = this.selectPicture.bind(this);
+        this.generateImages = this.generateImages.bind(this);
+        this.setHoveredImage = this.setHoveredImage.bind(this);
+        this.removeHoveredImage = this.removeHoveredImage.bind(this);
     }
 
     closeModal() {
@@ -53,66 +45,29 @@ class SetProfilePicPopUp extends React.Component {
         this.closeModal();
     }
 
-    // called by DragDrop to update the header when user considering removing
-    // picutre
-    showAwaitingRemovePicture()
-    {
-        this.setState({
-            awaitingRemovePicture: !this.state.awaitingRemovePicture
-        });
-    }
-
     changeHandler(event) {
         let name = event.target.name;
         let value = event.target.value;
         this.setState({[name]: value});
     }
 
+    setHoveredImage(index)
+    {
+        this.setState({
+            hoveredPicture: index
+        });
+    }
+
+    removeHoveredImage()
+    {
+        this.setState({
+            hoveredPicture: undefined
+        });
+    }
+
     selectPicture(event, value) {
         this.setState({
             selectedPicture: value
-        });
-
-        /*
-        on open, highlight the current profile picture
-        if the user clicks another picture, change the highlighted picture to that one
-        and show a button that says update picture
-        */
-    }
-
-    // function called by DragDropFile to update image
-    updateImage(result)
-    {
-        if(result.type === "original")
-        {
-            this.setState({
-                originalImage: result.image,
-                originalImageData: result.imageData,
-                messages: [],
-                messageId: -1,
-            });
-        }
-        else
-        {
-            this.setState({
-                croppedImage: result.image,
-                croppedImageData: result.imageData,
-                messages: [],
-                messageId: -1,
-                croppedDimensions: result.croppedDimensions
-            });
-        }
-    }
-
-    // function called by DragDropFile
-    removeImage()
-    {
-        this.setState({
-            originalImage: undefined,
-            originalImageData: undefined,
-            croppedImage: undefined,
-            croppedImageData: undefined,
-            croppedDimensions: undefined
         });
     }
 
@@ -135,22 +90,6 @@ class SetProfilePicPopUp extends React.Component {
         });
     }
 
-    // function to send api request to remove profile picture
-    sendRemoveRequest()
-    {
-        let url = "https://localhost:9000/profile/" + this.state.currentUser + "/remove_picture";
-        this.setState({
-            awaitingResults: true,
-            messageId: -1
-        });
-        apiDeleteJsonRequest(url).then((result) => {
-            let status = result[0];
-            let message = result[1].message;
-            let requester = result[1].requester;
-            this.apiResultsHandler(status, message, requester, result, "remove");
-        });
-    }
-
     // results handler used for both updating or removing picture
     apiResultsHandler(status, message, requester, result, type)
     {
@@ -158,18 +97,9 @@ class SetProfilePicPopUp extends React.Component {
         {
             // "User picture successfully updated"
             this.props.updateLoggedIn(requester);
-            if(type === "remove")
-            {
-                this.props.setMessages({
-                    messages: [{message: "User picture successfully removed", type: "success"}]
-                });
-            }
-            else
-            {
-                this.props.setMessages({
-                    messages: [{message: message, type: "success"}]
-                });
-            }
+            this.props.setMessages({
+                messages: [{message: message, type: "success"}]
+            });
             this.props.pictureUpdated(true);
             this.props.removeFunction();
         }
@@ -246,6 +176,84 @@ class SetProfilePicPopUp extends React.Component {
         }
     }
 
+    generateImages()
+    {
+        // temporary for testing
+        let count = 0;
+        let output = [];
+        let html = "";
+
+        // need to change the url...
+        let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-";
+        while(count < 9)
+        {
+            let value = count;
+            userPictureSrc = userPictureSrc + value + ".png"
+            if(this.state.hoveredPicture !== undefined && this.state.selectedPicture === count)
+            {
+                if(count === this.state.hoveredPicture)
+                {
+                    // if the hovered picture is this picture
+                    html = (
+                        <div
+                            className={`${style.profilePictureContainer} ${style.selectedPicture}`}
+                            onMouseEnter={() => {this.setHoveredImage(count)}}
+                            onMouseLeave={()=>{this.removeHoveredImage()}}
+                        >
+                            <img className={`${style.profilePicture}`} src={userPictureSrc} />
+                        </div>
+                    )
+                }
+                else
+                {
+                    html = (
+                        <div
+                            className={`${style.profilePictureContainer} ${style.selectedPictureNotHovered}`}
+                            onMouseEnter={() => {this.setHoveredImage(count)}}
+                            onMouseLeave={()=>{this.removeHoveredImage()}}
+                        >
+                            <img className={`${style.profilePicture}`} src={userPictureSrc} />
+                        </div>
+                    );
+                }
+            }
+            else
+            {
+                if(count === this.state.selectedPicture)
+                {
+                    // if the hovered picture is this picture
+                    html = (
+                        <div
+                            className={`${style.profilePictureContainer} ${style.selectedPicture}`}
+                            onMouseEnter={() => {this.setHoveredImage(count)}}
+                            onMouseLeave={()=>{this.removeHoveredImage()}}
+                        >
+                            <img className={`${style.profilePicture}`} src={userPictureSrc} />
+                        </div>
+                    )
+                }
+                else
+                {
+                    html = (
+                        <div
+                            className={`${style.profilePictureContainer}`}
+                            onMouseEnter={() => {this.setHoveredImage(count)}}
+                            onMouseLeave={()=>{this.removeHoveredImage()}}
+                            onClick={(event, count)=>{this.selectPicture(event, value)}}
+                        >
+                            <img className={`${style.profilePicture}`} src={userPictureSrc} />
+                        </div>
+                    )
+                }
+            }
+
+            output.push(html);
+            count = count + 1;
+        }
+
+        return output;
+    }
+
 
     generateLoadingContent(message)
     {
@@ -267,7 +275,7 @@ class SetProfilePicPopUp extends React.Component {
     generateEditDisplay()
     {
         let button = "";
-        if(this.state.croppedImage !== undefined)
+        if(this.state.selectedPicture !== this.state.currentPicture)
         {
             button = (
                 <div className="actions">
@@ -276,51 +284,25 @@ class SetProfilePicPopUp extends React.Component {
                             value="update_picture"
                             className="submitButton"
                             onClick={this.sendApiRequest}
-                        >Upload Picture
+                        >Change Picture
                         </button>
                     </div>
                 </div>
             );
         }
-        let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/dEnoJ-_6jy1K2HkC5JbNv.jpg";
+        let images = this.generateImages();
         let content = (
             <React.Fragment>
                 <div className={style.content}>
                     <div className={style.mainContainer}>
                         <div className={style.inputContainer}>
                             <div className={style.selectionContainer}>
-                                <div className={style.profilePictureContainer}>
-                                    <img className={style.profilePicture} src={userPictureSrc} onClick={(event) => {this.selectPicture(event, 0)}}/>
-                                </div>
-                                <div className={style.profilePictureContainer}>
-                                    <img className={`${style.profilePicture} ${style.selectedPicture}`} src={userPictureSrc} />
-                                </div>
-                                <div className={style.profilePictureContainer}>
-                                    <img className={style.profilePicture} src={userPictureSrc} />
-                                </div>
-                                <div className={style.profilePictureContainer}>
-                                    <img className={style.profilePicture} src={userPictureSrc} />
-                                </div>
-                                <div className={style.profilePictureContainer}>
-                                    <img className={style.profilePicture} src={userPictureSrc} />
-                                </div>
-                                <div className={style.profilePictureContainer}>
-                                    <img className={style.profilePicture} src={userPictureSrc} />
-                                </div>
-                                <div className={style.profilePictureContainer}>
-                                    <img className={style.profilePicture} src={userPictureSrc} />
-                                </div>
-                                <div className={style.profilePictureContainer}>
-                                    <img className={style.profilePicture} src={userPictureSrc} />
-                                </div>
-                                <div className={style.profilePictureContainer}>
-                                    <img className={style.profilePicture} src={userPictureSrc} />
-                                </div>
+                                {images}
                             </div>
                         </div>
+                        {button}
                     </div>
                 </div>
-                {button}
             </React.Fragment>);
         return content;
     }

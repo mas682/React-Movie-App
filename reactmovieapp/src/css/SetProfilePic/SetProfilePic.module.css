@@ -110,22 +110,24 @@
     left: 0;
     background: red;
 }
+/*
+need to keep track of which picture is being hovered over...
+if not the currently selected phote, remove the shadow on the currently
+selected photo or change the opacity
+*/
 
 .selectedPicture {
-    box-shadow: 0px 0px 5px 5px #093145;
+    box-shadow: 0px 0px 10px 10px rgba(9, 49, 69, 1);
 }
 
-.profilePicture:hover {
-    box-shadow: 0px 0px 5px 5px #093145;
+.selectedPictureNotHovered {
+    box-shadow: 0px 0px 10px 10px rgba(9, 49, 69, 1);
 }
 
-
-/*trying to select all profile picutes that are not selected, and set them to not have a
-shadow
-*/
-.selectionContainer:hover .profilePicture:not(.profilePicture:hover) {
-    box-shadow: 0px 0px 10px 10px black;
+.profilePictureContainer:hover {
+    box-shadow: 0px 0px 5px 5px red;
 }
+
 
 .mainContainer {
     width: 100%;
