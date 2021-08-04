@@ -349,7 +349,8 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
         followingCount: followingCount,
         requester: loggedInUser,
         postCount: postCount,
-        picture: (user.picture === null) ? "default-pic.png" : user.picture
+        picture: "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-" + user.picture + ".jpg",
+        pictureId: user.picture
     });
 }
 

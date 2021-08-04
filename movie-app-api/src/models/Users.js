@@ -40,7 +40,7 @@ const user = (sequelize, DataTypes) => {
           allowNull: true
         },
         picture: {
-          type: DataTypes.STRING(50),
+          type: DataTypes.INTEGER,
           allowNull: true
         },
         admin: {

@@ -844,12 +844,9 @@ class MoviePost extends React.Component {
         {
             movieImage = (<div className={style.emptyMoviePoster}><div>No image to display</div></div>);
         }
-        let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic.png";
-        if(this.state.reviewUser.picture !== null)
-        {
-            userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/" + this.state.reviewUser.picture;
-        }
-        console.log(this.state);
+
+        let userPictureSrc = this.state.reviewUser.picture;
+
         return(<React.Fragment>
             <div className={style.postHeader}>
                 <div className={style.reviewerContainer}>

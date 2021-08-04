@@ -61,6 +61,7 @@ function(req, res, next) {
     profileHandler(req, res, next);
 });
 
+/* only used if allowing users to send pictures
 router.post('/profile/:username/set_picture',
     function(req, res, next) { clearCookie(req, res, next) },
     function(req, res, next) {
@@ -77,6 +78,7 @@ router.post('/profile/:username/set_picture',
         profileHandler(req, res, next);
     }
 );
+*/
 
 // used for all posts routes to /profile/username/some other parameter
 router.post('/profile/:username/:type', function(req, res, next) { clearCookie(req, res, next) },

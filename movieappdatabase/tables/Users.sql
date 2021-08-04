@@ -12,7 +12,7 @@ CREATE TABLE public."Users"
     "firstName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
     "lastName" character varying(30) COLLATE pg_catalog."default" NOT NULL,
     "profileDescription" character varying(500) COLLATE pg_catalog."default",
-    picture character varying(50) COLLATE pg_catalog."default",
+    picture integer NOT NULL DEFAULT 0,
     "admin" boolean NOT NULL DEFAULT false,
     verified boolean NOT NULL DEFAULT false,
     "verificationLocked" timestamp with time zone,
@@ -24,7 +24,6 @@ CREATE TABLE public."Users"
     "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pkey PRIMARY KEY (id),
     CONSTRAINT users_email_key UNIQUE (email),
-    CONSTRAINT users_picture_key UNIQUE (picture),
     CONSTRAINT users_username_key UNIQUE (username),
     CONSTRAINT users_salt_key UNIQUE (salt)
 )

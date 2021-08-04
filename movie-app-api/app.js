@@ -71,6 +71,28 @@ app.use(function(req, res, next) {
     next();
 });
 
+app.use(
+    session({
+        //secret: ['veryimportantsecret','notsoimportantsecret','highlyprobablysecret'],
+        secret: config.app.cookieKey,
+        name: config.app.cookieName,
+        saveUninitialized: false,
+        //unset:
+        rolling: true,
+        cookie: {
+            // needs to be set to true to prevent javascript from accessing client side
+            httpOnly: true,
+            // should be true to help avoid man in the middle attacks
+            secure: true,
+            maxAge: config.sessions.maxExpiringDuration, // Time is in miliseconds,
+            //domain: 'http://localhost:3000/',
+            sameSite: 'lax'
+        },
+        store: redisStore,
+        resave: false
+    })
+);
+
 // add id to requests
 app.use(addRequestId);
 // log requests
@@ -102,32 +124,8 @@ app.use(cors({
     credentials: true
 }));
 
-//app.response.sendResponse = sendResponse;
-
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(
-    session({
-        //secret: ['veryimportantsecret','notsoimportantsecret','highlyprobablysecret'],
-        secret: config.app.cookieKey,
-        name: config.app.cookieName,
-        saveUninitialized: false,
-        //unset:
-        rolling: true,
-        cookie: {
-            // needs to be set to true to prevent javascript from accessing client side
-            httpOnly: true,
-            // should be true to help avoid man in the middle attacks
-            secure: true,
-            maxAge: config.sessions.maxExpiringDuration, // Time is in miliseconds,
-            //domain: 'http://localhost:3000/',
-            sameSite: 'lax'
-        },
-        store: redisStore,
-        resave: false
-    })
-);
 
 // all routes to the server will go through this router
 app.use('/', indexRouter);

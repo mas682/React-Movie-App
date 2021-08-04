@@ -5,28 +5,28 @@
 
 @media screen and (min-width: 1400px) {
     .profilePicPopup-content {
-        width: 40% !important;
+        width: 45% !important;
         color: black;
     }
 }
 
 @media screen and (min-width: 1200px) and (max-width: 1399px) {
     .profilePicPopup-content {
-        width: 50% !important;
+        width: 60% !important;
         color: black;
     }
 }
 
 @media screen and (min-width: 1000px) and (max-width: 1199px) {
     .profilePicPopup-content {
-        width: 60% !important;
+        width: 55% !important;
         color: black;
     }
 }
 
 @media screen and (min-width: 800px) and (max-width: 999px) {
     .profilePicPopup-content {
-        width: 70% !important;
+        width: 65% !important;
         color: black;
     }
 }

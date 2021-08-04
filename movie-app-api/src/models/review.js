@@ -112,7 +112,8 @@ const review = (sequelize, DataTypes) => {
             {
                 model: models.Users,
                 as: "user",
-                attributes: ["username", "picture"],
+                attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
+                 sequelize.col("user.picture"), '.jpg'), "picture"]],
                 duplicating: false
             },
             {
@@ -394,7 +395,8 @@ const review = (sequelize, DataTypes) => {
             {
                 model: models.Users,
                 as: "user",
-                attributes: ["username", "picture"],
+                attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
+                 sequelize.col("user.picture"), '.jpg'), "picture"]],
                 required: true,
                 include: {
                     model: models.Users,

@@ -145,6 +145,7 @@ class ProfileHeader extends React.Component {
                     followingCount: result[1].followingCount,
                     postCount: result[1].postCount,
                     picture: result[1].picture,
+                    pictureId: result[1].pictureId,
                     displayFollowers: false,
                     displayFollowed: false,
                     loading: false,
@@ -500,7 +501,7 @@ class ProfileHeader extends React.Component {
             }
         }
 
-        let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/" + this.state.picture;
+        let userPictureSrc = this.state.picture;
 
         let imageContainer = (
             <div className={`${style.imageContainer} ${style.tooltip}`} id={style.myPage} onClick={(e)=> this.generatePopUp(e, "showEditProfilePic")}>

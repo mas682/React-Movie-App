@@ -73,25 +73,26 @@ class SetProfilePicPopUp extends React.Component {
 
     sendApiRequest()
     {
-        let data = new FormData();
-        data.append('file', this.state.croppedImage);
-        let params = data;
-        let header = {};
+        if(this.state.selectedPicture === this.state.currentPicture) return;
+        let params = {
+            picture: this.state.selectedPicture
+        };
+
         let url = "https://localhost:9000/profile/" + this.state.currentUser + "/set_picture";
         this.setState({
             awaitingResults: true,
             messageId: -1
         });
-        apiPostJsonRequest(url, params, header, false).then((result) =>{
+        apiPostJsonRequest(url, params).then((result) =>{
             let status = result[0];
             let message = result[1].message;
             let requester = result[1].requester;
-            this.apiResultsHandler(status, message, requester, result, "update");
+            this.apiResultsHandler(status, message, requester, result);
         });
     }
 
     // results handler used for both updating or removing picture
-    apiResultsHandler(status, message, requester, result, type)
+    apiResultsHandler(status, message, requester, result)
     {
         if(status === 200)
         {
@@ -185,10 +186,10 @@ class SetProfilePicPopUp extends React.Component {
 
         // need to change the url...
         let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-";
-        while(count < 9)
+        while(count < 12)
         {
             let value = count;
-            userPictureSrc = userPictureSrc + value + ".png"
+            let picture = userPictureSrc + value + ".jpg"
             if(this.state.hoveredPicture !== undefined && this.state.selectedPicture === count)
             {
                 if(count === this.state.hoveredPicture)
@@ -200,7 +201,7 @@ class SetProfilePicPopUp extends React.Component {
                             onMouseEnter={() => {this.setHoveredImage(count)}}
                             onMouseLeave={()=>{this.removeHoveredImage()}}
                         >
-                            <img className={`${style.profilePicture}`} src={userPictureSrc} />
+                            <img className={`${style.profilePicture}`} src={picture} />
                         </div>
                     )
                 }
@@ -212,7 +213,7 @@ class SetProfilePicPopUp extends React.Component {
                             onMouseEnter={() => {this.setHoveredImage(count)}}
                             onMouseLeave={()=>{this.removeHoveredImage()}}
                         >
-                            <img className={`${style.profilePicture}`} src={userPictureSrc} />
+                            <img className={`${style.profilePicture}`} src={picture} />
                         </div>
                     );
                 }
@@ -228,7 +229,7 @@ class SetProfilePicPopUp extends React.Component {
                             onMouseEnter={() => {this.setHoveredImage(count)}}
                             onMouseLeave={()=>{this.removeHoveredImage()}}
                         >
-                            <img className={`${style.profilePicture}`} src={userPictureSrc} />
+                            <img className={`${style.profilePicture}`} src={picture} />
                         </div>
                     )
                 }
@@ -241,7 +242,7 @@ class SetProfilePicPopUp extends React.Component {
                             onMouseLeave={()=>{this.removeHoveredImage()}}
                             onClick={(event, count)=>{this.selectPicture(event, value)}}
                         >
-                            <img className={`${style.profilePicture}`} src={userPictureSrc} />
+                            <img className={`${style.profilePicture}`} src={picture} />
                         </div>
                     )
                 }
@@ -274,22 +275,31 @@ class SetProfilePicPopUp extends React.Component {
 
     generateEditDisplay()
     {
-        let button = "";
-        if(this.state.selectedPicture !== this.state.currentPicture)
+        let button = (
+            <button value="update_picture"
+                className="submitButton"
+                onClick={this.sendApiRequest}
+            >Change Picture
+            </button>
+        );
+        if(this.state.selectedPicture === this.state.currentPicture)
         {
             button = (
-                <div className="actions">
-                    <div className={style.submitButtonContainer}>
-                        <button
-                            value="update_picture"
-                            className="submitButton"
-                            onClick={this.sendApiRequest}
-                        >Change Picture
-                        </button>
-                    </div>
-                </div>
+                <button value="update_picture"
+                    className="submitButton"
+                    onClick={this.sendApiRequest}
+                    disabled
+                >Change Picture
+                </button>
             );
         }
+        button = (
+            <div className="actions">
+                <div className={style.submitButtonContainer}>
+                    {button}
+                </div>
+            </div>
+        );
         let images = this.generateImages();
         let content = (
             <React.Fragment>
