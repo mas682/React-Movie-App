@@ -15,7 +15,7 @@ const user = (sequelize, DataTypes) => {
           unique: "users_username_key"
         },
         email: {
-          type: DataTypes.STRING(100),
+          type: DataTypes.STRING(50),
           allowNull: false,
           unique: "users_email_key"
         },
@@ -28,11 +28,11 @@ const user = (sequelize, DataTypes) => {
             allowNull: false
         },
         firstName: {
-          type: DataTypes.STRING(20),
+          type: DataTypes.STRING(30),
           allowNull: false
         },
         lastName: {
-          type: DataTypes.STRING(20),
+          type: DataTypes.STRING(30),
           allowNull: false
         },
         profileDescription: {
@@ -41,7 +41,8 @@ const user = (sequelize, DataTypes) => {
         },
         picture: {
           type: DataTypes.INTEGER,
-          allowNull: true
+          allowNull: true,
+          defaultValue: 0
         },
         admin: {
           type: DataTypes.BOOLEAN,
@@ -103,6 +104,13 @@ const user = (sequelize, DataTypes) => {
               { name: "username" },
             ]
           },
+          {
+            name: "users_salt_key",
+            unique: true,
+            fields: [
+              { name: "salt" },
+            ]
+          },
         ]
       });
 
@@ -134,6 +142,7 @@ const user = (sequelize, DataTypes) => {
             otherKey: "followerId"
         });
         // this belongsToMany sets the followerId to the currecnt user
+        // https://stackoverflow.com/questions/63657141/sequelize-joined-table-column-names-for-belongstomany-association
         User.belongsToMany(User, {
             // table name
             through: models.UsersFriends,
@@ -146,12 +155,20 @@ const user = (sequelize, DataTypes) => {
             foreignKey: 'followerId',
             otherKey: "followedId"
         });
-        User.belongsToMany(models.Reviews, { as: 'user', through: models.Likes, foreignKey: "userId", otherKey: "reviewId" });
+        // https://stackoverflow.com/questions/63657141/sequelize-joined-table-column-names-for-belongstomany-association
+        User.belongsToMany(models.Reviews,
+             { as: "user",
+              through: models.Likes,
+              foreignKey: "userId",
+              otherKey: "reviewId",
+              onDelete: 'CASCADE'
+          }
+        );
         //User.hasMany(UserVerificationQuestions, { as: "UserVerificationQuestions", foreignKey: "userId"});
         User.hasMany(models.UsersFriends, { as: "UsersFriends", foreignKey: "followedId"});
         User.hasMany(models.UsersFriends, { as: "follower_UsersFriends", foreignKey: "followerId"});
         User.hasMany(models.Comments, { as: "userComments", foreignKey: "userId"});
-        User.hasMany(models.Likes, { as: "userLikes", foreignKey: "userId"});
+        User.hasMany(models.Likes, { as: "likes", foreignKey: "userId"});
         User.hasMany(models.Reviews, { as: "userReviews", foreignKey: "userId"});
         User.hasMany(models.UserWatchLists, { as: "UserWatchList", foreignKey: "userId"});
         User.hasMany(models.UsersWatchedMovies, { as: "UserWatchedList", foreignKey: "userId"});
@@ -242,7 +259,8 @@ const user = (sequelize, DataTypes) => {
             return null;
         }
         let followers = await user.getFollowers({
-            attributes: ["username"],
+            attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
+             sequelize.col("Users.picture"), '.jpg'), "picture"]],
             include:[
                 {
                     model: User,
@@ -273,7 +291,8 @@ const user = (sequelize, DataTypes) => {
             return null;
         }
         let following = await user.getFollowing({
-            attributes: ["username"],
+            attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
+             sequelize.col("Users.picture"), '.jpg'), "picture"]],
             include:[
                 {
                     model: User,
@@ -389,7 +408,8 @@ const user = (sequelize, DataTypes) => {
                     END ASC`),
                 ['username', 'ASC']
             ],
-            attributes: ["username", "firstName", "lastName", "picture"]
+            attributes: ["username", "firstName", "lastName", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
+             sequelize.col("Users.picture"), '.jpg'), "picture"]]
         });
         return users;
     };

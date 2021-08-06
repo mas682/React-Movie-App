@@ -93,7 +93,7 @@ const review = (sequelize, DataTypes) => {
         // each review can have many comments
         Review.hasMany(models.Comments, {foreignKey: "reviewId"});
         // each review can have many likes
-        Review.belongsToMany(models.Users, {as:"likes", through: models.Likes, foreignKey: "reviewId", otherKey: "userId", onDelete: 'CASCADE'});
+        Review.belongsToMany(models.Users,{as:"likes", through: models.Likes, otherKey: "userId",foreignKey: "reviewId", onDelete: 'CASCADE'});
         // each review can have many good tags
         Review.belongsToMany(models.MovieTags, {as: "goodTags", through: models.ReviewGoodTags, foreignKey: "reviewId", otherKey: "movieTagId", onDelete: 'CASCADE'});
         Review.belongsToMany(models.MovieTags, {as: "badTags", through: models.ReviewBadTags, foreignKey: "reviewId", otherKey: "movieTagId", onDelete: 'CASCADE'});
@@ -361,8 +361,10 @@ const review = (sequelize, DataTypes) => {
         {
             return null;
         }
+
         let usersWhoLiked = await review.getLikes({
-            attributes: ["username"],
+            attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
+             sequelize.col("Users.picture"), '.jpg'), "picture"]],
             include: [
                 {
                     model: models.Users,
@@ -374,13 +376,8 @@ const review = (sequelize, DataTypes) => {
                         attributes: []
                     }
                 },
-                {
-                    model: models.Likes,
-                    as: "like",
-                    attributes: []
-                }
-
             ]
+
         });
         return usersWhoLiked;
     };

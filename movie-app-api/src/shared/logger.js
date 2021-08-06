@@ -76,7 +76,7 @@ function getConsoleString(info) {
         {
             color = "\x1b[36m"
             return `${info.timestamp}| ${color}Method: ${obj.method} | url: ${obj.url} | requester: ${obj.requesterId}`
-            + `| ip: ${obj.ip} | request ID: ${obj.requestId}\n`
+            + ` | ip: ${obj.ip} | request ID: ${obj.requestId}\n`
         }
         return `${info.timestamp}| ${color}Status: ${obj.status} | ${info.message}`
     }

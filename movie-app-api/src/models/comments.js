@@ -34,7 +34,6 @@ const comment = (sequelize, DataTypes) => {
         createdAt: {
             // this is done to format the date on return
             type: DataTypes.DATE,
-            defaultValue: moment(),
             allowNull: false,
             get() {
                 let hour = this.getDataValue('createdAt').getHours();

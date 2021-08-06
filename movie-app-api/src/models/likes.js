@@ -3,18 +3,20 @@ const like = (sequelize, DataTypes) => {
         userId: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          primaryKey: true,
+          // this throws off sequelize
+          //primaryKey: true,
           references: {
-            model: 'users',
+            model: 'Users',
             key: 'id'
           }
         },
         reviewId: {
           type: DataTypes.INTEGER,
           allowNull: false,
-          primaryKey: true,
+          // this throws off sequelize
+          //primaryKey: true,
           references: {
-            model: 'reviews',
+            model: 'Reviews',
             key: 'id'
           }
         }
@@ -26,7 +28,6 @@ const like = (sequelize, DataTypes) => {
         indexes: [
           {
             name: "likes_pkey",
-            unique: true,
             fields: [
               { name: "userId" },
               { name: "reviewId" },
@@ -36,7 +37,8 @@ const like = (sequelize, DataTypes) => {
         });
 
         Likes.associate = models => {
-            Likes.belongsTo(models.Reviews, { as: "review", foreignKey: "reviewId"});
+            //Likes.belongsTo(models.Reviews, { as: "review", foreignKey: "reviewId"});
+            //Likes.belongsTo(models.Users, {as: "likes", foreignKey: "userId"})
         };
 
     return Likes;

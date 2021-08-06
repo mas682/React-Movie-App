@@ -239,11 +239,10 @@ class FollowerDisplay extends React.Component {
 
         let followButton = this.generateFollowButton();
         let path = "/profile/" + this.state.user.username;
-
         return (
             <div className={style.userNameContainer}>
                 <div className={style.userImageBox}>
-                    <Link to={path}><img className={style.profilePic} src={require("./images/profile-pic.jpg")}/></Link>
+                    <Link to={path}><img className={style.profilePic} src={this.state.user.picture}/></Link>
                 </div>
                 <div className={style.usernameBox}>
                     <Link to={path} className={style.userLink}>{this.state.user.username}</Link>

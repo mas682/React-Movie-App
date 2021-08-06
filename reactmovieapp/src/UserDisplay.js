@@ -271,11 +271,7 @@ class UserDisplay extends React.Component {
 
 
         let path = "/profile/" + this.state.user.username;
-        let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic.png";
-        if(this.state.picture !== null)
-        {
-            userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/" + this.state.picture;
-        }
+        let userPictureSrc = this.state.picture;
 
         return (
             <Link to={path} className={style.link}>
