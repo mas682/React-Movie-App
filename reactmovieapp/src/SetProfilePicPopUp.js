@@ -15,14 +15,11 @@ class SetProfilePicPopUp extends React.Component {
             messages: [],
             messageId: -1,
             loading: true,
-            showSuccessPage: false,
             awaitingResults: false,
             currentUser: props.currentUser,
             images: [],
-
-            // needs set by either api call or passed in..
-            currentPicture: 2,
-            selectedPicture: 2,
+            currentPicture: -1,
+            selectedPicture: -1,
             hoveredPicture: undefined,
             usersPictureURL: props.userPicture
         };
@@ -144,11 +141,8 @@ class SetProfilePicPopUp extends React.Component {
             }
             else if(status === 400)
             {
-                this.setState({
-                    loading: false,
-                    messages: [{message: message, type: "failure", timeout: 0}],
-                    messageId: this.state.messageId + 1
-                });
+                this.props.setMessages({messages:[{message: message, type: "failure"}]});
+                this.props.removeFunction();
             }
             else if(status === 500)
             {
@@ -200,6 +194,9 @@ class SetProfilePicPopUp extends React.Component {
             this.props.setMessages({
                 messages: [{message: message, type: "success"}]
             });
+            this.setState({
+                awaitingResults: false
+            });
             this.props.pictureUpdated(true);
             this.props.removeFunction();
         }
@@ -212,7 +209,6 @@ class SetProfilePicPopUp extends React.Component {
                 // should just about never occur
                 this.setState({
                     awaitingResults: false,
-                    awaitingRemovePicture: false,
                     messages: [{message: message, type: "failure", timeout: 0}],
                     messageId: this.state.messageId + 1
                 });
@@ -228,8 +224,7 @@ class SetProfilePicPopUp extends React.Component {
                 else
                 {
                     this.setState({
-                        awaitingResults: false,
-                        awaitingRemovePicture: false,
+                        awaitingResults: false
                     });
                     this.props.removeFunction();
                     this.props.showLoginPopUp(false);
@@ -237,19 +232,8 @@ class SetProfilePicPopUp extends React.Component {
             }
             else if(status === 400)
             {
-                // scenarios:
-                // Invalid username found in the url
-                // username in url cannot possibly be a username
-                // "The provided file is too large(max size: 12MB)"
-                // "The file could not be found in the request"
-                // "Only 1 image can be sent in the request"
-                // 'Invalid file type'
-                //  'File name cannot be greater than 100 characters or less than 5 characters'
-                // "The new profile picture could not be found in the request"
-                    // file not found in request as not defined as file: image in reqeust
                 this.setState({
                     awaitingResults: false,
-                    awaitingRemovePicture: false,
                     messages: [{message: message, type: "failure", timeout: 0}],
                     messageId: this.state.messageId + 1
                 });
@@ -258,7 +242,6 @@ class SetProfilePicPopUp extends React.Component {
             {
                 this.setState({
                     awaitingResults: false,
-                    awaitingRemovePicture: false,
                     messages: [{message: message, type: "failure", timeout: 0}],
                     messageId: this.state.messageId + 1
                 });
@@ -268,7 +251,6 @@ class SetProfilePicPopUp extends React.Component {
                 message = "A unexpected status code (" + status + ") was returned from the server";
                 this.setState({
                     awaitingResults: false,
-                    awaitingRemovePicture: false,
                     messages: [{message: message, type: "failure", timeout: 0}],
                     messageId: this.state.messageId + 1
                 });
@@ -421,31 +403,17 @@ class SetProfilePicPopUp extends React.Component {
         {
             content = this.generateLoadingContent("Loading profile picture options...");
         }
-        else if(!this.state.showSuccessPage && !this.state.awaitingResults)
+        else if(!this.state.awaitingResults)
         {
             content = this.generateEditDisplay();
         }
-        else if(this.state.awaitingResults && this.state.awaitingRemovePicture)
-        {
-            content = this.generateLoadingContent("Removing profile picture...");
-        }
-        else if(!this.state.showSuccessPage && this.state.awaitingResults)
+        else if(this.state.awaitingResults)
         {
             content = this.generateLoadingContent("Updating profile picture...");
-        }
-        else if(this.state.showSuccessPage)
-        {
-            // may want to just close it out and show an alert saying picture successfully
-            // updated
-            className = "verification";
         }
 
 
         let header = "Set Profile Picture";
-        if(this.state.awaitingRemovePicture)
-        {
-            header = "Remove Picture";
-        }
         return (
             <div>
                 <Popup
@@ -466,7 +434,7 @@ class SetProfilePicPopUp extends React.Component {
                             <Alert
                                 messages={this.state.messages}
                                 messageId={this.state.messageId}
-                                innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%", "padding-top": "10px"}}
+                                innerContainerStyle={{"z-index": "2", "font-size": "1.0em", "width":"90%", "margin-left":"5%", "margin-right":"5%", "padding-top": "10px"}}
                                 symbolStyle={{"width": "8%", "margin-top": "2px"}}
                                 messageBoxStyle={{width: "80%"}}
                                 closeButtonStyle={{width: "8%", "margin-top": "2px"}}

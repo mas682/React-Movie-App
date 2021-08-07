@@ -864,13 +864,22 @@ const getDefaultProfilePictures = async (requester, req, res) =>
 const setProfilePicture = async(requester, req, res, next) =>
 {
     res.locals.function = "setProfilePicture";
+    let username = req.params.username;
     let profilePicture = req.body.picture;
     // max is the maxium number of profile picture options
-    let max = 12;
+    let max = 11;
     let valid = validateUsernameParameter(res, req.params.username, requester, "Invalid username found in the url");
     if(!valid) return;
     valid = validateIntegerParameter(res, profilePicture, requester, "The picture selected is invalid", 0, max);
     if(!valid) return;
+    if(username !== requester)
+    {
+        res.status(401).sendResponse({
+            message:"The user passed in the url does not match the requester",
+            requester: requester
+        });
+        return;
+    }
     // find the user
     let user = await models.Users.findByLogin(requester);
     let status;
