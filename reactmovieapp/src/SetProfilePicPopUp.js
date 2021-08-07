@@ -3,7 +3,7 @@ import { Redirect } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import './css/SetProfilePic/SetProfilePic.css';
 import style from './css/SetProfilePic/SetProfilePic.module.css';
-import {apiPostJsonRequest, apiDeleteJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {apiPostJsonRequest, apiGetJsonRequest, apiDeleteJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
 import DragDropFile from './DragDropFile.js';
 
@@ -14,18 +14,20 @@ class SetProfilePicPopUp extends React.Component {
             open: true,
             messages: [],
             messageId: -1,
+            loading: true,
             showSuccessPage: false,
             awaitingResults: false,
             currentUser: props.currentUser,
+            images: [],
 
             // needs set by either api call or passed in..
             currentPicture: 2,
             selectedPicture: 2,
-            hoveredPicture: undefined
+            hoveredPicture: undefined,
+            usersPictureURL: props.userPicture
         };
         this.closeModal = this.closeModal.bind(this);
         this.changeHandler = this.changeHandler.bind(this);
-        this.showLoginPopUp = this.showLoginPopUp.bind(this);
         this.generateEditDisplay = this.generateEditDisplay.bind(this);
         this.sendApiRequest = this.sendApiRequest.bind(this);
         this.apiResultsHandler = this.apiResultsHandler.bind(this);
@@ -34,15 +36,21 @@ class SetProfilePicPopUp extends React.Component {
         this.generateImages = this.generateImages.bind(this);
         this.setHoveredImage = this.setHoveredImage.bind(this);
         this.removeHoveredImage = this.removeHoveredImage.bind(this);
+        this.getDefaultPictures = this.getDefaultPictures.bind(this);
+        this.getImagesResultsHandler = this.getImagesResultsHandler.bind(this);
+    }
+
+    componentDidMount() {
+        // clear the messages on mount
+        this.props.setMessages({
+            messages: undefined,
+            clearMessages: true
+        });
+        this.getDefaultPictures();
     }
 
     closeModal() {
         this.props.removeFunction();
-    }
-
-    showLoginPopUp() {
-        this.props.showLoginPopUp();
-        this.closeModal();
     }
 
     changeHandler(event) {
@@ -69,6 +77,97 @@ class SetProfilePicPopUp extends React.Component {
         this.setState({
             selectedPicture: value
         });
+    }
+
+    getDefaultPictures()
+    {
+        let url = "https://localhost:9000/profile/" + this.state.currentUser + "/get_profile_pictures";
+        apiGetJsonRequest(url).then((result)=>{
+            let status = result[0];
+            let message = result[1].message;
+            let requester = result[1].requester;
+            this.getImagesResultsHandler(status, message, requester, result);
+        })
+    }
+
+    getImagesResultsHandler(status, message, requester, result)
+    {
+        if(status === 200)
+        {
+            let currentPicture = -1;
+            for(let image of result[1].images)
+            {
+                let url = image.source + image.filename;
+                if(url === this.state.usersPictureURL)
+                {
+                    currentPicture = image.id;
+                }
+            }
+            this.props.updateLoggedIn(requester);
+            this.setState({
+                loading: false,
+                images: result[1].images,
+                currentPicture: currentPicture,
+                selectedPicture: currentPicture
+            });
+
+        }
+        else
+        {
+            this.props.updateLoggedIn(requester);
+            if(status === 404)
+            {
+                // "The profile path sent to the server does not exist"
+                // should just about never occur
+                this.setState({
+                    loading: false,
+                    messages: [{message: message, type: "failure", timeout: 0}],
+                    messageId: this.state.messageId + 1
+                });
+            }
+            else if(status === 401)
+            {
+                if(message === "The user passed in the url does not match the requester")
+                {
+                    // close the pop up
+                    this.props.removeFunction();
+                    this.props.setMessages({messages:[{message: message, type: "failure"}]});
+                }
+                else
+                {
+                    this.setState({
+                        loading: false
+                    });
+                    this.props.removeFunction();
+                    this.props.showLoginPopUp(false);
+                }
+            }
+            else if(status === 400)
+            {
+                this.setState({
+                    loading: false,
+                    messages: [{message: message, type: "failure", timeout: 0}],
+                    messageId: this.state.messageId + 1
+                });
+            }
+            else if(status === 500)
+            {
+                this.setState({
+                    loading: false,
+                    messages: [{message: message, type: "failure", timeout: 0}],
+                    messageId: this.state.messageId + 1
+                });
+            }
+            else
+            {
+                message = "A unexpected status code (" + status + ") was returned from the server";
+                this.setState({
+                    loading: false,
+                    messages: [{message: message, type: "failure", timeout: 0}],
+                    messageId: this.state.messageId + 1
+                });
+            }
+        }
     }
 
     sendApiRequest()
@@ -179,26 +278,24 @@ class SetProfilePicPopUp extends React.Component {
 
     generateImages()
     {
-        // temporary for testing
-        let count = 0;
         let output = [];
         let html = "";
 
         // need to change the url...
         let userPictureSrc = "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-";
-        while(count < 12)
+        for(let image of this.state.images)
         {
-            let value = count;
-            let picture = userPictureSrc + value + ".jpg"
-            if(this.state.hoveredPicture !== undefined && this.state.selectedPicture === count)
+            let value = image.id;
+            let picture = image.source + image.filename;
+            if(this.state.hoveredPicture !== undefined && this.state.selectedPicture === value)
             {
-                if(count === this.state.hoveredPicture)
+                if(value === this.state.hoveredPicture)
                 {
                     // if the hovered picture is this picture
                     html = (
                         <div
                             className={`${style.profilePictureContainer} ${style.selectedPicture}`}
-                            onMouseEnter={() => {this.setHoveredImage(count)}}
+                            onMouseEnter={() => {this.setHoveredImage(value)}}
                             onMouseLeave={()=>{this.removeHoveredImage()}}
                         >
                             <img className={`${style.profilePicture}`} src={picture} />
@@ -210,7 +307,7 @@ class SetProfilePicPopUp extends React.Component {
                     html = (
                         <div
                             className={`${style.profilePictureContainer} ${style.selectedPictureNotHovered}`}
-                            onMouseEnter={() => {this.setHoveredImage(count)}}
+                            onMouseEnter={() => {this.setHoveredImage(value)}}
                             onMouseLeave={()=>{this.removeHoveredImage()}}
                         >
                             <img className={`${style.profilePicture}`} src={picture} />
@@ -220,13 +317,13 @@ class SetProfilePicPopUp extends React.Component {
             }
             else
             {
-                if(count === this.state.selectedPicture)
+                if(value === this.state.selectedPicture)
                 {
                     // if the hovered picture is this picture
                     html = (
                         <div
                             className={`${style.profilePictureContainer} ${style.selectedPicture}`}
-                            onMouseEnter={() => {this.setHoveredImage(count)}}
+                            onMouseEnter={() => {this.setHoveredImage(value)}}
                             onMouseLeave={()=>{this.removeHoveredImage()}}
                         >
                             <img className={`${style.profilePicture}`} src={picture} />
@@ -238,9 +335,9 @@ class SetProfilePicPopUp extends React.Component {
                     html = (
                         <div
                             className={`${style.profilePictureContainer}`}
-                            onMouseEnter={() => {this.setHoveredImage(count)}}
+                            onMouseEnter={() => {this.setHoveredImage(value)}}
                             onMouseLeave={()=>{this.removeHoveredImage()}}
-                            onClick={(event, count)=>{this.selectPicture(event, value)}}
+                            onClick={(event)=>{this.selectPicture(event, image.id)}}
                         >
                             <img className={`${style.profilePicture}`} src={picture} />
                         </div>
@@ -249,7 +346,6 @@ class SetProfilePicPopUp extends React.Component {
             }
 
             output.push(html);
-            count = count + 1;
         }
 
         return output;
@@ -321,7 +417,11 @@ class SetProfilePicPopUp extends React.Component {
     render() {
         let content;
         let className = "profilePicPopup";
-        if(!this.state.showSuccessPage && !this.state.awaitingResults)
+        if(this.state.loading)
+        {
+            content = this.generateLoadingContent("Loading profile picture options...");
+        }
+        else if(!this.state.showSuccessPage && !this.state.awaitingResults)
         {
             content = this.generateEditDisplay();
         }

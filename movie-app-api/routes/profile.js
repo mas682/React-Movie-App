@@ -100,6 +100,19 @@ const selectPath = (requester, req, res, next) =>
                 foundNoCookie = true;
             }
         }
+        else if(req.params.type === "get_profile_pictures")
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                getDefaultProfilePictures(requester, req, res)
+                .catch((err) => {next(err)});
+            }
+            else
+            {
+                foundNoCookie = true;
+            }
+        }
     }
     else if(req.method === "POST")
     {
@@ -816,6 +829,36 @@ const removeUser = async (requester, req, res, next) =>
         });
     }
 
+}
+
+// function to get all the urls for the profile pictures
+const getDefaultProfilePictures = async (requester, req, res) =>
+{
+    res.locals.function = "getDefaultProfilePictures";
+    let username = req.params.username;
+    let loggedInUser = requester;
+    let valid = validateUsernameParameter(res, username, loggedInUser, "Username is invalid");
+    if(!valid) return;
+
+    if(username !== loggedInUser)
+    {
+        res.status(401).sendResponse({
+            message:"The user passed in the url does not match the requester",
+            requester: loggedInUser
+        });
+        return;
+    }
+
+    // get the images to send
+    let images = await models.DefaultProfilePictures.findAll({
+        attributes: ["filename", "source", "id"]
+    });
+
+    res.status(200).sendResponse({
+        message: "Default profile pictures successfully found",
+        requester: loggedInUser,
+        images: images
+    });
 }
 
 const setProfilePicture = async(requester, req, res, next) =>
