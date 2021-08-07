@@ -112,9 +112,15 @@ const review = (sequelize, DataTypes) => {
             {
                 model: models.Users,
                 as: "user",
-                attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
-                 sequelize.col("user.picture"), '.jpg'), "picture"]],
-                duplicating: false
+                attributes: ["username", [sequelize.fn('concat', sequelize.col("user->profilePicture.source"),sequelize.col("user->profilePicture.filename")), "picture"]],
+                duplicating: false,
+                include: [
+                    {
+                        model: sequelize.models.DefaultProfilePictures,
+                        as: "profilePicture",
+                        attributes: []
+                    }
+                ]
             },
             {
                 model: models.MovieTags,
@@ -148,7 +154,7 @@ const review = (sequelize, DataTypes) => {
             }
 
         ];
-        let groupByArray = ["Reviews.id", "user.id", "goodTags.id","badTags.id", "movie.id"];
+        let groupByArray = ["Reviews.id", "user.id", "goodTags.id","badTags.id", "movie.id", "user->profilePicture.source", "user->profilePicture.filename"];
         let attributes = ["id", "rating", "review", "updatedAt", "createdAt",
         // get the number of likes
         [sequelize.fn("COUNT", sequelize.col("likes->Likes.userId")), "likeCount"],
@@ -363,8 +369,10 @@ const review = (sequelize, DataTypes) => {
         }
 
         let usersWhoLiked = await review.getLikes({
-            attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
-             sequelize.col("Users.picture"), '.jpg'), "picture"]],
+            attributes: [
+             "username",
+             [sequelize.fn('concat', sequelize.col("profilePicture.source"),sequelize.col("profilePicture.filename")), "picture"]
+         ],
             include: [
                 {
                     model: models.Users,
@@ -376,6 +384,12 @@ const review = (sequelize, DataTypes) => {
                         attributes: []
                     }
                 },
+                {
+                    model: sequelize.models.DefaultProfilePictures,
+                    as: "profilePicture",
+                    attributes: []
+                }
+
             ]
 
         });
@@ -392,18 +406,25 @@ const review = (sequelize, DataTypes) => {
             {
                 model: models.Users,
                 as: "user",
-                attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
-                 sequelize.col("user.picture"), '.jpg'), "picture"]],
+                attributes: ["username", [sequelize.fn('concat', sequelize.col("user->profilePicture.source"),sequelize.col("user->profilePicture.filename")), "picture"]],
                 required: true,
-                include: {
-                    model: models.Users,
-                    as: "Followers",
-                    attributes: ["username"],
-                    through: {attributes: []},
-                    where: {id: requesterId},
-                    required: true,
-                    duplicating: false
-                },
+                include: [
+                    {
+                        model: models.Users,
+                        as: "Followers",
+                        attributes: ["username"],
+                        through: {attributes: []},
+                        where: {id: requesterId},
+                        required: true,
+                        duplicating: false
+                    },
+                    {
+                        model: sequelize.models.DefaultProfilePictures,
+                        as: "profilePicture",
+                        attributes: []
+                    }
+
+                ],
                 duplicating: false
             },
             {
@@ -438,7 +459,8 @@ const review = (sequelize, DataTypes) => {
             }
 
         ];
-        let groupByArray = ["Reviews.id", "user.id", "goodTags.id","badTags.id", "movie.id", "user->Followers.id"];
+        let groupByArray = ["Reviews.id", "user.id", "goodTags.id","badTags.id", "movie.id", "user->Followers.id",
+                            "user->profilePicture.source", "user->profilePicture.filename"];
         let attributes = ["id", "rating", "review", "updatedAt", "createdAt",
                 // get the number of likes
                 [sequelize.fn("COUNT", sequelize.col("likes->Likes.userId")), "likeCount"],

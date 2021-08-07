@@ -63,7 +63,6 @@ class MoviePost extends React.Component {
         }
         else
         {
-            console.log(this.props);
             let moviePath = this.props.data.movie.title.replace(" ", "-");
             moviePath = "/movie/" + this.props.data.movie.id + "-" + moviePath;
             this.state = {

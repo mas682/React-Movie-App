@@ -309,7 +309,7 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
     let valid = validateUsernameParameter(res, username, loggedInUser, "Username is invalid");
     if(!valid) return;
     // find a user by their login
-    let user = await models.Users.findByLogin(username);
+    let user = await models.Users.findByLoginWithPicture(username);
     // if the user was not found
     if(user === null)
     {
@@ -342,6 +342,7 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
             }
         }
     }
+
     res.status(200).sendResponse({
         message: "User information successfully found",
         following: followed,
@@ -349,8 +350,7 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
         followingCount: followingCount,
         requester: loggedInUser,
         postCount: postCount,
-        picture: "https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-" + user.picture + ".jpg",
-        pictureId: user.picture
+        picture: user.profilePicture.dataValues.url
     });
 }
 

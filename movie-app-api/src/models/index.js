@@ -20,7 +20,8 @@ const models = {
     UserVerificationCodes: sequelize.import('./UserVerificationCodes'),
     TempVerificationCodes: sequelize.import('./TempVerificationCodes'),
     FeaturedMovies: sequelize.import('./FeaturedMovies'),
-    UserSessions: sequelize.import('./UserSessions')
+    UserSessions: sequelize.import('./UserSessions'),
+    DefaultProfilePictures: sequelize.import('./DefaultProfilePictures')
 };
 
 Object.keys(models).forEach(key => {

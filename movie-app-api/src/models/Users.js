@@ -42,7 +42,11 @@ const user = (sequelize, DataTypes) => {
         picture: {
           type: DataTypes.INTEGER,
           allowNull: true,
-          defaultValue: 0
+          defaultValue: 0,
+          references: {
+            model: 'DefaultProfilePictures',
+            key: 'id'
+          }
         },
         admin: {
           type: DataTypes.BOOLEAN,
@@ -173,6 +177,7 @@ const user = (sequelize, DataTypes) => {
         User.hasMany(models.UserWatchLists, { as: "UserWatchList", foreignKey: "userId"});
         User.hasMany(models.UsersWatchedMovies, { as: "UserWatchedList", foreignKey: "userId"});
         User.hasMany(models.UserSessions, {as: "sessions", onDelete: 'CASCADE', foreignKey: "userId"});
+        User.belongsTo(models.DefaultProfilePictures, {foreignKey: "picture", as: "profilePicture"})
     };
 
     // method to find a user by username or email if email were in the
@@ -189,6 +194,35 @@ const user = (sequelize, DataTypes) => {
         }
         return user;
     };
+
+
+    User.findByLoginWithPicture = async login => {
+        let user = await User.findOne({
+            where: { username: login },
+            attributes: {exclude: ['picture']},
+            include: {
+                model: sequelize.models.DefaultProfilePictures,
+                as: "profilePicture",
+                attributes: [[sequelize.fn('concat', sequelize.col("profilePicture.source"),
+                            sequelize.col("profilePicture.filename")), "url"]]
+            }
+        });
+
+        if (!user) {
+            user = await User.findOne({
+            where: { email: login },
+            attributes: {exclude: ['picture']},
+            include: {
+                model: sequelize.models.DefaultProfilePictures,
+                as: "profilePicture",
+                attributes: [[sequelize.fn('concat', sequelize.col("profilePicture.source"),
+                            sequelize.col("profilePicture.filename")), "url"]]
+            }
+            });
+        }
+        return user;
+    };
+
 
     User.getAllFollowers = async (userId) => {
         let user = await User.findOne({
@@ -259,8 +293,8 @@ const user = (sequelize, DataTypes) => {
             return null;
         }
         let followers = await user.getFollowers({
-            attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
-             sequelize.col("Users.picture"), '.jpg'), "picture"]],
+            attributes: ["username", [sequelize.fn('concat', sequelize.col("profilePicture.source"),
+                        sequelize.col("profilePicture.filename")), "picture"]],
             include:[
                 {
                     model: User,
@@ -273,6 +307,11 @@ const user = (sequelize, DataTypes) => {
                 {
                     model: models.UsersFriends,
                     as: "UsersFriends",
+                    attributes: []
+                },
+                {
+                    model: models.DefaultProfilePictures,
+                    as: "profilePicture",
                     attributes: []
                 }
             ]
@@ -291,8 +330,8 @@ const user = (sequelize, DataTypes) => {
             return null;
         }
         let following = await user.getFollowing({
-            attributes: ["username", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
-             sequelize.col("Users.picture"), '.jpg'), "picture"]],
+            attributes: ["username", [sequelize.fn('concat', sequelize.col("profilePicture.source"),
+                        sequelize.col("profilePicture.filename")), "picture"]],
             include:[
                 {
                     model: User,
@@ -305,6 +344,11 @@ const user = (sequelize, DataTypes) => {
                 {
                     model: models.UsersFriends,
                     as: "UsersFriends",
+                    attributes: []
+                },
+                {
+                    model: models.DefaultProfilePictures,
+                    as: "profilePicture",
                     attributes: []
                 }
             ]
@@ -401,6 +445,13 @@ const user = (sequelize, DataTypes) => {
                     [Op.or]: [username, {[Op.iLike]: startsWith}, {[Op.iLike]: contains}]
                 }
             },
+            include: [
+                {
+                    model: sequelize.models.DefaultProfilePictures,
+                    as: "profilePicture",
+                    attributes: []
+                }
+            ],
             order: [
                 sequelize.literal(`CASE
                     WHEN upper("Users"."username") = upper('${username}') then 0
@@ -408,8 +459,8 @@ const user = (sequelize, DataTypes) => {
                     END ASC`),
                 ['username', 'ASC']
             ],
-            attributes: ["username", "firstName", "lastName", [sequelize.fn('concat',"https://movie-fanatics-bucket1.s3.amazonaws.com/UserPictures/default-pic-",
-             sequelize.col("Users.picture"), '.jpg'), "picture"]]
+            attributes: ["username", "firstName", "lastName", [sequelize.fn('concat', sequelize.col("profilePicture.source"),
+                        sequelize.col("profilePicture.filename")), "picture"]]
         });
         return users;
     };

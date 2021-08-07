@@ -25,7 +25,12 @@ CREATE TABLE public."Users"
     CONSTRAINT users_pkey PRIMARY KEY (id),
     CONSTRAINT users_email_key UNIQUE (email),
     CONSTRAINT users_username_key UNIQUE (username),
-    CONSTRAINT users_salt_key UNIQUE (salt)
+    CONSTRAINT users_salt_key UNIQUE (salt),
+    CONSTRAINT "Users_picture_fkey" FOREIGN KEY (picture)
+    CONSTRAINT users_picture_fkey FOREIGN KEY (picture)
+        REFERENCES public."DefaultProfilePictures" (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 )
 
 TABLESPACE pg_default;
