@@ -3,6 +3,7 @@ import Popup from 'reactjs-popup';
 import FollowerDisplay from './FollowerDisplay.js';
 import {Redirect, withRouter} from 'react-router-dom';
 import './css/forms.css';
+import './css/UserListPopUp.css';
 import style from './css/UserListPopUp.module.css';
 import {apiGetJsonRequest, apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
@@ -306,6 +307,7 @@ class UserListPopUp extends React.Component {
                     closeOnDocumentClick
                     onClose={this.closeModal}
                     contentStyle={{ width: "40%"}}
+                    className={"UserListPopUp"}
                 >
                 <div className={style.modal}>
                     {/* &times is the multiplication symbol (x) --> */}
