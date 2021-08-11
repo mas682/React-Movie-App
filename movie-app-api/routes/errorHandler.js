@@ -22,7 +22,6 @@ const errorHandler = async(err, req, res, next) => {
         }
         else
         {
-            console.log(err)
             // be careful with what you are logging...
             Logger.error(errorObj, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, errorMessage: result.logMessage, requestId: req.id});
         }

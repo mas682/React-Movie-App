@@ -57,11 +57,6 @@ const server = https.createServer(httpsOptions, app)
         console.log("App listening on port " + port + "!")
     });
 
-
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-
 // add the function sendResponse to the res object
 app.use(function(req, res, next) {
     res.sendResponse = function(body) {
@@ -125,7 +120,6 @@ app.use(cors({
 }));
 
 app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
 
 // all routes to the server will go through this router
 app.use('/', indexRouter);

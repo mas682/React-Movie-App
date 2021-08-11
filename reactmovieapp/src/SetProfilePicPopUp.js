@@ -1,11 +1,9 @@
 import React from 'react';
-import { Redirect } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import './css/SetProfilePic/SetProfilePic.css';
 import style from './css/SetProfilePic/SetProfilePic.module.css';
-import {apiPostJsonRequest, apiGetJsonRequest, apiDeleteJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {apiPostJsonRequest, apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
-import DragDropFile from './DragDropFile.js';
 
 class SetProfilePicPopUp extends React.Component {
     constructor(props) {
