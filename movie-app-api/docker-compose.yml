@@ -17,5 +17,5 @@ services:
       NODE_ENV: "dev"
     working_dir: /movie-app-api
     volumes:
-      - ./movie-app-api:/movie-app-api
+      - ./:/movie-app-api
     

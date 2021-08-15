@@ -7,7 +7,6 @@ Logger.info("NODE_PORT: " + process.env.NODE_PORT);
 const morgan = require('./src/shared/morganMiddleware.js');
 const addRequestId = require('express-request-id')();
 
-
 const dbConnection = require('./src/shared/sequelize.js');
 const sequelize = dbConnection.createClient();
 const models = require('./src/models/index.js');
