@@ -2,7 +2,7 @@ const Logger = require('./logger.js').getLogger();
 const models = require('./sequelize.js').getClient().models;
 const moment = require('moment');
 const config = require('../../Config.json');
-const Op = require('Sequelize').Op;
+const Op = require('sequelize').Op;
 let redisStore = require('./redisStore.js');
 let redis = require('./redis.js');
 

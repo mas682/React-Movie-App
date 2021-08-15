@@ -1,6 +1,6 @@
 import {validateStringParameter, validateIntegerParameter} from './globals.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
-const Op = require('Sequelize').Op;
+const Op = require('sequelize').Op;
 const Logger = require("../src/shared/logger.js").getLogger();
 
 

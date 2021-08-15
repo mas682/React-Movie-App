@@ -1,5 +1,5 @@
 let moment = require('moment');
-const Op = require('Sequelize').Op;
+const Op = require('sequelize').Op;
 const movie = (sequelize, DataTypes) => {
     const Movie = sequelize.define('Movies', {
         id: {

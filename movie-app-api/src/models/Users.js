@@ -1,5 +1,5 @@
 
-const Op = require('Sequelize').Op;
+const Op = require('sequelize').Op;
 
 const user = (sequelize, DataTypes) => {
     const User = sequelize.define('Users', {

@@ -6,7 +6,7 @@ import {signUp} from './signup.js';
 import {getUserInfo} from './getUserInfo.js';
 import {movieHandler} from './movies.js';
 import {searchHandler} from './search.js';
-import {imageHandler} from './fileHandler.js';
+//import {imageHandler} from './fileHandler.js';
 const router = require('../src/shared/expressRouter.js').createRouter();
 const Logger = require("../src/shared/logger.js").getLogger();
 

@@ -1,9 +1,9 @@
 const models = require('../src/shared/sequelize.js').getClient().models;
 import {customAlphabet} from 'nanoid';
-const Op = require('Sequelize').Op;
+const Op = require('sequelize').Op;
 import {validateStringParameter, validateEmailParameter, validateUsernameParameter,
         validateIntegerParameter, updateUserLoginAttempts, validateBooleanParameter} from './globals.js';
-import {emailHandler} from './EmailHandler.js';
+import {emailHandler} from './emailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
 import {checkHashedValue} from '../src/shared/crypto.js';

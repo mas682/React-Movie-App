@@ -1,4 +1,4 @@
-const Op = require('Sequelize').Op;
+const Op = require('sequelize').Op;
 let moment = require('moment');
 const review = (sequelize, DataTypes) => {
     const Review = sequelize.define('Reviews', {

@@ -1,4 +1,4 @@
-import {getErrorHandler} from '../src/ErrorHandlers/errorReceiver.js';
+import {getErrorHandler} from '../src/ErrorHandlers/ErrorReceiver.js';
 import {destroySession} from '../src/shared/sessions.js';
 const Logger = require("../src/shared/logger.js").getLogger();
 

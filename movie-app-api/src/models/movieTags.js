@@ -1,4 +1,4 @@
-const Op = require('Sequelize').Op;
+const Op = require('sequelize').Op;
 const movieTag = (sequelize, DataTypes) => {
     const MovieTag = sequelize.define('MovieTags', {
         id: {

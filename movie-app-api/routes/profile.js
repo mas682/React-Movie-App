@@ -1,9 +1,9 @@
 import {validateUsernameParameter, validateIntegerParameter,
     validateStringParameter, validateEmailParameter, updateUserLoginAttempts} from './globals.js';
-import {removeImage} from './fileHandler.js';
+//import {removeImage} from './fileHandler.js';
 import {hash, checkHashedValue} from '../src/shared/crypto.js';
 import {regenerateSession, removeAllSessions} from '../src/shared/sessions.js';
-import {getSanitizedOutput} from '../src/ErrorHandlers/sequelizeErrorHandler.js';
+import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
 

@@ -1,10 +1,10 @@
 import {customAlphabet} from 'nanoid';
-const Op = require('Sequelize').Op;
+const Op = require('sequelize').Op;
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
 import {validateStringParameter, validateUsernameParameter, validateEmailParameter,
         validateIntegerParameter} from './globals.js';
-import {emailHandler} from './EmailHandler.js';
+import {emailHandler} from './emailHandler.js';
 import {hash} from '../src/shared/crypto.js';
 import {createSession} from '../src/shared/sessions.js';
 const models = require('../src/shared/sequelize.js').getClient().models;

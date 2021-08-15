@@ -1,9 +1,9 @@
 
-import {awsErrorHandler} from './awsErrorHandler.js';
-import {fileUploadErrorHandler} from './fileUploadErrorHandler.js';
-import {multerErrorHandler} from './multerErrorHandler.js';
-import {sequelizeErrorHandler} from './sequelizeErrorHandler.js';
-import {defaultErrorHandler} from './defaultErrorHandler.js';
+import {awsErrorHandler} from './AWSErrorHandler.js';
+import {fileUploadErrorHandler} from './FileUploadErrorHandler.js';
+import {multerErrorHandler} from './MulterErrorHandler.js';
+import {sequelizeErrorHandler} from './SequelizeErrorHandler.js';
+import {defaultErrorHandler} from './DefaultErrorHandler.js';
 
 function getErrorHandler(error, file, functionName)
 {

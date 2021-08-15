@@ -1,7 +1,7 @@
 import {validateIntegerParameter, validateStringParameter} from './globals.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
-import {getSanitizedOutput} from '../src/ErrorHandlers/sequelizeErrorHandler.js';
+import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
 
 
 // function to run all the checks when a new review comes in or if a review update comes in
