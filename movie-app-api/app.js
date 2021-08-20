@@ -5,7 +5,7 @@ Logger.info("NODE_ENV: " + process.env.NODE_ENV);
 Logger.info("Docker: " + process.env.NODE_DOCKER);
 Logger.info("NODE_PORT: " + process.env.NODE_PORT);
 const morgan = require('./src/shared/morganMiddleware.js');
-const addRequestId = require('express-request-id')();
+const addRequestId = require('express-request-id')(); 
 
 const dbConnection = require('./src/shared/sequelize.js');
 const sequelize = dbConnection.createClient();
