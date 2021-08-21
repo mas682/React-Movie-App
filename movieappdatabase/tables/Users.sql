@@ -2,7 +2,7 @@
 
 -- DROP TABLE public."Users";
 
-CREATE TABLE public."Users"
+CREATE TABLE IF NOT EXISTS public."Users"
 (
     id integer NOT NULL DEFAULT nextval('users_id_seq'::regclass),
     username character varying(20) COLLATE pg_catalog."default" NOT NULL,
@@ -26,7 +26,6 @@ CREATE TABLE public."Users"
     CONSTRAINT users_email_key UNIQUE (email),
     CONSTRAINT users_username_key UNIQUE (username),
     CONSTRAINT users_salt_key UNIQUE (salt),
-    CONSTRAINT "Users_picture_fkey" FOREIGN KEY (picture)
     CONSTRAINT users_picture_fkey FOREIGN KEY (picture)
         REFERENCES public."DefaultProfilePictures" (id) MATCH SIMPLE
         ON UPDATE CASCADE
@@ -38,32 +37,36 @@ TABLESPACE pg_default;
 ALTER TABLE public."Users"
     OWNER to postgres;
 
--- Trigger: set_createdAt
-
--- DROP TRIGGER "set_createdAt" ON public."Users";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."Users"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
+DO $$ BEGIN
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."Users";
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'Users'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."Users"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
 
-CREATE TRIGGER set_timestamp
-    BEFORE INSERT OR UPDATE
-    ON public."Users"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
-
--- Trigger: validate_salt_not_found
-
--- DROP TRIGGER validate_salt_not_found ON public."Users";
-
-CREATE TRIGGER validate_salt_not_found
-    BEFORE INSERT OR UPDATE OF salt
-    ON public."Users"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_validate_salt_not_found_temp_users();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'Users'
+        and trigger_schema = 'public'
+        and trigger_name = 'validate_salt_not_found'
+    )
+    THEN
+        CREATE TRIGGER validate_salt_not_found
+            BEFORE INSERT OR UPDATE OF salt
+            ON public."Users"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_validate_salt_not_found_temp_users();
+    END IF;
+END $$;

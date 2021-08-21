@@ -2,7 +2,7 @@
 
 -- DROP SEQUENCE public."DefaultProfilePictures_id_seq";
 
-CREATE SEQUENCE public."DefaultProfilePictures_id_seq"
+CREATE SEQUENCE IF NOT EXISTS public."DefaultProfilePictures_id_seq"
     INCREMENT 1
     START 1
     MINVALUE 1

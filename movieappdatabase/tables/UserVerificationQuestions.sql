@@ -2,15 +2,15 @@
 
 -- DROP TABLE public."UserVerificationQuestions";
 
-CREATE TABLE public."UserVerificationQuestions"
+CREATE TABLE IF NOT EXISTS public."UserVerificationQuestions"
 (
     id integer NOT NULL DEFAULT nextval('"UserVerificationQuestions_id_seq"'::regclass),
     "userId" integer NOT NULL,
     "VerificationQuestionId" integer NOT NULL,
     answer character varying(50) COLLATE pg_catalog."default" NOT NULL,
-    "createdAt" timestamp with time zone NOT NULL,
-    "updatedAt" timestamp with time zone NOT NULL,
-    "expiresAt" timestamp with time zone NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expiresAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "UserVerificationQuestions_pkey" PRIMARY KEY (id),
     CONSTRAINT "UserVerificationsQuestions_userId_VerificationQuestionId" UNIQUE ("userId", "VerificationQuestionId"),
     CONSTRAINT "UserVerificationQuestions_VerificationQuestionId_fkey" FOREIGN KEY ("VerificationQuestionId")
@@ -28,22 +28,21 @@ TABLESPACE pg_default;
 ALTER TABLE public."UserVerificationQuestions"
     OWNER to postgres;
 
--- Trigger: set_createdAt
-
--- DROP TRIGGER "set_createdAt" ON public."UserVerificationQuestions";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."UserVerificationQuestions"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
+DO $$ BEGIN
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."UserVerificationQuestions";
-
-CREATE TRIGGER set_timestamp
-    BEFORE INSERT OR UPDATE
-    ON public."UserVerificationQuestions"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'UserVerificationQuestions'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."UserVerificationQuestions"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
+END $$;

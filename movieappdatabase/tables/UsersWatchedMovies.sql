@@ -2,10 +2,10 @@
 
 -- DROP TABLE public."UsersWatchedMovies";
 
-CREATE TABLE public."UsersWatchedMovies"
+CREATE TABLE IF NOT EXISTS public."UsersWatchedMovies"
 (
-    "createdAt" timestamp with time zone NOT NULL,
-    "updatedAt" timestamp with time zone NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" integer NOT NULL,
     "movieId" integer NOT NULL,
     CONSTRAINT "UsersWatchedMovies_pkey" PRIMARY KEY ("userId", "movieId"),
@@ -27,27 +27,26 @@ ALTER TABLE public."UsersWatchedMovies"
 
 -- DROP INDEX public."usersWhoWatcheds_pkey";
 
-CREATE UNIQUE INDEX "UsersWatchedMovies_pkey"
+CREATE UNIQUE INDEX IF NOT EXISTS "UsersWatchedMovies_pkey"
     ON public."UsersWatchedMovies" USING btree
     ("userId" ASC NULLS LAST, "movieId" ASC NULLS LAST)
     TABLESPACE pg_default;
 
--- Trigger: set_createdAt
-
--- DROP TRIGGER "set_createdAt" ON public."UsersWatchedMovies";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."UsersWatchedMovies"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
+DO $$ BEGIN
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."UsersWatchedMovies";
-
-CREATE TRIGGER set_timestamp
-    BEFORE INSERT OR UPDATE
-    ON public."UsersWatchedMovies"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'UsersWatchedMovies'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."UsersWatchedMovies"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
+END $$;

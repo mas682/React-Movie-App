@@ -2,13 +2,13 @@
 
 -- DROP TABLE public."MoviesProviders";
 
-CREATE TABLE public."MoviesProviders"
+CREATE TABLE IF NOT EXISTS public."MoviesProviders"
 (
     "MovieId" integer NOT NULL,
     "RetailerId" integer NOT NULL,
     price double precision,
-    "createdAt" timestamp with time zone NOT NULL,
-    "updatedAt" timestamp with time zone NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "MoviesProviders_pkey" PRIMARY KEY ("MovieId", "RetailerId"),
     CONSTRAINT "MoviesProviders_MovieId_fkey" FOREIGN KEY ("MovieId")
         REFERENCES public."Movies" (id) MATCH SIMPLE
@@ -25,22 +25,21 @@ TABLESPACE pg_default;
 ALTER TABLE public."MoviesProviders"
     OWNER to postgres;
 
--- Trigger: set_createdAt
-
--- DROP TRIGGER "set_createdAt" ON public."MoviesProviders";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."MoviesProviders"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
+DO $$ BEGIN
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."MoviesProviders";
-
-CREATE TRIGGER set_timestamp
-    BEFORE UPDATE
-    ON public."MoviesProviders"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'MoviesProviders'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."MoviesProviders"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
+END $$;

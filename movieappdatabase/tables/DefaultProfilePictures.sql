@@ -2,7 +2,7 @@
 
 -- DROP TABLE public."DefaultProfilePictures";
 
-CREATE TABLE public."DefaultProfilePictures"
+CREATE TABLE IF NOT EXISTS public."DefaultProfilePictures"
 (
     id integer NOT NULL DEFAULT nextval('"DefaultProfilePictures_id_seq"'::regclass),
     filename character varying(255) COLLATE pg_catalog."default" NOT NULL,
@@ -22,18 +22,22 @@ ALTER TABLE public."DefaultProfilePictures"
 
 -- DROP TRIGGER "set_createdAt" ON public."DefaultProfilePictures";
 
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."DefaultProfilePictures"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
+DO $$ BEGIN
 -- Trigger: set_timestamp
 
 -- DROP TRIGGER set_timestamp ON public."DefaultProfilePictures";
-
-CREATE TRIGGER set_timestamp
-    BEFORE UPDATE
-    ON public."DefaultProfilePictures"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'DefaultProfilePictures' -- Your table name comes here
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."DefaultProfilePictures"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
+END $$;

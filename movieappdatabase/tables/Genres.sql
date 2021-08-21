@@ -2,7 +2,7 @@
 
 -- DROP TABLE public."Genres";
 
-CREATE TABLE public."Genres"
+CREATE TABLE IF NOT EXISTS public."Genres"
 (
     id integer NOT NULL DEFAULT nextval('"Genres_id_seq"'::regclass),
     value character varying(255) COLLATE pg_catalog."default" NOT NULL,
@@ -17,22 +17,21 @@ TABLESPACE pg_default;
 ALTER TABLE public."Genres"
     OWNER to postgres;
 
--- Trigger: set_createdAt
-
--- DROP TRIGGER "set_createdAt" ON public."Genres";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."Genres"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
+DO $$ BEGIN
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."Genres";
-
-CREATE TRIGGER set_timestamp
-    BEFORE UPDATE
-    ON public."Genres"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'Genres'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."Genres"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
+END $$;

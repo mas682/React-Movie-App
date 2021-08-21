@@ -2,12 +2,12 @@
 
 -- DROP TABLE public."Comments";
 
-CREATE TABLE public."Comments"
+CREATE TABLE IF NOT EXISTS public."Comments"
 (
     id integer NOT NULL DEFAULT nextval('comments_id_seq'::regclass),
     value character varying(1000) COLLATE pg_catalog."default",
-    "createdAt" timestamp with time zone NOT NULL,
-    "updatedAt" timestamp with time zone NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" integer,
     "reviewId" integer,
     CONSTRAINT comments_pkey PRIMARY KEY (id),
@@ -29,27 +29,27 @@ ALTER TABLE public."Comments"
 
 -- DROP INDEX public."fki_comments_reviewId_fkey";
 
-CREATE INDEX "fki_comments_reviewId_fkey"
+CREATE INDEX IF NOT EXISTS "fki_comments_reviewId_fkey"
     ON public."Comments" USING btree
     ("reviewId" ASC NULLS LAST)
     TABLESPACE pg_default;
 
--- Trigger: set_createdAt
 
--- DROP TRIGGER "set_createdAt" ON public."Comments";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."Comments"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
+DO $$ BEGIN
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."Comments";
-
-CREATE TRIGGER set_timestamp
-    BEFORE INSERT OR UPDATE
-    ON public."Comments"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'Comments'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."Comments"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
+END $$;

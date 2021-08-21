@@ -2,7 +2,7 @@
 
 -- DROP SEQUENCE public."ScheduledJobs_id_seq";
 
-CREATE SEQUENCE public."ScheduledJobs_id_seq"
+CREATE SEQUENCE IF NOT EXISTS public."ScheduledJobs_id_seq"
     INCREMENT 1
     START 1
     MINVALUE 1

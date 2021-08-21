@@ -2,13 +2,13 @@
 
 -- DROP TABLE public."Reviews";
 
-CREATE TABLE public."Reviews"
+CREATE TABLE IF NOT EXISTS public."Reviews"
 (
     id integer NOT NULL DEFAULT nextval('reviews_id_seq'::regclass),
     rating numeric(10,2) NOT NULL,
     review text COLLATE pg_catalog."default",
-    "createdAt" timestamp with time zone,
-    "updatedAt" timestamp with time zone,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" integer,
     "movieId" integer,
     CONSTRAINT reviews_pkey PRIMARY KEY (id),
@@ -28,53 +28,68 @@ TABLESPACE pg_default;
 ALTER TABLE public."Reviews"
     OWNER to postgres;
 
--- Trigger: remove_movie_rating
-
--- DROP TRIGGER remove_movie_rating ON public."Reviews";
-
-CREATE TRIGGER remove_movie_rating
-    BEFORE DELETE
-    ON public."Reviews"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_delete_movie_rating();
-
--- Trigger: set_createdAt
-
--- DROP TRIGGER "set_createdAt" ON public."Reviews";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."Reviews"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
--- Trigger: set_new_movie_rating
-
--- DROP TRIGGER set_new_movie_rating ON public."Reviews";
-
-CREATE TRIGGER set_new_movie_rating
-    AFTER INSERT
-    ON public."Reviews"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_movie_rating();
+DO $$ BEGIN
 
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."Reviews";
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'Reviews'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."Reviews"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
 
-CREATE TRIGGER set_timestamp
-    BEFORE UPDATE
-    ON public."Reviews"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'Reviews'
+        and trigger_schema = 'public'
+        and trigger_name = 'remove_movie_rating'
+    )
+    THEN
+        CREATE TRIGGER remove_movie_rating
+            BEFORE DELETE
+            ON public."Reviews"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_delete_movie_rating();
+    END IF;
 
--- Trigger: update_movie_rating
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'Reviews'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_new_movie_rating'
+    )
+    THEN
+        CREATE TRIGGER set_new_movie_rating
+            AFTER INSERT
+            ON public."Reviews"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_movie_rating();
+    END IF;
 
--- DROP TRIGGER update_movie_rating ON public."Reviews";
-
-CREATE TRIGGER update_movie_rating
-    BEFORE UPDATE OF rating
-    ON public."Reviews"
-    FOR EACH ROW
-    WHEN (new.rating <> old.rating)
-    EXECUTE PROCEDURE public.trigger_update_movie_rating();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'Reviews'
+        and trigger_schema = 'public'
+        and trigger_name = 'update_movie_rating'
+    )
+    THEN
+        CREATE TRIGGER update_movie_rating
+            BEFORE UPDATE OF rating
+            ON public."Reviews"
+            FOR EACH ROW
+            WHEN (new.rating <> old.rating)
+            EXECUTE PROCEDURE public.trigger_update_movie_rating();
+    END IF;
+END $$;

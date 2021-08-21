@@ -2,10 +2,10 @@
 
 -- DROP TABLE public."UserWatchLists";
 
-CREATE TABLE public."UserWatchLists"
+CREATE TABLE IF NOT EXISTS public."UserWatchLists"
 (
-    "createdAt" timestamp with time zone NOT NULL,
-    "updatedAt" timestamp with time zone NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" integer NOT NULL,
     "movieId" integer NOT NULL,
     CONSTRAINT "userWatchLists_pkey" PRIMARY KEY ("userId", "movieId"),
@@ -24,22 +24,21 @@ TABLESPACE pg_default;
 ALTER TABLE public."UserWatchLists"
     OWNER to postgres;
 
--- Trigger: set_createdAt
-
--- DROP TRIGGER "set_createdAt" ON public."UserWatchLists";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."UserWatchLists"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
+DO $$ BEGIN
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."UserWatchLists";
-
-CREATE TRIGGER set_timestamp
-    BEFORE INSERT OR UPDATE
-    ON public."UserWatchLists"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'UserWatchLists'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."UserWatchLists"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
+END $$;

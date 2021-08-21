@@ -2,7 +2,7 @@
 
 -- DROP TABLE public."MovieGenres";
 
-CREATE TABLE public."MovieGenres"
+CREATE TABLE IF NOT EXISTS public."MovieGenres"
 (
     "GenreId" integer NOT NULL,
     "movieId" integer NOT NULL,

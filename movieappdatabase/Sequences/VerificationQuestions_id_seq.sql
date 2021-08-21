@@ -2,7 +2,7 @@
 
 -- DROP SEQUENCE public."VerificationQuestions_id_seq";
 
-CREATE SEQUENCE public."VerificationQuestions_id_seq"
+CREATE SEQUENCE IF NOT EXISTS public."VerificationQuestions_id_seq"
     CYCLE
     INCREMENT 1
     START 1

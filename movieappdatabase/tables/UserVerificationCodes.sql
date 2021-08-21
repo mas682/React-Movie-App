@@ -2,11 +2,11 @@
 
 -- DROP TABLE public."UserVerificationCodes";
 
-CREATE TABLE public."UserVerificationCodes"
+CREATE TABLE IF NOT EXISTS public."UserVerificationCodes"
 (
     id integer NOT NULL DEFAULT nextval('userverificationcodes_id_seq'::regclass),
-    "createdAt" timestamp with time zone NOT NULL,
-    "updatedAt" timestamp with time zone NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "expiresAt" timestamp with time zone NOT NULL,
     "userEmail" character varying(30) COLLATE pg_catalog."default" NOT NULL,
     username character varying(20) COLLATE pg_catalog."default" NOT NULL,
@@ -26,52 +26,66 @@ TABLESPACE pg_default;
 ALTER TABLE public."UserVerificationCodes"
     OWNER to postgres;
 
--- Trigger: set_createdAt
-
--- DROP TRIGGER "set_createdAt" ON public."UserVerificationCodes";
-
-CREATE TRIGGER "set_createdAt"
-    BEFORE INSERT
-    ON public."UserVerificationCodes"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_created_timestamp();
-
--- Trigger: set_expiration_timestamp
-
--- DROP TRIGGER set_expiration_timestamp ON public."UserVerificationCodes";
-
-CREATE TRIGGER set_expiration_timestamp
-    BEFORE INSERT OR UPDATE
-    ON public."UserVerificationCodes"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_verification_code_expiration();
-
+DO $$ BEGIN
 -- Trigger: set_timestamp
 
--- DROP TRIGGER set_timestamp ON public."UserVerificationCodes";
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'UserVerificationCodes'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_timestamp
+            BEFORE UPDATE
+            ON public."UserVerificationCodes"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
 
-CREATE TRIGGER set_timestamp
-    BEFORE INSERT OR UPDATE
-    ON public."UserVerificationCodes"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_set_timestamp();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'UserVerificationCodes'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_expiration_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_expiration_timestamp
+            BEFORE INSERT OR UPDATE
+            ON public."UserVerificationCodes"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_verification_code_expiration();
+    END IF;
 
--- Trigger: validate_salt_not_found
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'UserVerificationCodes'
+        and trigger_schema = 'public'
+        and trigger_name = 'validate_salt_not_found'
+    )
+    THEN
+        CREATE TRIGGER validate_salt_not_found
+            BEFORE INSERT OR UPDATE OF salt
+            ON public."UserVerificationCodes"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_validate_salt_not_found_users();
+    END IF;
 
--- DROP TRIGGER validate_salt_not_found ON public."UserVerificationCodes";
-
-CREATE TRIGGER validate_salt_not_found
-    BEFORE INSERT OR UPDATE OF salt
-    ON public."UserVerificationCodes"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_validate_salt_not_found_users();
-
--- Trigger: valide_user_not_found
-
--- DROP TRIGGER valide_user_not_found ON public."UserVerificationCodes";
-
-CREATE TRIGGER valide_user_not_found
-    BEFORE INSERT
-    ON public."UserVerificationCodes"
-    FOR EACH ROW
-    EXECUTE PROCEDURE public.trigger_validate_user_not_found();
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'UserVerificationCodes'
+        and trigger_schema = 'public'
+        and trigger_name = 'valide_user_not_found'
+    )
+    THEN
+        CREATE TRIGGER valide_user_not_found
+            BEFORE INSERT
+            ON public."UserVerificationCodes"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_validate_user_not_found();
+    END IF;
+END $$;

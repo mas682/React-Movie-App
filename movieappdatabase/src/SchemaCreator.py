@@ -77,7 +77,6 @@ def disconnect(connection, cur):
             connection.close()
             print('Database connection closed')
 
-
 if __name__ == '__main__':
     # order matters!
     fileNames = [
@@ -85,11 +84,10 @@ if __name__ == '__main__':
         '../triggerFunctions/trigger_delete_movie_rating.sql',
         '../triggerFunctions/trigger_set_movie_rating.sql',
         '../triggerFunctions/trigger_update_movie_rating.sql',
-        '../triggerFunctions/trigger_set_created_timestamp.sql',
         '../triggerFunctions/trigger_set_verification_code_expiration.sql',
         '../triggerFunctions/trigger_validate_user_not_found.sql',
-        '../triggerFunctions/trigger_validate_salt_not_found_temp_users',
-        '../triggerFunctions/trigger_validate_salt_not_found_users',
+        '../triggerFunctions/trigger_validate_salt_not_found_temp_users.sql',
+        '../triggerFunctions/trigger_validate_salt_not_found_users.sql',
         '../Sequences/comments_id_seq.sql',
         '../Sequences/Genres_id_seq.sql',
         '../Sequences/movieTags_id_seq.sql',
@@ -104,6 +102,9 @@ if __name__ == '__main__':
         '../Sequences/ScheduledJobs_id_seq.sql',
         '../Sequences/JobDetails_id_seq.sql',
         '../Sequences/DefaultProfilePictures_id_seq.sql',
+        '../Sequences/UserSessions_id_seq.sql',
+        '../Sequences/TempVerificationCodes_id_seq.sql',
+        '../tables/DefaultProfilePictures.sql',
         '../tables/Users.sql',
         '../tables/Movies.sql',
         '../tables/Reviews.sql',
@@ -119,13 +120,13 @@ if __name__ == '__main__':
         '../tables/Likes.sql',
         '../tables/Retailers.sql',
         '../tables/MoviesProviders.sql',
+        '../tables/TempVerificationCodes.sql',
         '../tables/UserVerificationCodes.sql',
-        '../tables/UserVerificationQuestions.sql',
         '../tables/VerificationQuestions.sql',
+        '../tables/UserVerificationQuestions.sql',
         '../tables/FeaturedMovies.sql',
         '../tables/UserSessions.sql',
-        '..tables/ScheduledJobs.sql',
-        '..tables/JobDetails.sql',
-        '../tables/DefaultProfilePictures.sql'
+        '../tables/ScheduledJobs.sql',
+        '../tables/JobDetails.sql',
     ]
     controllerFunction(fileNames)
