@@ -1,0 +1,4 @@
+redis==3.5.3
+requests==2.25.1
+psycopg2==2.8.6
+pipreqs===0.4.10
