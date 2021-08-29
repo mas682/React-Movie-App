@@ -31,40 +31,52 @@ def disconnectFromDatabase(db, logger, extras={}):
         return False
     return True
 
-def startJob(db, logger, jobId, extras={}):
+def startJob(db, logger, jobId, stepId, extras={}):
     result = None
+    server = os.getenv('SERVER')
+    if(server is None):
+        server = "Unknown"
+    engine = os.getenv('ENGINE')
+    if(engine is None):
+        engine = "null"
     try:
-        result = db.startJob(jobId)
+        result = db.startJob(jobId, stepId, server, engine)
     except:
         traceback.print_exc()
         logger.info("An error occurred when attempting to start the job with the id of: " + str(jobId), exc_info=sys.exc_info(), extra=extras)
-        return -3
+        return {"enabled": False, "jobDetailsId": -3}
 
     if(result["jobDetailsId"] == -1 and result["enabled"]):
         print("Failed to start job with a -1 job details id")
         logger.info("A job details id of -1 was returned when trying to start the job", extra=extras)
-        return -2
+        return {"enabled": False, "jobDetailsId": -2}
     elif(not result["enabled"]):
         print("Job is not enabled")
         logger.info("A job with id of " + str(jobId) + " is either not enabled or does not exist", extra=extras)
         # may want to log this but for now just exit
-        return -1
+        return {"enabled": result["enabled"], "jobDetailsId": result["jobDetailsId"]}
 
-    return result["jobDetailsId"]
+    return {"enabled": result["enabled"], "jobDetailsId": result["jobDetailsId"]}
 
 
 # maxLines is the maximum number of lines in the lock file before it will get cleared
 def getLockFile(lockFilePath, maxLines):
     lockExists = False
+    server = os.getenv('SERVER')
+    if(server is None):
+        server = "Unknown"
+    engine = os.getenv('ENGINE')
+    if(engine is None):
+        engine = "null"
     if(os.path.exists(lockFilePath)):
         print("Lock exists...")
         lockExists = True
     else:
         print("Lock does not exist")
-
+    sev 
     with open(lockFilePath, "a+") as lockFile:
         if(not lockExists):
-            lockFile.write("Starting controller function at: " + str(datetime.now()) + "\n")
+            lockFile.write(server + " on engine: " + str(engine) + " starting controller function at: " + str(datetime.now()) + "\n")
             lockFile.close()
         else:
             lockFile.seek(0)
@@ -77,7 +89,7 @@ def getLockFile(lockFilePath, maxLines):
                 lockFile.close()
                 os.remove(lockFilePath)
             else:
-                lockFile.write("Skipping execution at: " + str(datetime.now()) + " as lock file exists\n")
+                lockFile.write(server + " on engine: " + str(engine) + " skipping execution at: " + str(datetime.now()) + " as lock file exists\n")
             lockFile.close()
     return lockExists
 

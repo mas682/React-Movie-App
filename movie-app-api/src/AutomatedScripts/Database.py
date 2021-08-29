@@ -59,32 +59,34 @@ class Database:
         return enabled
 
     # this will update the database to create a record of a running job
-    def startJob(self, id):
+    def startJob(self, id, stepId, server, engine):
         failedOutput = []
         enabled = False
         startTime = None
         jobId = -1
         id = str(id)
+        stepId = str(stepId)
+        engine = str(engine)
 
         self._cur.execute("""
             UPDATE public."ScheduledJobs"
                SET
                      "lastRun"=CURRENT_TIMESTAMP
-               WHERE id=""" + id + """ and "Enabled" = True
+               WHERE id=""" + id + """
                Returning "Enabled","lastRun";
         """)
         result = self._cur.fetchall()
         if(len(result) > 0):
-            if(result[0][0]):
-                enabled = True
-                startTime = str(result[0][1])
+            enabled = result[0][0]
+            startTime = str(result[0][1])
 
-        # if at this point, job marked as active
-        if(enabled):
+            # if at this point, job marked as active
             self._cur.execute("""
                 INSERT INTO public."JobDetails"(
-	               "jobId", "startTime", "lastActive", state, "updatedAt")
-	                VALUES (""" + id + """,'""" + startTime + """','""" + startTime + """','Running', CURRENT_TIMESTAMP)
+                "jobId", "stepId", "startTime", "lastActive", state, "engine", "server", "updatedAt")
+                    VALUES (""" + id + """,""" + stepId + """,'""" + startTime +
+                    """','""" + startTime + """','Running',""" + engine + """,'""" + 
+                    server + """', CURRENT_TIMESTAMP)
                     RETURNING "id";
                     """)
             result = self._cur.fetchall()

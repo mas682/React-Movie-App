@@ -100,6 +100,8 @@ if __name__ == '__main__':
         '../Sequences/VerificationQuestions_id_seq.sql',
         '../Sequences/FeaturedMovies_id_seq.sql',
         '../Sequences/ScheduledJobs_id_seq.sql',
+        '../Sequences/JobSteps_id_seq.sql',
+        '../Sequences/JobQueue_id_seq.sql',
         '../Sequences/JobDetails_id_seq.sql',
         '../Sequences/DefaultProfilePictures_id_seq.sql',
         '../Sequences/UserSessions_id_seq.sql',
@@ -127,6 +129,8 @@ if __name__ == '__main__':
         '../tables/FeaturedMovies.sql',
         '../tables/UserSessions.sql',
         '../tables/ScheduledJobs.sql',
+        '../tables/JobSteps.sql',
+        '../tables/JobQueue.sql',
         '../tables/JobDetails.sql',
     ]
     controllerFunction(fileNames)

@@ -230,44 +230,52 @@ if __name__ == '__main__':
     logpath = os.path.dirname(os.path.realpath(__file__))
     filename = os.path.basename(__file__)
     logFile = filename.replace("py", "log")
-    fullLogPath = logpath + "\\" + logFile
+    fullLogPath = logpath + "/" + logFile
     lockFileName = filename + ".loc"
-    lockFilePath = logpath + "\\" + lockFileName
+    lockFilePath = logpath + "/" + lockFileName
     lockExists = False
     jobId = 2
+    stepId = 
     # used if a fatal error occurred
     failed = False
     # used if loc file existed
     lockedError = False
     # used if job not enabled or could not be found
-    jobStartError = False
+    jobEnabled = False
+    # used to tell if logging in DB was started for job
+    jobLogError = False
     startTime = datetime.now()
     result = ""
+    server = os.getenv('SERVER')
+    if(server is None):
+        server = "Unknown"
+    engine = os.getenv('ENGINE')
     print("\nScript starting at: " + str(startTime))
 
     logging.basicConfig(filename=fullLogPath, filemode='a', level=logging.INFO,
-    format='%(levelname)s: %(asctime)s.%(msecs)03d | %(caller)s | %(message)s',
+    format='%(levelname)s: %(asctime)s.%(msecs)03d | %(server)s | %(engine)s | %(caller)s | %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S')
     # added to log message to indicate which process wrote this
-    extras = {"caller":"Controller"}
+    extras = {"server": server, "engine": str(engine), "caller":"Controller"}
     logger = logging.getLogger()
 
     # connect to the database
     db = Database(config(), "RedisListener")
-    result = Utils.connectToDatabase(db, logger, extras)
-    if(not result["created"]): exit(1)
+    connectionResult = Utils.connectToDatabase(db, logger, extras)
+    if(not connectionResult["created"]): exit(1)
 
     # start the job
-    jobDetailsId = Utils.startJob(db, logger, jobId, extras)
-    if(jobDetailsId < -1):
+    jobStartResult = Utils.startJob(db, logger, jobId, stepId, extras)
+    jobDetailsId = jobStartResult["jobDetailsId"]
+    jobEnabled = jobStartResult["enabled"]
+    if(jobDetailsId < 0):
         failed = True
-        jobStartError = True
-    elif(jobDetailsId == -1):
-        # job not enabled
-        jobStartError = True
+        jobLogError = True
+    elif(not jobEnabled):
+        result = "Finished - Not Enabled"
 
     # if the job was marked as started
-    if(not jobStartError):
+    if(not jobLogError and jobEnabled):
         try:
             lockExists = Utils.getLockFile(lockFilePath, 2)
         except:
@@ -280,7 +288,7 @@ if __name__ == '__main__':
             lockedError = True
 
     # if the job was marked as started and the file is locked to this process
-    if(not jobStartError and not lockedError):
+    if(not jobLogError and jobEnabled and not lockedError):
         try:
             print("******************************** Main Script ********************************************")
             #main(logger, db, extras, jobId)
@@ -297,16 +305,15 @@ if __name__ == '__main__':
         print("***************************** Main Script Finished **************************************")
 
     # clean up
-    if(result == "Finished Successfully" and not failed and not jobStartError and not lockedError):
+    if(result == "Finished Successfully" and not jobLogError and jobEnabled and not lockedError):
         # remove lock file
         try:
             os.remove(lockFilePath)
         except:
             logger.info("Failed to remove lock file", extra=extras)
 
-    # if the job was marked as started
-    if(not jobStartError):
-        print(result)
+    # if logging was started for the job
+    if(not jobLogError):
         result = Utils.stopJob(db, logger, jobDetailsId, result, extras)
         if(not result): failed = True
 
