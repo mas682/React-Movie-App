@@ -10,13 +10,14 @@ import sys
 import traceback
 
 # my imports
-from config import config
-from Database import Database
-import Utils
+from AutomatedScripts.shared.config import config
+from AutomatedScripts.shared.Database import Database
+from AutomatedScripts.shared import Utils
+
 
 def redisListener(connection, parent_conn):
     try:
-        params = config(section="redis")
+        params = config(os.getenv('ENVIRONMENT'), section="redis")
         r = redis.Redis(**params)
         p = r.pubsub()
         p.subscribe("__keyevent@0__:expired")
@@ -37,7 +38,7 @@ def redisListener(connection, parent_conn):
 
 def dataProcessor(connection, parent_conn):
     try:
-        db = Database(config(), "RedisListener - Data Processor")
+        db = Database(config(os.getenv('ENVIRONMENT')), "RedisListener - Data Processor")
         # need to fix this to handle errors...
         result = db.connect()
         cursor = result["cur"]
@@ -235,7 +236,7 @@ if __name__ == '__main__':
     lockFilePath = logpath + "/" + lockFileName
     lockExists = False
     jobId = 2
-    stepId = 
+    stepId = -1
     # used if a fatal error occurred
     failed = False
     # used if loc file existed
@@ -259,8 +260,13 @@ if __name__ == '__main__':
     extras = {"server": server, "engine": str(engine), "caller":"Controller"}
     logger = logging.getLogger()
 
+    environment = os.getenv('ENVIRONMENT')
+    if(environment is None):
+        logger.info("Could not determine what environment the script is running on", extra=extras)
+        raise Exception("Could not determine what environment the script is running on")
+
     # connect to the database
-    db = Database(config(), "RedisListener")
+    db = Database(config(environment), "RedisListener")
     connectionResult = Utils.connectToDatabase(db, logger, extras)
     if(not connectionResult["created"]): exit(1)
 

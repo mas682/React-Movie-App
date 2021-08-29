@@ -5,9 +5,10 @@ import sys
 import traceback
 
 # my imports
-from config import config
-from Database import Database
-import Utils
+from AutomatedScripts.shared.config import config
+from AutomatedScripts.shared.Database import Database
+from AutomatedScripts.shared import Utils
+
 
 
 if __name__ == '__main__':
@@ -46,8 +47,13 @@ if __name__ == '__main__':
     extras = {"server": server, "engine": str(engine)}
     logger = logging.getLogger()
 
+    environment = os.getenv('ENVIRONMENT')
+    if(environment is None):
+        logger.info("Could not determine what environment the script is running on", extra=extras)
+        raise Exception("Could not determine what environment the script is running on")
+
     # connect to the database
-    db = Database(config(), process name)
+    db = Database(config(environment), "process name")
     connectionResult = Utils.connectToDatabase(db, logger, extras)
     if(not connectionResult["created"]): exit(1)
 

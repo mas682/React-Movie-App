@@ -73,7 +73,6 @@ def getLockFile(lockFilePath, maxLines):
         lockExists = True
     else:
         print("Lock does not exist")
-    sev 
     with open(lockFilePath, "a+") as lockFile:
         if(not lockExists):
             lockFile.write(server + " on engine: " + str(engine) + " starting controller function at: " + str(datetime.now()) + "\n")
