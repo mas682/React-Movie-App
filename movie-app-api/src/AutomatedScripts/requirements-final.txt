@@ -1,3 +1,4 @@
-psycopg2==2.8.4
+psycopg2==2.8.6
 requests==2.22.0
+docker==5.0.1
 redis==3.5.3

@@ -3,25 +3,43 @@ import logging
 from datetime import datetime
 import sys
 import traceback
+import argparse
 
+import importlib
 # my imports
 from AutomatedScripts.shared.config import config
 from AutomatedScripts.shared.Database import Database
 from AutomatedScripts.shared import Utils
 
+# pass in path to the module to use
+# ex. AutomatedScripts.Scripts.Jobs.Test
+# jobId = 1, stepId = 3
+parser = argparse.ArgumentParser()
+parser.add_argument("-path", action="store", dest="path", required=True, help="Path to module to run")
+parser.add_argument("-jobId", action="store", dest="jobId", required=True, type=int)
+parser.add_argument("-stepId", action="store", dest="stepId", required=True, type=int)
+args = parser.parse_args()
+
+mainFunction = importlib.import_module(args.path)
 
 if __name__ == '__main__':
-    logpath = os.path.dirname(os.path.realpath(__file__))
-    filename = os.path.basename(__file__)
-    logFile = filename.replace("py", "log")
-    fullLogPath = logpath + "/" + logFile
-    lockFileName = filename + ".loc"
-    lockFilePath = logpath + "/" + lockFileName
+    pathFiles = (args.path).split(".")
+    partOfPath = False
+    filePath = os.path.dirname(os.path.realpath(__file__))
+    for f in pathFiles:
+        if(partOfPath):
+            filePath = filePath + "/" + f
+        if(f == "Scripts"):
+            partOfPath = True
+    # verify the file exists
+    if(not os.path.exists(filePath + ".py")):
+        raise Exception("Could not find the file: " + filePath + ".py")
+    fullLogPath = filePath + ".log"
+    lockFilePath = filePath + ".py.loc"
     lockExists = False
     # select the job id
-    # for now, each job only has one step but could have more than one step in future
-    jobId = 1
-    stepId = 3
+    jobId = args.jobId
+    stepId = args.stepId
     # used if a fatal error occurred
     failed = False
     # used if loc file existed
@@ -33,7 +51,8 @@ if __name__ == '__main__':
     startTime = datetime.now()
     result = ""
     server = os.getenv('SERVER')
-    if(server is None): server = "Unknown"
+    if(server is None):
+        server = "Unknown"
     engine = os.getenv('ENGINE')
     print("\nScript starting at: " + str(startTime))
 
@@ -51,8 +70,7 @@ if __name__ == '__main__':
         raise Exception("Could not determine what environment the script is running on")
 
     # connect to the database
-    print(config(environment))
-    db = Database(config(environment), "JobScheduler")
+    db = Database(config(environment), "process name")
     connectionResult = Utils.connectToDatabase(db, logger, extras)
     if(not connectionResult["created"]): exit(1)
 
@@ -83,11 +101,8 @@ if __name__ == '__main__':
     if(not jobLogError and jobEnabled and not lockedError):
         try:
             print("******************************** Main Script ********************************************")
-
-
-
-            # this should be returned by the main function
-            result = "Finished Successfully"
+            # should return Finished Successfully on success
+            result = mainFunction.main(logger, db, extras, jobId, jobDetailsId)
         except:
             print("Some error occurred in the main script")
             traceback.print_exc()

@@ -8,6 +8,8 @@ def config(environment, section='postgresql'):
     filename = ""
     if(environment == "DEV"):
         filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'dev-config.ini')
+    elif(environment == "LOCAL-DEV"):
+        filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'local-dev-config.ini')
     elif(environment == "PROD"):
         filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'prod-config.ini')
     else:
