@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public."JobQueue"
     engine integer,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "assignedAt" timestamp without time zone,
-    "finishedAt" timestamp without time zone,
+    "startedAt" timestamp without time zone,
     server character varying(100) COLLATE pg_catalog."default",
     pending boolean,
     priority integer,

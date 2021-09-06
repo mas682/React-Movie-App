@@ -11,9 +11,26 @@ import docker
 import os
 from dotenv import dotenv_values
 
+def getNumberOfEngines(db):
+    print("\nGetting number of engines to run...")
+    script = """
+        select 
+            "engines"
+        from public."JobContainerControl"
+        where "type" = 'Scheduled Jobs'
+    """
+    print("Executing query: " + script)
+    db._cur.execute(script)
+    result = db._cur.fetchall()
+    engineCount = 0
+    if(len(result) > 0):
+        engineCount = result[0][0]
+    return engineCount
+
 
 def getQueuedJob(db, server, engine):
     # call out to mark a job for the engine
+    print("\nGetting a job for engine: " + str(engine))
     script = """
         call public."GetJobQueueLock"('""" + server + """',""" + engine + """);
     """
@@ -28,10 +45,16 @@ def getQueuedJob(db, server, engine):
             js."type",
             js."timeout",
             js."arguments",
-            js."scriptPath"
+            js."scriptPath",
+            cc."engines",
+            cc."type",
+            cc."memory_limit",
+            cc."cpus_to_run_on",
+            cc."cpu_shares"
         from public."JobQueue" j
         left join public."ScheduledJobs" s on s."id" = j."jobId"
         left join public."JobSteps" js on js."id" = j."stepId"
+        left join public."JobContainerControl" cc on cc."id" = js."ContainerControlId"
         where j."engine" = """ + engine + """
         and j."server" = '""" + server + """'
         and j.pending
@@ -42,10 +65,10 @@ def getQueuedJob(db, server, engine):
     print("Executing query: " + script)
     db._cur.execute(script)
     result = db._cur.fetchall()
-    print(result)
     return result
 
 def startDockerContainer(dockerCli, job, engine, environment):
+    print("Starting the container for engine " + str(engine))
     # get path to source for bind mount
     source = os.path.realpath(__file__)
     source = source.partition("AutomatedScripts")[0]
@@ -60,9 +83,52 @@ def startDockerContainer(dockerCli, job, engine, environment):
     # read the environment variables into a dict
     config = dict(dotenv_values(sourcePath + configPath))
     config["ENGINE"] = str(engine)
-
+    
     dockerCli.containers.run(image='python-engine', command='bash -c "python3 -m AutomatedScripts.Scripts.ScriptController -path AutomatedScripts.Scripts.Jobs.Test -jobId 1 -stepId 3"',
      mounts=[mount], auto_remove=False, detach=True,environment=config, name="job-engine-" + str(engine))
+
+
+def updateStartedJob(db, jobQueueIds):
+    if(len(jobQueueIds) < 1):
+        return
+    idString = ""
+    for id in jobQueueIds:
+        idString = idString + str(id) + ","
+    idString = idString[:len(idString) - 1]
+    # call out to mark a job for the engine as started
+    script = """
+        update public."JobQueue"
+            set
+                "pending" = False,
+                "startedAt" = CURRENT_TIMESTAMP
+        where "id" in (""" + idString + """)
+    """
+    print("Executing query: " + script)
+    db._cur.execute(script)
+
+
+def updateJobNotStarted(db, jobQueueIds):
+    if(len(jobQueueIds) < 1):
+        return
+    idString = ""
+    for id in jobQueueIds:
+        idString = idString + str(id) + ","
+    idString = idString[:len(idString) - 1]
+    # call out to mark a job for the engine as started
+    script = """
+        update public."JobQueue"
+            set
+                "pending" = null,
+                "assignedAt" = null,
+                "engine" = null,
+                "server" = null
+        where "id" in (""" + idString + """)
+    """
+    print("Executing query: " + script)
+    db._cur.execute(script)
+
+
+
 
 def main(logger, db, extras, jobId, jobDetailsId):
     # fix how loc file is working.....
@@ -86,19 +152,12 @@ def main(logger, db, extras, jobId, jobDetailsId):
         print("Removing container: " + container.name)
         container.remove()
 
-
-    # need to get this from the database?
-    numContainersToRun = 8
+    numContainersToRun = getNumberOfEngines(db)    
     # if less than max containers are running
     if(len(containers) < numContainersToRun):
-        # may need to pass job id to job itself so that it removes it from the 
-        # queue once it is done...
-        # if the engine could not be started, do not mark the job as done?
-        # may actually want to do this after you see how many slots are avaialble?
-        # then call to database one by one to get a job and assign it to an engine?
         counter = 1
         keys = {}
-        # create a dictionary of all the eninge number keys
+        # create a dictionary of all the engine number keys
         while(counter <= numContainersToRun):
             keys[str(counter)] = True
             counter = counter + 1
@@ -110,56 +169,39 @@ def main(logger, db, extras, jobId, jobDetailsId):
             engine = name[11:]
             print(engine)
             del keys[engine]
+        print("Engines not in use:")
         print(keys)
 
+        startedJobs = []
         # iterate through the available engines to try to start them
         for engine in keys:
             # get a job from the queue for this server/engine pair
             result = getQueuedJob(db, server, engine)
             # if no job was returned, done trying to assign jobs
             if(len(result) < 1):
+                print("No more jobs to run currently so exiting out of loop")
                 break
-            startDockerContainer(dockerCli, result, engine, environment)
-            break
+            jobId = result[0][0]
+            try:
+                startDockerContainer(dockerCli, result, engine, environment)
+                startedJobs.append(jobId)
+            except:
+                print("An error occurred starting the container for engine " + str(engine))
+                print("\nUpdating all jobs that have been successfully started:")
+                updateStartedJob(db, startedJobs)
+                print("Updating the job queue to indicate the job with id of " + str(jobId) + " was not started")
+                updateJobNotStarted(db, [jobId])
+                raise
+        
+        print("Updating all jobs that have been successfully started:")
+        updateStartedJob(db, startedJobs)
             
-        # at this point, use the keys available to start engines
-        # if a conatiner already exists with the specified name, a error will be thrown 
-        # when starting the engine
-        # in which case, either rename or remove the existing container as long as it is not 
-        # running then try to start the container again
-        # just iterate through unused keys to assign to engines...
-
-        # call database to get at most x jobs to do
-        # mark the jobs as pending
-        # once jobs started, mark them as started
-        # if failed to start any, unmark those jobs as pending
-        # pass job id to job itself
-        # if a job fails to start on one engine, try the next one
-        # keep a dictionary of job id, engine id
-            # only storing engine if the job was actually started
-
-        # for scalability, going to request job at a time
+        # for scalability, going to request one job at a time
         # when a job is requested, mark it as pending
         # once job is started, remove pending flag
-
-        #select * from public."JobQueue" j
-        #where j."engine" = 1
-        #and j."server" = 'test'
-        #and j.pending
-        #and (((EXTRACT(EPOCH FROM(CURRENT_TIMESTAMP - j."assignedAt"))::integer)/60) < 2)
-        #order by j."assignedAt" desc
-        #limit 1
-        #procedure = can do a transaction but limited in what it can return
-        #function = can return stuff but cannot do a transaction
-        # - don't think a function can execute a procedure
 
     # control how many containers should be running from database
     # check which containers are running
     # function to do that
-
-    # check if there are any jobs in the queue
-
-    # if jobs, start containers for
-    print("Test")
 
     return "Finished Successfully"

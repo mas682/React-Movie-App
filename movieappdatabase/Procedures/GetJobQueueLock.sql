@@ -53,9 +53,9 @@ DO $$ BEGIN
                     "id" in 
                     (
                         select j."id" from public."JobQueue" j
-                        where j."engine" is null or (
+                        where (j."engine" is null and j."startedAt" is null) or (
                             -- get a job that was marked to be started but that never actually started
-                            j."engine" is not null and j.pending and j."server" is not null and j."finishedAt" is null and
+                            j."engine" is not null and j.pending and j."server" is not null and j."startedAt" is null and
                             ((EXTRACT(EPOCH FROM(CURRENT_TIMESTAMP - j."assignedAt"))::integer/60) > 2)
                         )
                         order by j.priority asc, j."createdAt" asc

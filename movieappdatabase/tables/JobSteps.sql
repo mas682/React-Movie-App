@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public."JobSteps"
     id bigint NOT NULL DEFAULT nextval('"JobSteps_id_seq"'::regclass),
     type character varying(100) COLLATE pg_catalog."default",
     "jobId" bigint NOT NULL,
+    "ContainerControlId" bigint NOT NULL,
     "scriptPath" character varying(200) COLLATE pg_catalog."default" NOT NULL,
     arguments character varying(100) COLLATE pg_catalog."default",
     "order" integer NOT NULL,
@@ -18,7 +19,12 @@ CREATE TABLE IF NOT EXISTS public."JobSteps"
     CONSTRAINT "JobSteps_ScheduledJobs_fkey" FOREIGN KEY ("jobId")
         REFERENCES public."ScheduledJobs" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT "JobSteps_JobContainerControl_fkey" FOREIGN KEY ("ContainerControlId")
+        REFERENCES public."JobContainerControl" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+    
 )
 
 TABLESPACE pg_default;
