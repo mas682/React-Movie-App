@@ -132,5 +132,7 @@ if __name__ == '__main__':
         '../tables/JobSteps.sql',
         '../tables/JobQueue.sql',
         '../tables/JobDetails.sql',
+        '../tables/SchemaCreator.py',
+        '../Procedures/GetJobQueueLock.sql'
     ]
     controllerFunction(fileNames)

@@ -72,8 +72,19 @@ class Database:
             UPDATE public."ScheduledJobs"
                SET
                      "lastRun"=CURRENT_TIMESTAMP
-               WHERE id=""" + id + """
-               Returning "Enabled","lastRun";
+               WHERE id=""" + id + """;
+
+            SELECT 
+                case when s."Enabled" and js."enabled"
+                    then true
+                else
+                    False
+                end as "Enabled",
+	        "lastRun"
+            from public."ScheduledJobs" s
+            left join public."JobSteps" js on js."id" = """ + stepId + """
+            and js."jobId" = """ + id + """
+            where s."id" = """ + id + """
         """)
         result = self._cur.fetchall()
         if(len(result) > 0):
