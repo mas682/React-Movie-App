@@ -25,6 +25,7 @@ def getNumberOfEngines(db):
     engineCount = 0
     if(len(result) > 0):
         engineCount = result[0][0]
+    print("Maximum number of engines to run: " + str(engineCount))
     return engineCount
 
 
@@ -50,7 +51,12 @@ def getQueuedJob(db, server, engine):
             cc."type",
             cc."memory_limit",
             cc."cpus_to_run_on",
-            cc."cpu_shares"
+            cc."cpu_shares",
+            cc."cpu_period",
+            cc."cpu_quota",
+            cc."mem_reservation",
+            cc."auto_remove",
+            cc."pids_limit"
         from public."JobQueue" j
         left join public."ScheduledJobs" s on s."id" = j."jobId"
         left join public."JobSteps" js on js."id" = j."stepId"
@@ -83,9 +89,49 @@ def startDockerContainer(dockerCli, job, engine, environment):
     # read the environment variables into a dict
     config = dict(dotenv_values(sourcePath + configPath))
     config["ENGINE"] = str(engine)
-    
-    dockerCli.containers.run(image='python-engine', command='bash -c "python3 -m AutomatedScripts.Scripts.ScriptController -path AutomatedScripts.Scripts.Jobs.Test -jobId 1 -stepId 3"',
-     mounts=[mount], auto_remove=False, detach=True,environment=config, name="job-engine-" + str(engine))
+
+    jobId = str(job[0][1])
+    stepId = str(job[0][2])
+    timeout = job[0][4] if job[0][4] is not None else 0
+    arguments = job[0][5] if job[0][5] is not None else ""
+    scriptPath = job[0][6]
+    memoryLimit = job[0][9] if job[0][9] is not None else ""
+    cpusToRunOn = job[0][10] if job[0][10] is not None else ""
+    cpuShares = job[0][11] if job[0][11] is not None else 0
+    cpuPeriod = job[0][12] if job[0][12] is not None else 0
+    cpuQuota = job[0][13] if job[0][13] is not None else 0
+    # this is like cpu shares but for memory
+    memReservation = job[0][14] if job[0][14] is not None else ""
+    autoRemove = job[0][15] if job[0][15] is not None else True
+    pidsLimit = job[0][16] if job[0][16] is not None else 100
+    print("Timeout: " + str(timeout))
+    print("Arguments: " + str(arguments))
+    print("Script path: " + scriptPath)
+    print("Memory limit: " + str(memoryLimit))
+    print("CPUs to run on: " + str(cpusToRunOn))
+    print("CPU shares: " + str(cpuShares))
+    print("CPU period: " + str(cpuPeriod))
+    print("CPU Quota: " + str(cpuQuota))
+    print("Memory Reservation: " + str(memReservation))
+    print("Auto remove: " + str(autoRemove))
+    print("PIDs limit: " + str(pidsLimit))
+
+    #have table set up and pulled in query here but need to just update command below
+    command = "python3 -m AutomatedScripts.Scripts.ScriptController -path " + scriptPath + " -jobId " + jobId + " -stepId " + stepId + " " + arguments
+    print("Command to run: " + command)
+
+    # may need to add some stuff for networking...
+        # jobs running database cleanup should not need full network access
+        # jobs to get movies into db will need more access to outside...
+        # redis job will only need redis access
+        # could also try to make containers for those specific jobs?
+    # restart policy?
+    # user - what user to run the container as?
+
+    dockerCli.containers.run(image='python-engine', command='bash -c "' + command + '"',
+     mounts=[mount], auto_remove=autoRemove, detach=True,environment=config, name="job-engine-" + str(engine),
+     cpuset_cpus=cpusToRunOn, cpu_shares=cpuShares, cpu_period=cpuPeriod, cpu_quota=cpuQuota,
+     mem_limit=memoryLimit, mem_reservation=memReservation, pids_limit=pidsLimit)
 
 
 def updateStartedJob(db, jobQueueIds):
@@ -131,8 +177,6 @@ def updateJobNotStarted(db, jobQueueIds):
 
 
 def main(logger, db, extras, jobId, jobDetailsId):
-    # fix how loc file is working.....
-    # should not lock on failed job...
     dockerCli = docker.from_env()
     server = os.getenv('SERVER')
     environment = os.getenv('ENVIRONMENT')
@@ -199,9 +243,5 @@ def main(logger, db, extras, jobId, jobDetailsId):
         # for scalability, going to request one job at a time
         # when a job is requested, mark it as pending
         # once job is started, remove pending flag
-
-    # control how many containers should be running from database
-    # check which containers are running
-    # function to do that
 
     return "Finished Successfully"

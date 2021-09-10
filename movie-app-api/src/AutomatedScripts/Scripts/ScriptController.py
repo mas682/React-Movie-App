@@ -111,15 +111,6 @@ if __name__ == '__main__':
             failed  = True
         print("***************************** Main Script Finished **************************************")
 
-    # clean up
-    if(result == "Finished Successfully" and not jobLogError and jobEnabled and not lockedError):
-        # remove lock file
-        try:
-            os.remove(lockFilePath)
-            #print("Not removing")
-        except:
-            logger.info("Failed to remove lock file", extra=extras)
-
     # if logging was started for the job
     if(not jobLogError):
         result = Utils.stopJob(db, logger, jobDetailsId, result, extras)
@@ -130,6 +121,15 @@ if __name__ == '__main__':
 
     endTime = datetime.now()
     Utils.getTimeDifference(startTime, endTime)
+
+    # clean up
+    if(not jobLogError and jobEnabled and not lockedError):
+        # remove lock file
+        try:
+            os.remove(lockFilePath)
+            #print("Not removing")
+        except:
+            logger.info("Failed to remove lock file", extra=extras)
 
     if(failed):
         exit(1)

@@ -10,6 +10,11 @@ CREATE TABLE IF NOT EXISTS public."JobContainerControl"
     memory_limit character varying(50) COLLATE pg_catalog."default",
     cpus_to_run_on character varying(100) COLLATE pg_catalog."default",
     cpu_shares integer,
+    cpu_period integer,
+    cpu_quota integer,
+    mem_reservation character varying(50) COLLATE pg_catalog."default",
+    auto_remove boolean,
+    pids_limit integer,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "JobContainerControl_pkey" PRIMARY KEY (id)
