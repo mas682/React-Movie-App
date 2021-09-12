@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public."JobQueue"
     "stepId" bigint NOT NULL,
     engine integer,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "scheduledRunTime" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "assignedAt" timestamp without time zone,
     "startedAt" timestamp without time zone,
     server character varying(100) COLLATE pg_catalog."default",

@@ -6,11 +6,14 @@ CREATE TABLE IF NOT EXISTS public."ScheduledJobs"
 (
     "jobName" character varying(50) COLLATE pg_catalog."default" NOT NULL,
     "jobDescription" character varying(100) COLLATE pg_catalog."default",
-    "lastRun" timestamp with time zone,
-    "nextRun" timestamp with time zone,
+    "lastRun" timestamp without time zone,
+    "nextRun" timestamp without time zone,
+    frequency integer,
     "Enabled" boolean NOT NULL DEFAULT false,
-    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "addToQueue" boolean NOT NULL DEFAULT true,
+    "startDate" timestamp without time zone,
+    "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id bigint NOT NULL DEFAULT nextval('"ScheduledJobs_id_seq"'::regclass),
     CONSTRAINT "ScheduledJobs_pkey" PRIMARY KEY (id),
     CONSTRAINT "ScheduledJobs_jobName_key" UNIQUE ("jobName")

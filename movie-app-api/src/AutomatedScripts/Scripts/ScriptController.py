@@ -4,6 +4,7 @@ from datetime import datetime
 import sys
 import traceback
 import argparse
+import signal
 
 import importlib
 # my imports
@@ -22,7 +23,47 @@ args = parser.parse_args()
 
 mainFunction = importlib.import_module(args.path)
 
+# used to do cleanup when a timeout occurs
+def signalHandler(sig, frame):
+    global timeout
+    # if timeout occurred while still running main function
+    if(jobInProgress):
+        timeout = True
+        raise Exception("Timeout occurred")
+
+    # if not None, at least tried to mark job as started
+    if(jobLogError is not None and not jobLogError):
+        Utils.stopJob(db, logger, jobDetailsId, "Finished - Timeout", extras)
+
+    # if db is not none, try to disconnect
+    if(db is not None):
+        Utils.disconnectFromDatabase(db, logger, extras)
+
+    endTime = datetime.now()
+    Utils.getTimeDifference(startTime, endTime)
+
+    # clean up if the lock file was created
+    if(jobLogError is not None and not jobLogError and lockedError is not None and not lockedError):
+        # remove lock file
+        try:
+            os.remove(lockFilePath)
+            #print("Not removing")
+        except:
+            logger.info("Failed to remove lock file", extra=extras)
+    exit(1)
+
 if __name__ == '__main__':
+    # used for catch block if timeout occurred
+    timeout = False
+    # used for signalHandler to determine if main script still running
+    jobInProgress = False
+    # used to tell if logging in DB was started for job
+    jobLogError = None
+    db = None
+    # used if loc file existed
+    lockedError = None
+    startTime = datetime.now()
+    signal.signal(signal.SIGTERM, signalHandler)
     pathFiles = (args.path).split(".")
     partOfPath = False
     filePath = os.path.dirname(os.path.realpath(__file__))
@@ -42,13 +83,8 @@ if __name__ == '__main__':
     stepId = args.stepId
     # used if a fatal error occurred
     failed = False
-    # used if loc file existed
-    lockedError = False
     # used if job not enabled or could not be found
     jobEnabled = False
-    # used to tell if logging in DB was started for job
-    jobLogError = False
-    startTime = datetime.now()
     result = ""
     server = os.getenv('SERVER')
     if(server is None):
@@ -82,10 +118,13 @@ if __name__ == '__main__':
         failed = True
         jobLogError = True
     elif(not jobEnabled):
+        jobLogError = False
         result = "Finished - Not Enabled"
+    else:
+        jobLogError = False
 
     # if the job was marked as started
-    if(not jobLogError and jobEnabled):
+    if(not jobLogError):
         try:
             lockExists = Utils.getLockFile(lockFilePath, 2)
         except:
@@ -96,18 +135,24 @@ if __name__ == '__main__':
         if(lockExists):
             result = "Finished - Locked"
             lockedError = True
+        else:
+            lockedError = False
+    else:
+        lockedError = False
 
     # if the job was marked as started and the file is locked to this process
     if(not jobLogError and jobEnabled and not lockedError):
         try:
             print("******************************** Main Script ********************************************")
+            jobInProgress = True
             # should return Finished Successfully on success
             result = mainFunction.main(logger, db, extras, jobId, jobDetailsId)
+            jobInProgress = False
         except:
             print("Some error occurred in the main script")
             traceback.print_exc()
             logger.info("An unexpected error occurred in the main script:", exc_info=sys.exc_info(), extra=extras)
-            result = "Finished Unsuccessfully"
+            result = "Finished Unsuccessfully" if(not timeout) else "Finished - Timeout"
             failed  = True
         print("***************************** Main Script Finished **************************************")
 
@@ -123,7 +168,7 @@ if __name__ == '__main__':
     Utils.getTimeDifference(startTime, endTime)
 
     # clean up
-    if(not jobLogError and jobEnabled and not lockedError):
+    if(not jobLogError and not lockedError):
         # remove lock file
         try:
             os.remove(lockFilePath)

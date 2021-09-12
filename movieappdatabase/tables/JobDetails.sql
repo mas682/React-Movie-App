@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS public."JobDetails"
         ON DELETE NO ACTION,
     CONSTRAINT "JobDetails_jobId_fkey" FOREIGN KEY ("jobId")
         REFERENCES public."ScheduledJobs" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
 )
 
 TABLESPACE pg_default;

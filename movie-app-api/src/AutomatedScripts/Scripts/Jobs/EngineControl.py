@@ -117,7 +117,7 @@ def startDockerContainer(dockerCli, job, engine, environment):
     print("PIDs limit: " + str(pidsLimit))
 
     #have table set up and pulled in query here but need to just update command below
-    command = "python3 -m AutomatedScripts.Scripts.ScriptController -path " + scriptPath + " -jobId " + jobId + " -stepId " + stepId + " " + arguments
+    command = "timeout -kill-after=10 " + str(timeout) + " python3 -m AutomatedScripts.Scripts.ScriptController -path " + scriptPath + " -jobId " + jobId + " -stepId " + stepId + " " + arguments
     print("Command to run: " + command)
 
     # may need to add some stuff for networking...

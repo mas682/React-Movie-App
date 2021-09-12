@@ -58,7 +58,7 @@ DO $$ BEGIN
                             j."engine" is not null and j.pending and j."server" is not null and j."startedAt" is null and
                             ((EXTRACT(EPOCH FROM(CURRENT_TIMESTAMP - j."assignedAt"))::integer/60) > 2)
                         )
-                        order by j.priority asc, j."createdAt" asc
+                        order by j.priority asc, j."scheduledRunTime", j."createdAt" asc
                         limit 1
                     )
                 RETURNING "id" into "JobQueueId";
