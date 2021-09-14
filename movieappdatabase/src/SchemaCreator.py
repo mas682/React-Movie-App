@@ -88,6 +88,7 @@ if __name__ == '__main__':
         '../triggerFunctions/trigger_validate_user_not_found.sql',
         '../triggerFunctions/trigger_validate_salt_not_found_temp_users.sql',
         '../triggerFunctions/trigger_validate_salt_not_found_users.sql',
+        '../triggerFunctions/trigger_set_schedule_job_updated_ts.sql',
         '../Sequences/comments_id_seq.sql',
         '../Sequences/Genres_id_seq.sql',
         '../Sequences/movieTags_id_seq.sql',
@@ -107,6 +108,8 @@ if __name__ == '__main__':
         '../Sequences/UserSessions_id_seq.sql',
         '../Sequences/TempVerificationCodes_id_seq.sql',
         '../Sequences/JobContainerControl_id_seq.sql',
+        '../Sequences/CronJobSchedule_id_seq.sql',
+        '../Sequences/CronJobControl_id_seq.sql',
         '../tables/DefaultProfilePictures.sql',
         '../tables/Users.sql',
         '../tables/Movies.sql',
@@ -134,7 +137,9 @@ if __name__ == '__main__':
         '../tables/JobSteps.sql',
         '../tables/JobQueue.sql',
         '../tables/JobDetails.sql',
-        '../tables/SchemaCreator.py',
+        '../tables/CronJobSchedule.sql',
+        '../tables/JobQueueLock.sql',
+        '../tables/CronJobControl.sql',
         '../Procedures/GetJobQueueLock.sql',
         '../Procedures/UpdateJobQueue.sql'
     ]

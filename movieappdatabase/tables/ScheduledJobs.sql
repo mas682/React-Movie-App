@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public."ScheduledJobs"
     "startDate" timestamp without time zone,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "jobUpdatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     id bigint NOT NULL DEFAULT nextval('"ScheduledJobs_id_seq"'::regclass),
     CONSTRAINT "ScheduledJobs_pkey" PRIMARY KEY (id),
     CONSTRAINT "ScheduledJobs_jobName_key" UNIQUE ("jobName")
@@ -41,4 +42,21 @@ DO $$ BEGIN
             FOR EACH ROW
             EXECUTE PROCEDURE public.trigger_set_timestamp();
     END IF;
+
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'ScheduledJobs'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_job_updated_ts'
+    )
+    THEN
+        CREATE TRIGGER set_job_updated_ts
+            BEFORE UPDATE OF "Enabled"
+            ON public."ScheduledJobs"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_schedule_job_updated_ts();
+    END IF;
+
+
 END $$;
