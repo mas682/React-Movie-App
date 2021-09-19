@@ -1,3 +1,13 @@
+# 8/31/2021
+# Matt Stropkey
+# This script is used to run the jobs
+# It does various checks to ensure the job should run and then runs it
+# command to run(will have to change jobId and stepId):
+# ran from the src folder
+# example command:
+# python3 -m AutomatedScripts.Scripts.ScriptController -path AutomatedScripts.Scripts.Jobs.EngineControl -jobId 1 -stepId 3
+
+
 import os
 import logging
 from datetime import datetime
@@ -5,6 +15,8 @@ import sys
 import traceback
 import argparse
 import signal
+import ast
+
 
 import importlib
 # my imports
@@ -21,7 +33,6 @@ parser.add_argument("-jobId", action="store", dest="jobId", required=True, type=
 parser.add_argument("-stepId", action="store", dest="stepId", required=True, type=int)
 args = parser.parse_args()
 
-mainFunction = importlib.import_module(args.path)
 
 # used to do cleanup when a timeout occurs
 def signalHandler(sig, frame):
@@ -72,6 +83,9 @@ if __name__ == '__main__':
             filePath = filePath + "/" + f
         if(f == "Scripts"):
             partOfPath = True
+    fileName = "ScriptController - Unkown"
+    if(len(pathFiles) > 0):
+        fileName = pathFiles[len(pathFiles) - 1]
     # verify the file exists
     if(not os.path.exists(filePath + ".py")):
         raise Exception("Could not find the file: " + filePath + ".py")
@@ -106,7 +120,7 @@ if __name__ == '__main__':
         raise Exception("Could not determine what environment the script is running on")
 
     # connect to the database
-    db = Database(config(environment), "process name")
+    db = Database(config(environment), fileName)
     connectionResult = Utils.connectToDatabase(db, logger, extras)
     if(not connectionResult["created"]): exit(1)
 
@@ -114,12 +128,17 @@ if __name__ == '__main__':
     jobStartResult = Utils.startJob(db, logger, jobId, stepId, extras)
     jobDetailsId = jobStartResult["jobDetailsId"]
     jobEnabled = jobStartResult["enabled"]
+    scriptPath = jobStartResult["scriptPath"]
+    arguments = jobStartResult["arguments"]
     if(jobDetailsId < 0):
         failed = True
         jobLogError = True
     elif(not jobEnabled):
         jobLogError = False
         result = "Finished - Not Enabled"
+    elif(scriptPath is None):
+        jobLogError = False
+        result = "Finished - Script Undefined"
     else:
         jobLogError = False
 
@@ -142,19 +161,40 @@ if __name__ == '__main__':
 
     # if the job was marked as started and the file is locked to this process
     if(not jobLogError and jobEnabled and not lockedError):
+        # if at this point, job ready to run so import code
         try:
-            print("******************************** Main Script ********************************************")
-            jobInProgress = True
-            # should return Finished Successfully on success
-            result = mainFunction.main(logger, db, extras, jobId, jobDetailsId)
-            jobInProgress = False
+            mainFunction = importlib.import_module(args.path)
         except:
-            print("Some error occurred in the main script")
+            print("Failed to import the code for the script to run")
             traceback.print_exc()
-            logger.info("An unexpected error occurred in the main script:", exc_info=sys.exc_info(), extra=extras)
-            result = "Finished Unsuccessfully" if(not timeout) else "Finished - Timeout"
-            failed  = True
-        print("***************************** Main Script Finished **************************************")
+            logger.info("An error occurred importing the script to run:", exc_info=sys.exc_info(), extra=extras)
+            result = "Finished Unsuccessfully"
+        
+        scriptArgs = None
+        try:
+            if(arguments is not None):
+                scriptArgs = ast.literal_eval(arguments)
+        except:
+            print("Failed to parse the arguments to pass to the script to run")
+            traceback.print_exc()
+            logger.info("An error occurred parsing the arguments for the script to run:", exc_info=sys.exc_info(), extra=extras)
+            result = "Finished Unsuccessfully"
+
+        # if code pulled and arguments parsed
+        if(not failed):
+            try:
+                print("******************************** Main Script ********************************************")
+                jobInProgress = True
+                # should return Finished Successfully on success
+                result = mainFunction.main(logger, db, extras, jobId, jobDetailsId, arguments)
+                jobInProgress = False
+            except:
+                print("Some error occurred in the main script")
+                traceback.print_exc()
+                logger.info("An unexpected error occurred in the main script:", exc_info=sys.exc_info(), extra=extras)
+                result = "Finished Unsuccessfully" if(not timeout) else "Finished - Timeout"
+                failed  = True
+            print("***************************** Main Script Finished **************************************")
 
     # if logging was started for the job
     if(not jobLogError):

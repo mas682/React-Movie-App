@@ -12,12 +12,14 @@ def connectToDatabase(db, logger, extras={}):
         result = db.connect()
     except:
         traceback.print_exc()
-        logger.info("An error occurred when connecting to the database:", exc_info=sys.exc_info(), extra=extras)
+        if(logger is not None):
+            logger.info("An error occurred when connecting to the database:", exc_info=sys.exc_info(), extra=extras)
         return {"created":False}
     # if the connection failed
     if(result["connection"] is None or result["cur"] is None):
         print("Connection to database failed...")
-        logger.info("Failed to establish connection to database when starting script", extra={"caller": "Controller"})
+        if(logger is not None):
+            logger.info("Failed to establish connection to database when starting script", extra={"caller": "Controller"})
         disconnectFromDatabase(db, logger, extras)
         return {"created":False}
     return {"connection":result["connection"], "cur":result["cur"], "created": True}
@@ -27,7 +29,8 @@ def disconnectFromDatabase(db, logger, extras={}):
         db.disconnect()
     except:
         traceback.print_exc()
-        logger.info("An error occurred when disconnecting from the database:", exc_info=sys.exc_info(), extra=extras)
+        if(logger is not None):
+            logger.info("An error occurred when disconnecting from the database:", exc_info=sys.exc_info(), extra=extras)
         return False
     return True
 
@@ -44,19 +47,22 @@ def startJob(db, logger, jobId, stepId, extras={}):
     except:
         traceback.print_exc()
         logger.info("An error occurred when attempting to start the job with the id of: " + str(jobId), exc_info=sys.exc_info(), extra=extras)
-        return {"enabled": False, "jobDetailsId": -3}
+        return {"enabled": False, "jobDetailsId": -3, "scriptPath": None, "arguments": None}
 
     if(result["jobDetailsId"] == -1 and result["enabled"]):
         print("Failed to start job with a -1 job details id")
         logger.info("A job details id of -1 was returned when trying to start the job", extra=extras)
-        return {"enabled": False, "jobDetailsId": -2}
+        return {"enabled": False, "jobDetailsId": -2, "scriptPath": None, "arguments": None}
     elif(not result["enabled"]):
         print("Job is not enabled")
         logger.info("A job with id of " + str(jobId) + " is either not enabled or does not exist", extra=extras)
-        # may want to log this but for now just exit
-        return {"enabled": result["enabled"], "jobDetailsId": result["jobDetailsId"]}
+        return result
+    elif(result["scriptPath"] is None):
+        print("The script to run is not defined")
+        logger.info("A job with id of " + str(jobId) + " has no script to run", extra=extras)
+        return result
 
-    return {"enabled": result["enabled"], "jobDetailsId": result["jobDetailsId"]}
+    return result
 
 
 # maxLines is the maximum number of lines in the lock file before it will get cleared

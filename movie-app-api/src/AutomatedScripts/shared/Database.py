@@ -60,13 +60,14 @@ class Database:
 
     # this will update the database to create a record of a running job
     def startJob(self, id, stepId, server, engine):
-        failedOutput = []
         enabled = False
         startTime = None
         jobId = -1
         id = str(id)
         stepId = str(stepId)
         engine = str(engine)
+        scriptPath = None
+        agruments = None
 
         self._cur.execute("""
             UPDATE public."ScheduledJobs"
@@ -80,7 +81,9 @@ class Database:
                 else
                     False
                 end as "Enabled",
-	        "lastRun"
+                js."scriptPath",
+                js."arguments",
+	            "lastRun"
             from public."ScheduledJobs" s
             left join public."JobSteps" js on js."id" = """ + stepId + """
             and js."jobId" = """ + id + """
@@ -89,8 +92,9 @@ class Database:
         result = self._cur.fetchall()
         if(len(result) > 0):
             enabled = result[0][0]
-            startTime = str(result[0][1])
-
+            scriptPath = result[0][1]
+            arguments = result[0][2]
+            startTime = str(result[0][3])
             # if at this point, job marked as active
             self._cur.execute("""
                 INSERT INTO public."JobDetails"(
@@ -104,7 +108,7 @@ class Database:
             if(len(result) > 0):
                 jobId = result[0][0]
 
-        return {"enabled": enabled, "jobDetailsId": jobId}
+        return {"enabled": enabled, "jobDetailsId": jobId, "scriptPath": scriptPath, "arguments": arguments}
 
 
     # this function updates the database to indicate this job is still active

@@ -117,7 +117,8 @@ def startDockerContainer(dockerCli, job, engine, environment):
     print("PIDs limit: " + str(pidsLimit))
 
     #have table set up and pulled in query here but need to just update command below
-    command = "timeout -kill-after=10 " + str(timeout) + " python3 -m AutomatedScripts.Scripts.ScriptController -path " + scriptPath + " -jobId " + jobId + " -stepId " + stepId + " " + arguments
+    # path here is the path to the script to run, only used for lock file
+    command = "timeout --kill-after=10 " + str(timeout) + " python3 -m AutomatedScripts.Scripts.ScriptController -path " + scriptPath + " -jobId " + jobId + " -stepId " + stepId
     print("Command to run: " + command)
 
     # may need to add some stuff for networking...
@@ -176,7 +177,7 @@ def updateJobNotStarted(db, jobQueueIds):
 
 
 
-def main(logger, db, extras, jobId, jobDetailsId):
+def main(logger, db, extras, jobId, jobDetailsId, arguments):
     dockerCli = docker.from_env()
     server = os.getenv('SERVER')
     environment = os.getenv('ENVIRONMENT')
