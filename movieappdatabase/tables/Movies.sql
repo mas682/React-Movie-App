@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS public."Movies"
 (
     id integer NOT NULL DEFAULT nextval('movies_id_seq'::regclass),
     title character varying(255) COLLATE pg_catalog."default",
-    revenue integer,
     director character varying(255) COLLATE pg_catalog."default",
     "runTime" integer,
     rating character varying(255) COLLATE pg_catalog."default",
@@ -26,8 +25,8 @@ CREATE TABLE IF NOT EXISTS public."Movies"
     imdb_id character varying(100) COLLATE pg_catalog."default",
     tmdb_id integer NOT NULL,
     "originalLanguage" character varying(20) COLLATE pg_catalog."default",
-    "createdAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userRating" numeric(10,2) NOT NULL DEFAULT 0.0,
     "totalUserRatings" bigint NOT NULL DEFAULT 0,
     CONSTRAINT movies_pkey PRIMARY KEY (id),

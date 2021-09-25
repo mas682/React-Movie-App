@@ -110,6 +110,7 @@ if __name__ == '__main__':
         '../Sequences/JobContainerControl_id_seq.sql',
         '../Sequences/CronJobSchedule_id_seq.sql',
         '../Sequences/CronJobControl_id_seq.sql',
+        '../Sequences/TMDB_API_Control_id_seq.sql',
         '../tables/DefaultProfilePictures.sql',
         '../tables/Users.sql',
         '../tables/Movies.sql',
@@ -140,6 +141,7 @@ if __name__ == '__main__':
         '../tables/CronJobSchedule.sql',
         '../tables/JobQueueLock.sql',
         '../tables/CronJobControl.sql',
+        '../tables/TMDB_API_Control.sql',
         '../Procedures/GetJobQueueLock.sql',
         '../Procedures/UpdateJobQueue.sql'
     ]

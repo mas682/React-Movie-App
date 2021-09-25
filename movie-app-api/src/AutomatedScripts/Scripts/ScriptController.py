@@ -130,6 +130,7 @@ if __name__ == '__main__':
     jobEnabled = jobStartResult["enabled"]
     scriptPath = jobStartResult["scriptPath"]
     arguments = jobStartResult["arguments"]
+    # may want to add control of lock file here...
     if(jobDetailsId < 0):
         failed = True
         jobLogError = True
