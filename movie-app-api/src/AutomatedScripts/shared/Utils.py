@@ -47,12 +47,12 @@ def startJob(db, logger, jobId, stepId, extras={}):
     except:
         traceback.print_exc()
         logger.info("An error occurred when attempting to start the job with the id of: " + str(jobId), exc_info=sys.exc_info(), extra=extras)
-        return {"enabled": False, "jobDetailsId": -3, "scriptPath": None, "arguments": None}
+        return {"enabled": False, "jobDetailsId": -3, "scriptPath": None, "arguments": None, "logArguments": None}
 
     if(result["jobDetailsId"] == -1 and result["enabled"]):
         print("Failed to start job with a -1 job details id")
         logger.info("A job details id of -1 was returned when trying to start the job", extra=extras)
-        return {"enabled": False, "jobDetailsId": -2, "scriptPath": None, "arguments": None}
+        return {"enabled": False, "jobDetailsId": -2, "scriptPath": None, "arguments": None, "logArguments": None}
     elif(not result["enabled"]):
         print("Job is not enabled")
         logger.info("A job with id of " + str(jobId) + " is either not enabled or does not exist", extra=extras)

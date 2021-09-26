@@ -130,6 +130,7 @@ if __name__ == '__main__':
     jobEnabled = jobStartResult["enabled"]
     scriptPath = jobStartResult["scriptPath"]
     arguments = jobStartResult["arguments"]
+    logArguments = jobStartResult["logArguments"]
     # may want to add control of lock file here...
     if(jobDetailsId < 0):
         failed = True
@@ -142,6 +143,23 @@ if __name__ == '__main__':
         result = "Finished - Script Undefined"
     else:
         jobLogError = False
+
+    # if additional log arguments are defined for this job
+    if logArguments is not None:
+        logArgs = ast.literal_eval(logArguments)
+        if(type(logArgs) != dict):
+            logger.info("The additional arguments to add to the logger are not in the form of a dict", extra=extras)
+        else:
+            logFormat = '%(levelname)s: %(asctime)s.%(msecs)03d | %(server)s | %(engine)s'
+            for key in logArgs:
+                value = logArgs[key]
+                logFormat = logFormat + ' | %(' + key + ')s'
+                extras[key] = value
+            logFormat = logFormat + ' | %(message)s'
+
+            logging.basicConfig(force=True,filename=fullLogPath, filemode='a', level=logging.INFO,
+            format=logFormat,datefmt='%Y-%m-%d %H:%M:%S')
+            logger = logging.getLogger()
 
     # if the job was marked as started
     if(not jobLogError):
@@ -164,7 +182,8 @@ if __name__ == '__main__':
     if(not jobLogError and jobEnabled and not lockedError):
         # if at this point, job ready to run so import code
         try:
-            mainFunction = importlib.import_module(args.path)
+            print(scriptPath)
+            mainFunction = importlib.import_module(scriptPath)
         except:
             print("Failed to import the code for the script to run")
             traceback.print_exc()
@@ -187,7 +206,7 @@ if __name__ == '__main__':
                 print("******************************** Main Script ********************************************")
                 jobInProgress = True
                 # should return Finished Successfully on success
-                result = mainFunction.main(logger, db, extras, jobId, jobDetailsId, arguments)
+                result = mainFunction.main(logger, db, extras, jobId, jobDetailsId, scriptArgs)
                 jobInProgress = False
             except:
                 print("Some error occurred in the main script")

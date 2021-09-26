@@ -83,6 +83,7 @@ class Database:
                 end as "Enabled",
                 js."scriptPath",
                 js."arguments",
+                js."logArguments",
 	            "lastRun"
             from public."ScheduledJobs" s
             left join public."JobSteps" js on js."id" = """ + stepId + """
@@ -94,7 +95,8 @@ class Database:
             enabled = result[0][0]
             scriptPath = result[0][1]
             arguments = result[0][2]
-            startTime = str(result[0][3])
+            logArguments = result[0][3]
+            startTime = str(result[0][4])
             # if at this point, job marked as active
             self._cur.execute("""
                 INSERT INTO public."JobDetails"(
@@ -108,7 +110,7 @@ class Database:
             if(len(result) > 0):
                 jobId = result[0][0]
 
-        return {"enabled": enabled, "jobDetailsId": jobId, "scriptPath": scriptPath, "arguments": arguments}
+        return {"enabled": enabled, "jobDetailsId": jobId, "scriptPath": scriptPath, "arguments": arguments, "logArguments": logArguments}
 
 
     # this function updates the database to indicate this job is still active
