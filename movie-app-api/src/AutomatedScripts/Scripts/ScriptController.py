@@ -16,8 +16,6 @@ import traceback
 import argparse
 import signal
 import ast
-
-
 import importlib
 # my imports
 from AutomatedScripts.shared.config import config
