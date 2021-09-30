@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public."Reviews"
 (
-    id bigint NOT NULL DEFAULT nextval('reviews_id_seq'::regclass),
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     rating numeric(10,2) NOT NULL,
     review text COLLATE pg_catalog."default",
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public."Comments"
 (
-    id bigint NOT NULL DEFAULT nextval('comments_id_seq'::regclass),
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     value character varying(1000) COLLATE pg_catalog."default",
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,

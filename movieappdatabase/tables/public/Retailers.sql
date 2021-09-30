@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public."Retailers"
 (
-    id integer NOT NULL DEFAULT nextval('"Retailers_id_seq"'::regclass),
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     name character varying(255) COLLATE pg_catalog."default",
     externalid integer,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,

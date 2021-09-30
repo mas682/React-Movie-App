@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public."TempVerificationCodes"
 (
-    id integer NOT NULL DEFAULT nextval('"TempVerificationCodes_id_seq"'::regclass),
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     "userId" bigint NOT NULL,
     code character varying(6) COLLATE pg_catalog."default" NOT NULL,
     "verificationAttempts" integer NOT NULL DEFAULT 0,

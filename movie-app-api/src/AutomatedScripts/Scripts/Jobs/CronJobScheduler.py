@@ -105,7 +105,7 @@ def updateJobs(result):
 def main(logger, db, extras, jobId, jobDetailsId, arguments):
     print("Getting the updated cron jobs...")
     script = """
-        select * from public."GetUpdatedCronJobs"()
+        select * from private."GetUpdatedCronJobs"()
     """
     print("Executing query: " + script)
     # set to utc to match db
@@ -117,7 +117,7 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
 
     print("Updating cron job control table...")
     script = """
-        update public."CronJobControl"
+        update private."CronJobControl"
             set "lastRun" = '""" + lastRun + """'
         where "id" = 1
     """

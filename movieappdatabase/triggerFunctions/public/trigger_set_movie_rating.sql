@@ -18,14 +18,14 @@ DO $$ BEGIN
             VOLATILE NOT LEAKPROOF
         AS $BODY$
         BEGIN
-        	UPDATE public."Movies"
+        	UPDATE public."MovieRatings"
         	SET
         		"userRating" = CASE
         					       WHEN "totalUserRatings" = 0 or "userRating" = 0 THEN new.rating
         						   ELSE ((("userRating" * "totalUserRatings") + new.rating) / ("totalUserRatings" + 1))
         					   END,
         		"totalUserRatings" = "totalUserRatings" + 1
-         	where "id" = new."movieId";
+         	where "movieId" = new."movieId";
             RETURN new;
         END;
         $BODY$;

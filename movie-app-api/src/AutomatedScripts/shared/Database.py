@@ -49,7 +49,7 @@ class Database:
         enabled = False
         id = str(id)
         self._cur.execute("""
-            SELECT * from public."ScheduledJobs"
+            SELECT * from private."ScheduledJobs"
 	        WHERE id=""" + id + """ and "Enabled" = True;
         """)
         result = self._cur.fetchall()
@@ -70,7 +70,7 @@ class Database:
         agruments = None
 
         self._cur.execute("""
-            UPDATE public."ScheduledJobs"
+            UPDATE private."ScheduledJobs"
                SET
                      "lastRun"=CURRENT_TIMESTAMP
                WHERE id=""" + id + """;
@@ -85,8 +85,8 @@ class Database:
                 js."arguments",
                 js."logArguments",
 	            "lastRun"
-            from public."ScheduledJobs" s
-            left join public."JobSteps" js on js."id" = """ + stepId + """
+            from private."ScheduledJobs" s
+            left join private."JobSteps" js on js."id" = """ + stepId + """
             and js."jobId" = """ + id + """
             where s."id" = """ + id + """
         """)
@@ -98,14 +98,16 @@ class Database:
             logArguments = result[0][3]
             startTime = str(result[0][4])
             # if at this point, job marked as active
-            self._cur.execute("""
-                INSERT INTO public."JobDetails"(
+            sql = ("""
+                INSERT INTO private."JobDetails"(
                 "jobId", "stepId", "startTime", "lastActive", state, "engine", "server", "updatedAt")
                     VALUES (""" + id + """,""" + stepId + """,'""" + startTime +
                     """','""" + startTime + """','Running',""" + engine + """,'""" + 
                     server + """', CURRENT_TIMESTAMP)
                     RETURNING "id";
                     """)
+            print(sql)
+            self._cur.execute(sql)
             result = self._cur.fetchall()
             if(len(result) > 0):
                 jobId = result[0][0]
@@ -118,7 +120,7 @@ class Database:
     def updateRunningJob(self, jobDetailsId):
         jobDetailsId = str(jobDetailsId)
         self._cur.execute("""
-            UPDATE public."JobDetails"
+            UPDATE private."JobDetails"
                SET
                      "lastActive"=CURRENT_TIMESTAMP
                WHERE id=""" + jobDetailsId + """;
@@ -131,7 +133,7 @@ class Database:
         jobDetailsId = str(jobDetailsId)
 
         self._cur.execute("""
-            UPDATE public."JobDetails"
+            UPDATE private."JobDetails"
                    SET
     	                 "lastActive"=CURRENT_TIMESTAMP,
                          "finished"=CURRENT_TIMESTAMP,

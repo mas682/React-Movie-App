@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public."FeaturedMovies"
 (
-    id integer NOT NULL DEFAULT nextval('"FeaturedMovies_id_seq"'::regclass),
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     "movieId" integer NOT NULL,
     "order" integer NOT NULL DEFAULT 0,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,

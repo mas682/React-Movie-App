@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public."UserSessions"
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" bigint NOT NULL,
-    id bigint NOT NULL DEFAULT nextval('"UserSessions_id_seq"'::regclass),
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     CONSTRAINT "UserSessions_pkey" PRIMARY KEY (id),
     CONSTRAINT "UserSessions_session_key" UNIQUE (session),
     CONSTRAINT "UserSessions_session_userId_key" UNIQUE ("userId", session),

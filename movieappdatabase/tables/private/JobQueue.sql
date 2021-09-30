@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS private."JobQueue"
 (
-    id integer NOT NULL DEFAULT nextval('"JobQueue_id_seq"'::regclass),
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     "jobId" integer NOT NULL,
     "stepId" integer NOT NULL,
     engine integer,

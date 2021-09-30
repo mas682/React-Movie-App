@@ -2,7 +2,7 @@
 # Matt Stropkey
 # This script is used to create a base database schema to use
 # example command:
-# python3 -m AutomatedScripts.Scripts.ScriptController -path AutomatedScripts.Scripts.Jobs.EngineControl -jobId 1 -stepId 3
+# python3 SchemaCreator.py
 
 
 import psycopg2
@@ -101,31 +101,6 @@ if __name__ == '__main__':
         '../triggerFunctions/public/trigger_validate_salt_not_found_temp_users.sql',
         '../triggerFunctions/public/trigger_validate_salt_not_found_users.sql',
         '../triggerFunctions/public/trigger_validate_user_not_found.sql',
-        # sequences - private
-        '../Sequences/private/CronJobControl_id_seq.sql',
-        '../Sequences/private/CronJobSchedule_id_seq.sql',
-        '../Sequences/private/JobContainerControl_id_seq.sql',
-        '../Sequences/private/JobDetails_id_seq.sql',
-        '../Sequences/private/JobQueue_id_seq.sql',
-        '../Sequences/private/JobQueueLock_id_seq.sql',
-        '../Sequences/private/JobSteps_id_seq.sql',
-        '../Sequences/private/ScheduledJobs_id_seq.sql',
-        '../Sequences/private/TMDB_API_Control_id_seq.sql',
-        # sequences = public
-        '../Sequences/public/comments_id_seq.sql',
-        '../Sequences/public/DefaultProfilePictures_id_seq.sql',
-        '../Sequences/public/FeaturedMovies_id_seq.sql',
-        '../Sequences/public/Genres_id_seq.sql',
-        '../Sequences/public/movies_id_seq.sql',
-        '../Sequences/public/movieTags_id_seq.sql',
-        '../Sequences/public/Retailers_id_seq.sql',
-        '../Sequences/public/reviews_id_seq.sql',
-        '../Sequences/public/TempVerificationCodes_id_seq.sql',
-        '../Sequences/public/users_id_seq.sql',
-        '../Sequences/public/UserSessions_id_seq.sql',
-        '../Sequences/public/userverificationcodes_id_seq.sql',
-        '../Sequences/public/UserVerificationQuestions_id_seq.sql',
-        '../Sequences/public/VerificationQuestions_id_seq.sql',
         # tables - private
         '../tables/private/ScheduledJobs.sql',
         '../tables/private/JobContainerControl.sql',
@@ -137,21 +112,22 @@ if __name__ == '__main__':
         '../tables/private/JobQueueLock.sql',
         '../tables/private/TMDB_API_Control.sql',
         # tables - public
-        '../tables/public/Comments.sql',
         '../tables/public/DefaultProfilePictures.sql',
+        '../tables/public/Users.sql',
+        '../tables/public/Movies.sql',
+        '../tables/public/MovieRatings.sql',
+        '../tables/public/Reviews.sql',
+        '../tables/public/Comments.sql',
         '../tables/public/FeaturedMovies.sql',
         '../tables/public/Genres.sql',
         '../tables/public/Likes.sql',
         '../tables/public/MovieGenres.sql',
-        '../tables/public/Movies.sql',
+        '../tables/public/Retailers.sql',
         '../tables/public/MoviesProviders.sql',
         '../tables/public/MovieTags.sql',
-        '../tables/public/Retailers.sql',
         '../tables/public/ReviewBadTags.sql',
         '../tables/public/ReviewGoodTags.sql',
-        '../tables/public/Reviews.sql',
         '../tables/public/TempVerificationCodes.sql',
-        '../tables/public/Users.sql',
         '../tables/public/UserSessions.sql', 
         '../tables/public/UsersFriends.sql',
         '../tables/public/UsersWatchedMovies.sql',

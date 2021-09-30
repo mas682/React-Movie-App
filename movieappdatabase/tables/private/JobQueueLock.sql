@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS private."JobQueueLock"
 (
     server character varying(100) COLLATE pg_catalog."default",
     "updatedAt" timestamp without time zone,
-    id integer NOT NULL DEFAULT nextval('"JobQueueLock_id_seq"'::regclass),
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     CONSTRAINT "JobQueueLocks_pkey" PRIMARY KEY (id)
 )
 

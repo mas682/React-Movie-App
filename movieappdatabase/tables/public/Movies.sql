@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public."Movies"
 (
-    id bigint NOT NULL DEFAULT nextval('movies_id_seq'::regclass),
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 9223372036854775807 CACHE 1 ),
     title character varying(255) COLLATE pg_catalog."default",
     director character varying(100) COLLATE pg_catalog."default",
     "runTime" integer,
@@ -27,8 +27,6 @@ CREATE TABLE IF NOT EXISTS public."Movies"
     "originalLanguage" character varying(20) COLLATE pg_catalog."default",
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userRating" numeric(10,2) NOT NULL DEFAULT 0.0,
-    "totalUserRatings" bigint NOT NULL DEFAULT 0,
     CONSTRAINT movies_pkey PRIMARY KEY (id),
     CONSTRAINT movies_imdb_id_key UNIQUE (imdb_id),
     CONSTRAINT movies_tmdb_id_key UNIQUE (tmdb_id)

@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public."UserVerificationQuestions"
 (
-    id integer NOT NULL DEFAULT nextval('"UserVerificationQuestions_id_seq"'::regclass),
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     "userId" bigint NOT NULL,
     "VerificationQuestionId" integer NOT NULL,
     answer character varying(50) COLLATE pg_catalog."default" NOT NULL,

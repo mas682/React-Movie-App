@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public."VerificationQuestions"
 (
-    id integer NOT NULL DEFAULT nextval('"VerificationQuestions_id_seq"'::regclass),
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     question character varying(150) COLLATE pg_catalog."default" NOT NULL,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,

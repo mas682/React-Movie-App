@@ -4,10 +4,11 @@
 
 CREATE TABLE IF NOT EXISTS private."JobSteps"
 (
-    id integer NOT NULL DEFAULT nextval('"JobSteps_id_seq"'::regclass),
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     type character varying(100) COLLATE pg_catalog."default",
     "jobId" integer NOT NULL,
-    "ContainerControlId" integer NOT NULL,
+    "ContainerControlId" integer NULL,
+    "CronJobScheduleId" integer NULL,
     "scriptPath" character varying(200) COLLATE pg_catalog."default" NOT NULL,
     arguments character varying(100) COLLATE pg_catalog."default",
     -- this should be a dict in the form of {"key":"value"}

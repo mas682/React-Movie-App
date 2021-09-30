@@ -16,7 +16,7 @@ def getNumberOfEngines(db):
     script = """
         select 
             "engines"
-        from public."JobContainerControl"
+        from private."JobContainerControl"
         where "type" = 'Scheduled Jobs'
     """
     print("Executing query: " + script)
@@ -33,7 +33,7 @@ def getQueuedJob(db, server, engine):
     # call out to mark a job for the engine
     print("\nGetting a job for engine: " + str(engine))
     script = """
-        call public."GetJobQueueLock"('""" + server + """',""" + engine + """);
+        call private."GetJobQueueLock"('""" + server + """',""" + engine + """);
     """
     print("Executing query: " + script)
     db._cur.execute(script)
@@ -57,10 +57,10 @@ def getQueuedJob(db, server, engine):
             cc."mem_reservation",
             cc."auto_remove",
             cc."pids_limit"
-        from public."JobQueue" j
-        left join public."ScheduledJobs" s on s."id" = j."jobId"
-        left join public."JobSteps" js on js."id" = j."stepId"
-        left join public."JobContainerControl" cc on cc."id" = js."ContainerControlId"
+        from private."JobQueue" j
+        left join private."ScheduledJobs" s on s."id" = j."jobId"
+        left join private."JobSteps" js on js."id" = j."stepId"
+        left join private."JobContainerControl" cc on cc."id" = js."ContainerControlId"
         where j."engine" = """ + engine + """
         and j."server" = '""" + server + """'
         and j.pending
@@ -144,7 +144,7 @@ def updateStartedJob(db, jobQueueIds):
     idString = idString[:len(idString) - 1]
     # call out to mark a job for the engine as started
     script = """
-        update public."JobQueue"
+        update private."JobQueue"
             set
                 "pending" = False,
                 "startedAt" = CURRENT_TIMESTAMP
@@ -163,7 +163,7 @@ def updateJobNotStarted(db, jobQueueIds):
     idString = idString[:len(idString) - 1]
     # call out to mark a job for the engine as started
     script = """
-        update public."JobQueue"
+        update private."JobQueue"
             set
                 "pending" = null,
                 "assignedAt" = null,
