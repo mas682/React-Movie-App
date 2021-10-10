@@ -12,10 +12,6 @@ const movie = (sequelize, DataTypes) => {
           type: DataTypes.STRING(255),
           allowNull: true
         },
-        revenue: {
-          type: DataTypes.INTEGER,
-          allowNull: true
-        },
         director: {
           type: DataTypes.STRING(255),
           allowNull: true
@@ -96,16 +92,6 @@ const movie = (sequelize, DataTypes) => {
         originalLanguage: {
           type: DataTypes.STRING(20),
           allowNull: true
-        },
-        userRating: {
-          type: DataTypes.DECIMAL,
-          allowNull: false,
-          defaultValue: 0.0
-        },
-        totalUserRatings: {
-          type: DataTypes.BIGINT,
-          allowNull: false,
-          defaultValue: 0
         }
       }, {
         sequelize,

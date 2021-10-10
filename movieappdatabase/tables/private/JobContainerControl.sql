@@ -5,8 +5,9 @@
 CREATE TABLE IF NOT EXISTS private."JobContainerControl"
 (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
-    engines integer,
     type character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    image_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    container_name character varying(100) COLLATE pg_catalog."default",
     memory_limit character varying(50) COLLATE pg_catalog."default",
     cpus_to_run_on character varying(50) COLLATE pg_catalog."default",
     cpu_shares integer,

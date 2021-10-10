@@ -58,6 +58,88 @@ class Database:
 
         return enabled
 
+    # this will update the databse to create a record of a running cron job, specifically for cron jobs 
+    # that run inside of containers 
+    def startContainerCronJob(self, id, stepId, server):
+        startTime = None
+        jobId = -1
+        id = str(id)
+        stepId = str(stepId)
+
+        self._cur.execute("""
+            UPDATE private."ScheduledJobs"
+               SET
+                     "lastRun"=CURRENT_TIMESTAMP
+               WHERE id=""" + id + """
+               RETURNING "lastRun";
+        """)
+        result = self._cur.fetchall()
+        if(len(result) > 0):
+            startTime = str(result[0][0])
+            # if at this point, job marked as active
+            sql = ("""
+                INSERT INTO private."JobDetails"(
+                "jobId", "stepId", "startTime", "lastActive", state, "server", "updatedAt")
+                    VALUES (""" + id + """,""" + stepId + """,'""" + startTime +
+                    """','""" + startTime + """','Starting Container','""" + 
+                    server + """', CURRENT_TIMESTAMP)
+                    RETURNING "id";
+                    """)
+            print(sql)
+            self._cur.execute(sql)
+            result = self._cur.fetchall()
+            if(len(result) > 0):
+                jobId = result[0][0]
+
+        return {"jobDetailsId": jobId}
+
+    # function to use in place of startJob in ScriptController when the job is a 
+    # cron job ran via container
+    # the job will have already been marked as started so just need to get if enabled 
+    # and update log to say the job is actually running now
+    def updateContainerCronJob(self, id, stepId, server, jobDetailsId):
+        enabled = False
+        startTime = None
+        id = str(id)
+        stepId = str(stepId)
+        jobDetailsId = str(jobDetailsId)
+        scriptPath = None
+        agruments = None
+
+        self._cur.execute("""
+            SELECT 
+                case when s."Enabled" and js."enabled"
+                    then true
+                else
+                    False
+                end as "Enabled",
+                js."scriptPath",
+                js."arguments",
+                js."logArguments"
+            from private."ScheduledJobs" s
+            left join private."JobSteps" js on js."id" = """ + stepId + """
+            and js."jobId" = """ + id + """
+            where s."id" = """ + id + """
+        """)
+        result = self._cur.fetchall()
+        if(len(result) > 0):
+            enabled = result[0][0]
+            scriptPath = result[0][1]
+            arguments = result[0][2]
+            logArguments = result[0][3]
+            # if at this point, job already marked as active
+            sql = ("""
+                UPDATE private."JobDetails"
+                    SET
+                            "lastActive"=CURRENT_TIMESTAMP,
+                            "state"='Running'
+                    WHERE id=""" + jobDetailsId + """;
+            """)
+            self._cur.execute(sql)
+
+        return {"enabled": enabled, "jobDetailsId": int(jobDetailsId), "scriptPath": scriptPath, "arguments": arguments, "logArguments": logArguments}
+
+
     # this will update the database to create a record of a running job
     def startJob(self, id, stepId, server, engine):
         enabled = False

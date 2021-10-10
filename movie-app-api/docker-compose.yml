@@ -1,12 +1,43 @@
 version: "3.7"
 
 services:
-  redis-container:
-    image: 'redis'
+  extract-volume:
+    image: ubuntu
+    volumes: 
+      - pgdatabase:
+      - .:/backup
+    command: bash -c "cd /backup && tar xvf /backup/backup.tar --strip 1"
+  movie-api-database:
+    build: 
+        context: ../movieappdatabase/src
+        dockerfile: database.Dockerfile
+    image: movie-app-db
     ports:
-      - "6739:6739"
-    expose:
-      - 6739
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+    volumes:
+      - pgdatabase:/var/lib/postgresql/data
+  python-db-builder:
+      build: 
+          context: ./src/AutomatedScripts/Docker
+          dockerfile: python.Dockerfile
+      image: python-db-builder
+      command: python3 src/SchemaCreator.py 
+      environment:
+        SERVER: "${SERVER}"
+        ENVIRONMENT: "${ENVIRONMENT}"
+      working_dir: /movieappdatabase
+      volumes:
+        - ../movieappdatabase:/movieappdatabase
+  redis:
+    build: 
+        context: .
+        dockerfile: redis.Dockerfile
+    image: redis
+    ports:
+      - "6379:6379"
   movie-api-app:
     image: node:14
     command: sh -c "npm run server"
@@ -18,4 +49,6 @@ services:
     working_dir: /movie-app-api
     volumes:
       - ./:/movie-app-api
-    
+  
+volumes:
+  pgdatabase:

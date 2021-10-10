@@ -29,6 +29,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-path", action="store", dest="path", required=True, help="Path to module to run")
 parser.add_argument("-jobId", action="store", dest="jobId", required=True, type=int)
 parser.add_argument("-stepId", action="store", dest="stepId", required=True, type=int)
+parser.add_argument("-jobDetailsId", action="store", dest="jobDetailsId", required=False, type=int)
 args = parser.parse_args()
 
 
@@ -93,6 +94,7 @@ if __name__ == '__main__':
     # select the job id
     jobId = args.jobId
     stepId = args.stepId
+    jobDetailsId = args.jobDetailsId
     # used if a fatal error occurred
     failed = False
     # used if job not enabled or could not be found
@@ -123,7 +125,12 @@ if __name__ == '__main__':
     if(not connectionResult["created"]): exit(1)
 
     # start the job
-    jobStartResult = Utils.startJob(db, logger, jobId, stepId, extras)
+    jobStartResult = None
+    # if the job details is already set
+    if(jobDetailsId is not None):
+        jobStartResult = Utils.updateContainerCronJob(db, logger, jobId, stepId, jobDetailsId, extras)
+    else:
+        jobStartResult = Utils.startJob(db, logger, jobId, stepId, extras)
     jobDetailsId = jobStartResult["jobDetailsId"]
     jobEnabled = jobStartResult["enabled"]
     scriptPath = jobStartResult["scriptPath"]

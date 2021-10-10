@@ -3,7 +3,7 @@ let redisClient;
 
 
 function createClient() {
-    let host = (process.env.NODE_DOCKER == "true") ? "redis-container" : "localhost";
+    let host = (process.env.NODE_DOCKER == "true") ? "redis" : "localhost";
     // will eventually have to pass some connection parameters here...
     redisClient = redis.createClient({
         host: host,

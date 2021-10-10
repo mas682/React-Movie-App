@@ -149,6 +149,8 @@ const getMovieTitles = async (requester, req, res) =>
 {
 	res.locals.function = "getMovieTitles";
 	let value = req.query.title;
+	let valid = validateStringParameter(res, value, 1, 200, requester, "The movie title to search for is invalid");
+	if(!valid) return;
 	// find the movies containing the value
 	let movies = await models.Movies.findByTitle(value, 10);
 	if(movies === undefined)
