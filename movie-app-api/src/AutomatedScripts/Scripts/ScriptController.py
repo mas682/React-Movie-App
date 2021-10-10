@@ -187,7 +187,6 @@ if __name__ == '__main__':
     if(not jobLogError and jobEnabled and not lockedError):
         # if at this point, job ready to run so import code
         try:
-            print(scriptPath)
             mainFunction = importlib.import_module(scriptPath)
         except:
             print("Failed to import the code for the script to run")

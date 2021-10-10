@@ -310,7 +310,7 @@ def getMovies(db, startDate, endDate, jobType):
             print("Total pages to be processed: " + str(maxPages))
             print("Total movies to be processed: " + str(maxMovies))
             # add and False to test
-            if(maxPages > maxLoops):
+            if(maxPages > maxLoops and False):
                 raise Exception(str(maxPages) + " pages exceeds the maximum loops allowed: " + str(maxLoops))
         movies = result.get("results", [])
         recordCount = len(movies)
@@ -333,9 +333,9 @@ def getMovies(db, startDate, endDate, jobType):
 
 def main(logger, db, extras, jobId, jobDetailsId, arguments):
     print("Getting last run time from the control table...")
-    id = "2"
+    id = "3"
     script = """
-        SELECT * FROM public."TMDB_API_Control" 
+        SELECT * FROM private."TMDB_API_Control" 
         where "id" = """ + id + """ and enabled
     """
     db._cur.execute(script)
@@ -372,7 +372,7 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
             newLastRun = currentDate
         print("New last run value: " + str(newLastRun))
         sql = """
-            update public."TMDB_API_Control"
+            update private."TMDB_API_Control"
             set
                 "lastRun" = '""" + str(newLastRun) + """'
             where "id" = """ + id + """ and enabled;

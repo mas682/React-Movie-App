@@ -38,8 +38,12 @@ def removeJob(cron, jobId):
         print("The job has been successfully removed\n")
 
 
-def updateOrCreateJob(cron, jobId, stepId, scriptPath, timeout, minute, hour, month, dayOfMonth, dayOfWeek):
-    command = "cd /home/react-movie-app/movie-app-api/src; timeout --kill-after=10 " + str(timeout) + " /usr/bin/python3 -m AutomatedScripts.Scripts.ScriptController -path " + scriptPath + " -jobId " + jobId + " -stepId " + stepId
+def updateOrCreateJob(cron, jobId, stepId, runAsContainer, scriptPath, timeout, minute, hour, month, dayOfMonth, dayOfWeek):
+    if(not runAsContainer):
+        command = "cd /home/react-movie-app/movie-app-api/src; timeout --kill-after=10 " + str(timeout) + " /usr/bin/python3 -m AutomatedScripts.Scripts.ScriptController -path " + scriptPath + " -jobId " + jobId + " -stepId " + stepId
+    else:
+        command = "cd /home/react-movie-app/movie-app-api/src; timeout --kill-after=10 30 /usr/bin/python3 -m AutomatedScripts.Scripts.Jobs.CronJobContainerStarter -jobId " + jobId + " -stepId " + stepId
+    print(command)
     job = findExistingJob(cron, jobId)
     if job is None:
         print("Creating a new job with id of: " + jobId + "\n")
@@ -72,12 +76,13 @@ def updateJobs(result):
         timeout = job[7] if job[7] is not None else 0
         stepEnabled = job[8]
         stepUpdatedAt = job[9]
-        minute = job[10] if job[10] is not None else "*"
-        hour = job[11] if job[11] is not None else "*"
-        month = job[12] if job[12] is not None else "*"
-        dayOfMonth = job[13] if job[13] is not None else "*"
-        dayOfWeek = job[14] if job[14] is not None else "*"
-        scheduleUpdatedAt = job[15]
+        runAsContainer = job[10]
+        minute = job[11] if job[11] is not None else "*"
+        hour = job[12] if job[12] is not None else "*"
+        month = job[13] if job[13] is not None else "*"
+        dayOfMonth = job[14] if job[14] is not None else "*"
+        dayOfWeek = job[15] if job[15] is not None else "*"
+        scheduleUpdatedAt = job[16]
 
         print("Job details:")
         print("\tLast Run: " + str(lastRunTS))
@@ -90,6 +95,7 @@ def updateJobs(result):
         print("\tTimeout: " + str(timeout))
         print("\tStep enabled: " + str(stepEnabled))
         print("\tStep Updated At: " + str(stepUpdatedAt))
+        print("\tRun as container: " + str(runAsContainer))
         print("\tMinute: " + minute)
         print("\tHour: " + hour)
         print("\tMonth: " + month)
@@ -100,7 +106,7 @@ def updateJobs(result):
         if(not jobEnabled or not stepEnabled):
             removeJob(cron, jobId)
         else:
-            updateOrCreateJob(cron, jobId, stepId, scriptPath, timeout, minute, hour, month, dayOfMonth, dayOfWeek)
+            updateOrCreateJob(cron, jobId, stepId, runAsContainer, scriptPath, timeout, minute, hour, month, dayOfMonth, dayOfWeek)
 
 def main(logger, db, extras, jobId, jobDetailsId, arguments):
     print("Getting the updated cron jobs...")
@@ -122,7 +128,7 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
         where "id" = 1
     """
     print("Executing query: " + script)
-    #db._cur.execute(script)
+    db._cur.execute(script)
 
     return "Finished Successfully"
 

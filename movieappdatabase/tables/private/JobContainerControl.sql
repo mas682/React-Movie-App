@@ -14,8 +14,9 @@ CREATE TABLE IF NOT EXISTS private."JobContainerControl"
     cpu_period integer,
     cpu_quota integer,
     mem_reservation character varying(50) COLLATE pg_catalog."default",
-    auto_remove boolean,
+    auto_remove boolean DEFAULT true,
     pids_limit integer,
+    engines integer,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "JobContainerControl_pkey" PRIMARY KEY (id)

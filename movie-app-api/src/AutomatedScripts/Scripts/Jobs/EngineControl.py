@@ -167,7 +167,7 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
                 break
             jobId = result[0][0]
             try:
-                DockerUtils.startDockerContainer(dockerCli, result, engine, environment)
+                DockerUtils.startDockerContainer(dockerCli, result, engine, environment, None)
                 startedJobs.append(jobId)
             except:
                 print("An error occurred starting the container for engine " + str(engine))
