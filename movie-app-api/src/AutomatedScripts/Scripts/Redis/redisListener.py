@@ -7,6 +7,8 @@
 # This should be ran in it's own container as a long running job that auto restarts
 # example command:
 # python3 -m AutomatedScripts.Scripts.ScriptController -path AutomatedScripts.Scripts.Redis.redisListener -jobId 1 -stepId 3
+# When running via a container, will not be able to see the print statements of the subprocesses 
+# so they are commented out
 
 import redis
 from copy import deepcopy
@@ -36,11 +38,11 @@ def redisListener(connection, parent_conn):
                 connection.send(message)
             time.sleep(0.001)
     except:
-        print("An error occurred in the sender process:")
+        #print("An error occurred in the sender process:")
         traceback.print_exc()
         result = traceback.format_exc()
         parent_conn.send(result)
-    print("Sender finished...")
+    #print("Sender finished...")
 
 
 def dataProcessor(connection, parent_conn):
@@ -58,7 +60,7 @@ def dataProcessor(connection, parent_conn):
                 if(dataFound):
                     message = connection.recv()
                 if(message):
-                    print("Message in data processor: " + str(message))
+                    #print("Message in data processor: " + str(message))
                     if(message["type"] == "message"):
                         # need to ignore messages that say subscribe or unsubscribe...
                         key = message["data"].decode()
@@ -68,15 +70,15 @@ def dataProcessor(connection, parent_conn):
                                 DELETE FROM public."UserSessions"
                                 WHERE session = '""" + key + """'
                             """)
-                            print("Key (" + key + ") removed or did not exist")
-                        else:
-                            print("Invalid key received: " + key)
-                    else:
-                        print("Invalid message type received")
+                            #print("Key (" + key + ") removed or did not exist")
+                        #else:
+                            #print("Invalid key received: " + key)
+                    #else:
+                        #print("Invalid message type received")
 
                 dataFound = connection.poll(timeout=1)
     except:
-        print("An error occurred in the receiver process:")
+        #print("An error occurred in the receiver process:")
         traceback.print_exc()
         result = traceback.format_exc()
         parent_conn.send(result)
@@ -213,7 +215,7 @@ def main(logger, db, extras, jobId, jobDetailsId, scriptArgs):
                 break
             try:
                 # check if an error occurred every 5 minutes
-                redis_process.join(timeout=300)
+                redis_process.join(timeout=60)
             except:
                 traceback.print_exc()
                 logger.info("An error occurred trying to call join on the redis process", exc_info=sys.exc_info(), extra=extras)
@@ -223,7 +225,7 @@ def main(logger, db, extras, jobId, jobDetailsId, scriptArgs):
     # give the processes time to finish
     time.sleep(1)
 
-    print("Main loop finished\n")
+    print("Loop listening for messages finished\n")
     result = terminateProcess(data_process, logger, extras)
     if(not result): error = True
 

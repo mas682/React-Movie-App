@@ -1,8 +1,10 @@
 import psycopg2
 from psycopg2.extras import DictCursor
+from psycopg2 import OperationalError
+import time
 
 class Database:
-    def __init__(self, connectionParams, applicationName):
+    def __init__(self, connectionParams, applicationName, maxConnectionRetryAttempts = 0, connectionAttemptDelay = 10):
         self._host = connectionParams["host"]
         self._port = connectionParams["port"]
         self._database = connectionParams["database"]
@@ -11,14 +13,31 @@ class Database:
         self._connection = None
         self._cur = None
         self._application = applicationName
+        # 0 retry attemps by default
+        self._maxConnectionRetryAttempts = maxConnectionRetryAttempts if maxConnectionRetryAttempts is not None else 0
+        # 10 second delay on retry by default
+        self._connectionAttemptDelay = connectionAttemptDelay if connectionAttemptDelay is not None else 10
+        self._connectionRetryAttempts = -1
 
 
     def connect(self):
         try:
+            self._connectionRetryAttempts = self._connectionRetryAttempts + 1
             self._connection=psycopg2.connect(host=self._host,port=self._port,database=self._database,user=self._user,password=self._password, application_name=self._application)
             # automatically commit changes
             self._connection.autocommit = True
             self._cur = self._connection.cursor(cursor_factory=DictCursor)
+        except OperationalError as err:
+            if(self._connectionRetryAttempts < self._maxConnectionRetryAttempts):
+                print("Connection to database failed.  Trying to connect again in " + str(self._connectionAttemptDelay) + " seconds")
+                time.sleep(self._connectionAttemptDelay)
+                self.connect()
+            else:
+                if self._connection is not None:
+                    self._connection.close()
+                    self._connection = None
+                self._cur = None
+                raise err
         except:
             if self._connection is not None:
                 self._connection.close()
@@ -85,7 +104,6 @@ class Database:
                     server + """', CURRENT_TIMESTAMP)
                     RETURNING "id";
                     """)
-            print(sql)
             self._cur.execute(sql)
             result = self._cur.fetchall()
             if(len(result) > 0):
@@ -188,7 +206,6 @@ class Database:
                     server + """', CURRENT_TIMESTAMP)
                     RETURNING "id";
                     """)
-            print(sql)
             self._cur.execute(sql)
             result = self._cur.fetchall()
             if(len(result) > 0):

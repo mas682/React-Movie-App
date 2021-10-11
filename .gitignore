@@ -17,4 +17,5 @@ node_modules/
 *.pem
 *.pfx
 *.env
+*.conf
 movieappdatabase/src/__pycache__/config.cpython-38.pyc

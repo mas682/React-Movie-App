@@ -30,6 +30,8 @@ parser.add_argument("-path", action="store", dest="path", required=True, help="P
 parser.add_argument("-jobId", action="store", dest="jobId", required=True, type=int)
 parser.add_argument("-stepId", action="store", dest="stepId", required=True, type=int)
 parser.add_argument("-jobDetailsId", action="store", dest="jobDetailsId", required=False, type=int)
+parser.add_argument("-dbConnectionRetryAttempts", action="store", dest="dbConnectionAttempts", required=False, type=int)
+parser.add_argument("-dbConnectionDelay", action="store", dest="dbConnectionDelay", required=False, type=int)
 args = parser.parse_args()
 
 
@@ -95,6 +97,8 @@ if __name__ == '__main__':
     jobId = args.jobId
     stepId = args.stepId
     jobDetailsId = args.jobDetailsId
+    dbConnectionAttempts = args.dbConnectionAttempts
+    dbConnectionDelay = args.dbConnectionDelay
     # used if a fatal error occurred
     failed = False
     # used if job not enabled or could not be found
@@ -120,7 +124,7 @@ if __name__ == '__main__':
         raise Exception("Could not determine what environment the script is running on")
 
     # connect to the database
-    db = Database(config(environment), fileName)
+    db = Database(config(environment), fileName, dbConnectionAttempts, dbConnectionDelay)
     connectionResult = Utils.connectToDatabase(db, logger, extras)
     if(not connectionResult["created"]): exit(1)
 
