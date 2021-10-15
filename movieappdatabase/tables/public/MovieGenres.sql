@@ -9,11 +9,11 @@ CREATE TABLE IF NOT EXISTS public."MovieGenres"
     CONSTRAINT "MovieGenres_pkey" PRIMARY KEY ("GenreId", "movieId"),
     CONSTRAINT "MovieGenres_GenreId_fkey" FOREIGN KEY ("GenreId")
         REFERENCES public."Genres" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "MovieGenres_movieId_fkey" FOREIGN KEY ("movieId")
         REFERENCES public."Movies" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

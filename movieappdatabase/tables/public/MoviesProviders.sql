@@ -12,11 +12,11 @@ CREATE TABLE IF NOT EXISTS public."MoviesProviders"
     CONSTRAINT "MoviesProviders_pkey" PRIMARY KEY ("MovieId", "RetailerId"),
     CONSTRAINT "MoviesProviders_MovieId_fkey" FOREIGN KEY ("MovieId")
         REFERENCES public."Movies" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "MoviesProviders_RetailerId_fkey" FOREIGN KEY ("RetailerId")
         REFERENCES public."Retailers" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

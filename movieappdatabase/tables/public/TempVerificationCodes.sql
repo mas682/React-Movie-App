@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public."TempVerificationCodes"
     CONSTRAINT "TempVerificationCodes_pkey" PRIMARY KEY (id),
     CONSTRAINT "TempVerificationCodes_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

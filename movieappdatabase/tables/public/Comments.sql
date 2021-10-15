@@ -13,11 +13,11 @@ CREATE TABLE IF NOT EXISTS public."Comments"
     CONSTRAINT comments_pkey PRIMARY KEY (id),
     CONSTRAINT "comments_reviewId_fkey" FOREIGN KEY ("reviewId")
         REFERENCES public."Reviews" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "comments_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

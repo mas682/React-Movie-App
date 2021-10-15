@@ -38,6 +38,8 @@ services:
 
   redis-listener:
     image: python-engine
+    profiles:
+      - redis
     environment:
       SERVER: "LOCALHOST"
       ENVIRONMENT: "LOCAL-DEV"

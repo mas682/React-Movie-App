@@ -11,11 +11,11 @@ CREATE TABLE IF NOT EXISTS public."Likes"
     CONSTRAINT likes_pkey PRIMARY KEY ("userId", "reviewId"),
     CONSTRAINT "likes_reviewId_fkey" FOREIGN KEY ("reviewId")
         REFERENCES public."Reviews" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "likes_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

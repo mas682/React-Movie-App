@@ -26,7 +26,7 @@ from AutomatedScripts.shared import Utils
 
 def redisListener(connection, parent_conn):
     try:
-        params = config(os.getenv('ENVIRONMENT'), section="redis")
+        params = config(os.getenv('ENVIRONMENT'), os.getenv('CONTAINER'), section="redis")
         r = redis.Redis(**params)
         p = r.pubsub()
         p.subscribe("__keyevent@0__:expired")

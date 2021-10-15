@@ -78,9 +78,29 @@ if __name__ == '__main__':
     if(environment is None):
         logger.info("Could not determine what environment the script is running on", extra=extras)
         raise Exception("Could not determine what environment the script is running on")
+    
+    container = os.getenv('CONTAINER')
+    if(container is None):
+        logger.info("Could not determine what if the script is running on a container or not based off the environment variable", extra=extras)
+        raise Exception("Could not determine if the script is running in a container or not")
+
+    creds = None
+    if(container == "TRUE"):
+        # get the host name
+        creds = config(environment, container, "postgresql-container")
+        # get other postgres config values
+        creds.update(config(environment, container, "postgresql"))
+    elif(container == "FALSE"):
+        # get the host name
+        creds = config(environment, container, "postgresql-external")
+        # get other postgres config values
+        creds.update(config(environment, container, "postgresql"))
+    else:
+        raise Exception("Could not determine if the script is running in a container or not")
+
 
     # connect to the database
-    db = Database(config(environment), fileName)
+    db = Database(creds, fileName)
     connectionResult = Utils.connectToDatabase(db, logger, extras)
     if(not connectionResult["created"]): exit(1)
 

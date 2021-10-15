@@ -11,11 +11,11 @@ CREATE TABLE IF NOT EXISTS public."UsersFriends"
     CONSTRAINT "UsersFriends_pkey" PRIMARY KEY ("followedId", "followerId"),
     CONSTRAINT "UsersFriends_followedId_fkey" FOREIGN KEY ("followedId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "UsersFriends_followerId_fkey" FOREIGN KEY ("followerId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

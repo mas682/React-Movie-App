@@ -8,6 +8,7 @@ const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
 import {checkHashedValue} from '../src/shared/crypto.js';
 import {createSession, destroySession} from '../src/shared/sessions.js';
+import { loggers } from 'winston';
 const config = require('../Config.json');
 const Logger = require("../src/shared/logger.js").getLogger();
 

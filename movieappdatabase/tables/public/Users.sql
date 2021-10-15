@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS public."Users"
     CONSTRAINT users_salt_key UNIQUE (salt),
     CONSTRAINT users_picture_fkey FOREIGN KEY (picture)
         REFERENCES public."DefaultProfilePictures" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
+        ON UPDATE NO ACTION
+        ON DELETE SET DEFAULT
 )
 
 TABLESPACE pg_default;

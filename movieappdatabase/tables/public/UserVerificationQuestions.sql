@@ -15,11 +15,11 @@ CREATE TABLE IF NOT EXISTS public."UserVerificationQuestions"
     CONSTRAINT "UserVerificationsQuestions_userId_VerificationQuestionId" UNIQUE ("userId", "VerificationQuestionId"),
     CONSTRAINT "UserVerificationQuestions_VerificationQuestionId_fkey" FOREIGN KEY ("VerificationQuestionId")
         REFERENCES public."VerificationQuestions" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "UserVerificationQuestions_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

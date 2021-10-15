@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public."UserSessions"
     CONSTRAINT "UserSessions_session_userId_key" UNIQUE ("userId", session),
     CONSTRAINT "UserSession_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

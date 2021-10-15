@@ -15,11 +15,11 @@ CREATE TABLE IF NOT EXISTS public."Reviews"
     CONSTRAINT "reviews_userId_movieId_key" UNIQUE ("userId", "movieId"),
     CONSTRAINT "reviews_movieId_fkey" FOREIGN KEY ("movieId")
         REFERENCES public."Movies" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "reviews_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

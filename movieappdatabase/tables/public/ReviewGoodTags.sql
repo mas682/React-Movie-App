@@ -12,15 +12,15 @@ CREATE TABLE IF NOT EXISTS public."ReviewGoodTags"
     CONSTRAINT "ReviewGoodTags_pkey" PRIMARY KEY ("reviewId", "movieTagId"),
     CONSTRAINT "ReviewGoodTags_movieTagId_fkey" FOREIGN KEY ("movieTagId")
         REFERENCES public."MovieTags" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "ReviewGoodTags_reviewId_fkey" FOREIGN KEY ("reviewId")
         REFERENCES public."Reviews" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "ReviewGoodTags_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

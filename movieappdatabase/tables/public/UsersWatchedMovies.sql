@@ -11,11 +11,11 @@ CREATE TABLE IF NOT EXISTS public."UsersWatchedMovies"
     CONSTRAINT "UsersWatchedMovies_pkey" PRIMARY KEY ("userId", "movieId"),
     CONSTRAINT "UsersWatchedMovies_movieId_fkey" FOREIGN KEY ("movieId")
         REFERENCES public."Movies" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE,
     CONSTRAINT "UsersWatchedMovies_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public."Users" (id) MATCH SIMPLE
-        ON UPDATE CASCADE
+        ON UPDATE NO ACTION
         ON DELETE CASCADE
 )
 

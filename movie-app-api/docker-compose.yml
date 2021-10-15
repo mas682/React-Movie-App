@@ -1,29 +1,44 @@
 version: "3.7"
 
 services:
-  extract-volume:
-    image: ubuntu
-    volumes: 
-      - pgdatabase:
-      - .:/backup
-    command: bash -c "cd /backup && tar xvf /backup/backup.tar --strip 1"
+  #extract-volume:
+  #  image: ubuntu
+  #  profiles: 
+  #    - db-reset
+  #  volumes: 
+  #    - pgdatabase:
+  #    - .:/backup
+  #  command: bash -c "cd /backup && tar xvf /backup/backup.tar --strip 1"
+  
   movie-api-database:
     build: 
         context: ../movieappdatabase/src
         dockerfile: database.Dockerfile
     image: movie-app-db
+    profiles: 
+      - backend
     ports:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
       POSTGRES_DB: "${POSTGRES_DB}"
+    deploy:
+      resources:
+        limits:
+          memory: "${DATABASE_MEM}"
+        reservations:
+          memory: "${DATABASE_MEM_RES}"
+          cpus: "${DATABASE_CPU_SHARE}"
     volumes:
       - pgdatabase:/var/lib/postgresql/data
+
   python-db-builder:
       build: 
           context: ./src/AutomatedScripts/Docker
           dockerfile: python.Dockerfile
       image: python-db-builder
+      profiles: 
+        - db-builder
       command: python3 src/SchemaCreator.py 
       environment:
         SERVER: "${SERVER}"
@@ -31,24 +46,99 @@ services:
       working_dir: /movieappdatabase
       volumes:
         - ../movieappdatabase:/movieappdatabase
+
   redis:
-    build: 
-        context: .
-        dockerfile: redis.Dockerfile
     image: redis
+    profiles:
+      - backend
     ports:
       - "6379:6379"
+    volumes:
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    deploy:
+      resources:
+        limits:
+          memory: "${REDIS_MEM}"
+        reservations:
+          memory: "${REDIS_MEM_RES}"
+          cpus: "${REDIS_CPU_SHARE}"
+
   movie-api-app:
     image: node:14
     command: sh -c "npm run server"
+    profiles: 
+      - node-backend
     ports:
       - "9000:9000"
     environment:
       NODE_DOCKER: "true"
       NODE_ENV: "dev"
     working_dir: /movie-app-api
+    deploy:
+      resources:
+        limits:
+          memory: "${NODE_MEM}"
+        reservations:
+          memory: "${NODE_MEM_RES}"
+          cpus: "${NODE_CPU_SHARE}"
     volumes:
       - ./:/movie-app-api
+    depends_on:
+      - movie-api-database
+      - redis
+      - redis-listener
+
+  redis-listener:
+    image: python-engine
+    profiles:
+      - node-backend
+    environment:
+      SERVER: "LOCALHOST"
+      ENVIRONMENT: "LOCAL-DEV"
+      CONTAINER: "TRUE"
+    volumes:
+      - ./src/AutomatedScripts:/home/AutomatedScripts
+    command: python3 -m AutomatedScripts.Scripts.ScriptController -path AutomatedScripts.Scripts.Redis.redisListener -jobId 2 -stepId 2 -dbConnectionRetryAttempts 1
+    deploy:
+      resources:
+        limits:
+          memory: "${REDIS_LISTENER_MEM}"
+        reservations:
+          memory: "${REDIS_LISTENER_MEM_RES}"
+          cpus: "${REDIS_LISTENER_CPU_SHARE}"
+      restart_policy:
+        condition: any
+        delay: 5s
+    depends_on:
+      - movie-api-database
+      - redis
+
+  react-frontend:
+    image: node:14
+    command: sh -c "cd /reactmovieapp/src; npm start"
+    ports: 
+      - "3000:3000"
+    profiles: 
+      - frontend
+    environment:
+      NODE_DOCKER: "true"
+      ENVIRONMENT: "LOCAL_DEV"
+      SERVER: "LOCALHOST"
+      CONTAINER: "TRUE"
+    working_dir: /reactmovieapp
+    deploy:
+      resources:
+        limits:
+          memory: "${REACT_MEM}"
+        reservations:
+          memory: "${REACT_MEM_RES}"
+          cpus: "${REACT_CPU_SHARE}"
+    volumes: 
+      - ../reactmovieapp:/reactmovieapp
+    stdin_open: true 
+    depends_on: 
+      - movie-api-app
   
 volumes:
   pgdatabase:

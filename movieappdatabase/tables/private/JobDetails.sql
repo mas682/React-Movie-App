@@ -4,8 +4,8 @@
 
 CREATE TABLE IF NOT EXISTS private."JobDetails"
 (
-    "jobId" integer NOT NULL,
-    "stepId" integer NOT NULL,
+    "jobId" integer NULL,
+    "stepId" integer NULL,
     "startTime" timestamp without time zone,
     "lastActive" timestamp without time zone,
     finished timestamp without time zone,
@@ -19,11 +19,11 @@ CREATE TABLE IF NOT EXISTS private."JobDetails"
     CONSTRAINT "JobDetails_JobSteps_fkey" FOREIGN KEY ("stepId")
         REFERENCES private."JobSteps" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION,
+        ON DELETE SET NULL,
     CONSTRAINT "JobDetails_jobId_fkey" FOREIGN KEY ("jobId")
         REFERENCES private."ScheduledJobs" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE SET NULL
 )
 
 TABLESPACE pg_default;
