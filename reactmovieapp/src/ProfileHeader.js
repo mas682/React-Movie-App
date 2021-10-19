@@ -128,7 +128,7 @@ class ProfileHeader extends React.Component {
         // will come in saying the logged in user is "" even if you are logged in
         // second time around have the correct username and send the request again
         // possible solution: have router send out a request when it first mounts?
-        let url = "https://localhost:9000/profile/" + username + "/user_info";
+        let url = "/profile/" + username + "/user_info";
         await apiGetJsonRequest(url).then(result =>{
             // set status to result[0]
             let status = result[0];
@@ -203,11 +203,11 @@ class ProfileHeader extends React.Component {
         let url;
         if(type === "follow")
         {
-            url = "https://localhost:9000/profile/" + this.state.username + "/follow";
+            url = "/profile/" + this.state.username + "/follow";
         }
         else if(type === "unfollow")
         {
-            url = "https://localhost:9000/profile/" + this.state.username + "/unfollow";
+            url = "/profile/" + this.state.username + "/unfollow";
         }
         else
         {

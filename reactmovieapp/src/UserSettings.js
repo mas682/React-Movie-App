@@ -451,7 +451,7 @@ class UserSettings extends React.Component {
 
 	async callApi()
 	{
-		let url = "https://localhost:9000/getuserinfo";
+		let url = "/getuserinfo";
 		let result = await apiGetJsonRequest(url);
 		let status = result[0];
 		let message = result[1];

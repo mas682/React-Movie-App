@@ -15,12 +15,8 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
     environment = os.getenv('ENVIRONMENT')
     if(environment is None):
         raise Exception("Could not determine what environment the script is running on")
-    
-    container = os.getenv('CONTAINER')
-    if(container is None):
-        raise Exception("Could not determine if the script is running in a container or not")
 
-    conf = config(environment, container, 'cron')
+    conf = config(environment, 'cron')
     # put the user in a config file
     cron = CronTab(user=conf['user'])
     print(conf)

@@ -31,7 +31,7 @@ class DeleteAccountPopUp extends React.Component {
         let parameters = {
             password: this.state.password
         };
-        let url = "https://localhost:9000/profile/" + this.state.username + "/delete_user";
+        let url = "/profile/" + this.state.username + "/delete_user";
         let result = await apiPostJsonRequest(url, parameters);
         let status = result[0];
         let message = result[1].message;

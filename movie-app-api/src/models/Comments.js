@@ -34,30 +34,11 @@ const comment = (sequelize, DataTypes) => {
         createdAt: {
             // this is done to format the date on return
             type: DataTypes.DATE,
-            allowNull: false,
-            get() {
-                let hour = this.getDataValue('createdAt').getHours();
-                let amPm = "AM";
-                if(hour >= 12)
-                {
-                    amPm = "PM";
-                }
-                return moment(this.getDataValue('createdAt')).format('MMMM DD, YYYY h:mm ') + amPm;
-            }
+            allowNull: false
         },
         updatedAt: {
             // this is done to format the date on return
-            type: DataTypes.DATE,
-            get() {
-                let hour = this.getDataValue('updatedAt').getHours();
-                let amPm = "AM";
-                if(hour >= 12)
-                {
-                    amPm = "PM";
-                }
-                return moment(this.getDataValue('updatedAt')).format('MMMM DD, YYYY h:mm ') + amPm;
-            },
-            allowNull: false
+            type: DataTypes.DATE
         },
     },
     {

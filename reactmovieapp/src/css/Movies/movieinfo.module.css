@@ -467,7 +467,20 @@
 
 .moviePosterLarge {
     width: 100%;
-    height: 700px;
+    height: 100%;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    position: absolute;
+    border: none;
+}
+
+.posterContainer {
+    width: 100%;
+    position: relative;
+    padding-top: 177.77%;
+    overflow: hidden;
 }
 
 .movieTrailer {

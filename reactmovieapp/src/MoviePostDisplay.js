@@ -89,7 +89,7 @@ class MoviePostDisplay extends React.Component {
     getData(username, offset)
     {
         let max = 5;
-        let url = "https://localhost:9000/profile/" + username + "/reviews?offset=" + offset + "&max=" + max;
+        let url = "/profile/" + username + "/reviews?offset=" + offset + "&max=" + max;
         apiGetJsonRequest(url).then(result =>{
             let status = result[0];
             let message = result[1].message;

@@ -9,6 +9,7 @@ import ReviewForm from './ReviewForm.js';
 import Dropdown from 'react-bootstrap/Dropdown';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import {generateRatingStars} from './StaticFunctions/MovieHtmlFunctions.js';
+import {convertUTCtoESTString} from './StaticFunctions/Utils.js';
 
 
 class MoviePost extends React.Component {
@@ -93,7 +94,7 @@ class MoviePost extends React.Component {
                 // the review text
                 review: this.props.data.review,
                 fullReview: this.props.data,
-                time: this.props.data.createdAt,
+                time: convertUTCtoESTString(this.props.data.createdAt),
                 // the logged in users username
                 currentUser: this.props.currentUser,
                 // used to show likes pop up
@@ -226,7 +227,7 @@ class MoviePost extends React.Component {
             usedBadButtons: MoviePost.getBadButtons(props.data.badTags),
             review: props.data.review,
             fullReview: props.data.review,
-            time: props.data.createdAt,
+            time: convertUTCtoESTString(props.data.createdAt),
             // the logged in users username
             currentUser: props.currentUser,
             // used to show likes pop up
@@ -278,7 +279,7 @@ class MoviePost extends React.Component {
     // function to send request to server to remove like from a post
     removeLike()
     {
-        let url = "https://localhost:9000/review/removelike";
+        let url = "/review/removelike";
         let params = {reviewId: this.state.id};
         return apiPostJsonRequest(url, params);
     }
@@ -286,7 +287,7 @@ class MoviePost extends React.Component {
     // function to send request to server to add a like to a post
     postLike()
     {
-        let url = "https://localhost:9000/review/addlike";
+        let url = "/review/addlike";
         let params = {reviewId: this.state.id};
         return apiPostJsonRequest(url, params);
     }
@@ -499,7 +500,7 @@ class MoviePost extends React.Component {
             usedBadButtons: MoviePost.getBadButtons(reviewResult.badTags),
             review: reviewResult.review,
             fullReview: reviewResult,
-            time: reviewResult.createdAt,
+            time: convertUTCtoESTString(reviewResult.createdAt),
             moviePath: moviePath
         });
         /*
@@ -574,7 +575,7 @@ class MoviePost extends React.Component {
     // function to handle deleting a post
     async removePost()
     {
-        let url = "https://localhost:9000/review/removepost";
+        let url = "/review/removepost";
         let params = {reviewId: this.state.id};
         let result = await apiPostJsonRequest(url, params);
         let status = result[0];

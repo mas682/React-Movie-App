@@ -71,7 +71,7 @@ class PasswordValidationPopUp extends React.Component {
                 awaitingResults: true,
                 messageId: -1
             });
-            let url = "https://localhost:9000/profile/" + this.state.currentUser + "/update";
+            let url = "/profile/" + this.state.currentUser + "/update";
             apiPostJsonRequest(url, params).then((result) =>{
                 let status = result[0];
                 let message = result[1].message;

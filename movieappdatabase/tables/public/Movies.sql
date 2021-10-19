@@ -41,6 +41,22 @@ ALTER TABLE public."Movies"
 DO $$ BEGIN
 -- Trigger: set_timestamp
 
+
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'Movies'
+        and trigger_schema = 'public'
+        and trigger_name = 'create_rating_record'
+    )
+    THEN
+        CREATE TRIGGER create_rating_record
+            AFTER INSERT
+            ON public."Movies"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_create_movie_rating();
+    END IF;
+
     IF NOT EXISTS(
         SELECT *
         FROM  information_schema.triggers

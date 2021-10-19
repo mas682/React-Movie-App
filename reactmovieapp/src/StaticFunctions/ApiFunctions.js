@@ -1,9 +1,11 @@
 
+import config from './Config';
 
 // function to send GET requests to the api that return
 // a json object
 const apiGetJsonRequest = (url) =>
 {
+    url = config.api.url + url;
     const requestOptions = {
         method: 'GET',
         credentials: 'include',
@@ -22,6 +24,7 @@ const apiGetJsonRequest = (url) =>
 
 const apiPostTextRequest = (url, parameters) =>
 {
+    url = config.api.url + url;
     const requestOptions = {
         method: 'POST',
         credentials: 'include',
@@ -43,6 +46,7 @@ const apiPostTextRequest = (url, parameters) =>
 
 const apiPostJsonRequest = (url, parameters, headers, json) =>
 {
+    url = config.api.url + url;
     headers = (headers === undefined) ? { 'Content-Type': 'application/json'} : headers;
     let requestOptions;
     if(json === undefined || json)
@@ -78,6 +82,7 @@ const apiPostJsonRequest = (url, parameters, headers, json) =>
 
 const apiDeleteJsonRequest = (url) =>
 {
+    url = config.api.url + url;
     const requestOptions = {
         method: 'DELETE',
         credentials: 'include',

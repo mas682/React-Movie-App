@@ -26,7 +26,7 @@ from AutomatedScripts.shared import Utils
 
 def redisListener(connection, parent_conn):
     try:
-        params = config(os.getenv('ENVIRONMENT'), os.getenv('CONTAINER'), section="redis")
+        params = config(os.getenv('ENVIRONMENT'), section="redis")
         r = redis.Redis(**params)
         p = r.pubsub()
         p.subscribe("__keyevent@0__:expired")
@@ -47,7 +47,24 @@ def redisListener(connection, parent_conn):
 
 def dataProcessor(connection, parent_conn):
     try:
-        db = Database(config(os.getenv('ENVIRONMENT')), "RedisListener - Data Processor")
+        container = os.getenv('CONTAINER')
+        environment = os.getenv('ENVIRONMENT')
+        
+        creds = None
+        if(container == "TRUE"):
+            # get the host name
+            creds = config(environment, "postgresql-container")
+            # get other postgres config values
+            creds.update(config(environment, "postgresql"))
+        elif(container == "FALSE"):
+            # get the host name
+            creds = config(environment, "postgresql-external")
+            # get other postgres config values
+            creds.update(config(environment, "postgresql"))
+        else:
+            raise Exception("Could not determine if the script is running in a container or not")
+
+        db = Database(creds, "RedisListener - Data Processor")
         # need to fix this to handle errors...
         result = db.connect()
         cursor = result["cur"]

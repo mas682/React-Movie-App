@@ -99,6 +99,7 @@ class MoviePostPopUp extends React.Component {
     }
 
 	render() {
+        console.log(this.state);
         let commentArray = <CommentController
                                 currentUser={this.state.currentUser}
                                 reviewUser={this.state.username}

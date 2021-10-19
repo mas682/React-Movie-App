@@ -109,14 +109,14 @@ if __name__ == '__main__':
     creds = None
     if(container == "TRUE"):
         # get the host name
-        creds = config(environment, container, "postgresql-container")
+        creds = config(environment, "postgresql-container")
         # get other postgres config values
-        creds.update(config(environment, container, "postgresql"))
+        creds.update(config(environment, "postgresql"))
     elif(container == "FALSE"):
         # get the host name
-        creds = config(environment, container, "postgresql-external")
+        creds = config(environment, "postgresql-external")
         # get other postgres config values
-        creds.update(config(environment, container, "postgresql"))
+        creds.update(config(environment, "postgresql"))
     else:
         raise Exception("Could not determine if the script is running in a container or not")
 

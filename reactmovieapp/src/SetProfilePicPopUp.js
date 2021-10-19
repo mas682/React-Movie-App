@@ -76,7 +76,7 @@ class SetProfilePicPopUp extends React.Component {
 
     getDefaultPictures()
     {
-        let url = "https://localhost:9000/profile/" + this.state.currentUser + "/get_profile_pictures";
+        let url = "/profile/" + this.state.currentUser + "/get_profile_pictures";
         apiGetJsonRequest(url).then((result)=>{
             let status = result[0];
             let message = result[1].message;
@@ -169,7 +169,7 @@ class SetProfilePicPopUp extends React.Component {
             picture: this.state.selectedPicture
         };
 
-        let url = "https://localhost:9000/profile/" + this.state.currentUser + "/set_picture";
+        let url = "/profile/" + this.state.currentUser + "/set_picture";
         this.setState({
             awaitingResults: true,
             messageId: -1

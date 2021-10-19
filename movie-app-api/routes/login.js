@@ -280,7 +280,7 @@ const forgotPassword = async (req, res) =>
         return;
     }
 
-    let emailResult = await sendVerificationEmail(result.code, user.email);
+    let emailResult = await sendVerificationEmail(res, result.code, user.email);
     Logger.debug("Code: " + result.code);
     Logger.debug("Adding 5 second delay")
     setTimeout(() =>{
@@ -412,7 +412,7 @@ const validatePassCode = async (req, res) =>
     }
 }
 
-const sendVerificationEmail = async (verificationCode, email) =>
+const sendVerificationEmail = async (res, verificationCode, email) =>
 {
     res.locals.function = "sendVerificationEmail";
     let subject = "Movie-Fanatics Temporary Verification Code";

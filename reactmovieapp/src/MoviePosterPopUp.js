@@ -8,7 +8,7 @@ import './css/Movies/MoviePosterPopup.css';
 class MoviePosterPopUp extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {
+		this.state = { 
 			open: true,
       		posterPath: this.props.posterPath
 		};
@@ -35,6 +35,7 @@ class MoviePosterPopUp extends React.Component {
     }
 
     render() {
+            let containerStyle = {};
     		return (
         			<div>
                   <Popup
@@ -45,7 +46,9 @@ class MoviePosterPopUp extends React.Component {
                   >
                       <div className={style.modal}>
                           <div className={style.content}>
-                              <img className={style.moviePosterLarge} src={this.state.posterPath} onClick={this.posterClickHandler}/>
+                              <div className={style.posterContainer} style={containerStyle}>
+                                  <img className={style.moviePosterLarge} src={this.state.posterPath} onClick={this.posterClickHandler}/>
+                              </div>
                           </div>
                       </div>
                   </Popup>

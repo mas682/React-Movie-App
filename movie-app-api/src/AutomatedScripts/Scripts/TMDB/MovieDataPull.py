@@ -290,8 +290,7 @@ def getMovieDetails(movie, apiKey):
 # function to control the whole process
 def getMovies(db, startDate, endDate, jobType):
     environment = os.getenv('ENVIRONMENT')
-    container = os.getenv('CONTAINER')
-    params = config(environment, container, section='TMDB')
+    params = config(environment, section='TMDB')
     apiKey = params["key"]
     page = 1
     maxPages = 1

@@ -4,7 +4,7 @@ import os
 
 # function used to read the database.ini file and get the parameters from it
 # container is the string TRUE or FALSE
-def config(environment, container=None, section='postgresql'):
+def config(environment, section):
     parser = ConfigParser()
     filename = ""
     if(environment == "DEV"):

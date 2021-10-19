@@ -38,11 +38,11 @@ class FollowerDisplay extends React.Component {
         let url;
         if(type === "follow")
         {
-            url = "https://localhost:9000/profile/" + this.state.user.username + "/follow";
+            url = "/profile/" + this.state.user.username + "/follow";
         }
         else if(type === "unfollow")
         {
-            url = "https://localhost:9000/profile/" + this.state.user.username + "/unfollow";
+            url = "/profile/" + this.state.user.username + "/unfollow";
         }
         else
         {

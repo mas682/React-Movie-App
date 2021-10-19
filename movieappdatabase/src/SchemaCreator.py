@@ -104,6 +104,7 @@ if __name__ == '__main__':
         './triggerFunctions/private/trigger_set_schedule_job_updated_ts.sql',
         # trigger functions - public
         './triggerFunctions/public/Set_Timestamp.sql',
+        './triggerFunctions/public/trigger_create_movie_rating.sql',
         './triggerFunctions/public/trigger_delete_movie_rating.sql',
         './triggerFunctions/public/trigger_set_movie_rating.sql',
         './triggerFunctions/public/trigger_set_verification_code_expiration.sql',

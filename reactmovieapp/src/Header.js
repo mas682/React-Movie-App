@@ -344,7 +344,7 @@ class Header extends React.Component {
 
     logout()
     {
-        let url = "https://localhost:9000/login/logout";
+        let url = "/login/logout";
         apiGetJsonRequest(url).then((result) =>{
             let status = result[0];
             let message = result[1].message;
@@ -416,7 +416,7 @@ class Header extends React.Component {
           };
 
           let status = 0;
-          let url = "https://localhost:9000/search/query_all?value=" + value + "&max=10";
+          let url = "/search/query_all?value=" + value + "&max=10";
           return fetch(url, requestOptions)
               .then(async(res) => {
                   status = res.status;

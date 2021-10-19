@@ -1,5 +1,4 @@
 const Op = require('sequelize').Op;
-let moment = require('moment');
 const review = (sequelize, DataTypes) => {
     const Review = sequelize.define('Reviews', {
         id: {
@@ -35,30 +34,11 @@ const review = (sequelize, DataTypes) => {
           unique: "reviews_userId_movieId_key"
         },
         createdAt: {
-            // this is done to format the date on return
-            type: DataTypes.DATE,
-            get() {
-                let hour = this.getDataValue('createdAt').getHours();
-                let amPm = "AM";
-                if(hour >= 12)
-                {
-                    amPm = "PM";
-                }
-                return moment(this.getDataValue('createdAt')).format('MMMM DD, YYYY h:mm ') + amPm;
-            }
+            type: DataTypes.DATE
         },
         updatedAt: {
             // this is done to format the date on return
-            type: DataTypes.DATE,
-            get() {
-                let hour = this.getDataValue('updatedAt').getHours();
-                let amPm = "AM";
-                if(hour >= 12)
-                {
-                    amPm = "PM";
-                }
-                return moment(this.getDataValue('updatedAt')).format('MMMM DD, YYYY h:mm ') + amPm;
-            }
+            type: DataTypes.DATE
         },
       }, {
         sequelize,
@@ -343,7 +323,7 @@ const review = (sequelize, DataTypes) => {
         }
         else
         {
-            return review.comments;
+            return review.Comments;
         }
     }
 

@@ -310,17 +310,13 @@ class MovieFilterPage extends React.Component {
             let date = new Date();
             if(type === "Upcoming Movies")
             {
-                // these are for testing, will be removed
-                date.setMonth(8);
-                date.setDate(1);
-                date.setYear(2020);
+                date.setDate(date.getDate() + 1);
             }
-            else if(type === "New Releases")
+            if(type === "New Releases")
             {
                 let month = date.getMonth();
-                // go back 1 month, set to 3 for testing
-                let newMonth = month - 6;
-                date.setMonth(newMonth);
+                // go back 1 month
+                date.setDate(date.getDate() - 90);
             }
             startDate = moment(date).format('YYYY-MM-DD');
             if(queryString.length > 0)
@@ -490,19 +486,19 @@ class MovieFilterPage extends React.Component {
         // params: title, revenue, director, runtime, rating, trailer, releasedate
         if(type === "My Watch List")
         {
-            url = "https://localhost:9000/movies/my_watch_list?offset=" + offset + "&max=30";
+            url = "/movies/my_watch_list?offset=" + offset + "&max=30";
         }
         else if(type === "My Watched Movies")
         {
-            url = "https://localhost:9000/movies/my_watched_list?offset=" + offset + "&max=30";
+            url = "/movies/my_watched_list?offset=" + offset + "&max=30";
         }
         else if(query === undefined)
         {
-            url = "https://localhost:9000/search/movies" + this.state.queryString + "&offset=" + offset + "&max=30";
+            url = "/search/movies" + this.state.queryString + "&offset=" + offset + "&max=30";
         }
         else
         {
-            url = "https://localhost:9000/search/movies" + query + "&offset=" + offset + "&max=30";;
+            url = "/search/movies" + query + "&offset=" + offset + "&max=30";;
         }
         return await apiGetJsonRequest(url);
     }

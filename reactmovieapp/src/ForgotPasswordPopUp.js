@@ -85,7 +85,7 @@ class ForgotPasswordPopup extends React.Component {
             let params = {
                 username: this.state.username
             };
-            let url = "https://localhost:9000/login/forgot_password";
+            let url = "/login/forgot_password";
             this.setState({
                 awaitingResults: true,
                 messageId: -1
@@ -107,7 +107,7 @@ class ForgotPasswordPopup extends React.Component {
             let params = {
                 username: this.state.username
             };
-            let url = "https://localhost:9000/login/forgot_password";
+            let url = "/login/forgot_password";
             this.setState({
                 awaitingResults: true,
                 messageId: -1,
@@ -300,7 +300,7 @@ class ForgotPasswordPopup extends React.Component {
                 username: this.state.username,
                 verificationCode: this.state.verificationCode
             };
-            let url = "https://localhost:9000/login/validate_passcode";
+            let url = "/login/validate_passcode";
             this.setState({
                 awaitingResults: true,
                 messageId: -1

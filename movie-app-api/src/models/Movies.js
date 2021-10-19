@@ -129,6 +129,7 @@ const movie = (sequelize, DataTypes) => {
         // each movie can be associated with many reviews
         Movie.hasMany(models.Reviews, {foreignKey: "movieId"});
         Movie.hasOne(models.FeaturedMovies, {foreignKey: "movieId"});
+        Movie.hasOne(models.MovieRatings, {foreignKey: "movieId"});
         // each movie can have many genres
         Movie.belongsToMany(models.Genres, {through: models.MovieGenres, foreignKey: "movieId", otherKey: "GenreId" });
         Movie.belongsToMany(models.Users, {as: "WatchList", through: models.UserWatchLists, foreignKey: "movieId", otherKey: "userId", onDelete: 'CASCADE'});
@@ -805,6 +806,8 @@ const movie = (sequelize, DataTypes) => {
                 return [false,"Sorting value invalid: " + value];
             }
         };
+        // always add this as the last sort
+        sortingArray.push(['id', 'DESC'])
         return [true,sortingArray, bestMatch];
     }
 
@@ -916,13 +919,17 @@ const movie = (sequelize, DataTypes) => {
     // function to get the information for a individual movie
     Movie.getMovieInfo = async (id, models, username) =>
     {
-
         let includeArray = [];
         includeArray.push({
             model: models.Genres,
             as: "Genres",
             attributes: ["id", "value"],
             through: {attributes: []}
+        });
+        includeArray.push({
+            model: models.MovieRatings,
+            attributes: [],
+            required: false
         });
         if(username !== undefined)
         {
@@ -955,7 +962,14 @@ const movie = (sequelize, DataTypes) => {
             where: {
               id: id
             },
-            include: includeArray
+            include: includeArray,
+            attributes: {
+                include: [
+                    // get movie rating
+                    [sequelize.literal(`case when "MovieRating"."userRating" is NULL then 0.0 else "MovieRating"."userRating" end`), "userRating"],
+                    [sequelize.literal(`case when "MovieRating"."totalUserRatings" is NULL then 0 else "MovieRating"."totalUserRatings" end`), "totalUserRatings"]
+                ]
+            }
         });
         return movie;
     }

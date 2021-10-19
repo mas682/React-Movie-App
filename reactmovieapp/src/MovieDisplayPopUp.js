@@ -65,7 +65,7 @@ class MovieDisplayPopUp extends React.Component {
     // function to handle call to api and result
     async updateMovieInfo(value)
     {
-        let url = "https://localhost:9000/movie/" + value;
+        let url = "/movie/" + value;
         let movieData = await apiGetJsonRequest(url)
         let status = movieData[0];
         let requester = movieData[1].requester;
@@ -271,18 +271,18 @@ class MovieDisplayPopUp extends React.Component {
         let params = {movieId: this.state.movie.id};
         if(type === "watched")
         {
-            url = "https://localhost:9000/movies/add_to_watched";
+            url = "/movies/add_to_watched";
             if(this.state.watched)
             {
-                url = "https://localhost:9000/movies/remove_from_watched";
+                url = "/movies/remove_from_watched";
             }
         }
         else if(type === "watchlist")
         {
-            url = "https://localhost:9000/movies/add_to_watchlist";
+            url = "/movies/add_to_watchlist";
             if(this.state.watchList)
             {
-                url = "https://localhost:9000/movies/remove_from_watchlist";
+                url = "/movies/remove_from_watchlist";
             }
         }
         // send the request

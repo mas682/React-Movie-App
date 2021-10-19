@@ -4,16 +4,18 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import style2 from './css/MoviePost/moviePostPopUp.module.css'
 import style from './css/MoviePost/moviePost.module.css';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
+import {convertUTCtoESTString} from './StaticFunctions/Utils.js';
 
 
 class CommentDisplay extends React.Component {
     constructor(props) {
         super(props);
+        console.log(this.props);
         this.state = {
             commentData: this.props.comment,
             currentUser: this.props.currentUser,
             commentId: this.props.comment.id,
-            commentUser: this.props.comment.user.username,
+            commentUser: this.props.comment.User.username,
             comment: this.props.comment.value,
             reviewUser: this.props.reviewUser,
             updateError: "",
@@ -103,7 +105,7 @@ class CommentDisplay extends React.Component {
             });
             return;
         }
-        let url = "https://localhost:9000/review/updatecomment";
+        let url = "/review/updatecomment";
         let params = {
             comment: this.state.comment,
             commentId: this.state.commentId
@@ -185,7 +187,7 @@ class CommentDisplay extends React.Component {
     */
     async removeComment()
     {
-        let url = "https://localhost:9000/review/removecomment";
+        let url = "/review/removecomment";
         let params = {
             comment: this.state.comment,
             commentId: this.state.commentId
@@ -357,6 +359,7 @@ class CommentDisplay extends React.Component {
         }
         // path to the users profile who posted the comment
         let userPath = "/profile/" + this.state.commentUser;
+        let time = convertUTCtoESTString(this.state.commentData.createdAt);;
         // if the user selected to edit the comment
         if(this.state.editComment)
         {
@@ -364,8 +367,8 @@ class CommentDisplay extends React.Component {
             return (
                 <div className={style2.commentContainer}>
                     <div className={style2.userNameBox}>
-                        <div className={style2.commentUser}><Link to={userPath}>{this.state.commentData.user.username}</Link></div>
-                        <div className={style2.commentTime}>{this.state.commentData.createdAt}</div>
+                        <div className={style2.commentUser}><Link to={userPath}>{this.state.commentUser}</Link></div>
+                        <div className={style2.commentTime}>{time}</div>
                     </div>
                     {commentBox}
                 </div>
@@ -387,8 +390,8 @@ class CommentDisplay extends React.Component {
             return (
                 <div className={style2.commentContainer}>
                     <div className={style2.userNameBox}>
-                        <div className={style2.commentUser}><Link to={userPath}>{this.state.commentData.user.username}</Link></div>
-                        <div className={style2.commentTime}>{this.state.commentData.createdAt}</div>
+                        <div className={style2.commentUser}><Link to={userPath}>{this.state.commentUser}</Link></div>
+                        <div className={style2.commentTime}>{time}</div>
                     </div>
                     <Dropdown className={style2.editButtonContainer} drop="left">
                         <Dropdown.Toggle variant="success" id="dropdown-basic" className={style2.editButtons}>

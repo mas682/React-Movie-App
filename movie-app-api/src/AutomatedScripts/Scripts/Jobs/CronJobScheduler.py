@@ -63,11 +63,8 @@ def updateJobs(result):
     environment = os.getenv('ENVIRONMENT')
     if(environment is None):
         raise Exception("Could not determine what environment the script is running on")
-    container = os.getenv('CONTAINER')
-    if(container is None):
-        raise Exception("Could not determine if the script is running in a container or not")
 
-    conf = config(environment, container, 'cron')
+    conf = config(environment, 'cron')
     cron = CronTab(user=conf['user'])
     for job in result:
         lastRunTS = job[0]

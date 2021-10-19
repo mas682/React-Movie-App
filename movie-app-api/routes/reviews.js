@@ -1,4 +1,5 @@
 const models = require('../src/shared/sequelize.js').getClient().models;
+import { loggers } from 'winston';
 import {validateIntegerParameter, validateStringParameter} from './globals.js';
 import {createReview, updateReview} from './reviewCreator.js';
 const Logger = require("../src/shared/logger.js").getLogger();

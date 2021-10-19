@@ -39,7 +39,7 @@ class CommentBox extends React.Component {
             });
             return;
         }
-        let url = "https://localhost:9000/review/postcomment";
+        let url = "/review/postcomment";
         let params = {
             comment: this.state.comment,
             reviewId: this.state.reviewId,
