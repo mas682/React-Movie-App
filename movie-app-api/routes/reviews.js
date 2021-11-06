@@ -8,7 +8,7 @@ const Logger = require("../src/shared/logger.js").getLogger();
 // function to post a reviews
 const review = (req, res, next) =>
 {
-    let requester = (req.session.user === undefined) ? "" : req.session.user;
+    let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
     res.locals.file = "reviews";
     if(requester !== "")
     {

@@ -7,7 +7,7 @@ const Logger = require("../src/shared/logger.js").getLogger();
 
 // function to get movies and return them to the client
 const searchHandler = (req, res, next) => {
-	let requester = (req.session.user === undefined) ? "" : req.session.user;
+	let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
 	// set which file the request is for
 	res.locals.file = "search";
 	selectPath(requester, req, res, next);

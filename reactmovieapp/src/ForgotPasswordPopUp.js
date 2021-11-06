@@ -5,6 +5,7 @@ import './css/SignIn/ForgotPassword.css';
 import style from './css/SignIn/ForgotPassword.module.css';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
+import {generateInput} from './StaticFunctions/ReusableHtmlFunctions.js';
 
 // documentation for PopUp https://react-popup.elazizi.com/component-api/
 class ForgotPasswordPopup extends React.Component {
@@ -14,9 +15,14 @@ class ForgotPasswordPopup extends React.Component {
             open: true,
             username: "",
             usernameError: "",
+            password: "",
+            passwordError: "",
+            password2: "",
+            password2Error: "",
             messages: [],
             messageId: -1,
             showVerificationPage: false,
+            showPasswordInput: false,
             verificationCode: "",
             verificationError: "",
             awaitingResults: false,
@@ -31,14 +37,14 @@ class ForgotPasswordPopup extends React.Component {
         this.requestVerificationCode = this.requestVerificationCode.bind(this);
         this.verificationResultsHandler = this.verificationResultsHandler.bind(this);
         this.showLoginPopUp = this.showLoginPopUp.bind(this);
-        this.generateUserNameInput = this.generateUserNameInput.bind(this);
         this.generateUserNameInputForm = this.generateUserNameInputForm.bind(this);
         this.generateVerificationForm = this.generateVerificationForm.bind(this);
-        this.generateVerificationInput = this.generateVerificationInput.bind(this);
-
         this.sendVerification = this.sendVerification.bind(this);
         this.requestCodeResultsHandler = this.requestCodeResultsHandler.bind(this);
         this.resendVerificationCode = this.resendVerificationCode.bind(this);
+        this.generatePasswordInputForm = this.generatePasswordInputForm.bind(this);
+        this.sendNewPassword = this.sendNewPassword.bind(this);
+        this.updatePasswordResultsHandler = this.updatePasswordResultsHandler.bind(this);
     }
 
     closeModal() {
@@ -319,13 +325,11 @@ class ForgotPasswordPopup extends React.Component {
         let resultFound = true;
         if(status === 200)
         {
-            this.setState({created: true});
-            this.props.setMessages({
-                messages: [{type: "success", message: "User successfully authenticated!"}],
-                clearMessages: true
+            this.setState({
+                showVerificationPage: false,
+                awaitingResults: false,
+                showPasswordInput: true
             });
-            this.props.updateLoggedIn(requester);
-            this.closeModal();
         }
         else if(status === 401)
         {
@@ -469,107 +473,229 @@ class ForgotPasswordPopup extends React.Component {
         }
     }
 
+    async sendNewPassword(event) {
+        event.preventDefault();
+        let error = false;
+        // first check to make sure fields not empty
+        if(!this.state.password || !this.state.password2)
+        {
+            if(!this.state.password)
+            {
+                this.setState({passwordError: "You must enter a new password"});
+                error = true;
+            }
+            else
+            {
+                this.setState({passwordError: ""});
+            }
+
+            if(!this.state.password2)
+            {
+                this.setState({password2Error: "You must enter the new password twice"});
+                error = true;
+            }
+            else
+            {
+                this.setState({password2Error: ""});
+            }
+        }
+        else
+        {
+            if(this.state.password.length < 6 || this.state.password.length > 15)
+            {
+                this.setState({
+                    passwordError: "Your password must be between 6-15 characters characters",
+                    password2Error: ""
+                });
+                error = true;
+            }
+            // see if new password is the same as the old one
+            else if(this.state.password !== this.state.password2)
+            {
+                this.setState({
+                    password2Error: "This password does not match the new password",
+                    passwordError: "",
+                });
+                error = true;
+            }
+            else
+            {
+                this.setState({
+                    passwordError: "",
+                    password2Error: ""
+                });
+            }
+        }
+
+        if(!error)
+        {
+            let params = {
+                password: this.state.password 
+            };
+            this.setState({
+                awaitingResults: true,
+                messageId: -1
+            });
+            let url = "/profile/" + this.state.username + "/reset_password";
+            apiPostJsonRequest(url, params).then((result) =>{
+                let status = result[0];
+                let message = result[1].message;
+                let requester = result[1].requester;
+                this.updatePasswordResultsHandler(status, message, requester);
+            });
+        }
+    }
+
+    updatePasswordResultsHandler(status, message, requester)
+    {
+
+        let resultFound = true;
+        if(status === 200)
+        {
+            this.props.setMessages({
+                messages: [{type: "success", message: message}],
+                clearMessages: true
+            });
+            // requester will be who requested the change but not logged in at this point
+            this.props.updateLoggedIn("");
+            this.closeModal();
+        }
+        else
+        {
+            if(status === 400)
+            {
+                //this.props.updateLoggedIn(requester);
+                // tested
+                if(message === "New password must be betweeen 6-15 characters")
+                {
+                    this.setState({
+                        passwordError: message,
+                        password2Error: "",
+                        awaitingResults: false
+                    });
+                }
+                else
+                {
+                    resultFound = false;
+                }
+            }
+            else if(status === 401)
+            {
+                // tested
+                if(message === "The user passed in the url does not match the cookie")
+                {
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                    this.props.updateLoggedIn(requester);
+                    this.closeModal();
+                }
+                // tested
+                else if(message === "You are not logged in")
+                {
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                    this.props.updateLoggedIn(requester);
+                    this.closeModal();
+                }
+                else if(message === "You do not have permission to update a users password as the cookie is invalid")
+                {
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                    this.props.updateLoggedIn(requester);
+                    this.closeModal();
+                }
+                else
+                {
+                    this.props.updateLoggedIn(requester);
+                    resultFound = false;
+                }
+            }
+            else if(status === 404)
+            {
+                // tested
+                if(message === "Could not find the user to update")
+                {
+                    this.props.updateLoggedIn(requester);
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                    this.closeModal();
+                }
+                // tested
+                else if(message === "The profile path sent to the server does not exist")
+                {
+                    this.props.updateLoggedIn(requester);
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                    this.closeModal();
+                }
+                else
+                {
+                    this.props.updateLoggedIn(requester);
+                    resultFound = false;
+                }
+            }
+            else if(status === 500)
+            {
+                // somewhat tested in resetPassword function
+                this.props.updateLoggedIn(requester);
+                this.setState({
+                    messages: [{type: "failure", message: message, timeout: 0}],
+                    messageId: this.state.messageId + 1,
+                    awaitingResults: false
+                });
+            }
+            else
+            {
+                resultFound = false;
+                this.props.updateLoggedIn(requester);
+            }
+            if(!resultFound)
+            {
+                let output = "Some unexpected " + status + " code was returned by the server";
+                this.setState({
+                    messages: [{type: "failure", message: output}],
+                    messageId: this.state.messageId + 1,
+                    awaitingResults: false
+                });
+            }
+        }
+    }
+
     changeHandler(event) {
         let name = event.target.name;
         let value = event.target.value;
         this.setState({[name]: value});
     }
 
-    generateUserNameInput()
-    {
-        let usernameInput =  (
-                <div className={style.usernameInputContainer}>
-                    <div className={style.inputLabel}>
-                        <h4 className={style.inputFieldH4} id="validLabel">Username</h4>
-                    </div>
-                    <input
-                        type="text"
-                        name="username"
-                        form = "form1"
-                        maxLength = {30}
-                        className={`inputFieldBoxLong validInputBox ${style.usernameInput}`}
-                        onChange={this.changeHandler}
-                        value={this.state.username}
-                    />
-                </div>);
-        if(this.state.usernameError)
-        {
-            usernameInput = (
-                <div className={style.usernameInputContainer}>
-                    <div className={style.inputLabel}>
-                        <h4 className={`${style.inputFieldH4} errorLabel`}>Username</h4>
-                    </div>
-                    <input
-                        type="text"
-                        name="username"
-                        form = "form1"
-                        maxLength = {30}
-                        className={`inputFieldBoxLong inputBoxError ${style.usernameInput}`}
-                        onChange={this.changeHandler}
-                        value={this.state.username}
-                    />
-                    <small className={`errorTextSmall ${style.errorText}`}>{this.state.usernameError}</small>
-                </div>);
-        }
-        return usernameInput;
-    }
-
-    generateVerificationInput()
-    {
-        let verificationInput =  (
-            <React.Fragment>
-                <label>
-                    <h4 className={style.inputFieldH4} id="validLabel">Verification Code:</h4>
-                </label>
-                <div className={style.verificationInputContainer}>
-                    <input
-                        type="text"
-                        name="verificationCode"
-                        form = "form2"
-                        autocomplete="off"
-                        maxLength = {6}
-                        disabled={this.state.lockVerificationInput}
-                        className={`inputFieldBoxLong validInputBox ${style.verificationInput}`}
-                        onChange={this.changeHandler}
-                    />
-                </div>
-            </React.Fragment>);
-        if(this.state.verificationError)
-        {
-            verificationInput = (
-                <React.Fragment>
-                    <label>
-                        <h4 className={`${style.inputFieldH4} errorLabel`}>Verification Code:</h4>
-                    </label>
-                    <div className={style.verificationInputContainer}>
-                        <input
-                            type="text"
-                            name="verificationCode"
-                            form = "form2"
-                            maxLength = {6}
-                            autocomplete="off"
-                            disabled={this.state.lockVerificationInput}
-                            className={`inputFieldBoxLong inputBoxError ${style.verificationInput}`}
-                            onChange={this.changeHandler}
-                        />
-                    </div>
-                    <small className="errorTextSmall">{this.state.verificationError}</small>
-                </React.Fragment>);
-        }
-        return verificationInput;
-    }
-
     generateUserNameInputForm()
     {
-        let usernameInput = this.generateUserNameInput();
+        let config = {
+            label: "Username",
+            type: "text",
+            name: "username",
+            form: "form1",
+            value: this.state.username,
+            changeHandler: this.changeHandler,
+            maxLength: 30,
+            error: this.state.usernameError
+        };
+        let usernameInput = generateInput(config, style);
 
         return (
             <React.Fragment>
                 <div className="content">
                     <form id="form1" onSubmit={this.requestVerificationCode} noValidate/>
-                    <div className="inputFieldContainer">
-                        {usernameInput}
-                    </div>
+                    {usernameInput}
                 </div>
                 <div className="actions">
                     <button
@@ -602,7 +728,22 @@ class ForgotPasswordPopup extends React.Component {
 
     generateVerificationForm()
     {
-        let verificationInput = this.generateVerificationInput();
+        let config = {
+            label: "Verification Code:",
+            type: "text",
+            name: "verificationCode",
+            form: "form2",
+            value: this.state.verificationCode,
+            changeHandler: this.changeHandler,
+            maxLength: 6,
+            autocomplete: "off",
+            disabled: this.state.lockVerificationInput,
+            error: this.state.verificationError,
+            inputStyle: `${style.verificationInput}`,
+            errorTextStyle: `${style.verificationErrorText}`
+        };
+        let verificationInput = generateInput(config, style);
+        
         // add text saying email sent to...
         let resendButton = (
             <div className={style.verificationButtonContainer}>
@@ -643,15 +784,53 @@ class ForgotPasswordPopup extends React.Component {
         return content;
     }
 
+    generatePasswordInputForm()
+    {
+        let config = {
+            label: "New Password:",
+            type: "password",
+            name: "password",
+            form: "form3",
+            value: this.state.password,
+            changeHandler: this.changeHandler,
+            maxLength: 20,
+            error: this.state.passwordError
+        };
+        let passwordInput = generateInput(config, style);
+        config.label = "Repeat New Password:";
+        config.name = "password2";
+        config.value = this.state.password2;
+        config.error = this.state.password2Error;
+        let passwordInput2 = generateInput(config, style);
+
+        return (
+            <React.Fragment>
+                <div className="content">
+                    <form id="form3" onSubmit={this.sendNewPassword} noValidate/>
+                    {passwordInput}
+                    {passwordInput2}
+                </div>
+                <div className="actions">
+                    <button
+                        form="form3"
+                        value="update_password"
+                        className="submitButton"
+                        onClick={this.sendNewPassword}
+                    >Update Password
+                    </button>
+                </div>
+            </React.Fragment>);
+    }
+
 
     render() {
         let content;
         let className = "forgotPass";
-        if(!this.state.showVerificationPage && !this.state.awaitingResults)
+        if(!this.state.showVerificationPage && !this.state.awaitingResults && !this.state.showPasswordInput)
         {
             content = this.generateUserNameInputForm();
         }
-        else if(!this.state.showVerificationPage && this.state.awaitingResults)
+        else if(!this.state.showPasswordInput && !this.state.showVerificationPage && this.state.awaitingResults)
         {
             className = "verification";
             content = this.generateLoadingContent("Processing request...");
@@ -671,7 +850,14 @@ class ForgotPasswordPopup extends React.Component {
             className = "verification";
             content = this.generateLoadingContent("Resending verification code...");
         }
-
+        else if(this.state.showPasswordInput && !this.state.awaitingResults)
+        {
+            content = this.generatePasswordInputForm();
+        }
+        else if(this.state.showPasswordInput && this.state.awaitingResults)
+        {
+            content = this.generateLoadingContent("Updating password...");
+        }
 
         return (
             <div>

@@ -109,6 +109,8 @@ if __name__ == '__main__':
         './triggerFunctions/public/trigger_set_movie_rating.sql',
         './triggerFunctions/public/trigger_set_verification_code_expiration.sql',
         './triggerFunctions/public/trigger_update_movie_rating.sql',
+        './triggerFunctions/public/trigger_validate_salt_not_found_for_temp_verification_codes.sql',
+        './triggerFunctions/public/trigger_validate_salt_not_found_for_user_creds.sql',
         './triggerFunctions/public/trigger_validate_salt_not_found_temp_users.sql',
         './triggerFunctions/public/trigger_validate_salt_not_found_users.sql',
         './triggerFunctions/public/trigger_validate_user_not_found.sql',

@@ -23,7 +23,7 @@ DO $$ BEGIN
         	select
         		into uSalt
         		salt
-          	FROM public."Users"
+          	FROM public."UserCredentials"
           	WHERE salt = new.salt;
         	if (uSalt = new.salt) then
         		RAISE unique_violation

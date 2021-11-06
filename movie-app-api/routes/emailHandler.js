@@ -100,6 +100,7 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
         </html>
     `;
 
+    /*
     let msg = {
         to: config.email.username,
         from: config.emailSender.helpEmail,
@@ -116,6 +117,7 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
          {errorCode: 2000, requestId: req.id, function: "emailHandler", file: "emailHandler.js"});
         return false;
     });
+    */
     return true;
 
     return result;

@@ -1,6 +1,6 @@
 
 
-const userSessions = (sequelize, DataTypes) => {
+const userSessions = (sequelize, DataTypes) => { 
   const UserSessions = sequelize.define('UserSessions', {
     session: {
       type: DataTypes.STRING(64),

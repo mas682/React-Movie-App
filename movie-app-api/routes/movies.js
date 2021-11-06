@@ -4,7 +4,7 @@ const Logger = require("../src/shared/logger.js").getLogger();
 
 // function to get movies and return them to the client
 const movieHandler = (req, res, next) => {
-	let requester = (req.session.user === undefined) ? "" : req.session.user;
+	let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
 	// set which file the request is for
 	res.locals.file = "movies";
 	selectPath(requester, req, res, next);
@@ -14,7 +14,7 @@ const selectPath = (requester, req, res, next) =>
 {
 	res.locals.function = "selectPath";
 	let routeFound = false;
-	let foundNoCookie = false;
+	let foundNoCookie = false; 
 	let cookieValid = (requester === "") ? false : true;
 	if(req.method === "GET")
 	{

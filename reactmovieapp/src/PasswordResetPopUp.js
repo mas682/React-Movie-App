@@ -7,6 +7,7 @@ import './css/forms.css';
 import './css/SettingsForm/PasswordResetPopUp.css';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
+import {generateInput}  from './StaticFunctions/ReusableHtmlFunctions.js';
 
 class PasswordResetPopUp extends React.Component {
     constructor(props) {
@@ -83,10 +84,10 @@ class PasswordResetPopUp extends React.Component {
         {
             // boolean to override other checks
             let priority = false;
-            if(this.state.newPass.length < 6 || this.state.newPass.length > 20)
+            if(this.state.newPass.length < 6 || this.state.newPass.length > 15)
             {
                 this.setState({
-                    newPassError: "Your password must be between 6-20 characters characters",
+                    newPassError: "Your password must be between 6-15 characters characters",
                     oldPasswordError: "",
                     newPass2Error: ""
                 });
@@ -292,58 +293,6 @@ class PasswordResetPopUp extends React.Component {
         }
     }
 
-    // function to generate HTML for each section such as first name, last name, username, email
-    generateInput(value, title)
-    {
-        let result = "";
-        let errorType = value + "Error";
-        if(this.state[errorType])
-        {
-            // fix the css using the forms.css file
-            result = (
-                <React.Fragment>
-                    <div className={style.sectionHeader}>
-                        <h3 className={`${style.h3Header} errorLabel`}>{title}</h3>
-                    </div>
-                    <div className={style.inputFieldContainer}>
-                        <input
-                            type="password"
-                            name={value}
-                            form="form3"
-                            value={this.state[value]}
-                            className={`${style.inputFieldBoxLong} inputBoxError`}
-                            onChange={this.changeHandler}
-                            maxlength={20}
-                        />
-                    </div>
-                    <div className={style.errorTextContainer}>
-                        <small className="errorTextSmall">{this.state[errorType]}</small>
-                    </div>
-                </React.Fragment>);
-        }
-        else
-        {
-            result = (
-                <React.Fragment>
-                    <div className={style.sectionHeader}>
-                        <h3 className={style.h3Header}>{title}</h3>
-                    </div>
-                    <div className={style.inputFieldContainer}>
-                        <input
-                            type="password"
-                            name={value}
-                            form="form3"
-                            value={this.state[value]}
-                            className={`${style.inputFieldBoxLong} validInputBox`}
-                            onChange={this.changeHandler}
-                            maxlength={20}
-                        />
-                    </div>
-                </React.Fragment>);
-        }
-        return result;
-    }
-
     render() {
         // if the user could not be authenticated, redirect to home page
         if(this.state.redirect)
@@ -351,9 +300,30 @@ class PasswordResetPopUp extends React.Component {
             return <Redirect to="/" />;
         }
 
-        let oldPassInput = this.generateInput("oldPassword", "Current Password:");
-        let newPassInput = this.generateInput("newPass", "New Password:");
-        let newPass2Input = this.generateInput("newPass2", "Repeat new password:");
+        let config = {
+            label: "Current Password:",
+            type: "password",
+            name: "oldPassword",
+            form: "form3",
+            value: this.state.oldPassword,
+            changeHandler: this.changeHandler,
+            maxLength: 20,
+            error: this.state.oldPasswordError
+        };
+        let oldPassInput = generateInput(config, style);
+        config.errorKey = "newPassError";
+        config.label = "New Password:";
+        config.name= "newPass";
+        config.value = this.state.newPass;
+        config.error = this.state.newPassError;
+        let newPassInput = generateInput(config, style);
+        config.errorKey = "newPass2Error";
+        config.label = "Repeat New Password:";
+        config.name= "newPass2";
+        config.value = this.state.newPass2;
+        config.error = this.state.newPass2Error;
+        let newPass2Input = generateInput(config, style);
+        
 
         return (
             <div>

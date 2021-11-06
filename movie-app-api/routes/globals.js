@@ -2,18 +2,30 @@
 // holds variables that are needed specifically for the routing files
 
 const models = require('../src/shared/sequelize.js').getClient().models;
-const moment = require('moment');
 const config = require('../Config.json');
 const Logger = require("../src/shared/logger.js").getLogger();
 var validator = require('validator');
+import {regenerateSession, removeCurrentSession, saveSession} from '../src/shared/sessions.js';
+
+
 
 // function to increment user login attempts
-const updateUserLoginAttempts = async (user, username) => {
+const updateUserLoginAttempts = async (id, username) => {
+    let result = 0;
     try
     {
-        await user.update({
-            passwordAttempts: user.passwordAttempts + 1
-        });
+        result = await models.UserAuthenticationAttempts.increment(
+            "passwordAttempts",{where: {userId: id}}); 
+        if(result[0][0].length < 1)
+        {
+            // if no user found, return 0
+            result = 0;
+        }
+        else
+        {
+            // result[0][1] indicates succcess/failure but either way return this
+            result = result[0][0][0].passwordAttempts
+        }
     }
     catch (err)
     {
@@ -21,7 +33,7 @@ const updateUserLoginAttempts = async (user, username) => {
         Logger.error("Some unknown error occurred updaing the users(" + username + ") account on login failure: " + errorObject.name,
             {function: "updateUserLoginAttempts", file: "globals.js", error: errorObject, errorCode: 2200})
     }
-    return user.passwordAttempts;
+    return result;
 }
 
 
@@ -175,21 +187,90 @@ const validateStringParameter = (res, param, minLength, maxLength, requester, me
 // even if this is called when creating a session, the session is created after
 // so this should not cause any issues
 const clearCookie = (req, res, next) => {
+    res.locals.function = "clearCookie";
+    res.locals.file = "globals";
     // if there is no session associated with the cookie and a cookie is provided
-    if(req.session.user === undefined && req.headers.cookie !== undefined)
+    if((req.session === undefined || req.session.user === undefined) && req.headers.cookie !== undefined)
     {
         // set the cookie options so the browser may remove the cookie
-        let options = {
+        /*let options = {
             httpOnly: req.session.cookie.httpOnly,
             secure: req.session.cookie.secure,
             sameSite: req.session.cookie.sameSite,
             path: req.session.cookie.path
         }
+        */
+        let options = {};
         res.clearCookie(config.app.cookieName, options);
     }
-    next();
+    if(next !== undefined)
+    {
+        next();
+    }
 }
+
+// function called on all requests
+// checks to see if there is a cookie provided and if the cookie provided is specifically for
+// changing a users password
+// if so, can only be used on one route, otherwise invalidate the cookie
+const checkForPasswordResetCookie = async(req, res, next) => {
+    try{
+        res.locals.function = "checkForPasswordResetCookie";
+        res.locals.file = "globals";
+        if(req.session.user !== undefined && req.session.passwordResetSession === true)
+        {
+            let url = "/profile/" + req.session.user + "/reset_password"
+            // if not used resetting password
+            if(req.method === "POST" && req.url === url)
+            {
+                // if the session is currently in use
+                if(req.session.active === false)
+                {
+                    // send back 401 here as already know route is correct...
+                    // but DO NOT WANT TO REMOVE SESSION YET as currently in use
+                    req.session = undefined;
+                    // tell frontend to remove cookie
+                    clearCookie(req, res, undefined);
+                    res.status(401).sendResponse({
+                        message: "You do not have permission to update a users password as the cookie is invalid",
+                        requester: ""
+                    });
+                    return;
+                }
+                else
+                {
+                    // mark session as in use any other incoming cookies with the same session are not used
+                    req.session.active = false;
+                    await saveSession(req, res);
+                }
+            }
+            else
+            {
+                // if no cookie found, send not logged in
+                // if cookie found but url invalid just send unauthorized
+                // variable only used if method is post to /profile/reset_passowrd and user is incorrect
+                res.locals.invalidURL = true;
+                if(req.method === "POST" && req.url === "/login/authenticate")
+                {
+                    // mark the session as to be removed if empty in error handler
+                    res.locals.cleanSession = true;
+                    await regenerateSession(req, res, false, false);
+                }
+                else
+                {
+                    await removeCurrentSession(req, res);
+                    // tell frontend to remove cookie
+                    clearCookie(req, res, undefined);
+                }
+            }
+        }
+        next();
+    } catch (err)
+    {
+        return next(err);
+    }
+};
 
 export {validateIntegerParameter, validateUsernameParameter,
      validateStringParameter, validateEmailParameter, updateUserLoginAttempts
-    , clearCookie, validateBooleanParameter};
+    , clearCookie, validateBooleanParameter, checkForPasswordResetCookie};

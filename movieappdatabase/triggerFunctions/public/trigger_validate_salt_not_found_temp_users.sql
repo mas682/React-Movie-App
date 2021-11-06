@@ -28,11 +28,11 @@ DO $$ BEGIN
           	WHERE salt = new.salt;
         	if (uSalt = new.salt) then
         		RAISE unique_violation
-        	 		USING CONSTRAINT='users_salt_key'
+        	 		USING CONSTRAINT='UserCredentials_salt_key'
         			,MESSAGE='salt must be unique'
         			,COLUMN='salt'
         			,detail='Key (salt)=(' || new.salt ||') already exists'
-        			,TABLE='Users'
+        			,TABLE='UserCredentials'
         			,SCHEMA='public';
           	else
         		return new;

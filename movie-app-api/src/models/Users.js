@@ -19,14 +19,6 @@ const user = (sequelize, DataTypes) => {
           allowNull: false,
           unique: "users_email_key"
         },
-        password: {
-          type: DataTypes.STRING(44),
-          allowNull: false
-        },
-        salt: {
-            type: DataTypes.STRING(44),
-            allowNull: false
-        },
         firstName: {
           type: DataTypes.STRING(30),
           allowNull: false
@@ -58,29 +50,6 @@ const user = (sequelize, DataTypes) => {
           allowNull: false,
           defaultValue: false
         },
-        verificationLocked: {
-            type: DataTypes.DATE
-        },
-        verificationAttempts: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0
-        },
-        passwordAttempts: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0
-        },
-        lastLogin: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-        },
-        passwordUpdatedAt: {
-          type: DataTypes.DATE,
-          allowNull: false,
-          defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
-        }
       }, {
         sequelize,
         tableName: 'Users',
@@ -107,14 +76,7 @@ const user = (sequelize, DataTypes) => {
             fields: [
               { name: "username" },
             ]
-          },
-          {
-            name: "users_salt_key",
-            unique: true,
-            fields: [
-              { name: "salt" },
-            ]
-          },
+          }
         ]
       });
 
@@ -177,7 +139,9 @@ const user = (sequelize, DataTypes) => {
         User.hasMany(models.UserWatchLists, { as: "UserWatchList", foreignKey: "userId"});
         User.hasMany(models.UsersWatchedMovies, { as: "UserWatchedList", foreignKey: "userId"});
         User.hasMany(models.UserSessions, {as: "sessions", onDelete: 'CASCADE', foreignKey: "userId"});
-        User.belongsTo(models.DefaultProfilePictures, {foreignKey: "picture", as: "profilePicture"})
+        User.belongsTo(models.DefaultProfilePictures, {foreignKey: "picture", as: "profilePicture"});
+        User.hasOne(models.UserAuthenticationAttempts, {foreignKey: "userId", as: "authenticationAttempts"});
+        User.hasOne(models.UserCredentials, {foreignKey: "userId", as: "credentials"});
     };
 
     // method to find a user by username or email if email were in the
@@ -194,6 +158,66 @@ const user = (sequelize, DataTypes) => {
         }
         return user;
     };
+
+    // get user, verification record, and credentials
+    User.findByLoginForAuth = async id => {
+        let user = await User.findOne({
+            where: { username: id },
+            include: [
+                {
+                    model: sequelize.models.UserCredentials,
+                    as: "credentials"
+                },
+                {
+                    model: sequelize.models.UserAuthenticationAttempts,
+                    as: "authenticationAttempts"
+                }
+            ]
+        });
+
+        if(!user) {
+            user = await User.findOne({
+                where: { email: id },
+                include: [
+                    {
+                        model: sequelize.models.UserCredentials,
+                        as: "credentials"
+                    },
+                    {
+                        model: sequelize.models.UserAuthenticationAttempts,
+                        as: "authenticationAttempts"
+                    }
+                ]
+            }); 
+        }
+        return user;
+    };
+
+    // get user and their verification record
+    User.findByLoginForVerification = async id => {
+        let user = await User.findOne({
+            where: { username: id },
+            include: [
+                {
+                    model: sequelize.models.UserAuthenticationAttempts,
+                    as: "authenticationAttempts"
+                }
+            ]
+        });
+
+        if(!user) {
+            user = await User.findOne({
+                where: { email: id },
+                include: [
+                    {
+                        model: sequelize.models.UserAuthenticationAttempts,
+                        as: "authenticationAttempts"
+                    }
+                ]
+            }); 
+        }
+        return user;
+    }
 
 
     User.findByLoginWithPicture = async login => {

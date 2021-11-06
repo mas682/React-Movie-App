@@ -1,9 +1,10 @@
 import {validateUsernameParameter, validateIntegerParameter,
-    validateStringParameter, validateEmailParameter, updateUserLoginAttempts} from './globals.js';
+    validateStringParameter, validateEmailParameter, updateUserLoginAttempts, clearCookie} from './globals.js';
 //import {removeImage} from './fileHandler.js';
 import {hash, checkHashedValue} from '../src/shared/crypto.js';
 import {regenerateSession, removeAllSessions} from '../src/shared/sessions.js';
 import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
+import { removeCurrentSession } from '../src/shared/sessions.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
 
@@ -11,7 +12,22 @@ const Logger = require("../src/shared/logger.js").getLogger();
 
 // function to get the reviews associated with a users profile
 const profileHandler = (req, res, next) => {
-    let requester = (req.session.user === undefined) ? "" : req.session.user;
+    let requester;
+    if(req.session === undefined || req.session.passwordResetSession === undefined)
+    {
+        requester = (req.session === undefined || req.session.user === undefined) ? "" : req.session.user;
+    }
+    else
+    {
+        if(req.method === "POST" && req.params.type === "reset_password")
+        {
+            requester = req.session.user;
+        }
+        else
+        {
+            requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
+        }
+    }
     // set which file the request is for
     res.locals.file = "profile";
     /* DO NOT DELETE - FUNCTIONS TO USE IF ALLOWING USERS TO UPLOAD PICTURES
@@ -46,6 +62,8 @@ const selectPath = (requester, req, res, next) =>
     res.locals.function = "selectPath";
     let routeFound = false;
     let foundNoCookie = false;
+    // only used for password reset
+    let invalidUserURL = false;
     if(req.method === "GET")
     {
         // if here, the path is profile/username
@@ -171,6 +189,23 @@ const selectPath = (requester, req, res, next) =>
                 foundNoCookie = true;
             }
         }
+        else if(req.params.type === "reset_password" && Object.keys(req.query).length === 0)
+        {
+            routeFound = true;
+            if(cookieValid)
+            {
+                resetPassword(requester, req, res)
+                .catch((err) => {next(err)});
+            }
+            else
+            {
+                if(res.locals.invalidURL !== undefined && res.locals.invalidURL)
+                {
+                    invalidUserURL = true;
+                }
+                foundNoCookie = true;
+            }
+        }
         else if(req.params.type === "delete_user")
         {
             routeFound = true;
@@ -246,6 +281,14 @@ const selectPath = (requester, req, res, next) =>
     {
         res.status(404).sendResponse({
             message:"The profile path sent to the server does not exist",
+            requester: requester
+        }); 
+    }
+    // if going to password reset but user in url is not correct
+    else if(invalidUserURL)
+    {
+        res.status(401).sendResponse({
+            message: "The user passed in the url does not match the cookie",
             requester: requester
         });
     }
@@ -620,7 +663,7 @@ const updatePassword = async (requester, req, res) =>
             req.session.userId = user.id;
             req.session.user = user.username;
             req.session.admin = user.admin;
-            await regenerateSession(req, res);
+            await regenerateSession(req, res, true, false);
 
             res.status(200).sendResponse({
                 message: "Password updated",
@@ -709,7 +752,7 @@ const updateInfo = async (requester, req, res, next) =>
             created: new Date()
         });
         // regenerate the session
-        await regenerateSession(req, res);
+        await regenerateSession(req, res, true, false);
 
         let updatedUser = {
             username: result.username,
@@ -900,6 +943,115 @@ const setProfilePicture = async(requester, req, res, next) =>
     }
     res.status(status).sendResponse({
         message: message,
+        requester: requester
+    });
+}
+
+
+// function to resetting a users password when they forgot their password
+// a lot of validation for this is done in checkForPasswordResetCookie before a user even gets to here
+const resetPassword = async (requester, req, res) =>
+{
+    res.locals.function = "resetPassword";
+    // be careful in the function with what happens if an error occurs...
+
+    let password = req.body.password;
+    let valid = validateStringParameter(undefined, password, 6, 15, undefined, undefined, true);
+    // regenerate session but keep time limited so the user has to reauthenticate after so long
+    // do not want cookie being sent over internet a ton and keep being reused
+    if(!valid) 
+    {
+        req.session.cookie.maxAge = req.session.cookie.maxAge;
+        // set session back to active
+        req.session.active = true;
+        res.status(400).sendResponse({
+            message: "New password must be betweeen 6-15 characters",
+            requester: requester
+        });
+        return;
+    }
+
+    let user = await models.Users.findByLogin(requester);
+    if(user === null)
+    {
+        // need to destroy the session as the user could not be found
+        await removeCurrentSession(req, res);
+        clearCookie(req, res, undefined);
+        res.status(404).sendResponse({
+            message: "Could not find the user to update",
+            requester: ""
+        });
+        return;
+    }
+    // remove all sessions except for this one as going to reset password
+    // on failure of password update, users just logged out
+    await removeAllSessions(req, res, user.id, [req.session.id]);
+
+
+    let result;
+    let counter = 0;
+    while(counter < 5)
+    {
+        result = hash(password, "password");
+        try
+        {
+            await models.UserCredentials.update({
+                password: result.value,
+                salt: result.salt,
+            },
+            {
+                where: { userId: user.id}
+            });
+        }
+        catch(err)
+        {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            let errorType = errorObject.name;
+            if(errorType !== undefined && errorType.includes("Sequelize"))
+            {
+                if(!(err.name.includes("UniqueConstraint") &&
+                 errorObject.original.constraint === "UserCredentials_salt_key"))
+                 {
+                    throw err;
+                 }
+            }
+            else
+            {
+                throw err;
+            }
+            if(counter >= 4)
+            {
+                Logger.error("Error generating a unique salt for a users new password",
+                {errorCode: 1014, function: "resetPassword", file: "profile.js", requestId: req.id, error: errorObject});
+                req.session.cookie.maxAge = req.session.cookie.maxAge;
+                // set session back to active
+                req.session.active = true;
+                res.status(500).sendResponse({
+                    message: "Some unexpected error occurred on the server, please try again.  Error code: 1014",
+                    requester: ""
+                });
+                return;
+            }
+        }
+        counter = counter + 1;
+    }
+
+
+    await models.UserAuthenticationAttempts.update({
+        passwordAttempts: 0,
+        passwordLocked: null
+    },
+    {
+        where: {userId: user.id}
+    });
+
+    // destroy session as user password successfully updated
+    await removeCurrentSession(req, res);
+    clearCookie(req, res, undefined);
+
+    // send requester but handle differently on client side
+    res.status(200).sendResponse({
+        message: "Password successfully updated",
         requester: requester
     });
 }

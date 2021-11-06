@@ -108,7 +108,6 @@ services:
           memory: "${REDIS_LISTENER_MEM_RES}"
           cpus: "${REDIS_LISTENER_CPU_SHARE}"
       restart_policy:
-        condition: any
         delay: 5s
     depends_on:
       - movie-api-database

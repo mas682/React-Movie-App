@@ -15,31 +15,23 @@ const tempVerificationCodes = (sequelize, DataTypes) => {
             },
             unique: "TempVerificationCodes_userId_key"
         },
-        verificationAttempts: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0
-        },
-        codesResent: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0
+        salt: {
+            type: DataTypes.STRING(44),
+            allowNull: false
         },
         code: {
-            type: DataTypes.STRING(6),
-            allowNull: false,
+            type: DataTypes.STRING(44),
+            allowNull: false
         },
         verificationAttempts: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            defaultValue: 0
-        },
-        codesResent: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0
         },
         expiresAt: {
+          type: DataTypes.DATE
+        },
+        createdAt: {
           type: DataTypes.DATE
         }
       },

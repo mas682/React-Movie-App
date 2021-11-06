@@ -12,7 +12,7 @@ const Logger = require("../src/shared/logger.js").getLogger();
 
 // function to create an account
 const signUp = (req, res, next) => {
-    let requester = (req.session.user === undefined) ? "" : req.session.user;
+    let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
     // set which file the request is for
     res.locals.file = "signup";
     if(requester !== "")
@@ -310,7 +310,7 @@ const createUser = async (requester, req, res) =>
     // if the user did not already exist and was successfully created
     if(created)
     {
-        await createSession(user, req, res, true);
+        await createSession(user, req, res, true, false);
         Logger.debug("Adding 5 second delay");
         setTimeout(() =>{
             res.status(201).sendResponse({
