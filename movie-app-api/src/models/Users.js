@@ -1,11 +1,12 @@
 
 const Op = require('sequelize').Op;
+const Logger = require("../shared/logger.js").getLogger();
 
 const user = (sequelize, DataTypes) => {
     const User = sequelize.define('Users', {
         id: {
           autoIncrement: true,
-          type: DataTypes.INTEGER,
+          type: DataTypes.BIGINT,
           allowNull: false,
           primaryKey: true
         },
@@ -50,6 +51,9 @@ const user = (sequelize, DataTypes) => {
           allowNull: false,
           defaultValue: false
         },
+        deleteAt: {
+            type: DataTypes.DATE
+        }
       }, {
         sequelize,
         tableName: 'Users',
@@ -142,6 +146,7 @@ const user = (sequelize, DataTypes) => {
         User.belongsTo(models.DefaultProfilePictures, {foreignKey: "picture", as: "profilePicture"});
         User.hasOne(models.UserAuthenticationAttempts, {foreignKey: "userId", as: "authenticationAttempts"});
         User.hasOne(models.UserCredentials, {foreignKey: "userId", as: "credentials"});
+        User.hasOne(models.TempVerificationCodes, {foreignKey: "userId"});
     };
 
     // method to find a user by username or email if email were in the
@@ -219,6 +224,89 @@ const user = (sequelize, DataTypes) => {
         return user;
     }
 
+    User.findUnverifiedUser = async(email, excludedAttributes, excludedAuthAttributes) => {
+        excludedAttributes = (excludedAttributes === undefined) ? [] : excludedAttributes;
+        excludedAuthAttributes = (excludedAuthAttributes === undefined) ? [] : excludedAuthAttributes;
+        let user = await User.findOne({
+            where: {
+                email: email,
+                verified: false
+            },
+            attributes: {exclude: excludedAttributes},
+            include: [
+                {
+                    model: sequelize.models.UserAuthenticationAttempts,
+                    as: "authenticationAttempts",
+                    required: false
+                }
+            ]
+        });
+        return user;
+    }
+
+
+    User.findUnverifiedUserWithVerificationRecord = async(email, excludedAttributes, excludedAuthAttributes, exlcludedVerificationAttributes) => {
+        excludedAttributes = (excludedAttributes === undefined) ? [] : excludedAttributes;
+        excludedAuthAttributes = (excludedAuthAttributes === undefined) ? [] : excludedAuthAttributes;
+        exlcludedVerificationAttributes = (exlcludedVerificationAttributes === undefined) ? [] : exlcludedVerificationAttributes;
+        let user = await User.findOne({
+            where: {
+                email: email,
+                //deleteAt: {[Op.gte]: new Date().toISOString()},
+                verified: false
+            },
+            attributes: {exclude: excludedAttributes},
+            include: [
+                {
+                    model: sequelize.models.UserAuthenticationAttempts,
+                    as: "authenticationAttempts",
+                    required: false
+                },
+                {
+                    model: sequelize.models.TempVerificationCodes,
+                    required: false
+                }
+            ]
+        });
+        return user;
+    };
+
+    User.findOrCreateTempUser = async (email, username, firstName, lastName) => {
+        let deleteAtDate = new Date();
+        deleteAtDate.setMinutes(deleteAtDate.getMinutes() + 10);
+        let tempUser = await User.findOrCreate({
+            where: {
+                [Op.or]: {
+                    username: username,
+                    email: email
+                }
+            },
+            defaults: {
+                email: email,
+                username: username,
+                firstName: firstName,
+                lastName: lastName,
+                verified: false,
+                deleteAt: deleteAtDate
+            }
+        });
+        return tempUser;
+    }
+
+    User.createTempUser = async (email, username, firstName, lastName) => {
+        let deleteAtDate = new Date();
+        deleteAtDate.setMinutes(deleteAtDate.getMinutes() + 10);
+        let tempUser = await User.create({
+            email: email,
+            username: username,
+            firstName: firstName,
+            lastName: lastName,
+            verified: false,
+            deleteAt: deleteAtDate
+        });
+        return tempUser;
+    }
+
 
     User.findByLoginWithPicture = async login => {
         let user = await User.findOne({
@@ -247,6 +335,58 @@ const user = (sequelize, DataTypes) => {
         return user;
     };
 
+    // returns 1 on successful deletion
+    // 0 if no deletions occurred
+    User.removeExpiredUser = async(req, res, user, throwError, errorCode) => {
+        let result;
+        try 
+        {
+            result = await User.destroy({
+                where: {
+                    id: user.id,
+                    verified: false,
+                    deleteAt: {[Op.lte]: new Date()}
+                }
+            });
+        }
+        catch(err)
+        {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            Logger.error("A unexpected error occurred trying to remove a user with the id of: " + user.id,
+            {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
+            if(throwError)
+            {
+                throw err;
+            }
+        }
+        return result;
+    };
+
+    // returns 1 on successful deletion
+    // 0 if no deletions occurred
+    User.removeUnverifiedUser = async(req, res, user, throwError, errorCode) => {
+        let result;
+        try 
+        {
+            result = await User.destroy({
+                where: {
+                    id: user.id,
+                    verified: false
+                }
+            });
+        }
+        catch(err)
+        {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            Logger.error("A unexpected error occurred trying to remove a user with the id of: " + user.id,
+            {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
+            if(throwError)
+            {
+                throw err;
+            }
+        }
+        return result;
+    };
 
     User.getAllFollowers = async (userId) => {
         let user = await User.findOne({

@@ -17,21 +17,20 @@ DO $$ BEGIN
             COST 100
             VOLATILE NOT LEAKPROOF
         AS $BODY$
-        declare
-                    uSalt varchar(44);
+        declare uSalt varchar(44);
                 begin
                     select
-                        into uSalt
                         salt
-                    FROM public."TempVerificationCodes"
-                    WHERE salt = new.salt;
+                        into uSalt
+                    FROM public."TempVerificationCodes" t
+                    WHERE t.salt = new.salt;
                     if (uSalt = new.salt) then
                         RAISE unique_violation
                             USING CONSTRAINT='UserCredentials_salt_key'
-                            ,MESSAGE='salt must be unique'
+                            ,MESSAGE='salt must be unique, exists in TempVerificationCodes'
                             ,COLUMN='salt'
                             ,detail='Key (salt)=(' || new.salt ||') already exists'
-                            ,TABLE='TempVerificationCodes'
+                            ,TABLE='UserCredentials'
                             ,SCHEMA='public';
                     else
                         return new;

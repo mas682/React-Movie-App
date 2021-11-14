@@ -1002,6 +1002,8 @@ const resetPassword = async (requester, req, res) =>
             {
                 where: { userId: user.id}
             });
+            // break out of loop
+            counter = 10;
         }
         catch(err)
         {

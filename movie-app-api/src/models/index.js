@@ -17,7 +17,6 @@ const models = {
     MovieTags: sequelize.import('./MovieTags'),
     ReviewGoodTags: sequelize.import('./ReviewGoodTags'),
     ReviewBadTags: sequelize.import('./ReviewBadTags'),
-    UserVerificationCodes: sequelize.import('./UserVerificationCodes'),
     TempVerificationCodes: sequelize.import('./TempVerificationCodes'),
     FeaturedMovies: sequelize.import('./FeaturedMovies'),
     UserSessions: sequelize.import('./UserSessions'),

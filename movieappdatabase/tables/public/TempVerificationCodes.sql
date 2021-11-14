@@ -5,7 +5,8 @@
 CREATE TABLE IF NOT EXISTS public."TempVerificationCodes"
 (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( CYCLE INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
-    "userId" bigint NOT NULL,
+    "userId" bigint not null,
+    type integer,
     salt character varying(44) COLLATE pg_catalog."default" NOT NULL,
 	code character varying(44) COLLATE pg_catalog."default" NOT NULL,
     "verificationAttempts" integer NOT NULL DEFAULT 0,
@@ -14,6 +15,11 @@ CREATE TABLE IF NOT EXISTS public."TempVerificationCodes"
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "TempVerificationCodes_pkey" PRIMARY KEY (id),
     CONSTRAINT "TempVerificationCodes_salt_key" UNIQUE (salt),
+    CONSTRAINT "TempVerificationCodes_userId_key" UNIQUE ("userId"),
+    CONSTRAINT "TempVerificationCodes_type_fkey" FOREIGN KEY (type)
+        REFERENCES public."TempVerificationCodeTypes" (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
     CONSTRAINT "TempVerificationCodes_userId_fkey" FOREIGN KEY ("userId")
         REFERENCES public."Users" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -48,21 +54,6 @@ DO $$ BEGIN
         FROM  information_schema.triggers
         WHERE event_object_table = 'TempVerificationCodes'
         and trigger_schema = 'public'
-        and trigger_name = 'set_expiration_timestamp'
-    )
-    THEN
-        CREATE TRIGGER set_expiration_timestamp
-            BEFORE INSERT OR UPDATE
-            ON public."TempVerificationCodes"
-            FOR EACH ROW
-            EXECUTE PROCEDURE public.trigger_set_verification_code_expiration();
-    END IF;
-
-    IF NOT EXISTS(
-        SELECT *
-        FROM  information_schema.triggers
-        WHERE event_object_table = 'TempVerificationCodes'
-        and trigger_schema = 'public'
         and trigger_name = 'remove_expired_record'
     )
     THEN
@@ -74,7 +65,24 @@ DO $$ BEGIN
             EXECUTE PROCEDURE public.trigger_remove_expired_verification_code();
     END IF;
 
-        IF NOT EXISTS(
+
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'TempVerificationCodes'
+        and trigger_schema = 'public'
+        and trigger_name = 'update_temp_user_expiration'
+    )
+    THEN
+        CREATE TRIGGER update_temp_user_expiration
+        AFTER INSERT OR UPDATE OF "expiresAt"
+        ON public."TempVerificationCodes"
+        FOR EACH ROW
+        WHEN (new.type = 1)
+        EXECUTE PROCEDURE public.trigger_update_temp_user_expiration();
+    END IF;
+
+    IF NOT EXISTS(
         SELECT *
         FROM  information_schema.triggers
         WHERE event_object_table = 'TempVerificationCodes'
@@ -87,5 +95,5 @@ DO $$ BEGIN
             ON public."TempVerificationCodes"
             FOR EACH ROW
             EXECUTE PROCEDURE public.trigger_validate_salt_not_found_for_temp_verification_codes();
-            END IF;
+    END IF;
 END $$;

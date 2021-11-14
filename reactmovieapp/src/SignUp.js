@@ -328,7 +328,6 @@ class SignUpPopup extends React.Component {
         if(!error)
         {
             let params = {
-                username: this.state.username,
                 email: this.state.email,
                 verificationCode: this.state.verificationCode
             };
@@ -370,8 +369,7 @@ class SignUpPopup extends React.Component {
         if(!error)
         {
             let params = {
-                username: this.state.username,
-                email: this.state.email,
+                email: this.state.email
             };
             let url = "/signup/resend_verification_code";
             this.setState({
@@ -557,7 +555,7 @@ class SignUpPopup extends React.Component {
         else if(status === 404)
         {
             this.props.updateLoggedIn(requester);
-            if(message === "Could not find a user with the given email and username that has a valid active verification code")
+            if(message === "Could not find a user with the provided email and username")
             {
                 let output = "Could not find a user with the given email and username " +
                             "that has a valid active verification code.  Please try to sign up again.";

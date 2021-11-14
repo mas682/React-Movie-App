@@ -2,7 +2,7 @@ const models = require('../src/shared/sequelize.js').getClient().models;
 import {customAlphabet} from 'nanoid';
 const Op = require('sequelize').Op;
 import {validateStringParameter, validateEmailParameter, validateUsernameParameter,
-        validateIntegerParameter, updateUserLoginAttempts, validateBooleanParameter} from './globals.js';
+        validateIntegerParameter, validateBooleanParameter} from './globals.js';
 import {emailHandler} from './emailHandler.js';
 const nanoid = customAlphabet('1234567890', 6);
 const moment = require('moment');
@@ -218,7 +218,7 @@ const checkLogin = async (req, res) =>
     }
     else
     {
-        let attempts = await updateUserLoginAttempts(user.id, username);
+        let attempts = await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1614);
         let message = "Incorrect password"
         if(attempts >= 5)
         {
@@ -297,24 +297,33 @@ const forgotPassword = async (req, res) =>
         // delete any existing verification records for the user
         await models.TempVerificationCodes.destroy({where: {userId: user.id}});
 
-        let code = nanoid();
-        let date = new Date().toISOString();
-        // convert to epoch time
-        let secret = code + Date.parse(date);
+        let code;
+        let date;
+        let createdDate;
+        let secret;
         let result;
-
+        let expirationDate;
         let counter = 0;
         while(counter < 5)
         {
+            code = nanoid();
+            date = new Date();
+            createdDate = date.toISOString();
+            secret = code + Date.parse(date);
             result = hash(secret, "verificationCode");
+            expirationDate = new Date();
+            expirationDate.setMinutes(expirationDate.getMinutes() + 10);
             try 
             {
                 result = await models.TempVerificationCodes.create({
                     userId: user.id,
                     salt: result.salt,
                     code: result.value,
-                    createdAt: date
+                    createdAt: createdDate,
+                    expiresAt: expirationDate.toISOString()
                 });
+                // break out of loop
+                counter = 10;
             }
             catch (err)
             {
@@ -562,7 +571,7 @@ const validateUser = async (res, username, user, updateAttempts) =>
     {
         if(updateAttempts && updateUser)
         {
-            await updateUserLoginAttempts(user.id, username);
+            await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1615);
         }
         res.status(status).sendResponse({
             message: message,

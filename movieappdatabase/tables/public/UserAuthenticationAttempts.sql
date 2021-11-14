@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public."UserAuthenticationAttempts"
 	"verificationAttempts" integer NOT NULL DEFAULT 0,
     -- count of invalid password attempts
 	"passwordAttempts" integer NOT NULL DEFAULT 0,
-	"lastLogin" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	"lastLogin" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     -- when account got locked from using forgot password
 	"verificationLocked" timestamp without time zone,
     -- when account got locked from invalid passwords
@@ -45,6 +45,21 @@ DO $$ BEGIN
             ON public."UserAuthenticationAttempts"
             FOR EACH ROW
             EXECUTE PROCEDURE public.trigger_set_timestamp();
+    END IF;
+
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'UserAuthenticationAttempts'
+        and trigger_schema = 'public'
+        and trigger_name = 'set_verification_locked_timestamp'
+    )
+    THEN
+        CREATE TRIGGER set_verification_locked_timestamp
+            BEFORE INSERT OR UPDATE OF "verificationAttempts"
+            ON public."UserAuthenticationAttempts"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_verification_locked_ts();
     END IF;
 
 END $$;

@@ -1,40 +1,8 @@
 // not sure if this is the best way to do this but this file
 // holds variables that are needed specifically for the routing files
-
-const models = require('../src/shared/sequelize.js').getClient().models;
 const config = require('../Config.json');
-const Logger = require("../src/shared/logger.js").getLogger();
 var validator = require('validator');
 import {regenerateSession, removeCurrentSession, saveSession} from '../src/shared/sessions.js';
-
-
-
-// function to increment user login attempts
-const updateUserLoginAttempts = async (id, username) => {
-    let result = 0;
-    try
-    {
-        result = await models.UserAuthenticationAttempts.increment(
-            "passwordAttempts",{where: {userId: id}}); 
-        if(result[0][0].length < 1)
-        {
-            // if no user found, return 0
-            result = 0;
-        }
-        else
-        {
-            // result[0][1] indicates succcess/failure but either way return this
-            result = result[0][0][0].passwordAttempts
-        }
-    }
-    catch (err)
-    {
-        let errorObject = JSON.parse(JSON.stringify(err));
-        Logger.error("Some unknown error occurred updaing the users(" + username + ") account on login failure: " + errorObject.name,
-            {function: "updateUserLoginAttempts", file: "globals.js", error: errorObject, errorCode: 2200})
-    }
-    return result;
-}
 
 
 // function to validate that a parameter is a actual boolean value
@@ -271,6 +239,5 @@ const checkForPasswordResetCookie = async(req, res, next) => {
     }
 };
 
-export {validateIntegerParameter, validateUsernameParameter,
-     validateStringParameter, validateEmailParameter, updateUserLoginAttempts
-    , clearCookie, validateBooleanParameter, checkForPasswordResetCookie};
+export {validateIntegerParameter, validateUsernameParameter, validateStringParameter,
+     validateEmailParameter, clearCookie, validateBooleanParameter, checkForPasswordResetCookie};

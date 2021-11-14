@@ -42,7 +42,6 @@ const session = require('express-session');
 let redisStore = require('./src/shared/redisStore.js').createStore(session, redisClient);
 const destroySession = require("./src/shared/sessions.js").destroySession;
 const checkForPasswordResetCookie = require("./routes/globals").checkForPasswordResetCookie;
-const { fileUploadErrorHandler } = require("./src/ErrorHandlers/FileUploadErrorHandler.js");
 
 // restart db each time
 //! NEVER SET THIS TO TRUE, will remove triggers from tables
@@ -118,9 +117,14 @@ app.use(morgan.morganResponseMiddleware);
 // see if password reset cookie is in reqeust and going to correct route
 app.use(checkForPasswordResetCookie);
 
+
 // parse incoming data as json
 app.use((req, res, next) => {
-  jsonHandler(express.json(), req, res, next);
+  let jsonConfig = {
+      limit: config.json.limit,
+      strict: config.json.strict
+  };
+  jsonHandler(express.json(jsonConfig), req, res, next);
 });
 
 app.use(express.urlencoded({ extended: false }));
@@ -133,7 +137,7 @@ app.use(badPageHandler);
 
 // error handler, should be last
 app.use(function(err, req, res, next) {
-    errorHandler(err, req, res, next).catch((err) => {finalErrorHandler(err, req, res, next)});
+    errorHandler(err, req, res, next).catch((err) => {console.log(err);finalErrorHandler(err, req, res, next)});
 });
 
 module.exports = app;

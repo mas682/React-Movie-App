@@ -50,6 +50,22 @@ const ERRORS = {
                 }
             }
         },
+        "UserAuthenticationAttempts_userId_fkey":
+        {
+            defaultMessage: "Some unexpected error occurred on the server",
+            defaultLogMessage: "Could not find a user id record with the given id value",
+            defaultStatus: 500,
+            defaultLog: true,
+            defaultErrorCode: undefined,
+            functions: {
+                signup: {
+                    createTempUser: {
+                        errorCode: 1317,
+                        logMessage: "Could not create a UserAuthenticationAttempsRecord due to the user id provided not existing"
+                    }
+                }
+            }
+        },
         default: {
             defaultMessage: "Some unexpected error occurred on the server",
             defaultLogMessage: "Some unexpected foreign key constraint error occurred",
@@ -98,6 +114,9 @@ const ERRORS = {
             functions: {
                 profile: {
                     updateInfo: {}
+                },
+                signup: {
+                    createTempUser: {}
                 }
             }
         },
@@ -110,6 +129,9 @@ const ERRORS = {
             functions: {
                 profile: {
                     updateInfo: {}
+                },
+                signup: {
+                    createTempUser: {}
                 }
             }
         },
@@ -127,31 +149,7 @@ const ERRORS = {
                 }
             }
         },
-        "UserVerificationCodes_username_key": {
-            defaultMessage: "Username already exists",
-            defaultLogMessage: undefined,
-            defaultStatus: 409,
-            defaultLog: false,
-            defaultErrorCode: undefined,
-            functions: {
-                signup: {
-                    createTempUser: {}
-                }
-            }
-        },
-        "UserVerificationCodes_userEmail_key":{
-            defaultMessage: "Email already associated with a user",
-            defaultLogMessage: undefined,
-            defaultStatus: 409,
-            defaultLog: false,
-            defaultErrorCode: undefined,
-            functions: {
-                signup: {
-                    createTempUser: {}
-                }
-            }
-        },
-        "UserVerificationCodes_salt_key":{
+        "UserCredentials_salt_key":{
             defaultMessage: "Some unexpected error occurred on the server",
             defaultLogMessage: "The salt to encrypt a temp users password was already in use",
             defaultStatus: 500,
@@ -160,21 +158,41 @@ const ERRORS = {
             functions: {
                 signup: {
                     createTempUser: {
-                        errorCode: 1307
+                        errorCode: 1307,
+                        logMessage: "Could not generate a unique salt to encrypt a temp users password"
                     }
                 }
             }
         },
-        "users_salt_key":{
+        "TempVerificationCodes_userId_key":{
             defaultMessage: "Some unexpected error occurred on the server",
-            defaultLogMessage: "The salt used to encrypt a users password was already in use",
+            defaultLogMessage: "The temp user already has a temp verification code record",
             defaultStatus: 500,
             defaultLog: true,
             defaultErrorCode: undefined,
             functions: {
-                profile: {
-                    updatePassword: {
-                        errorCode: 1307
+                signup: {
+                    resendVerificationCode: {
+                        errorCode: 1313
+                    }
+                }
+            }
+        },
+        "TempVerificationCodes_salt_key":{
+            defaultMessage: "Some unexpected error occurred on the server",
+            defaultLogMessage: "The salt to encrypt a verification code was already in use",
+            defaultStatus: 500,
+            defaultLog: true,
+            defaultErrorCode: undefined,
+            functions: {
+                signup: {
+                    createTempUser: {
+                        errorCode: 1308,
+                        logMessage: "Could not generate a unique salt to encrypt a temp users verification code"
+                    }, 
+                    resendVerificationCode: {
+                        errorCode: 1311,
+                        logMessage: "Could not generate a unique salt to encrypt a temp users verification code"
                     }
                 }
             }
@@ -295,12 +313,15 @@ function sequelizeErrorHandler(error, file, functionName) {
 function getSanitizedOutput(error)
 {
     let errors = [];
-    for(let e of error.errors)
+    if(error.errors !== undefined)
     {
-        let errObj = {
-            message: e.message
+        for(let e of error.errors)
+        {
+            let errObj = {
+                message: e.message
+            }
+            errors.push(errObj);
         }
-        errors.push(errObj);
     }
     return {
         name: error.name,

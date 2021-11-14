@@ -102,6 +102,14 @@
         "1611":{
             "Description":"Could not succesfully generate a unique salt that is not being used after 5 attempts for a users temporary verificaiton code",
             "function":"forgotPassword"
+        },
+        "1614":{
+            "Description":"An unexpected error occurred when trying to increment a users password attempts when a user provided invalid credentials",
+            "function":"checkLogin"
+        },
+        "1615":{
+            "Description":"An unexpected error occurred when trying to increment a users password attempts when a user tried to login to an account that was already locked",
+            "function":"validateUser"
         }
     },
     "movies.js":{
@@ -241,17 +249,9 @@
             "Description":"A user was attempting to sign up but some unexpected constraint error occurred",
             "function":"createTempUser"
         },
-        "1301":{
-            "Description":"A user was attempting to sign up but the update to the database failed",
-            "function":"createTempUser"
-        },
         "1302": {
             "Description":"A user was attempting to sign up but the verification email failed to be sent out",
             "function":"createTempUser"
-        },
-        "1303":{
-            "Description":"A user tried to have their email verification code resent but the udpate to the database failed",
-            "function":"resendVerificationCode"
         },
         "1304": {
             "Description":"A user attempting to sign up tried to have their verification code resent but the email did not get sent out",
@@ -266,7 +266,79 @@
             "function":"removeTempUser"
         },
         "1307": {
-            "Description":"A user was attempting to sign up but the salt to encrypt their password was already in use",
+            "Description":"A user was attempting to sign up but unable to generate a unique salt to encrypt their password",
+            "function":"createTempUser"
+        },
+        "1308":{
+            "Description":"A user was attempting to sign up but unable to generate a unique salt to encrypt their verification code",
+            "function":"createTempUser"
+        },
+        "1309":{
+            "Description":"A user was attempting to sign up but unable to generate a unique salt to encrypt their verification code.  When attempting to remove the temp user another error occurred",
+            "function":"createTempUser"
+        },
+        "1310":{
+            "Description":"A user was attempting to sign up but a unexpected error occurred when creating their verification code.  When attempting to remove the temp user another error occurred",
+            "function":"createTempUser"
+        },
+        "1311":{
+            "Description":"A user was attempting to resend their verification code but unable to generate a unique salt to encrypt their verification code",
+            "function":"resendVerificationCode"
+        },
+        "1312":{
+            "Description":"A users new verification code was sent out but some unexpected error occurred incrementing their codes resent",
+            "function":"resendVerificationCode"
+        }, 
+        "1313":{
+            "Description":"A user was attempting to resend their verification code but was unable to create a new record as a record already existed for the user.  The record was most likely created after the delete finished",
+            "function":"resendVerificationCode"
+        },
+        "1314":{
+            "Description":"A user was attempting to sign up but unable to generate a unique salt to encrypt their password.  When attempting to remove the temp user another error occurred",
+            "function":"createTempUser"
+        },
+        "1315":{
+            "Description":"A user was attempting to sign up but a unexpected error occurred when creating their password record.  When attempting to remove the temp user another error occurred",
+            "function":"createTempUser"
+        },
+        "1316":{
+            "Description":"A user was attempting to sign up but a unexpected error occurred when creating their authentication attemps record.  When attempting to remove the temp user another error occurred",
+            "function":"createTempUser"
+        },
+        "1317":{
+            "Description":"When attempting to create a users Authentication Attempts record, the users id did not exist",
+            "function":"createTempUser"
+        },
+        "1318":{
+            "Description":"A user was attempting to sign up but an error occurred when creating their authentication attemps record.  When attempting to remove the user another error occurred",
+            "function":"createTempUser"
+        },
+        "1319":{
+            "Description":"A unverified user account exists without a authentication attempts record",
+            "function":"resendVerificationCode"
+        },
+        "1320":{
+            "Description":"A unverified user account exists without a authentication attempts record",
+            "function":"createUser"
+        },
+        "1321":{
+            "Description":"A unexpected error occurred when trying to remove a user that has expired",
+            "function":"createUser"
+        },
+        "1322":{
+            "Description":"A unexpected error occurred when trying to remove a unverified user",
+            "function":"createUser"
+        },
+        "1323":{
+            "Description":"A unexpected error occurred when trying to remove a user that has expired",
+            "function":"resendVerificationCode"
+        },
+        "1324":{
+            "Description":"Failed to create a user and the user returned from the find or create was null",
+            "function": "createTempUser"
+        },
+        "1325":{
+            "Description":"A unexpected error occurred when trying to remove a user that has expired",
             "function":"createTempUser"
         }
     },

@@ -8,7 +8,7 @@ const errorHandler = async(err, req, res, next) => {
     let result = getErrorHandler(err, res.locals.file, res.locals.function);
     // function to determine what to do 
     await checkRemoveSession(req, res);
-    
+    console.log(err);
     if(result.log)
     {
         let error = (result.error === undefined) ? err : result.error;

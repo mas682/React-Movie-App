@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS public."Users"
     "admin" boolean NOT NULL DEFAULT false,
     -- email verified
     verified boolean NOT NULL DEFAULT false,
+    -- only for users that have not been verified
+    "deleteAt" timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pkey PRIMARY KEY (id),
