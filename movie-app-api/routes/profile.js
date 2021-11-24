@@ -844,8 +844,8 @@ const removeUser = async (requester, req, res, next) =>
         if(result === undefined)
         {
             Logger.error("Error in database occurred removing a user",
-                {errorCode: 1006, function: "removeUser", file: "profile.js", requestId: req.id});
-            let message = "Server failed to remove user for some unkown reason.  Error code: 1006";
+                {errorCode: 1003, function: "removeUser", file: "profile.js", requestId: req.id});
+            let message = "Server failed to remove user for some unkown reason.  Error code: 1003";
             res.status(500).sendResponse({
                 message: message,
                 requester: requester
@@ -1024,12 +1024,12 @@ const resetPassword = async (requester, req, res) =>
             if(counter >= 4)
             {
                 Logger.error("Error generating a unique salt for a users new password",
-                {errorCode: 1014, function: "resetPassword", file: "profile.js", requestId: req.id, error: errorObject});
+                {errorCode: 1004, function: "resetPassword", file: "profile.js", requestId: req.id, error: errorObject});
                 req.session.cookie.maxAge = req.session.cookie.maxAge;
                 // set session back to active
                 req.session.active = true;
                 res.status(500).sendResponse({
-                    message: "Some unexpected error occurred on the server, please try again.  Error code: 1014",
+                    message: "Some unexpected error occurred on the server, please try again.  Error code: 1004",
                     requester: ""
                 });
                 return;

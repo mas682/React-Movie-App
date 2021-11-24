@@ -167,7 +167,10 @@ const user = (sequelize, DataTypes) => {
     // get user, verification record, and credentials
     User.findByLoginForAuth = async id => {
         let user = await User.findOne({
-            where: { username: id },
+            where: { 
+                username: id,
+                verified: true
+            },
             include: [
                 {
                     model: sequelize.models.UserCredentials,
@@ -182,7 +185,10 @@ const user = (sequelize, DataTypes) => {
 
         if(!user) {
             user = await User.findOne({
-                where: { email: id },
+                where: { 
+                    email: id,
+                    verified: true
+                },
                 include: [
                     {
                         model: sequelize.models.UserCredentials,
@@ -201,7 +207,10 @@ const user = (sequelize, DataTypes) => {
     // get user and their verification record
     User.findByLoginForVerification = async id => {
         let user = await User.findOne({
-            where: { username: id },
+            where: { 
+                username: id,
+                verified: true
+            },
             include: [
                 {
                     model: sequelize.models.UserAuthenticationAttempts,
@@ -380,6 +389,36 @@ const user = (sequelize, DataTypes) => {
             let errorObject = JSON.parse(JSON.stringify(err));
             Logger.error("A unexpected error occurred trying to remove a user with the id of: " + user.id,
             {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
+            if(throwError)
+            {
+                throw err;
+            }
+        }
+        return result;
+    };
+
+
+    // returns 1 on successful deletion
+    // 0 if no deletions occurred
+    User.removeUnverifiedUserByEmail = async(req, res, email, throwError, errorCode) => {
+        let result;
+        try 
+        {
+            result = await User.destroy({
+                where: {
+                    email: email,
+                    verified: false
+                }
+            });
+        }
+        catch(err)
+        {
+            if(!throwError)
+            {
+                let errorObject = JSON.parse(JSON.stringify(err));
+                Logger.error("A unexpected error occurred trying to remove a user with the email of: " + email,
+                {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
+            }
             if(throwError)
             {
                 throw err;

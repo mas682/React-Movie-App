@@ -114,7 +114,7 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
     })
     .catch((error) => {
         Logger.error("Email not sent " + JSON.stringify(error),
-         {errorCode: 2000, requestId: req.id, function: "emailHandler", file: "emailHandler.js"});
+         {errorCode: 1400, requestId: req.id, function: "emailHandler", file: "emailHandler.js"});
         return false;
     });
     */

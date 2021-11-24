@@ -9,6 +9,7 @@
         }
     },
     "fileHandler.js": {
+        "remove":true,
         "1700":{
             "Description":"Some unexpected Multer Error occurred when a user was uploading a picture",
             "function": "imageHandler"
@@ -49,12 +50,7 @@
     "getUserInfo.js":{
 
     },
-    "globals.js":{
-        "2200":{
-            "Description":"Some unexpected error occurred when trying to increment a users login attempts",
-            "function":"updateUserLoginAttempts"
-        }
-    },
+
     "index.js":{
 
     },
@@ -80,24 +76,21 @@
             "function":"validatePassCode"
         },
         "1606":{
-            "Description":"A error occurred when updating a users verification attempts.  The users attempts are set to less than or equal to 3 but the verificationLocked timestamp is not null",
+            "Description":"A unexpected error occurred when updating a users verifcation attempts after the verification code was sent out",
             "function":"forgotPassword"
         },
         "1607":{
-            "Description":"An error occurred when updating a users verification attempts.  The users attempts are greater than 3 but the verificationLocked timestamp is null",
-            "function":"forgotPassword"
+
         },
         "1608":{
-            "Description":"An error occurred when updating a users verification attempts.  Some unexpected combination of the users attempts and verificationLocked time was detected",
-            "function":"forgotPassword"
+
         },
         "1609":{
-            "Description":"An error occurred when updating a users verification attempts.  THe user either did not exist or the update did not succeed for some reason",
+            "Description":"An error occurred when updating a users verification attempts.  The user either did not exist or the update did not succeed for some reason",
             "function":"forgotPassword"
         },
         "1610":{
-            "Description":"An error occurred when saving a users temp verificaion code record to the database.",
-            "function":"forgotPassword"
+
         },
         "1611":{
             "Description":"Could not succesfully generate a unique salt that is not being used after 5 attempts for a users temporary verificaiton code",
@@ -169,7 +162,8 @@
         },
         "1010":{
             "Description":"A user tried to upate their picture but it overwrote another users picture as they have the same file name, thus two users pictures are now wrong",
-            "function":"updateImage"
+            "function":"updateImage",
+            "remove":true
         },
         "1011":{
             "Description":"Some unexpected constraint error occured when a user tried to update their picture on the database",
@@ -259,7 +253,7 @@
         },
         "1305": {
             "Description":"When creating a users official account the update to the database failed",
-            "function":"createUser"
+            "function":"verifyAccount"
         },
         "1306": {
             "Description":"When removing a temporary user the update to the database failed",
@@ -319,15 +313,15 @@
         },
         "1320":{
             "Description":"A unverified user account exists without a authentication attempts record",
-            "function":"createUser"
+            "function":"verifyAccount"
         },
         "1321":{
             "Description":"A unexpected error occurred when trying to remove a user that has expired",
-            "function":"createUser"
+            "function":"verifyAccount"
         },
         "1322":{
             "Description":"A unexpected error occurred when trying to remove a unverified user",
-            "function":"createUser"
+            "function":"verifyAccount"
         },
         "1323":{
             "Description":"A unexpected error occurred when trying to remove a user that has expired",
@@ -340,6 +334,10 @@
         "1325":{
             "Description":"A unexpected error occurred when trying to remove a user that has expired",
             "function":"createTempUser"
+        },
+        "1326":{
+            "Description":"A unexpected error occurred when trying to remove a unverified user",
+            "function":"resendVerificationCode"
         }
     },
     "sequelizeErrorHandler.js":{
@@ -356,6 +354,9 @@
     "defaultErrorHandler.js":{
         "1900":{
             "Description":"Some unexpected error occurred"
+        },
+        "1901":{
+            "Description":"Some unexpected reference error occurred"
         }
     },
     "sessions.js":{
@@ -368,6 +369,34 @@
         "2200":{
             "Description": "A error occurred in the main error handler",
             "function":"errorHandler"
+        }
+    },
+
+
+    "ErrorType":{
+        "ErrorClass":
+        {
+            "Error":{
+                "default":{
+                    
+                },
+                "file":{
+                    "function":{
+                        "error-code":{
+                            "default":{
+                                "Description":""
+                            },
+                            "secondary-code":{
+                                "Description":""
+                            },
+                            "secondary-code2":{
+                                "Description":""
+                            }
+                            
+                        }
+                    }
+                }
+            }
         }
     }
 }

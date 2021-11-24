@@ -1,40 +1,21 @@
 
-import {awsErrorHandler} from './AWSErrorHandler.js';
-import {fileUploadErrorHandler} from './FileUploadErrorHandler.js';
-import {multerErrorHandler} from './MulterErrorHandler.js';
 import {sequelizeErrorHandler} from './SequelizeErrorHandler.js';
 import {defaultErrorHandler} from './DefaultErrorHandler.js';
 
-function getErrorHandler(error, file, functionName)
+function getErrorHandler(error, file, functionName, secondaryCode)
 {
     let errorObject = JSON.parse(JSON.stringify(error));
+    errorObject = (Object.keys(errorObject).length < 1) ? ({name: error.name, message: error.message, stack: error.stack}) : 
+        ({name: error.name, message: errorObject, stack: error.stack});
     let errorType = errorObject.name;
-    let errorKey = "";
-    if(errorObject === undefined && errorType === undefined)
+    if(errorType !== undefined && errorType.includes("Sequelize"))
     {
-        return defaultErrorHandler(errorObject, file, functionName);
-    }
-    else if(errorType !== undefined && errorType.includes("Sequelize"))
-    {
-        return sequelizeErrorHandler(errorObject, file, functionName);
-    }
-    else if(errorType !== undefined && errorType.includes("MulterError"))
-    {
-        return multerErrorHandler(errorObject, file, functionName);
-    }
-    else if(errorType !== undefined && errorType.includes("FileUploadError"))
-    {
-        return fileUploadErrorHandler(errorObject, file, functionName);
-    }
-    else if(errorType === undefined && file === "fileHandler" && functionName === "imageHandler")
-    {
-        // could be a AWS error in this case if no other error was found
-        return awsErrorHandler(errorObject, file, functionName);
+        return sequelizeErrorHandler(errorObject, file, functionName, secondaryCode);
     }
     else
     {
         // default
-        return defaultErrorHandler(errorObject, file, functionName);
+        return defaultErrorHandler(errorObject, file, functionName, secondaryCode);
     }
 }
 

@@ -89,14 +89,14 @@ const createReview = async (requester, req, res) =>
     review = review[0];
     if(review === null)
     {
-        let message = "Review creation failed for some unexpected reason.  Error code: 1101"
+        let message = "Review creation failed for some unexpected reason.  Error code: 1100"
         // review creation failed, should just about never occur
         res.status(500).sendResponse({
             message: message,
             requester: requester
         });
         Logger.error("Review creation failed for some unexpected reason",
-            {errorCode: 1101, function: "createReview", file: "reviewCreator.js", requestId: req.id});
+            {errorCode: 1100, function: "createReview", file: "reviewCreator.js", requestId: req.id});
     }
     else
     {
@@ -544,7 +544,7 @@ const createReviewTagAssociation = async (review, tagId, userId, type) => {
                 serverError = true;
                 let error = getSanitizedOutput(errorObject)
                 Logger.error("Some unknown constraint error occurred: " + errorObject.original.constraint,
-                    {errorCode: 1104, function: "createReviewTagAssociation", file: "reviewCreator.js", requestId: req.id, error: error});
+                    {errorCode: 1101, function: "createReviewTagAssociation", file: "reviewCreator.js", requestId: req.id, error: error});
 
             }
         }
@@ -552,7 +552,7 @@ const createReviewTagAssociation = async (review, tagId, userId, type) => {
         {
             serverError = true;
             Logger.error("Some unknown error occurred during posting a tag: " + errorObject.name,
-                {errorCode: 1105, function: "createReviewTagAssociation", file: "reviewCreator.js", requestId: req.id, error: errorObject});
+                {errorCode: 1102, function: "createReviewTagAssociation", file: "reviewCreator.js", requestId: req.id, error: errorObject});
         }
         successful = false;
     }

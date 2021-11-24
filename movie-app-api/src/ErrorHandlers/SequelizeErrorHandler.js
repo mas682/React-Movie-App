@@ -56,11 +56,11 @@ const ERRORS = {
             defaultLogMessage: "Could not find a user id record with the given id value",
             defaultStatus: 500,
             defaultLog: true,
-            defaultErrorCode: undefined,
+            defaultErrorCode: 11050,
             functions: {
                 signup: {
                     createTempUser: {
-                        errorCode: 1317,
+                        errorCode: 11051,
                         logMessage: "Could not create a UserAuthenticationAttempsRecord due to the user id provided not existing"
                     }
                 }
@@ -71,20 +71,20 @@ const ERRORS = {
             defaultLogMessage: "Some unexpected foreign key constraint error occurred",
             defaultStatus: 500,
             defaultLog: true,
-            defaultErrorCode: 1801,
+            defaultErrorCode: 11000,
             functions: {
                 review: {
                     postComment: {
-                        errorCode: 1203
+                        errorCode: 11001
                     }
                 },
                 // the codes here will need fixed as they were groupded into 1 before
                 reviewCreator: {
                     createReview: {
-                        errorCode: 1101
+                        errorCode: 11002
                     },
                     updateReview: {
-                        errorCode: 1101
+                        errorCode: 11003
                     }
                 }
             }
@@ -135,30 +135,16 @@ const ERRORS = {
                 }
             }
         },
-        "users_picture_key":{
-            defaultMessage: "Some unexpected error occurred on the server",
-            defaultLogMessage: undefined,
-            defaultStatus: 500,
-            defaultLog: true,
-            defaultErrorCode: undefined,
-            functions: {
-                profile: {
-                    updateImage: {
-                        errorCode: 1010,
-                    }
-                }
-            }
-        },
         "UserCredentials_salt_key":{
             defaultMessage: "Some unexpected error occurred on the server",
             defaultLogMessage: "The salt to encrypt a temp users password was already in use",
             defaultStatus: 500,
             defaultLog: true,
-            defaultErrorCode: undefined,
+            defaultErrorCode: 10050,
             functions: {
                 signup: {
                     createTempUser: {
-                        errorCode: 1307,
+                        errorCode: 10051,
                         logMessage: "Could not generate a unique salt to encrypt a temp users password"
                     }
                 }
@@ -169,11 +155,11 @@ const ERRORS = {
             defaultLogMessage: "The temp user already has a temp verification code record",
             defaultStatus: 500,
             defaultLog: true,
-            defaultErrorCode: undefined,
+            defaultErrorCode: 10100,
             functions: {
                 signup: {
                     resendVerificationCode: {
-                        errorCode: 1313
+                        errorCode: 10101
                     }
                 }
             }
@@ -183,16 +169,23 @@ const ERRORS = {
             defaultLogMessage: "The salt to encrypt a verification code was already in use",
             defaultStatus: 500,
             defaultLog: true,
-            defaultErrorCode: undefined,
+            defaultErrorCode: 10150,
             functions: {
                 signup: {
                     createTempUser: {
-                        errorCode: 1308,
+                        errorCode: 10151,
                         logMessage: "Could not generate a unique salt to encrypt a temp users verification code"
                     }, 
                     resendVerificationCode: {
-                        errorCode: 1311,
+                        errorCode: 10152,
                         logMessage: "Could not generate a unique salt to encrypt a temp users verification code"
+                    }
+                },
+                login: {
+                    forgotPassword: {
+                        errorCode: 10153,
+                        logMessage: "Could not generate a unique salt to encrypt a users verification code",
+                        message: "User verification code could not be generated, please try again"
                     }
                 }
             }
@@ -202,31 +195,31 @@ const ERRORS = {
             defaultLogMessage: "Some unexpected unique constraint error occurred",
             defaultStatus: 500,
             defaultLog: true,
-            defaultErrorCode: 1802,
+            defaultErrorCode: 10000,
             functions: {
                 // these will need fixed as error code is the same for both...
                 reviewCreator: {
                     createReview:{
-                        errorCode: 1102
+                        errorCode: 10001
                     },
                     updateReview:{
-                        errorCode: 1102
+                        errorCode: 10002
                     }
                 },
                 profile: {
                     updateInfo: {
-                        errorCode: 1004
+                        errorCode: 10003
                     },
                     removeProfilePicture: {
-                        errorCode: 1007
+                        errorCode: 10004
                     },
                     updateImage: {
-                        errorCode: 1011
+                        errorCode: 10005
                     }
                 },
                 signup: {
                     createTempUser: {
-                        errorCode: 1300
+                        errorCode: 10006
                     }
                 }
             }
@@ -237,11 +230,19 @@ const ERRORS = {
         defaultLogMessage: undefined,
         defaultStatus: 500,
         defaultLog: true,
-        defaultErrorCode: 1800,
+        defaultErrorCode: 12000,
         functions: {
+            login:{
+                forgotPassword:{
+                    errorCode: 12002,
+                    "900":{
+                        errorCode: 900
+                    }
+                }
+            },
             profile: {
                 updateInfo: {
-                    errorCode: 1005
+                    errorCode: 12001
                 },
                 removeProfilePicture: {},
                 updateImage: {}
@@ -251,9 +252,10 @@ const ERRORS = {
 }
 
 
-function sequelizeErrorHandler(error, file, functionName) {
+function sequelizeErrorHandler(error, file, functionName, secondaryCode) {
     let errorType;
     let errorKey;
+
     if(error.name.includes("ForeignKey"))
     {
         errorType = "ForeignKey";
@@ -300,11 +302,11 @@ function sequelizeErrorHandler(error, file, functionName) {
     // if there is no definition for the specific function, use defaults
     if(functionObj === undefined || Object.keys(functionObj).length < 0)
     {
-        return getOutput(errorObj, undefined, errorType, error);
+        return getOutput(errorObj, undefined, errorType, error, secondaryCode);
     }
     else
     {
-        return getOutput(errorObj, functionObj, errorType, error);
+        return getOutput(errorObj, functionObj, errorType, error, secondaryCode);
     }
 
 }
@@ -324,34 +326,48 @@ function getSanitizedOutput(error)
         }
     }
     return {
-        name: error.name,
-        errors: errors,
-        fields: error.fields,
-        code: error.original.code,
-        column: error.original.column,
-        constraint: error.original.constraint,
-        detail: error.original.detail,
-        schema: error.original.schema,
-        table: error.original.table
-    }
+        name: error.message.name,
+        message: {
+            errors: errors,
+            fields: error.fields,
+            code: error.original.code,
+            column: error.original.column,
+            constraint: error.original.constraint,
+            detail: error.original.detail,
+            schema: error.original.schema,
+            table: error.original.table
+        },
+        stack: error.stack
+    };
 }
 
 // if either the function the error occurred in is not defined or
 // the function is defined but has no properties
-function getOutput(errorObj, functionObj, errorType, error)
+function getOutput(errorObj, functionObj, errorType, error, secondaryCode)
 {
     let output = {
         message: "",
         status: undefined,
         log: undefined,
         logMessage: "",
-        errorCode: undefined
+        errorCode: undefined,
+        secondaryCode: undefined,
+        error: undefined
     };
+
+    let secondaryCodeObj;
+    // if there is a object for a specific part of a function
+    if(functionObj !== undefined)
+    {
+        secondaryCodeObj = functionObj[secondaryCode];
+    }
+
     let message = errorObj.defaultMessage;
     let log = errorObj.defaultLog;
     let logMessage = errorObj.defaultLogMessage;
     let errorCode = errorObj.defaultErrorCode;
     let status = errorObj.defaultStatus;
+    let msgErrorCode = errorObj.defaultErrorCode;
     // if there is a object for the specific function, check the values
     if(functionObj !== undefined)
     {
@@ -359,14 +375,27 @@ function getOutput(errorObj, functionObj, errorType, error)
         log = (functionObj.log === undefined) ? log : functionObj.log;
         logMessage = (functionObj.logMessage === undefined) ? logMessage : functionObj.logMessage;
         errorCode = (functionObj.errorCode === undefined) ? errorCode : functionObj.errorCode;
+        msgErrorCode = (functionObj.errorCode === undefined) ? errorCode : functionObj.errorCode;
         status = (functionObj.status === undefined) ? status : functionObj.status;
+
+        if(secondaryCodeObj !== undefined)
+        {
+            message = (secondaryCodeObj.message === undefined) ? message : secondaryCodeObj.message;
+            log = (secondaryCodeObj.log === undefined) ? log : secondaryCodeObj.log;
+            logMessage = (secondaryCodeObj.logMessage === undefined) ? logMessage : secondaryCodeObj.logMessage;
+            status = (secondaryCodeObj.status === undefined) ? status : secondaryCodeObj.status;
+        }
+    }
+    if(secondaryCode !== undefined)
+    {
+        msgErrorCode = (secondaryCode === undefined ) ? msgErrorCode : msgErrorCode + "." + secondaryCode;
     }
 
 
     // if there is a error code, append it to the message
-    if(errorCode !== undefined)
+    if(msgErrorCode !== undefined)
     {
-        message = message + " .  Error code: " + errorCode;
+        message = message + ".  Error code: " + msgErrorCode;
     }
 
     let errorOutput = undefined;
@@ -377,6 +406,14 @@ function getOutput(errorObj, functionObj, errorType, error)
         {
             errorOutput = getSanitizedOutput(error);
         }
+        else if(error.message.original !== undefined)
+        {
+            errorOutput = {message: error.message.original, stack: error.stack, name:error.message.name};
+        }
+        else
+        {
+            errorOutput = error;
+        }
     }
 
     output.status = status;
@@ -385,6 +422,7 @@ function getOutput(errorObj, functionObj, errorType, error)
     output.message = message;
     output.errorCode = errorCode;
     output.error = errorOutput;
+    output.secondaryCode = secondaryCode;
 
     return output;
 }

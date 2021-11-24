@@ -1,0 +1,507 @@
+{
+    "ErrorType":{
+        "ErrorClass":
+        {
+            "Error":{
+                "default":{
+                    
+                },
+                "file":{
+                    "function":{
+                        "error-code":{
+                            "default":{
+                                "Description":""
+                            },
+                            "secondary-code":{
+                                "Description":""
+                            },
+                            "secondary-code2":{
+                                "Description":""
+                            }
+                            
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "DefaultErrorHandler":{
+        "range":"20000-29999",
+        "default":{
+            "range":"20000-24999",
+            "Description":"Some unexpected error occurred",
+            "code":20000,
+            "oldCode":1900
+        }
+    },
+    "Sequelize":{
+        "range":"10000-20000",
+        "default":{
+            "range":"11200-11249",
+            "Description":"Some unexpected sequelize error occurred",
+            "code":12000,
+            "oldCode":1800,
+                "profile.js":{
+                    "updateInfo":{
+                        "12001":{
+                            "default":{
+                                "Description":"A user tried to update their information but some unexpected database failure occurred",
+                                "oldCode":1005
+                            }
+                        }
+                    }
+                }
+        },
+        "UniqueConstraint":
+        {
+            "range":"10000-10999",
+            "default":{
+                "range":"11000-12000",
+                "Description":"Some unexpected unique constraint error occurred",
+                "code":10000,
+                "oldCode":1802,
+                "reviewCreator.js":{
+                    "createReview":{
+                        "10001":{
+                            "default":{
+                                "Description":"Some unexpected constraint error occurred when a user was creating a review",
+                                "oldCode":1102
+                            }
+                        }
+                    },
+                    "updateReview":{
+                        "10002":{
+                            "default":{
+                                "Description":"Some unexpected constraint error occurred when a user was updating or creating a review",
+                                "oldCode":1102
+                            }
+                        }
+                    }
+                },
+                "profile.js":{
+                    "updateInfo":{
+                        "10003":{
+                            "default":{
+                                "Description":"A user tried to update their information but some unexpected constraint error occurred",
+                                "oldCode":1004
+                            }
+                        }
+                    },
+                    "removeProfilePicture":{
+                        "10004":{
+                            "default":{
+                                "Description":"Some unexpected constraint error occurred when a user tried to set their picture to null",
+                                "oldCode":1007
+                            }
+                        }
+                    },
+                    "updateImage":{
+                        "10005":{
+                            "default":{
+                                "Description":"Some unexpected constraint error occured when a user tried to update their picture on the database",
+                                "oldCode":1011
+                            }
+                        }
+                    }
+                },
+                "signup.js":{
+                    "createTempUser":{
+                        "10006":{
+                            "default":{
+                                "Description":"A user was attempting to sign up but some unexpected constraint error occurred",
+                                "oldCode":1300
+                            }
+                        }
+                    }
+                }
+            },
+            "reviews_userId_movieId_key":{
+                "default":{},
+                "reviewCreator.js": {
+                    "createReview": {},
+                    "updateReview": {}
+                }
+            },
+            "users_username_key":{
+                "default":{},
+                "profile.js": {
+                    "updateInfo": {}
+                },
+                "signup.js": {
+                    "createTempUser": {}
+                }
+            },
+            "users_email_key":{
+                "default":{},
+                "profile.js": {
+                    "updateInfo": {}
+                },
+                "signup.js": {
+                    "createTempUser": {}
+                }
+            },
+            "UserCredentials_salt_key":{
+                "range":"10050-10099",
+                "default":{
+                    "Description":"A unexpected UserCredentials_salt_key unique constraint occurred",
+                    "code":10050
+                },
+                "signup.js":{
+                    "createTempUser":{
+                        "10051":{
+                            "default":{
+                                "Description":"A user was attempting to sign up but unable to generate a unique salt to encrypt their password",
+                                "oldCode":1307
+                            }
+                        }
+                    }
+                }
+            },
+            "TempVerificationCodes_userId_key":{
+                "range":"10100-10149",
+                "default":{
+                    "Description":"A unexpected UserCredentials_salt_key unique constraint occurred",
+                    "code":10100
+                },
+                "signup.js":{
+                    "resendVerificationCode":{
+                        "10101":{
+                            "default":{
+                                "Description":"A user was attempting to resend their verification code but was unable to create a new record as a record already existed for the user.  The record was most likely created after the delete finished",
+                                "oldCode":1313
+                            }
+                        }
+                    }
+                }
+            },
+            "TempVerificationCodes_salt_key":{
+                "range":"10150-10199",
+                "default":{
+                    "Description":"A unexpected TempVerificationCodes_salt_key unique constraint occurred",
+                    "code":10150
+                },
+                "signup.js":{
+                    "createTempUser":{
+                        "10151":{
+                            "default":{
+                                "Description":"A user was attempting to sign up but unable to generate a unique salt to encrypt their verification code",
+                                "oldCode":1308
+                            }
+                        }
+                    },
+                    "resendVerificationCode":{
+                        "10152":{
+                            "default":{
+                                "Description":"A user was attempting to resend their verification code but unable to generate a unique salt to encrypt their verification code",
+                                "oldCode":1311
+                            }
+                        }
+                    }
+                },
+                "login.js":{
+                    "forgotPasword":{
+                        "10153":{
+                            "default":{
+                                "Description":"Could not succesfully generate a unique salt that is not being used after 5 attempts for a users temporary verificaiton code",
+                                "oldCode":1611
+                            }
+                        }
+                    }
+                }
+            }
+
+        },
+        "ForeignKey":{
+            "range":"11000-12999",
+            "default":{
+                "range":"11000-11049",
+                "Description":"Some unexpected foreign key constraint error occurred",
+                "code":11000,
+                "oldCode":1801,
+                "review.js":{
+                    "postComment":{
+                        "11001":{
+                            "default":{
+                                "Description":"A user tried to post a comment on a review post but a unknown constraint error occurred",
+                                "oldCode":1203
+                            }
+                        }
+                    }
+                },
+                "reviewCreator.js":{
+                    "createReview":{
+                        "11002":{
+                            "default":{
+                                "Description":"Some unexpected foreign key constraint error occurred when a user was creating a review",
+                                "oldCode":1101
+                            }
+                        }
+                    },
+                    "updateReview":{
+                        "11003":{
+                            "default":{
+                                "Description":"Some unexpected foreign key constraint error occurred when a user was updating a review",
+                                "oldCode":1101
+                            }
+                        }
+                    }
+                }
+            },
+            "reviews_userId_fkey":{
+                "reviewCreator.js": {
+                    "createReview": {},
+                    "updateReview": {}
+                }
+            },
+            "reviews_movieId_fkey":{
+                "reviewCreator.js": {
+                    "createReview": {},
+                    "updateReview": {}
+                }
+            },
+            "comments_userId_fkey":{
+                "reviews.js":{
+                    "postComment":{}
+                }
+            },
+            "comments_reviewId_fkey":{
+                "reviews.js":{
+                    "postComment":{}
+                }
+            },
+            "UserAuthenticationAttempts_userId_fkey":{
+                "range":"11050-11099",
+                "default":{
+                    "Description":"A unexpected UserAuthenticationAttemps_userId_fkey constraint occurred",
+                    "code":11050
+                },
+                "signup.js":{
+                    "createTempUser":{
+                        "11051":{
+                            "default":{
+                                "Description":"When attempting to create a users Authentication Attempts record, the users id did not exist",
+                                "oldCode": 1317
+                            }
+                        }
+                    }
+                }
+                
+
+            }
+        }
+    },
+    "SecondaryErrorCodes":
+    {
+        "range":"1000-9999",
+        "badPageHandler.js": {},
+        "emailHandler.js": {
+            "range":"1400-1499",
+            "1400":{
+                "Description":"Attempted to send a email to a user but it failed to be sent for some reason",
+                "oldCode":2000
+            }
+        },
+        "getUserInfo.js":{},
+        "index.js":{},
+        "login.js":{
+            "range":"1600-1700",
+            "1600":{
+                "Description": "An error occurred when trying to remove a no longer valid TempVerificationCode record",
+                "function":"validateUserForVerification"
+            },
+            "1601":{
+                "Description":"A error occurred sending out a users verification code through email",
+                "function":"forgotPassword"
+            },
+            "1602":{
+                "Description":"A error occurred when updating a users record when they just logged in.  Database was not able to update last login, password attempts, etc.",
+                "function":"checkLogin"
+            },
+            "1603":{
+                "Description":"A error occurred when updating a users verifcation attempts on a failed attempt",
+                "function":"validatePassCode"
+            },
+            "1604":{
+                "Description":"A error occurred when updating a users verifcation attempts when they just validated the verification code",
+                "function":"validatePassCode"
+            },
+            "1605":{
+                "Description":"A unexpected error occurred when updating a users verifcation attempts after the verification code was sent out",
+                "function":"forgotPassword"
+            },
+            "1606":{
+                "Description":"An error occurred when updating a users verification attempts.  The user either did not exist or the update did not succeed for some reason",
+                "function":"forgotPassword"
+            },
+            "1607":{
+                "Description":"An unexpected error occurred when trying to increment a users password attempts when a user provided invalid credentials",
+                "function":"checkLogin"
+            },
+            "1608":{
+                "Description":"An unexpected error occurred when trying to increment a users password attempts when a user tried to login to an account that was already locked",
+                "function":"validateUser"
+            },
+            "1609":{
+                "Description":"A error occurred removing a users tempVerificationCode when after they validated the verification code",
+                "function":"validatePassCode"
+            }
+        },
+        "movies.js":{
+            "range":"1500-1600",
+            "1500":{
+                "Description":"A user was trying to add a movie to their watch list but the update to the database failed.  Usually means the association already exists.",
+                "function":"addToWatchList"
+            },
+            "1501":{
+                "Description":"A user was trying to remove a movie from their watch list but the update to the database failed",
+                "function":"removeFromWatchList"
+            },
+            "1502":{
+                "Description":"A user was trying to add a movie to their watched list but the udpate to the database failed.  Usually means the association already exists.",
+                "function":"addToWatched"
+            },
+            "1503":{
+                "Description":"A user was trying to remove a movie from their watched list but the update to the database failed",
+                "function":"removeFromWatchedList"
+            }
+        },
+        "profile.js":{
+            "range":"1000-1100",
+            "1000":{
+                "Description": "Occurs if res.locals.skipAuthentication is set to true but the type is not.  for updating the users image.  This should just about never occur as res.locals.skipAuthentication is only.  Set to true if updating a users image",
+                "function": "profileHandler"
+            },
+            "1001":{
+                "Description": "A user tried to follow another user but the update to the database failed",
+                "function": "followUser"
+            },
+            "1002":{
+                "Description": "A user tried to unfollow another user but the update to the database failed",
+                "function": "unfollowUser"
+            },
+            "1003":{
+                "Description":"A user tried to delete their account but the update to the database failed",
+                "function":"removeUser"
+            },
+            "1004":{
+                "Description":"Could not generate a unique salt when trying to store the users new password",
+                "function":"resetPassword"
+            }
+        },
+        "reviewCreator.js":{
+            "range":"1100-1199",
+            "1100":{
+                "Description":"Some unexpected foreign key constraint error occurred when a user was updating or creating a review",
+                "function":"reviewErrorHandler"
+            },
+            "1101":{
+                "Description":"Some unexpected constraint error occurred when adding a tag to a review",
+                "function":"createReviewTagAssociation"
+            },
+            "1102":{
+                "Description":"Some unexpected error occurred when adding a tag to a review",
+                "function":"createReviewTagAssociation"
+            }
+        },
+        "reviews.js":{
+            "range":"1200-1299",
+            "1200":{
+                "Description":"A user tried to delete a review but the update to the database failed",
+                "function":"removePost"
+            },
+            "1201":{
+                "Description":"A user tried to like a review post but the update to the database failed",
+                "function":"addLike"
+            },
+            "1202":{
+                "Description":"A user tried to remove a like from a review post but the update to the database failed",
+                "function":"removeLike"
+            }
+        },
+        "search.js":{},
+        "signup.js":{
+            "range":"1300-1399",
+            "1300": {
+                "Description":"A user was attempting to sign up but the verification email failed to be sent out",
+                "function":"createTempUser"
+            },
+            "1301": {
+                "Description":"A user attempting to sign up tried to have their verification code resent but the email did not get sent out",
+                "function":"resendVerificationCode"
+            },
+            "1302":{
+                "Description":"A user was attempting to sign up but unable to generate a unique salt to encrypt their verification code.  When attempting to remove the temp user another error occurred",
+                "function":"createTempUser"
+            },
+            "1303":{
+                "Description":"A user was attempting to sign up but a unexpected error occurred when creating their verification code.  When attempting to remove the temp user another error occurred",
+                "function":"createTempUser"
+            },
+            "1304":{
+                "Description":"A users new verification code was sent out but some unexpected error occurred incrementing their codes resent",
+                "function":"resendVerificationCode"
+            }, 
+            "1305":{
+                "Description":"A user was attempting to sign up but unable to generate a unique salt to encrypt their password.  When attempting to remove the temp user another error occurred",
+                "function":"createTempUser"
+            },
+            "1306":{
+                "Description":"A user was attempting to sign up but a unexpected error occurred when creating their password record.  When attempting to remove the temp user another error occurred",
+                "function":"createTempUser"
+            },
+            "1307":{
+                "Description":"A user was attempting to sign up but an error occurred when creating their authentication attemps record.  When attempting to remove the user another error occurred",
+                "function":"createTempUser"
+            },
+            "1308":{
+                "Description":"A unverified user account exists without a authentication attempts record",
+                "function":"resendVerificationCode"
+            },
+            "1309":{
+                "Description":"A unverified user account exists without a authentication attempts record",
+                "function":"verifyAccount"
+            },
+            "1310":{
+                "Description":"A unexpected error occurred when trying to remove a user that has expired",
+                "function":"verifyAccount"
+            },
+            "1311":{
+                "Description":"A unexpected error occurred when trying to remove a unverified user",
+                "function":"verifyAccount"
+            },
+            "1312":{
+                "Description":"A unexpected error occurred when trying to remove a user that has expired",
+                "function":"resendVerificationCode"
+            },
+            "1313":{
+                "Description":"Failed to create a user and the user returned from the find or create was null",
+                "function": "createTempUser"
+            },
+            "1314":{
+                "Description":"A unexpected error occurred when trying to remove a user that has expired",
+                "function":"createTempUser"
+            },
+            "1315":{
+                "Description":"A unexpected error occurred when trying to remove a unverified user",
+                "function":"resendVerificationCode"
+            }
+        },
+        "sequelizeErrorHandler.js":{},
+        "defaultErrorHandler.js":{},
+        "sessions.js":{
+            "range":"2100-2199",
+            "2100":{
+                "Description": "When generating a new session for a user, there was a error removing the old session",
+                "function":"regenerateSession"
+            }
+        }, 
+        "errorHandler.js":{
+            "range":"2200-2300",
+            "2200":{
+                "Description": "A error occurred in the main error handler",
+                "function":"errorHandler"
+            }
+        }
+    }
+
+}

@@ -1,3 +1,4 @@
+import { allColors } from 'winston/lib/winston/config';
 import {getErrorHandler} from '../src/ErrorHandlers/ErrorReceiver.js';
 import {removeCurrentSession} from '../src/shared/sessions.js';
 import { clearCookie } from './globals.js';
@@ -5,24 +6,14 @@ const Logger = require("../src/shared/logger.js").getLogger();
 
 
 const errorHandler = async(err, req, res, next) => {
-    let result = getErrorHandler(err, res.locals.file, res.locals.function);
+    let result = getErrorHandler(err, res.locals.file, res.locals.function, res.locals.secondaryCode);
     // function to determine what to do 
     await checkRemoveSession(req, res);
-    console.log(err);
     if(result.log)
     {
         let error = (result.error === undefined) ? err : result.error;
-        let errorObj = JSON.parse(JSON.stringify(error));
-        if(Object.keys(errorObj).length < 1)
-        {
-            // be careful with what you are logging...
-            Logger.error(error.stack, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, errorMessage: result.logMessage, requestId: req.id});
-        }
-        else
-        {
-            // be careful with what you are logging...
-            Logger.error(errorObj, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, errorMessage: result.logMessage, requestId: req.id});
-        }
+        // be careful with what you are logging...
+        Logger.error({name: error.name, message: error.message, stack: error.stack}, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, secondaryCode: result.secondaryCode,  errorMessage: result.logMessage, secondaryMessage: res.locals.secondaryMessage, requestId: req.id});
     }
 
     let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
@@ -101,7 +92,54 @@ const jsonHandler = (middleware, req, res, next) => {
       });
 };
 
+// function called inside the catch function on await functions
+// used to append to the stack where the async fuction was actually called
+const appendCallerStack = (callerStack, error, next, throwError) =>{
+    if(callerStack.length > 30)
+    {
+        // 6 is the index of the new line first \n character in the error stack
+        callerStack = callerStack.substring(6);
+        // get index of second lines new line character, starting 25 characters in
+        // string should be like:      at /movie-app-api/routes/login.js:223:31
+        let endIndex = callerStack.indexOf("\n", 25);
+        if(endIndex !== -1)
+        {
+            callerStack = callerStack.substring(0, endIndex);
+        }
+    }
+    error.stack = error.stack + "\n" + callerStack
+
+    if(next !== undefined)
+    {
+        next(error);
+    }
+    else
+    {
+        if(throwError)
+        {
+            throw error;
+        }
+        else
+        {
+            return error;
+        }
+    }
+};
+
+// function to handle logging for errors that are just caught but don't stop the function
+const caughtErrorHandler = async(err, req, res, secondaryCode, secondaryMessage) => {
+    let result = getErrorHandler(err, res.locals.file, res.locals.function, secondaryCode);
+    if(result.log)
+    {
+        let error = (result.error === undefined) ? err : result.error;
+        // be careful with what you are logging...
+        Logger.error({name: error.name, message: error.message, stack: error.stack}, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, secondaryCode: result.secondaryCode,  errorMessage: result.logMessage, secondaryMessage: secondaryMessage, requestId: req.id});
+    }
+};
+
 module.exports.errorHandler = errorHandler;
 module.exports.checkRemoveSession = checkRemoveSession;
 module.exports.jsonHandler = jsonHandler;
 module.exports.finalErrorHandler = finalErrorHandler;
+module.exports.appendCallerStack = appendCallerStack;
+module.exports.caughtErrorHandler = caughtErrorHandler;

@@ -94,6 +94,33 @@ const userAuthenticationAttempts = (sequelize, DataTypes) => {
         return result;
     };
 
+    UserAuthenticationAttempts.updateVerificationAttempts = async(userId) =>
+    {
+        // increment user password reset attempts, db handles logic around it to lock or not
+        let result = await UserAuthenticationAttempts.increment("verificationAttempts",
+            {where: {userId: userId}}); 
+
+        let updatedRecord;
+        let updated = true;
+        // if user not found
+        if(result !== null && result[0][0].length < 1)
+        {
+            updatedRecord = undefined;
+            updated = false;
+        }
+        // update failed for some reason
+        else if(result !== null && result[0][1] != 1)
+        {
+            updated = false;
+            updatedRecord = result[0][0][0];
+        }
+        else
+        {
+            updatedRecord = result[0][0][0];
+        }
+        return {updated: updated, record: updatedRecord};
+    }
+
     // function to increment user login attempts
     UserAuthenticationAttempts.updateUserLoginAttempts = async (req, res, id, username, errorCode) => {
         let result = 0;

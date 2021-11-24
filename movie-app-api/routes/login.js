@@ -1,16 +1,14 @@
 const models = require('../src/shared/sequelize.js').getClient().models;
-import {customAlphabet} from 'nanoid';
 const Op = require('sequelize').Op;
 import {validateStringParameter, validateEmailParameter, validateUsernameParameter,
         validateIntegerParameter, validateBooleanParameter} from './globals.js';
 import {emailHandler} from './emailHandler.js';
-const nanoid = customAlphabet('1234567890', 6);
-const moment = require('moment');
 import {checkHashedValue, hash} from '../src/shared/crypto.js';
 import {createSession, destroySession} from '../src/shared/sessions.js';
-import { loggers } from 'winston';
 const config = require('../Config.json');
 const Logger = require("../src/shared/logger.js").getLogger();
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
+const caughtErrorHandler = require("./errorHandler.js").caughtErrorHandler;
 
 // function to see if a user can login and returns a cookie to use
 const login = (req, res, next) => {
@@ -42,7 +40,10 @@ const selectPath = (requester, req, res, next) =>
             else
             {
                 checkLogin(req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
         }
         else if(req.params.type === "forgot_password")
@@ -58,7 +59,10 @@ const selectPath = (requester, req, res, next) =>
             else
             {
                 forgotPassword(req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
         }
         else if(req.params.type === "validate_passcode")
@@ -74,7 +78,10 @@ const selectPath = (requester, req, res, next) =>
             else
             {
                 validatePassCode(req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
         }
     }
@@ -105,7 +112,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 logout(req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -132,13 +142,19 @@ const logout = async(req, res) =>
     let sessionId = req.session.id;
     let userId = req.session.userId;
     // remove the session from redis
-    await destroySession(req);
+    await destroySession(req).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     // remove the session from the database
     await models.UserSessions.destroy({
         where: {
             session: sessionId,
             userId: userId
         }
+    }).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
 
     // set the cookie options so the browser may remove the cookie
@@ -179,35 +195,40 @@ const checkLogin = async (req, res) =>
     valid = validateBooleanParameter(res, stayLoggedIn, "", "Stay logged in must be either true or false");
     if(!valid) return;
     // find a user by their login
-    //let user = await models.Users.findByLogin(req.body.username);
-    let user = await models.Users.findByLoginForAuth(username);
+    let user = await models.Users.findByLoginForAuth(username).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     // make sure the user is not null, not locked out of account
-    let userValid = await validateUser(res, username, user, true);
+    let userValid = await validateUser(res, username, user, true).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(!userValid) return;
     let result = checkHashedValue(password, "password", user.credentials.salt);
     // if the password is correct
     if(result.value === user.credentials.password)
     {
-        try
+        await models.UserAuthenticationAttempts.update({
+            lastLogin: new Date(),
+            passwordAttempts: 0,
+            verificationAttempts: 0,
+            verificationLocked: null
+        },
         {
-            await models.UserAuthenticationAttempts.update({
-                lastLogin: new Date(),
-                passwordAttempts: 0,
-                verificationAttempts: 0,
-                verificationLocked: null
-            },
-            {
-                where: { userId: user.id }
-            });
-        }
-        catch (err)
-        {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            Logger.error("Some unknown error occurred updaing the users(" + username + ") account on login: " + errorObject.name,
-                {errorCode: 1603, function: "checkLogin", file: "login.js", requestId: req.id, error: errorObject});
-        }
+            where: { userId: user.id }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            error = appendCallerStack(callerStack, error, undefined, false);
+            let message = "Some unknown error occurred updaing the users(" + username + ") account on login";
+            caughtErrorHandler(error, req, res, 1602, message);
+        });
+
         // create session for user
-        await createSession(user, req, res, !stayLoggedIn, false);
+        await createSession(user, req, res, !stayLoggedIn, false).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
 
         setTimeout(() =>{
             res.status(200).sendResponse({
@@ -218,7 +239,10 @@ const checkLogin = async (req, res) =>
     }
     else
     {
-        let attempts = await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1614);
+        let attempts = await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1607).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         let message = "Incorrect password"
         if(attempts >= 5)
         {
@@ -237,25 +261,56 @@ const forgotPassword = async (req, res) =>
     let username = req.body.username;
     let valid = validateUsernameParameter(undefined, username, "", "");
     // if not a valid username, check to see if valid email
+    //allow this to accept emails and usernames
+    //    - fix front end as well
+    // you could have some issues if you let a user use someones email as their username...
+
     if(!valid)
     {
         valid = validateEmailParameter(res, username, "", "Username or email address is invalid");
         if(!valid) return;
     }
     // find a user by their login
-    let user = await models.Users.findByLoginForVerification(req.body.username);
+    let user = await models.Users.findByLoginForVerification(req.body.username).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     // make sure user exists and see if a verification record already exists
     let message;
     let status = 0;
+    let lockedTime = user.authenticationAttempts.verificationLocked;
+    let resetAttempts = user.verificationAttempts;
     if(user === null)
     {
         message = "The username or email provided does not exist";
         status = 404;
     }
-    else if(user.authenticationAttempts.verificationLocked !== null && new Date(user.verificationLocked) > new Date())
+    else if(lockedTime !== null && new Date(lockedTime) > new Date())
     {
-        message = "User account temporarily locked due to too many verification attempts";
-        status = 401;
+        let result = await models.UserAuthenticationAttempts.updateVerificationAttempts(user.id).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
+        if(result.record === undefined)
+        {
+            status = 404;
+            message = "The username or email provided does not exist";
+        }
+        // update failed for some reason
+        else if(!result.updated)
+        {
+            Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
+            {errorCode: 1606, function: "forgotPassword", file: "login.js", requestId: req.id});
+
+            status = 500;
+            message = "Some unexpected error occurred on the server.  Error code: 1606"
+        }
+        else
+        {
+            message = message = "Could not send another verification code as the maximum number of codes " +
+            " to send out (3) has been met.  Another code can be sent 24 hours from now or contact an adminstrator."
+            status = 401;
+        }
     }
     if(status !== 0)
     {
@@ -265,173 +320,74 @@ const forgotPassword = async (req, res) =>
         });
         return;
     }
-    // increment user password reset attempts, db handles logic around it to lock or not
-    let result = await models.UserAuthenticationAttempts.increment(
-        "verificationAttempts",{where: {userId: user.id}}); 
-    // if user not found
-    if(result[0][0].length < 1)
+
+    // generate verification code
+    let result = await models.TempVerificationCodes.generateTempVerificationCode(req, res, user, undefined, false, 10, 2).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
+    let code = result.code;
+    let emailResult = await sendVerificationEmail(res, code, user.email).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
+    Logger.debug("Code: " + code);
+    Logger.debug("Adding 2 second delay");
+    if(emailResult)
     {
-        res.status(404).sendResponse({
-            message: "The username or email provided does not exist",
-            requester: ""
+        let successful = true;
+        result = await models.UserAuthenticationAttempts.updateVerificationAttempts(user.id).catch(error=>{
+            let callerStack = new Error().stack;
+            error = appendCallerStack(callerStack, error, undefined, false);
+            caughtErrorHandler(error, req, res, 1605, undefined);
+            // set to 0 as not sure what the actual count is at this point
+            resetAttempts = 0;
+            successful = false;
         });
-        return;
-    }
-    // update failed for some reason
-    else if(result[0][1] != 1)
-    {
-        Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
-         {errorCode: 1609, function: "forgotPassword", file: "login.js", requestId: req.id});
 
-        res.status(500).sendResponse({
-            message: "User verification code could not be generated.  Error code: 1609",
-            requester: ""
-        });
-        return;
-    }
-    let resetAttempts = result[0][0][0].verificationAttempts;
-    let lockedTime = result[0][0][0].verificationLocked;
-    // if the user can have another code sent
-    if(resetAttempts <= 3)
-    {
-        // delete any existing verification records for the user
-        await models.TempVerificationCodes.destroy({where: {userId: user.id}});
-
-        let code;
-        let date;
-        let createdDate;
-        let secret;
-        let result;
-        let expirationDate;
-        let counter = 0;
-        while(counter < 5)
+        if(successful && (result === undefined || result.record === undefined))
         {
-            code = nanoid();
-            date = new Date();
-            createdDate = date.toISOString();
-            secret = code + Date.parse(date);
-            result = hash(secret, "verificationCode");
-            expirationDate = new Date();
-            expirationDate.setMinutes(expirationDate.getMinutes() + 10);
-            try 
-            {
-                result = await models.TempVerificationCodes.create({
-                    userId: user.id,
-                    salt: result.salt,
-                    code: result.value,
-                    createdAt: createdDate,
-                    expiresAt: expirationDate.toISOString()
-                });
-                // break out of loop
-                counter = 10;
-            }
-            catch (err)
-            {
-                let errorObject = JSON.parse(JSON.stringify(err));
-                let errorType = errorObject.name;
-                if(errorType !== undefined && errorType.includes("Sequelize"))
-                {
-                    if(!(err.name.includes("UniqueConstraint") &&
-                     errorObject.original.constraint === "TempVerificationCodes_salt_key"))
-                     {
-                        throw err;
-                     }
-                }
-                else
-                {
-                    throw err;
-                }
-                if(counter >= 4)
-                {
-                    Logger.error("Error generating a unique salt for a users temporary verification code",
-                    {errorCode: 1611, function: "forgotPassword", file: "login.js", requestId: req.id, error: errorObject});
-                    res.status(500).sendResponse({
-                        message: "User verification code could not be generated, please try again.  Error code: 1611",
-                        requester: ""
-                    });
-                    return;
-                }
-            }
-            counter = counter + 1;
-        }
-
-        if(result === undefined || result === null)
-        {
-            Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
-                {errorCode: 1610, function: "forgotPassword", file: "login.js", requestId: req.id});
-            // if undefined, record cannot be found
-            res.status(500).sendResponse({
-                message: "User verification code could not be generated.  Error code: 1610",
+            res.status(404).sendResponse({
+                message: "The username or email provided does not exist",
                 requester: ""
             });
             return;
         }
-    
-        let emailResult = await sendVerificationEmail(res, code, user.email);
-        Logger.debug("Code: " + code);
-        Logger.debug("Adding 2 second delay");
-        setTimeout(() =>{
-            if(emailResult)
-            {
-                let message = "Verification email sent.";
-                if(resetAttempts > 2)
-                {
-                    message = message + "  The maximum of 3 unverified verification codes have been sent out.  You can request another 24 hours from now"
-                }
-                console.log(message);
-                res.status(201).sendResponse({
-                    message: message,
-                    requester: ""
-                });
-            }
-            else
-            {
-                res.status(500).sendResponse({
-                    message: "Verification email not sent.  Error code: 1602",
-                    requester: ""
-                });
-            }
-        }, 2000);
+        // update failed for some reason
+        else if(successful && !result.updated)
+        {
+            Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
+            {errorCode: 1606, function: "forgotPassword", file: "login.js", requestId: req.id});
+            // set to 0 as not sure what the actual count at this point
+            resetAttempts = 0;
+        }
+        else if(successful)
+        {
+            resetAttempts = result.record.verificationAttempts;
+        }
     }
-    else
-    {
-        let errorCode;
-        let status = 500;
-        let message;
-        // can not send another request
-        if(resetAttempts > 3 && lockedTime !== null)
+    setTimeout(() =>{
+        if(emailResult)
         {
-            status = 404;
-            message = "Could not send another verification code as the maximum number of codes " +
-            " to send out (3) has been met.  Another code can be sent 24 hours from now or contact an adminstrator."
-        }
-        else if(resetAttempts < 3 && lockedTime !== null)
-        {
-            errorCode = 1606;
-            // need to set appropriate error code
-            Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
-            {errorCode: errorCode, function: "forgotPassword", file: "login.js", requestId: req.id});
-        }
-        else if(resetAttempts >= 3 && lockedTime === null)
-        {
-            errorCode = 1607;
-            Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
-            {errorCode: errorCode, function: "forgotPassword", file: "login.js", requestId: req.id});
-        }
+            let message = "Verification email sent.";
+            if(resetAttempts > 2)
+            {
+                message = message + "  The maximum of 3 unverified verification codes have been sent out.  You can request another 24 hours from now"
+            }
+            console.log(message);
+            res.status(201).sendResponse({
+                message: message,
+                requester: ""
+            });
+            }
         else
         {
-            errorCode = 1608;
-            // need to set appropriate error code
-            Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
-             {errorCode: errorCode, function: "forgotPassword", file: "login.js", requestId: req.id});
+            res.status(500).sendResponse({
+                message: "Verification email not sent.  Error code: 1601",
+                requester: ""
+            });
         }
-        message = (message === 500) ? "User verification code could not be generated.  Error code: " + errorCode : message;
-        // need to send error code with this
-        res.status(status).sendResponse({
-            message: message,
-            requester: ""
-        });
-    }
+    }, 2000);
 };
 
 
@@ -453,29 +409,29 @@ const validatePassCode = async (req, res) =>
     valid = validateIntegerParameter(res, verificationCode, "", "Verification code invalid", undefined, undefined);
     if(!valid) return;
     // find a user by their login
-    let user = await models.Users.findByLoginForVerification(req.body.username);
-    let validationResult = await validateUserForVerification(user, res, false);
+    let user = await models.Users.findByLoginForVerification(req.body.username).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
+    let validationResult = await validateUserForVerification(user, res, false).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     let result = validationResult.result;
     // if a valid validation record does not exist, return
     if(!result) return;
     let tempVerificationCode = validationResult.tempVerificationCode;
-    let date = tempVerificationCode.createdAt.toISOString();
-    // convert to epoch time
-    let secret = verificationCode + Date.parse(date);
+    let secret = verificationCode + Date.parse(tempVerificationCode.createdAt);
     result = checkHashedValue(secret, "verificationCode", tempVerificationCode.salt);
     // if passcode incorrect
     if(tempVerificationCode.code !== result.value)
     {
-        try {
-            // db will remove record on third attempt
-            tempVerificationCode = await tempVerificationCode.increment("verificationAttempts");
-        }
-        catch (err)
-        {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            Logger.error("Error updating a users verification attempts",
-                {errorCode: 1604, function: "validatePassCode", file: "login.js", requestId: req.id, error: errorObject});
-        }
+
+        tempVerificationCode = await tempVerificationCode.increment("verificationAttempts").catch(error=>{
+            let callerStack = new Error().stack;
+            error = appendCallerStack(callerStack, error, undefined, false);
+            caughtErrorHandler(error, req, res, 1603, undefined);
+        });
         let message = "Verification code is invalid";
         if((user.authenticationAttempts.verificationLocked !== null && user.authenticationAttempts.verificationLocked > new Date()
          && tempVerificationCode.verificationAttempts >= 3))
@@ -495,28 +451,28 @@ const validatePassCode = async (req, res) =>
     }
     else
     {
-        try {
-            await tempVerificationCode.destroy();
-            await models.UserAuthenticationAttempts.update({
-                verificationAttempts: 0,
-                verificationLocked: null,
-                lastLogin: new Date()
-            }, {where: {userId: user.id}});
-        }
-        catch (err)
-        {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            Logger.error("Error occurred updating a users verification attempts",
-                {errorCode: 1605, function: "validatePassCode", file: "login.js", requestId: req.id, error: errorObject});
-            res.status(500).sendResponse({
-                message: "Some unexpected error occurred on the server.  Error code: 1605",
-                requester: ""
-            });
-            return;
-        }
+        // delete verification record as verified
+        await tempVerificationCode.destroy().catch(error=>{
+            let callerStack = new Error().stack;
+            res.locals.secondaryCode = 1609;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
+        // reset user authentication attempts
+        await models.UserAuthenticationAttempts.update({
+            verificationAttempts: 0,
+            verificationLocked: null,
+            lastLogin: new Date()
+        }, {where: {userId: user.id}}).catch(error=>{
+            let callerStack = new Error().stack;
+            res.locals.secondaryCode = 1604;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
 
         // create a temporary session for the user
-        await createSession(user, req, res, true, true);
+        await createSession(user, req, res, true, true).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
 
         Logger.debug("Adding 2 second delay");
         setTimeout(() =>{
@@ -530,13 +486,16 @@ const validatePassCode = async (req, res) =>
 
 const sendVerificationEmail = async (res, verificationCode, email) =>
 {
-    res.locals.function = "sendVerificationEmail";
+    //res.locals.function = "sendVerificationEmail";
     let subject = "Movie-Fanatics Temporary Verification Code";
     let title = subject;
     let body = `<h2 style="color: #333; font-size: 1.25em;">Movie-Fanatics Verificaiton Code</h2>
                 Your temporary verificaiton code is: ` + verificationCode + `<br><br>If you did not
                 request this verification code, make sure your account has not been compromised`;
-    let result = await emailHandler(email, subject, title, undefined, body, undefined);
+    let result = await emailHandler(email, subject, title, undefined, body, undefined).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     return result;
 }
 
@@ -571,7 +530,10 @@ const validateUser = async (res, username, user, updateAttempts) =>
     {
         if(updateAttempts && updateUser)
         {
-            await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1615);
+            await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1608).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
         }
         res.status(status).sendResponse({
             message: message,
@@ -615,6 +577,9 @@ const validateUserForVerification = async (user, res) => {
                 userId: user.id,
                 expiresAt: {[Op.gte]: new Date()},
             }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         if(tempVerificationCode !== null && tempVerificationCode.verificationAttempts >= 3)
         {
@@ -624,14 +589,12 @@ const validateUserForVerification = async (user, res) => {
             result = false;
             codeExists = true;
             // delete the record as it is not valid
-            try {
-                await tempVerificationCode.destroy();
-            } 
-            catch (err) {
-                let errorObject = JSON.parse(JSON.stringify(err));
-                Logger.error("An error occurred deleting tempVerificationCode record with the id of: " + tempVerificationCode.id,
-                {errorCode: 1600, function: "validateUserForVerification", file: "login.js", requestId: req.id, error: errorObject});
-            }
+            await tempVerificationCode.destroy().catch(error=>{
+                let callerStack = new Error().stack;
+                error = appendCallerStack(callerStack, error, undefined, false);
+                let message = "An error occurred deleting tempVerificationCode record with the id of: " + tempVerificationCode.id;
+                caughtErrorHandler(error, req, res, 1600, message);
+            });
         }
         else if(tempVerificationCode === null)
         {

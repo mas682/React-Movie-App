@@ -40,22 +40,16 @@ const selectPath = (requester, req, res, next) =>
             createTempUser(requester, req, res)
             .catch((err) => {next(err)});
         }
-        else if(req.params.type === "create_account")
+        else if(req.params.type === "verify_account")
         {
             routeFound = true;
-            createUser(requester, req, res)
+            verifyAccount(requester, req, res)
             .catch((err) => {next(err)});
         }
         else if(req.params.type === "resend_verification_code")
         {
             routeFound = true;
             resendVerificationCode(requester, req, res)
-            .catch((err) => {next(err)});
-        }
-        else if(req.params.type === "cancel_registration")
-        {
-            routeFound = true;
-            removeTempUser(requester, req, res)
             .catch((err) => {next(err)});
         }
     }
@@ -99,9 +93,9 @@ const createTempUser = async (requester, req, res) =>
         if(tempUser === null)
         {
             Logger.error("Some unexpected error occurred trying to create a user with the email of: " + email,
-            {errorCode: 1324, function: res.locals.function, file: res.locals.file, requestId: req.id});
+            {errorCode: 1313, function: res.locals.function, file: res.locals.file, requestId: req.id});
             res.status(500).sendResponse({
-                message: "Some unexpected error occurred on the server.  Error code: 1324",
+                message: "Some unexpected error occurred on the server.  Error code: 1313",
                 requester: ""
             });
             return;
@@ -109,7 +103,7 @@ const createTempUser = async (requester, req, res) =>
         // if the account expired and has not been deleted yet
         else if(tempUser !== null && tempUser.verified === false && tempUser.deleteAt < new Date())
         {
-            await models.Users.removeExpiredUser(req, res, tempUser, true, 1325);
+            await models.Users.removeExpiredUser(req, res, tempUser, true, 1314);
             // try to create the user again as they should no longer exist
             tempUser = await models.Users.createTempUser(email, username, firstName, lastName);
         }
@@ -134,20 +128,18 @@ const createTempUser = async (requester, req, res) =>
     }
 
     // generate user credential record
-    let errorCodes = {saltError: 1314, unexpectedError: 1315};
+    let errorCodes = {saltError: 1305, unexpectedError: 1306};
     let userCreds = await models.UserCredentials.createOrUpdatePassword(req, res, tempUser, password, true, errorCodes, true);
 
     // generate user authentication attempts record
-    let userAuth = await models.UserAuthenticationAttempts.createNewUserRecord(req, res, tempUser, true, 1318);
+    let userAuth = await models.UserAuthenticationAttempts.createNewUserRecord(req, res, tempUser, true, 1307);
 
     // generate verification code
-    errorCodes = {saltError: 1309, unexpectedError: 1310};
+    errorCodes = {saltError: 1302, unexpectedError: 1303};
     let result = await models.TempVerificationCodes.generateTempVerificationCode(req, res, tempUser, errorCodes, true, 10, 1);
     let tempVerificationCode = result.tempVerificationCode;
     let code = result.code;
 
-    // may want to verify result not null? or undefined?
-    // then send email to user
     let emailResult = await sendVerificationEmail(code, email, res);
     Logger.debug("Code: " + code);
     Logger.debug("Adding 2 second delay");
@@ -161,9 +153,9 @@ const createTempUser = async (requester, req, res) =>
         }
         else
         {
-            let message = "Verification email not sent.  Error code: 1302";
+            let message = "Verification email not sent.  Error code: 1300";
             Logger.error("Verifcation email not sent",
-                {errorCode: 1302, function: "createTempUser", file: "signup.js", requestId: req.id});
+                {errorCode: 1300, function: "createTempUser", file: "signup.js", requestId: req.id});
             res.status(500).sendResponse({
                 message: message,
                 requester: ""
@@ -196,7 +188,7 @@ const resendVerificationCode = async (requester, req, res) =>
     // if the account expired and has not been deleted yet
     else if(tempUser !== null && tempUser.deleteAt < new Date())
     {
-        await models.Users.removeExpiredUser(req, res, tempUser, false, 1323);
+        await models.Users.removeExpiredUser(req, res, tempUser, false, 1312);
         status = 404;
         message = "Could not find a user with the provided email";
         exit = true;
@@ -205,9 +197,11 @@ const resendVerificationCode = async (requester, req, res) =>
     else if(authRecord === null)
     {
         Logger.error("A unverified user exists without a verification attempts record. User ID: " + tempUser.id + " Email: " + email,
-         {errorCode: 1319, function: res.locals.function, file: res.locals.file, requestId: req.id});
+         {errorCode: 1308, function: res.locals.function, file: res.locals.file, requestId: req.id});
+         // try to remove the user as they shouldn't even exist
+        await models.Users.removeUnverifiedUser(req, res, tempUser, false, 1315);
         status = 500;
-        message = "Some unexpected error occurred on the server.  Error code: 1319";
+        message = "Some unexpected error occurred on the server.  Error code: 1308";
         exit = true;
     }
     if(exit)
@@ -244,7 +238,7 @@ const resendVerificationCode = async (requester, req, res) =>
         {
             let errorObject = JSON.parse(JSON.stringify(err));
             Logger.error("Some unexpected error occurred when trying increment a temp users codes resent",
-            {errorCode: 1312, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
+            {errorCode: 1304, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
         }
     }
     setTimeout(() =>{
@@ -257,9 +251,9 @@ const resendVerificationCode = async (requester, req, res) =>
         }
         else
         {
-            let message = "Verification email not sent.  Error code: 1304";
+            let message = "Verification email not sent.  Error code: 1301";
             Logger.error("Verifcation email not sent",
-                {errorCode: 1304, function: "resendVerificationCode", file: "signup.js", requestId: req.id});
+                {errorCode: 1301, function: "resendVerificationCode", file: "signup.js", requestId: req.id});
             res.status(500).sendResponse({
                 message: message,
                 requester: ""
@@ -268,24 +262,13 @@ const resendVerificationCode = async (requester, req, res) =>
     }, 2000);
 }
 
-    /*
-    left off here...
-    make sure front end works for user sign up, handles all errors
-    also fix profiles.js and login.js to use reusable functions...
-    fix forgotPassword to only increment verificationAttempts after email actually sent
-    also need to fix error handing when generating passcode in login.js
-    also fix error handling when setting new password in profile.js
-        - utilize sequelize error handlers...
-    make sure frontend still works..
-    */
-
 // function to create a user once their email is verified
-const createUser = async (requester, req, res) =>
+const verifyAccount = async (requester, req, res) =>
 {
-    res.locals.function = "createUser";
+    res.locals.function = "verifyAccount";
     let email = req.body.email;
     let verificationCode = req.body.verificationCode;
-    valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
+    let valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
     if(!valid) return;
     valid = validateStringParameter(res, verificationCode, 6, 6, "", "Verification code invalid");
     if(!valid) return;
@@ -306,7 +289,7 @@ const createUser = async (requester, req, res) =>
     // if the user exists but should have been deleted already
     else if(tempUser !== null && tempUser.deleteAt < new Date())
     {
-        await models.Users.removeExpiredUser(req, res, tempUser, false, 1321);
+        await models.Users.removeExpiredUser(req, res, tempUser, false, 1310);
         message = "Could not find a user with the provided email";
         exit = true;
     }
@@ -314,19 +297,20 @@ const createUser = async (requester, req, res) =>
     else if(tempUser.authenticationAttempts === null)
     {
         Logger.error("A unverified user exists without a verification attempts record. Email: " + email + " User ID: " + tempUser.id,
-        {errorCode: 1320, function: res.locals.function, file: res.locals.file, requestId: req.id});
+        {errorCode: 1309, function: res.locals.function, file: res.locals.file, requestId: req.id});
         // try to remove the user as they shouldn't even exist
-        await models.Users.removeUnverifiedUser(req, res, tempUser, false, 1322);
-        message = "Some unexpected error occurred on the server.  Error code: 1320";
+        await models.Users.removeUnverifiedUser(req, res, tempUser, false, 1311);
+        message = "Some unexpected error occurred on the server.  Error code: 1309";
         status = 500;
         exit = true;
     }
-    else if(tempUser.TempVerificationCode === null && tempUser.authenticationAttempts.verificationAttempts < 2)
+    else if(tempUser.TempVerificationCode === null)
     {
         message = "The user does not have a active verification code";
         exit = true;
     }
-    else if(tempUser.TempVerificationCode !== null && tempUser.TempVerificationCode.verificationAttempts >= 3)
+    else if(tempUser.TempVerificationCode !== null && (tempUser.TempVerificationCode.verificationAttempts >= 3
+        || tempUser.TempVerificationCode.expiresAt < new Date()))
     {
         message = "The user does not have a active verification code";
         exit = true;
@@ -366,7 +350,7 @@ const createUser = async (requester, req, res) =>
         });
         return;
     }
-
+    
     await models.TempVerificationCodes.destroy({where: {userId: tempUser.id}});
 
     await tempUser.update({
@@ -390,47 +374,6 @@ const createUser = async (requester, req, res) =>
             requester: tempUser.username
         });
     }, 5000);
-};
-
-
-// function to remove a temp user
-const removeTempUser = async (requester, req, res) =>
-{
-    res.locals.function = "removeTempUser";
-    let username = req.body.username;
-    let email = req.body.email;
-    let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
-    if(!valid) return;
-    valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
-    if(!valid) return;
-
-    let tempUser = await models.UserVerificationCodes.findOne({
-        where: {
-            userEmail: email,
-            username: username,
-            expiresAt: {[Op.gte]: moment()},
-            [Op.or]: [
-                {[Op.and]: [{codesResent: 2},{verificationAttempts: {[Op.lt]: 3}}]},
-                {[Op.and]: [{codesResent: {[Op.lt]: 2}}]}
-            ]
-        }
-    });
-    if(tempUser === null)
-    {
-        res.status(404).sendResponse({
-            message: "Could not find a user with the given email and username that has a valid active verification code",
-            requester: ""
-        });
-        return;
-    }
-
-    // delete the user out of the UserVerificationCodes table
-    tempUser.destroy();
-
-    res.status(200).sendResponse({
-        message: "Temporary user has been removed",
-        requester: ""
-    });
 };
 
 

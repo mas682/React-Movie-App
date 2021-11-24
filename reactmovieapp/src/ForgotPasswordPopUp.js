@@ -454,6 +454,16 @@ class ForgotPasswordPopup extends React.Component {
                 resultFound = false;
             }
         }
+        else if(status === 500)
+        {
+            // somewhat tested in resetPassword function
+            this.props.updateLoggedIn(requester);
+            this.setState({
+                messages: [{type: "failure", message: message, timeout: 0}],
+                messageId: this.state.messageId + 1,
+                awaitingResults: false
+            });
+        }
         else
         {
             resultFound = false;

@@ -41,8 +41,20 @@
     position: relative;
 }
 
+.padding10 {
+    padding-top: 5px;
+}
+
 .verificationContainer {
     width: 100%;
+    position: relative;
+    text-align: center;
+}
+
+.emailInputContainer {
+    width: 95%;
+    margin-left: 2.5%;
+    margin-right: 2.5%;
     position: relative;
     text-align: center;
 }

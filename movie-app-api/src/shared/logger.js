@@ -1,7 +1,6 @@
 var winston = require('winston');
 const { format } = require('winston');
 require('winston-daily-rotate-file');
-const moment = require('moment');
 const LEVEL = Symbol.for('level');
 
 let Logger;
@@ -45,8 +44,16 @@ const consoleFormat = winston.format.combine(
 function getConsoleString(info) {
     if(info.level === 'error')
     {
-        let message = (typeof(info.message) === "object") ? JSON.stringify(info.message) : info.message;
-        return `${info.timestamp}| ${info.level} | File: ${info.file} | Function: ${info.function} | Error code: ${info.errorCode} | \n${message}\n`
+        let message;
+        if(typeof(info.message) === "object")
+        {
+            message = JSON.stringify({"message":info.message.message, "name":info.message.name}) + "\n" + info.message.stack;
+        }
+        else
+        {
+            message = info.message;
+        }
+        return `${info.timestamp}| ${info.level} | File: ${info.file} | Function: ${info.function} | Error code: ${info.errorCode} | Secondary code: ${info.secondaryCode} | ${message}`
     }
     else if(info.level === 'http')
     {
@@ -78,7 +85,6 @@ function getConsoleString(info) {
             return `${info.timestamp}| ${color}Method: ${obj.method} | url: ${obj.url} | requester: ${obj.requesterId}`
             + ` | ip: ${obj.ip} | request ID: ${obj.requestId}\n`
         }
-        return `${info.timestamp}| ${color}Status: ${obj.status} | ${info.message}`
     }
     else
     {

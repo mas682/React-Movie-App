@@ -120,7 +120,7 @@ function getOutput(errorObj, functionObj)
     // if there is a error code, append it to the message
     if(errorCode !== undefined)
     {
-        message = message + " .  Error code: " + errorCode;
+        message = message + ".  Error code: " + errorCode;
     }
 
     output.status = status;
