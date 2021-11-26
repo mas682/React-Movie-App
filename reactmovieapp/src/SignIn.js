@@ -181,6 +181,14 @@ class SignInPopup extends React.Component {
 				});
 			}
 		}
+		else if(status === 500)
+		{
+			this.setState({
+				awaitingResults: false,
+				messageId: this.state.messageId + 1,
+				messages: [{type: "failure", message: message}]
+			});
+		}
 		else
 		{
 			this.setState({

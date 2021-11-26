@@ -137,7 +137,7 @@ app.use(badPageHandler);
 
 // error handler, should be last
 app.use(function(err, req, res, next) {
-    errorHandler(err, req, res, next).catch((err) => {console.log(err);finalErrorHandler(err, req, res, next)});
+    errorHandler(err, req, res, next).catch((err) => {finalErrorHandler(err, req, res, next)});
 });
 
 module.exports = app;

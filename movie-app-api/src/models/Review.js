@@ -1,4 +1,7 @@
 const Op = require('sequelize').Op;
+const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+
+
 const review = (sequelize, DataTypes) => {
     const Review = sequelize.define('Reviews', {
         id: {
@@ -164,6 +167,9 @@ const review = (sequelize, DataTypes) => {
             // include the following models with the specified attributes
             include:includeArray,
             group: groupByArray
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return reviews.rows;
     }
@@ -237,6 +243,9 @@ const review = (sequelize, DataTypes) => {
             // include the following models with the specified attributes
             include:includeArray,
             group: groupByArray
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
 
         return reviews;
@@ -266,6 +275,9 @@ const review = (sequelize, DataTypes) => {
                     through: {attributes: []}
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return reviews;
     }
@@ -315,6 +327,9 @@ const review = (sequelize, DataTypes) => {
                     }]
             }],
             order: [[models.Comments, 'createdAt', 'ASC']]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         // review could not be found
         if(review === null)
@@ -372,6 +387,9 @@ const review = (sequelize, DataTypes) => {
 
             ]
 
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return usersWhoLiked;
     };
@@ -467,6 +485,9 @@ const review = (sequelize, DataTypes) => {
             // include the following models with the specified attributes
             include:includeArray,
             group: groupByArray
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return reviews;
     }

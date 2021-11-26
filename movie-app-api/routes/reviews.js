@@ -1,8 +1,9 @@
 const models = require('../src/shared/sequelize.js').getClient().models;
-import { loggers } from 'winston';
-import {validateIntegerParameter, validateStringParameter} from './globals.js';
+const validateStringParameter = require('./globals.js').validateStringParameter;
+const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 import {createReview, updateReview} from './reviewCreator.js';
 const Logger = require("../src/shared/logger.js").getLogger();
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
 
 
 // function to post a reviews
@@ -38,7 +39,8 @@ const selectPath = (requester, req, res, next) =>
                 routeFound = true;
                 getComments(req, res, requester)
                 .catch((err) => {
-                    next(err)
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
                 });
             }
         }
@@ -49,63 +51,90 @@ const selectPath = (requester, req, res, next) =>
         {
             routeFound = true;
             createReview(requester, req, res)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         // if the path is /review/update
         else if(req.params.type === "update")
         {
             routeFound = true;
             updateReview(requester, req, res)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         // if the path is /review/add_like
         else if(req.params.type === "addlike")
         {
             routeFound = true;
             addLike(requester, req, res)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         // if the path is /review/removelike
         else if(req.params.type === "removelike")
         {
             routeFound = true;
             removeLike(requester, req, res)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         // if the path is /review/getlikes
         else if(req.params.type === "getlikes")
         {
             routeFound = true;
             getLikes(requester, req, res)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         // if the path is /review/postcomment
         else if(req.params.type === "postcomment")
         {
             routeFound = true;
             postComment(req, res, requester)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         // if the path is /review/updatecomment
         else if(req.params.type === "updatecomment")
         {
             routeFound = true;
             updateComment(req, res, requester)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         // if the path is /review/removecomment
         else if(req.params.type === "removecomment")
         {
             routeFound = true;
             removeComment(req, res, requester)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         // if the path is /review/removepost
         else if(req.params.type === "removepost")
         {
             routeFound = true;
             removePost(req, res, requester)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
     }
 
@@ -132,7 +161,10 @@ const removePost = async (req, res, requester) =>
     if(!valid) return;
 
     // try to get the review
-    let review = await models.Reviews.getReviewWithCreator(reviewId, models);
+    let review = await models.Reviews.getReviewWithCreator(reviewId, models).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(review === null)
     {
         res.status(404).sendResponse({
@@ -152,7 +184,10 @@ const removePost = async (req, res, requester) =>
         }
         else
         {
-            let result = await review.destroy();
+            let result = await review.destroy().catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
             if(result === undefined)
             {
                 let message = "Server failed to delete review for some unkown reason.  Error code: 1200";
@@ -186,7 +221,10 @@ const addLike = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
     // get the review
-    let review = await models.Reviews.getReviewWithLikedUser(reviewId, userId, models);
+    let review = await models.Reviews.getReviewWithLikedUser(reviewId, userId, models).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(review === null)
     {
         res.status(404).sendResponse({
@@ -199,7 +237,10 @@ const addLike = async (requester, req, res) =>
     {
         // may want to only let a user like their friends posts???
         // add the like to the review based off the users id
-        let result = await review.addLike(userId, { through: {uid: userId }});
+        let result = await review.addLike(userId, { through: {uid: userId }}).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         // if undefined, a association already exists
         if(result === undefined)
         {
@@ -239,7 +280,10 @@ const removeLike = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID is invalid");
     if(!valid) return;
     // get the review
-    let review = await models.Reviews.getReviewWithLikedUser(reviewId, userId, models);
+    let review = await models.Reviews.getReviewWithLikedUser(reviewId, userId, models).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(review === null)
     {
         res.status(404).sendResponse({
@@ -252,7 +296,10 @@ const removeLike = async (requester, req, res) =>
     {
         // may want to only let a user unlike their friends posts???
         // remove the like from the post based off the requesters id
-        let result = await review.removeLike(userId);
+        let result = await review.removeLike(userId).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         // if undefined, a association already exists
         if(result === undefined)
         {
@@ -290,7 +337,10 @@ const getLikes = async (requester, req, res) =>
     if(!valid) return;
     // test to make sure valid number as well
     // holds the ids of the users who are already followed
-    let usersWhoLiked = await models.Reviews.getLikes(reviewId, req.session.userId, models);
+    let usersWhoLiked = await models.Reviews.getLikes(reviewId, req.session.userId, models).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(usersWhoLiked === null)
     {
         res.status(404).sendResponse({
@@ -324,7 +374,10 @@ const postComment = async (req, res, requester) =>
     let reviewId = req.body.reviewId;
     valid = validateIntegerParameter(res, reviewId, requester, "The review ID for the comment is invalid");
     if(!valid) return;
-    let review = await models.Reviews.getReviewForComment(reviewId, req.session.userId, undefined, models);
+    let review = await models.Reviews.getReviewForComment(reviewId, req.session.userId, undefined, models).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(review === null)
     {
         res.status(404).sendResponse({
@@ -339,6 +392,9 @@ const postComment = async (req, res, requester) =>
             value: comment,
             userId: req.session.userId,
             reviewId: reviewId,
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         res.status(201).sendResponse({
             message: "Comment successfully posted",
@@ -361,7 +417,10 @@ const updateComment = async (req, res, requester) =>
     valid = validateIntegerParameter(res, commentId, requester, "The comment ID to update is invalid");
     if(!valid) return;
     // try to get the comment
-    let comment = await models.Comments.findById(models, commentId);
+    let comment = await models.Comments.findById(models, commentId).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(comment === null)
     {
         res.status(404).sendResponse({
@@ -381,7 +440,10 @@ const updateComment = async (req, res, requester) =>
         }
         else
         {
-            let result = await comment.update({value: updatedComment});
+            let result = await comment.update({value: updatedComment}).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
             if(result === undefined || result === null)
             {
                 // update returns a updated instance of the comment
@@ -414,7 +476,10 @@ const removeComment = async (req, res, requester) =>
     let valid = validateIntegerParameter(res, commentId, requester, "The comment ID to remove is invalid");
     if(!valid) return;
     // try to get the comment
-    let comment = await models.Comments.findById(models, commentId);
+    let comment = await models.Comments.findById(models, commentId).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(comment === null)
     {
         res.status(404).sendResponse({
@@ -431,6 +496,9 @@ const removeComment = async (req, res, requester) =>
             let review = await models.Reviews.findOne({
                 where: {id: comment.reviewId},
                 attributes: ["userId"]
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             });
             if(review === null)
             {
@@ -462,7 +530,10 @@ const removeComment = async (req, res, requester) =>
 const commentRemoval = async (res, comment, requester) =>
 {
     res.locals.function = "commentRemoval";
-    let result = await comment.destroy();
+    let result = await comment.destroy().catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(result === undefined || result === null)
     {
         // update returns a updated instance of the comment
@@ -492,7 +563,10 @@ const getComments = async(req, res, requester) =>
     let reviewId = req.params.reviewId;
     let valid = validateIntegerParameter(res, reviewId, requester, "The review ID to get the comments is invalid");
     if(!valid) return;
-    let comments = await models.Reviews.getReviewComments(reviewId, req.session.userId, models);
+    let comments = await models.Reviews.getReviewComments(reviewId, req.session.userId, models).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(comments === null)
     {
         res.status(404).sendResponse({

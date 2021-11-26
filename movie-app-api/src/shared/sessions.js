@@ -6,6 +6,8 @@ const Op = require('sequelize').Op;
 let redisStore = require('./redisStore.js');
 let redis = require('./redis.js');
 const session = require('express-session');
+const caughtErrorHandler = require("../../routes/errorHandler.js").caughtErrorHandler;
+const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
 
 
 const createSession = async(user, req, res, expires, passwordResetSession) =>
@@ -23,6 +25,9 @@ const createSession = async(user, req, res, expires, passwordResetSession) =>
             newSession = await models.UserSessions.create({
                 session: req.session.id,
                 userId: user.id
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             });
             // break out of loop
             counter = 5;
@@ -34,7 +39,10 @@ const createSession = async(user, req, res, expires, passwordResetSession) =>
             && errorObject.original.constraint === "UserSessions_session_key"
             && counter < 4)
             {
-                await sessionGenerator(req);
+                await sessionGenerator(req).catch(error=>{
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, error, undefined, true);
+                });
             }
             else
             {
@@ -68,7 +76,10 @@ const createSession = async(user, req, res, expires, passwordResetSession) =>
     }
     req.session.sessionId = newSession.id;
     // save the session now so the session creation time is right
-    await saveSession(req, res);
+    await saveSession(req, res).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
 }
 
 // function to create a clean sesssion
@@ -131,7 +142,10 @@ const regenerateSession = async(req, res, restore, passwordResetSession) =>
     let ip = req.session.ip;
 
     // regenerate the session
-    await sessionGenerator(req);
+    await sessionGenerator(req).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
 
     // if restoring old session but just creating a new one
     // otherwise, just destroying old sesion
@@ -147,6 +161,9 @@ const regenerateSession = async(req, res, restore, passwordResetSession) =>
                 newSession = await models.UserSessions.create({
                     session: req.session.id,
                     userId: sessionUserId
+                }).catch(error=>{
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, error, undefined, true);
                 });
                 // break out of loop
                 counter = 5;
@@ -158,7 +175,10 @@ const regenerateSession = async(req, res, restore, passwordResetSession) =>
                 && errorObject.original.constraint === "UserSessions_session_key"
                 && counter < 4)
                 {
-                    await sessionGenerator(req);
+                    await sessionGenerator(req).catch(error=>{
+                        let callerStack = new Error().stack;
+                        appendCallerStack(callerStack, error, undefined, true);
+                    });
                 }
                 else
                 {
@@ -196,6 +216,9 @@ const regenerateSession = async(req, res, restore, passwordResetSession) =>
         where: {
             id:oldSessionId
         }
+    }).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     if(result !== 1)
     {
@@ -215,8 +238,9 @@ async function destroySession(req)
                 resolve();
             });
     })
-    .catch((err) => {
-        throw err;
+    .catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     return promise;
 }
@@ -232,8 +256,9 @@ async function sessionGenerator(req)
                 resolve();
             });
     })
-    .catch((err) => {
-        throw err;
+    .catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     return promise;
 }
@@ -252,8 +277,9 @@ async function saveSession(req, res)
                 resolve();
             });
     })
-    .catch((err) => {
-        throw err;
+    .catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     return promise;
 }
@@ -269,8 +295,9 @@ async function getSessions(store)
                 resolve(keys);
             });
     })
-    .catch((err) => {
-        throw err;
+    .catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     return promise;
 }
@@ -288,8 +315,9 @@ async function removeSession(store, session)
                 resolve(result);
             });
     })
-    .catch((err) => {
-        throw err;
+    .catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     return promise;
 }
@@ -307,8 +335,9 @@ async function removeSessions(client, sessions)
                 resolve(result);
             });
     })
-    .catch((err) => {
-        throw err;
+    .catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     return promise;
 }
@@ -331,6 +360,9 @@ async function removeAllSessions(req, res, userId, excluded)
                 {session: {[Op.notIn]: excluded}}
             ]
         }
+    }).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     if(sessions.length > 0)
     {
@@ -344,12 +376,18 @@ async function removeAllSessions(req, res, userId, excluded)
         }
         let client = redis.getClient();
         // returns the number of sessions removed
-        result = await removeSessions(client, sessionsToRemove);
+        result = await removeSessions(client, sessionsToRemove).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         // remove the sessions from the database
         await models.UserSessions.destroy({
             where: {
                 session: {[Op.in]: dbSessionsToRemove}
             }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return result;
     }
@@ -365,13 +403,19 @@ async function removeCurrentSession(req, res)
     let result = 0;
     let dbSessionsToRemove = req.session.id;
 
-    result = await destroySession(req);
+    result = await destroySession(req).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     // set to false as session now destroyed
     // may still be in db but will get removed later
     res.locals.removeSession = false;
     // remove the sessions from the database
     await models.UserSessions.destroy({
         where: {session: dbSessionsToRemove}
+    }).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     return result;
 }

@@ -1,3 +1,5 @@
+const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+
 const featuredMovies = (sequelize, DataTypes) => {
     const FeaturedMovies = sequelize.define('FeaturedMovies', {
         id: {
@@ -49,6 +51,9 @@ const featuredMovies = (sequelize, DataTypes) => {
                 as: "FeaturedMovie"
             }],
             order:[['order', 'ASC']]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         let movies = [];
         featuredMovies.forEach((movie) =>{

@@ -1,5 +1,7 @@
 let moment = require('moment');
 const Op = require('sequelize').Op;
+const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+
 const movie = (sequelize, DataTypes) => {
     const Movie = sequelize.define('Movies', {
         id: {
@@ -844,6 +846,9 @@ const movie = (sequelize, DataTypes) => {
                         where: genreWhere
                     }
                 ],
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             });
             // get the movie ids that contain that genre
             movies.forEach((movie) => {
@@ -912,7 +917,10 @@ const movie = (sequelize, DataTypes) => {
             offset: offset,
         };
 
-        let movies2 = await Movie.findAll(params);
+        let movies2 = await Movie.findAll(params).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         return [true, movies2];
     }
 
@@ -970,6 +978,9 @@ const movie = (sequelize, DataTypes) => {
                     [sequelize.literal(`case when "MovieRating"."totalUserRatings" is NULL then 0 else "MovieRating"."totalUserRatings" end`), "totalUserRatings"]
                 ]
             }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return movie;
     }
@@ -1006,6 +1017,9 @@ const movie = (sequelize, DataTypes) => {
                 ['title', 'ASC']
             ],
             attributes: ["id", "title", "poster"]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return movies;
     }

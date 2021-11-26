@@ -1,6 +1,7 @@
 // handles routes that do not exist
 const Logger = require("../src/shared/logger.js").getLogger();
 const checkRemoveSession = require('./errorHandler.js').checkRemoveSession;
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
 
 
 const badPageHandler = async (req, res, next) => {
@@ -8,7 +9,10 @@ const badPageHandler = async (req, res, next) => {
     {
         res.locals.function = "badPageHandler";
         res.locals.file= "badPageHandler";
-        await checkRemoveSession(req, res);
+        await checkRemoveSession(req, res).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;    // if there is a signed cookie in the request
         let status = 404;
         let message = "The path sent to the server does not exist";
@@ -20,7 +24,8 @@ const badPageHandler = async (req, res, next) => {
     }
     catch(err)
     {
-        return next(err);
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, err, next, undefined);
     }
 }
 

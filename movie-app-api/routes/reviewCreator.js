@@ -1,7 +1,9 @@
-import {validateIntegerParameter, validateStringParameter} from './globals.js';
+const validateStringParameter = require('./globals.js').validateStringParameter;
+const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
 import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
 
 
 // function to run all the checks when a new review comes in or if a review update comes in
@@ -76,6 +78,9 @@ const createReview = async (requester, req, res) =>
             rating: rating,
             review: reviewText,
         }
+    }).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
     // if the review was not created
     if(!review[1])
@@ -112,19 +117,31 @@ const createReview = async (requester, req, res) =>
             serverError: false
         };
         // add any good tag strings
-        await addTagsToReview(goodTagStrings, "good", review, userId, usedGoodTags, warnings);
+        await addTagsToReview(goodTagStrings, "good", review, userId, usedGoodTags, warnings).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         let failed = validateAddTagResult(warnings, res, requester);
         if(failed) return;
         // add any bad tag strings
-        await addTagsToReview(badTagStrings, "bad", review, userId, usedBadTags, warnings);
+        await addTagsToReview(badTagStrings, "bad", review, userId, usedBadTags, warnings).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         failed = validateAddTagResult(warnings, res, requester);
         if(failed) return;
         // add any good tags with id's
-        await addTagsToReview(goodTags, "good", review, userId, usedGoodTags, warnings);
+        await addTagsToReview(goodTags, "good", review, userId, usedGoodTags, warnings).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         failed = validateAddTagResult(warnings, res, requester);
         if(failed) return;
         // add any bad tags with id's
-        await addTagsToReview(badTags, "bad", review, userId, usedBadTags, warnings);
+        await addTagsToReview(badTags, "bad", review, userId, usedBadTags, warnings).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         failed = validateAddTagResult(warnings, res, requester);
         if(failed) return;
         let errorMessages = generateAddTagErrorMessages(warnings);
@@ -162,7 +179,10 @@ const updateReview = async (requester, req, res) =>
     let valid = validateReviewParameters(res, requester, userId, rating, reviewText, goodTags, goodTagStrings, badTags, badTagStrings, undefined, true, reviewId, true);
     if(!valid) return;
 
-    let review = await models.Reviews.findByIdForUpdate(models, reviewId);
+    let review = await models.Reviews.findByIdForUpdate(models, reviewId).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(review === null || review === undefined || review.length < 1)
     {
         res.status(404).sendResponse({
@@ -190,6 +210,9 @@ const updateReview = async (requester, req, res) =>
             review: reviewText,
             userId: userId,
             rating: rating
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         if(result === undefined || result === null)
         {
@@ -223,30 +246,51 @@ const updateReview = async (requester, req, res) =>
         // returns the number of associations removed
         // if the number is off, it means the association didn't exist so nothing to worry about
         // if the review does not exist, it will return 0 as well
-        await review.removeGoodTags(newGoodTags.tagsToRemove);
+        await review.removeGoodTags(newGoodTags.tagsToRemove).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
     }
     if(newBadTags.tagsToRemove.length > 0)
     {
-        await review.removeBadTags(newBadTags.tagsToRemove);
+        await review.removeBadTags(newBadTags.tagsToRemove).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
     }
     // add any good tag strings
-    await addTagsToReview(newGoodTags.newTagStrings, "good", review, userId, usedGoodTags, warnings);
+    await addTagsToReview(newGoodTags.newTagStrings, "good", review, userId, usedGoodTags, warnings).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     let failed = validateAddTagResult(warnings, res, requester);
     if(failed) return;
     // add any bad tag strings
-    await addTagsToReview(newBadTags.newTagStrings, "bad", review, userId, usedBadTags, warnings);
+    await addTagsToReview(newBadTags.newTagStrings, "bad", review, userId, usedBadTags, warnings).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     failed = validateAddTagResult(warnings, res, requester);
     if(failed) return;
     // add any good tags with id's
-    await addTagsToReview(newGoodTags.newTagsWithId, "good", review, userId, usedGoodTags, warnings);
+    await addTagsToReview(newGoodTags.newTagsWithId, "good", review, userId, usedGoodTags, warnings).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     failed = validateAddTagResult(warnings, res, requester);
     if(failed) return;
     // add any bad tags with id's
-    await addTagsToReview(newBadTags.newTagsWithId, "bad", review, userId, usedBadTags, warnings);
+    await addTagsToReview(newBadTags.newTagsWithId, "bad", review, userId, usedBadTags, warnings).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     failed = validateAddTagResult(warnings, res, requester);
     if(failed) return;
     let errorMessages = generateAddTagErrorMessages(warnings);
-    let updatedReview = await models.Reviews.findByIdWithLikes(models, review.id, userId);
+    let updatedReview = await models.Reviews.findByIdWithLikes(models, review.id, userId).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(updatedReview === null || updatedReview === undefined || updatedReview.length < 1)
     {
         updatedReview = undefined;
@@ -442,7 +486,10 @@ const addTagsToReview = async (tags, type, review, userId, usedTags, warnings) =
 
         // then associate the tag with the review
         // need try catch here if one of the id's is deleted already...
-        let associationResult = await createReviewTagAssociation(review, newTag.id, userId, type);
+        let associationResult = await createReviewTagAssociation(review, newTag.id, userId, type).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         if(!associationResult.successful)
         {
             let keys = Object.keys(associationResult);
@@ -480,12 +527,18 @@ const findOrCreateTag = async (models, tag, reviewId, type) =>{
     // find the tag or create it if it does not exist
     if(typeof(tag) === "string")
     {
-        result = await models.MovieTags.findOrCreateByValue(models, tag, reviewId, type);
+        result = await models.MovieTags.findOrCreateByValue(models, tag, reviewId, type).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
     }
     else
     {
         // the type of the tag is a object with {value: "tagValue", id: tagId(int)}
-        result = await models.MovieTags.findOrCreateById(models, tag, reviewId, type);
+        result = await models.MovieTags.findOrCreateById(models, tag, reviewId, type).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
     }
     let newTag;
     // if the tag is already associated with the review
@@ -516,11 +569,17 @@ const createReviewTagAssociation = async (review, tagId, userId, type) => {
     try {
         if(type === "good")
         {
-            result = await review.addGoodTag(tagId, { through: {userId: userId }});
+            result = await review.addGoodTag(tagId, { through: {userId: userId }}).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
         }
         else
         {
-            result = await review.addBadTag(tagId, { through: {userId: userId }});
+            result = await review.addBadTag(tagId, { through: {userId: userId }}).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
         }
     } catch (err)
     {

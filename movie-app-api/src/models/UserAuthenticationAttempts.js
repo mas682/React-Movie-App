@@ -1,4 +1,8 @@
 const Logger = require("../shared/logger.js").getLogger();
+const caughtErrorHandler = require("../../routes/errorHandler.js").caughtErrorHandler;
+const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+
+
 
 const userAuthenticationAttempts = (sequelize, DataTypes) => { 
     const UserAuthenticationAttempts = sequelize.define('UserAuthenticationAttempts', {
@@ -70,6 +74,9 @@ const userAuthenticationAttempts = (sequelize, DataTypes) => {
             result = await UserAuthenticationAttempts.create({
                 userId: user.id,
                 lastLogin: null
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             });
         }
         catch(err)
@@ -77,19 +84,15 @@ const userAuthenticationAttempts = (sequelize, DataTypes) => {
             // only remove if just created
             if(removeUser)
             {
-                try
-                {
-                    await user.destroy();
-                }
-                catch (error)
-                {
-                    let errorObject = JSON.parse(JSON.stringify(error));
-                    Logger.error("Some unexpected error occurred when trying to remove a user",
-                        {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
-                }
-                // throw first error that occurred
-                throw err;
+                await user.destroy().catch(error=>{
+                    let callerStack = new Error().stack;
+                    error = appendCallerStack(callerStack, error, undefined, false);
+                    let message = "Some unexpected error occurred when trying to remove a user";
+                    caughtErrorHandler(error, req, res, errorCode, message);
+                });
             }
+            // throw first error that occurred
+            throw err;
         }      
         return result;
     };
@@ -127,7 +130,10 @@ const userAuthenticationAttempts = (sequelize, DataTypes) => {
         try
         {
             result = await UserAuthenticationAttempts.increment(
-                "passwordAttempts",{where: {userId: id}}); 
+                "passwordAttempts",{where: {userId: id}}).catch(error=>{
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, error, undefined, true);
+                }); 
             if(result[0][0].length < 1)
             {
                 // if no user found, return 0
@@ -141,9 +147,8 @@ const userAuthenticationAttempts = (sequelize, DataTypes) => {
         }
         catch (err)
         {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            Logger.error("Some unknown error occurred updaing the users(" + username + ") account on login failure: " + errorObject.name,
-            {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject})
+            let message = "Some unknown error occurred updaing the users(" + username + ") account on login failure";
+            caughtErrorHandler(err, req, res, errorCode, message);
         }
         return result;
     }

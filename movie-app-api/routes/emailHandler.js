@@ -1,6 +1,8 @@
 const config = require('../Config.json');
 const sgMail = require('@sendgrid/mail');
 const Logger = require("../src/shared/logger.js").getLogger();
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
+const caughtErrorHandler = require("./errorHandler.js").caughtErrorHandler;
 
 // function to get information associated with the user who has the cookie
 const emailHandler = async (recipient, subject, title, header, body, footer) => {
@@ -111,10 +113,10 @@ const emailHandler = async (recipient, subject, title, header, body, footer) => 
     let result = await sgMail.send(msg).then(() =>{
         Logger.debug('Email sent');
         return true;
-    })
-    .catch((error) => {
-        Logger.error("Email not sent " + JSON.stringify(error),
-         {errorCode: 1400, requestId: req.id, function: "emailHandler", file: "emailHandler.js"});
+    }).catch(error=>{
+		let callerStack = new Error().stack;
+		error = appendCallerStack(callerStack, error, undefined, false);
+		caughtErrorHandler(error, req, res, 1400);
         return false;
     });
     */

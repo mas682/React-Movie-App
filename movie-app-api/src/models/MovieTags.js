@@ -1,4 +1,7 @@
 const Op = require('sequelize').Op;
+const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+
+
 const movieTag = (sequelize, DataTypes) => {
     const MovieTag = sequelize.define('MovieTags', {
         id: {
@@ -57,7 +60,10 @@ const movieTag = (sequelize, DataTypes) => {
                     where: {id: reviewId},
                     required: false
                 }
-            })
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
         }
         else
         {
@@ -69,6 +75,9 @@ const movieTag = (sequelize, DataTypes) => {
                     where: {id: reviewId},
                     required: false
                 }
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             });
         }
         return result;
@@ -89,7 +98,10 @@ const movieTag = (sequelize, DataTypes) => {
                     where: {id: reviewId},
                     required: false
                 }
-            })
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
         }
         else
         {
@@ -102,6 +114,9 @@ const movieTag = (sequelize, DataTypes) => {
                     where: {id: reviewId},
                     required: false
                 }
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             });
         }
         return result;
@@ -127,6 +142,9 @@ const movieTag = (sequelize, DataTypes) => {
                     END ASC`),
                 ['value', 'ASC']
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return tags;
     };

@@ -78,7 +78,6 @@ const ERRORS = {
                         errorCode: 11001
                     }
                 },
-                // the codes here will need fixed as they were groupded into 1 before
                 reviewCreator: {
                     createReview: {
                         errorCode: 11002
@@ -197,7 +196,6 @@ const ERRORS = {
             defaultLog: true,
             defaultErrorCode: 10000,
             functions: {
-                // these will need fixed as error code is the same for both...
                 reviewCreator: {
                     createReview:{
                         errorCode: 10001
@@ -234,10 +232,7 @@ const ERRORS = {
         functions: {
             login:{
                 forgotPassword:{
-                    errorCode: 12002,
-                    "900":{
-                        errorCode: 900
-                    }
+                    errorCode: 12002
                 }
             },
             profile: {

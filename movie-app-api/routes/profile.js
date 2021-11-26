@@ -1,12 +1,16 @@
-import {validateUsernameParameter, validateIntegerParameter,
-    validateStringParameter, validateEmailParameter, updateUserLoginAttempts, clearCookie} from './globals.js';
+const validateStringParameter = require('./globals.js').validateStringParameter;
+const validateEmailParameter = require('./globals.js').validateEmailParameter;
+const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
+const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
+const clearCookie = require('./globals.js').clearCookie;
 //import {removeImage} from './fileHandler.js';
 import {hash, checkHashedValue} from '../src/shared/crypto.js';
 import {regenerateSession, removeAllSessions} from '../src/shared/sessions.js';
-import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
+//import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
 import { removeCurrentSession } from '../src/shared/sessions.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
 
 
 
@@ -71,13 +75,19 @@ const selectPath = (requester, req, res, next) =>
         {
             routeFound = true;
             getReviews(requester, req, res, cookieValid)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         else if(req.params.type === "user_info")
         {
             routeFound = true;
             getUserHeaderInfo(requester, req, res, cookieValid)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         else if(req.params.type === "feed")
         {
@@ -85,7 +95,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 getFeed(requester, req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -98,7 +111,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 getFollowers(requester, req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -111,7 +127,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 getFollowing(requester, req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -124,7 +143,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 getDefaultProfilePictures(requester, req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -141,7 +163,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 followUser(requester, req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -155,7 +180,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 unfollowUser(requester, req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -169,7 +197,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 updateInfo(requester, req, res, next)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -182,7 +213,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 updatePassword(requester, req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -195,7 +229,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 resetPassword(requester, req, res)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -212,7 +249,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 removeUser(requester, req, res, next)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -225,7 +265,10 @@ const selectPath = (requester, req, res, next) =>
             if(cookieValid)
             {
                 setProfilePicture(requester, req, res, next)
-                .catch((err) => {next(err)});
+                .catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
             }
             else
             {
@@ -311,7 +354,10 @@ const getFollowers = async (requester, req, res) =>
     if(!valid) return;
     // returns a empty array if no followers
     // null if invalid user
-    let followers = await models.Users.getFollowers(username, req.session.userId, models);
+    let followers = await models.Users.getFollowers(username, req.session.userId, models).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(followers === null)
     {
         res.status(404).sendResponse({
@@ -336,7 +382,10 @@ const getFollowing = async (requester, req, res) =>
     let username = req.params.username;
     let valid = validateUsernameParameter(res, username, requester, "Username is invalid");
     if(!valid) return;
-    let following = await models.Users.getFollowing(username, req.session.userId, models);
+    let following = await models.Users.getFollowing(username, req.session.userId, models).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(following === null)
     {
         res.status(404).sendResponse({
@@ -365,7 +414,10 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
     let valid = validateUsernameParameter(res, username, loggedInUser, "Username is invalid");
     if(!valid) return;
     // find a user by their login
-    let user = await models.Users.findByLoginWithPicture(username);
+    let user = await models.Users.findByLoginWithPicture(username).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     // if the user was not found
     if(user === null)
     {
@@ -378,10 +430,22 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
     // boolean to indicate if the requester if following the user
     let followed = false;
     // get the number of followers the user has
-    let followerCount = (await user.getFollowers()).length;
+    let followers = await user.getFollowers().catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
+    let followerCount = followers.length;
     // get the number of following users the user has
-    let followingCount = (await user.getFollowing()).length;
-    let postCount = (await user.getUserReviews()).length;
+    let followingUsers = await user.getFollowing().catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
+    let followingCount = followingUsers.length;
+    let posts = await user.getUserReviews().catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
+    let postCount = posts.length;
 
     // if the current user is looking at their own page
     if(cookieValid)
@@ -390,7 +454,10 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
         if(loggedInUser !== user.username)
         {
             // see if the user they are looking at has them as a follower
-            let following = await user.getFollowers( {where: {id: req.session.userId} } );
+            let following = await user.getFollowers( {where: {id: req.session.userId} } ).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
             // if not undefined, found requester as a follower
             if(following[0] !== undefined)
             {
@@ -425,7 +492,10 @@ const getReviews = async (requester, req, res, cookieValid) =>
     if(!valid) return;
     max = (max > 50) ? 50 : max;
     // find the user by their login
-    let user = await models.Users.findByLogin(username);
+    let user = await models.Users.findByLogin(username).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(user === null)
     {
         res.status(404).sendResponse({
@@ -436,7 +506,10 @@ const getReviews = async (requester, req, res, cookieValid) =>
     }
     if(cookieValid)
     {
-        let reviews = await models.Reviews.findByIds(models, [user.id], req.session.userId, max, offset);
+        let reviews = await models.Reviews.findByIds(models, [user.id], req.session.userId, max, offset).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         // send the reveiws associated with the user and their id
         res.status(200).sendResponse({
             message: "Reviews sucessfully found for the user",
@@ -446,7 +519,10 @@ const getReviews = async (requester, req, res, cookieValid) =>
     }
     else
     {
-        let reviews = await models.Reviews.findByIds(models, [user.id], undefined)
+        let reviews = await models.Reviews.findByIds(models, [user.id], undefined).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         // send the reveiws associated with the user and their id
         res.status(200).sendResponse({
             message: "Reviews successfully found for the user",
@@ -484,7 +560,10 @@ const getFeed = async (requester, req, res) =>
     // this will always return an array, even if the user does not exist
     // if the user does not exist, it will just be a empty array
     // if verified the user is logged in, should not really be an issue
-    let reviews = await models.Reviews.getUserReviewFeed(models, req.session.userId, max, offset);
+    let reviews = await models.Reviews.getUserReviewFeed(models, req.session.userId, max, offset).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
 
     res.status(200).sendResponse({
         message: "Users feed successfully found",
@@ -507,7 +586,10 @@ const followUser = async (requester, req, res) =>
     let valid = validateUsernameParameter(res, followUname, requestingUser, "Username to follow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
-    let userToFollow = await models.Users.findWithFollowing(followUname, req.session.userId);
+    let userToFollow = await models.Users.findWithFollowing(followUname, req.session.userId).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(userToFollow === null)
     {
         res.status(404).sendResponse({
@@ -528,7 +610,10 @@ const followUser = async (requester, req, res) =>
         else
         {
             // add the user to the requesters following users
-            let result = await userToFollow.addFollower(req.session.userId);
+            let result = await userToFollow.addFollower(req.session.userId).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
             if(result === undefined)
             {
                 let message = "Some error occured trying to follow the user.  Error code: 1001"
@@ -563,7 +648,10 @@ const unfollowUser = async (requester, req, res) =>
     let valid = validateUsernameParameter(res, unfollowUname, requestingUser, "Username to unfollow is invalid");
     if(!valid) return;
     // get the user and see if the requester follows them
-    let userToUnfollow = await models.Users.findWithFollowing(unfollowUname, req.session.userId);
+    let userToUnfollow = await models.Users.findWithFollowing(unfollowUname, req.session.userId).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(userToUnfollow === null)
     {
         res.status(404).sendResponse({
@@ -582,7 +670,10 @@ const unfollowUser = async (requester, req, res) =>
         }
         else
         {
-            let result = await userToUnfollow.removeFollower(req.session.userId);
+            let result = await userToUnfollow.removeFollower(req.session.userId).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
             if(result === undefined)
             {
                 let message = "Some error occured trying to unfollow the user.  Error code: 1002"
@@ -638,7 +729,10 @@ const updatePassword = async (requester, req, res) =>
     }
     else
     {
-        let user = await models.Users.findByLogin(requester);
+        let user = await models.Users.findByLogin(requester).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         if(user === null)
         {
             res.status(404).sendResponse({
@@ -657,13 +751,22 @@ const updatePassword = async (requester, req, res) =>
             user.lastLogin = new Date();
             user.passwordUpdatedAt = new Date();
             // remove all existing sessions except for this one
-            await removeAllSessions(req, res, user.id, [req.session.id]);
-            await user.save();
+            await removeAllSessions(req, res, user.id, [req.session.id]).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
+            await user.save().catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
             // update the session
             req.session.userId = user.id;
             req.session.user = user.username;
             req.session.admin = user.admin;
-            await regenerateSession(req, res, true, false);
+            await regenerateSession(req, res, true, false).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
 
             res.status(200).sendResponse({
                 message: "Password updated",
@@ -672,7 +775,10 @@ const updatePassword = async (requester, req, res) =>
         }
         else
         {
-            let attempts = await updateUserLoginAttempts(user, username);
+            let attempts = await updateUserLoginAttempts(user, username).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
             let message = "Password incorrect";
             if(attempts >= 5)
             {
@@ -716,7 +822,10 @@ const updateInfo = async (requester, req, res, next) =>
         return;
     }
     // find the user by their login
-    let user = await models.Users.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(user === null)
     {
         // sending 401 as if null user does not exist
@@ -730,13 +839,19 @@ const updateInfo = async (requester, req, res, next) =>
     if(user.password === result.value)
     {
         // remove all existing sessions except for this one
-        await removeAllSessions(req, res, user.id, [req.session.id]);
+        await removeAllSessions(req, res, user.id, [req.session.id]).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         // update the user
         let result = await user.update({
             username: req.body.username,
             //email: req.body.email,
             firstName: req.body.firstName,
             lastName: req.body.lastName
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         // update the session
         req.session.userId = user.id;
@@ -752,7 +867,10 @@ const updateInfo = async (requester, req, res, next) =>
             created: new Date()
         });
         // regenerate the session
-        await regenerateSession(req, res, true, false);
+        await regenerateSession(req, res, true, false).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
 
         let updatedUser = {
             username: result.username,
@@ -768,7 +886,10 @@ const updateInfo = async (requester, req, res, next) =>
     }
     else
     {
-        let attempts = await updateUserLoginAttempts(user, username);
+        let attempts = await updateUserLoginAttempts(user, username).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         let message = "Password incorrect";
         if(attempts >= 5)
         {
@@ -801,7 +922,10 @@ const removeUser = async (requester, req, res, next) =>
         return;
     }
     // get the requester
-    let user = await models.Users.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     let userToRemove = user;
     let currentUser = (userNameToRemove === requester);
     // if the password is not provided, automatically deny
@@ -819,7 +943,10 @@ const removeUser = async (requester, req, res, next) =>
         {
             // update the user to remove to the correct user if the requester
             // is an admin
-            userToRemove = await models.Users.findByLogin(userNameToRemove);
+            userToRemove = await models.Users.findByLogin(userNameToRemove).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
         }
     }
     if(userToRemove === null)
@@ -838,9 +965,15 @@ const removeUser = async (requester, req, res, next) =>
     if(passwordValid)
     {
         // remove all existing sessions for the user
-        await removeAllSessions(req, res, userToRemove.id, []);
+        await removeAllSessions(req, res, userToRemove.id, []).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         // remove the user
-        let result = await userToRemove.destroy();
+        let result = await userToRemove.destroy().catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         if(result === undefined)
         {
             Logger.error("Error in database occurred removing a user",
@@ -895,6 +1028,9 @@ const getDefaultProfilePictures = async (requester, req, res) =>
     // get the images to send
     let images = await models.DefaultProfilePictures.findAll({
         attributes: ["filename", "source", "id"]
+    }).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
 
     res.status(200).sendResponse({
@@ -924,7 +1060,10 @@ const setProfilePicture = async(requester, req, res, next) =>
         return;
     }
     // find the user
-    let user = await models.Users.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     let status;
     let message;
     if(user === null)
@@ -937,6 +1076,9 @@ const setProfilePicture = async(requester, req, res, next) =>
     {
         let result = await user.update({
             picture: profilePicture
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         status = 200;
         message = "User picture successfully updated";
@@ -971,11 +1113,17 @@ const resetPassword = async (requester, req, res) =>
         return;
     }
 
-    let user = await models.Users.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     if(user === null)
     {
         // need to destroy the session as the user could not be found
-        await removeCurrentSession(req, res);
+        await removeCurrentSession(req, res).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         clearCookie(req, res, undefined);
         res.status(404).sendResponse({
             message: "Could not find the user to update",
@@ -985,7 +1133,10 @@ const resetPassword = async (requester, req, res) =>
     }
     // remove all sessions except for this one as going to reset password
     // on failure of password update, users just logged out
-    await removeAllSessions(req, res, user.id, [req.session.id]);
+    await removeAllSessions(req, res, user.id, [req.session.id]).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
 
 
     let result;
@@ -1001,6 +1152,9 @@ const resetPassword = async (requester, req, res) =>
             },
             {
                 where: { userId: user.id}
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             });
             // break out of loop
             counter = 10;
@@ -1045,10 +1199,16 @@ const resetPassword = async (requester, req, res) =>
     },
     {
         where: {userId: user.id}
+    }).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
     });
 
     // destroy session as user password successfully updated
-    await removeCurrentSession(req, res);
+    await removeCurrentSession(req, res).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     clearCookie(req, res, undefined);
 
     // send requester but handle differently on client side

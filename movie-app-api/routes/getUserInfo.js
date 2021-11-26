@@ -1,5 +1,6 @@
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
 
 // function to get information associated with the user who has the cookie
 const getUserInfo = (req, res, next) => {
@@ -16,7 +17,10 @@ const getUserInfo = (req, res, next) => {
         {
             // get the reviews and pass the cookie
             getUser(requester, res)
-            .catch((err) => {next(err)});
+            .catch((err) => {
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, err, next, undefined);
+            });
         }
         else
         {
@@ -40,7 +44,10 @@ const getUser = async (requester, res) =>
 {
     res.locals.function = "getUser";
     // find a user by their login
-    let user = await models.Users.findByLogin(requester);
+    let user = await models.Users.findByLogin(requester).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
     // if the user was not found
     if(user === null)
     {

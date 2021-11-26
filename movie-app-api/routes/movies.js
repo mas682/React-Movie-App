@@ -1,6 +1,9 @@
-import {validateIntegerParameter, validateUsernameParameter, validateStringParameter} from './globals.js';
+const validateStringParameter = require('./globals.js').validateStringParameter;
+const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
+const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
 
 // function to get movies and return them to the client
 const movieHandler = (req, res, next) => {
@@ -21,19 +24,28 @@ const selectPath = (requester, req, res, next) =>
 		if(req.params.type === "get_movie_titles")
 		{
 			getMovieTitles(requester, req, res)
-			.catch((err) => {next(err)});
+			.catch((err) => {
+				let callerStack = new Error().stack;
+				appendCallerStack(callerStack, err, next, undefined);
+			});
 			routeFound = true;
 		}
 		else if(req.params.type === "get_movie_tags")
 		{
 			getMovieTagSuggestions(requester, req, res)
-			.catch((err) => {next(err)});
+			.catch((err) => {
+				let callerStack = new Error().stack;
+				appendCallerStack(callerStack, err, next, undefined);
+			});
 			routeFound = true;
 		}
 		else if(req.params.id !== undefined)
 		{
 			getMovieInfo(requester, req, res)
-			.catch((err) => {next(err)});
+			.catch((err) => {
+				let callerStack = new Error().stack;
+				appendCallerStack(callerStack, err, next, undefined);
+			});
 			routeFound = true;
 		}
 		else if(req.params.type === "my_watch_list")
@@ -42,7 +54,10 @@ const selectPath = (requester, req, res, next) =>
 			if(cookieValid)
 			{
 				getWatchList(requester, req, res)
-				.catch((err) => {next(err)});
+				.catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
 			}
 			else
 			{
@@ -55,7 +70,10 @@ const selectPath = (requester, req, res, next) =>
 			if(cookieValid)
 			{
 				getWatchedList(requester, req, res)
-				.catch((err) => {next(err)});
+				.catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
 			}
 			else
 			{
@@ -66,7 +84,10 @@ const selectPath = (requester, req, res, next) =>
 		{
 			routeFound = true;
 			getFeaturedMovies(requester, req, res)
-			.catch((err) => {next(err)});
+			.catch((err) => {
+				let callerStack = new Error().stack;
+				appendCallerStack(callerStack, err, next, undefined);
+			});
 		}
 	}
 	else if(req.method === "POST")
@@ -77,7 +98,10 @@ const selectPath = (requester, req, res, next) =>
 			if(cookieValid)
 			{
 				addToWatchList(requester, req, res)
-				.catch((err) => {next(err)});
+				.catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
 			}
 			else
 			{
@@ -90,7 +114,10 @@ const selectPath = (requester, req, res, next) =>
 			if(cookieValid)
 			{
 				removeFromWatchList(requester, req, res)
-				.catch((err) => {next(err)});
+				.catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
 			}
 			else
 			{
@@ -103,7 +130,10 @@ const selectPath = (requester, req, res, next) =>
 			if(cookieValid)
 			{
 				addToWatched(requester, req, res)
-				.catch((err) => {next(err)});
+				.catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
 			}
 			else
 			{
@@ -116,7 +146,10 @@ const selectPath = (requester, req, res, next) =>
 			if(cookieValid)
 			{
 				removeFromWatched(requester, req, res)
-				.catch((err) => {next(err)});
+				.catch((err) => {
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, err, next, undefined);
+                });
 			}
 			else
 			{
@@ -152,7 +185,10 @@ const getMovieTitles = async (requester, req, res) =>
 	let valid = validateStringParameter(res, value, 1, 200, requester, "The movie title to search for is invalid");
 	if(!valid) return;
 	// find the movies containing the value
-	let movies = await models.Movies.findByTitle(value, 10);
+	let movies = await models.Movies.findByTitle(value, 10).catch(error=>{
+		let callerStack = new Error().stack;
+		appendCallerStack(callerStack, error, undefined, true);
+	});
 	if(movies === undefined)
 	{
 		res.status(404).sendResponse({
@@ -190,7 +226,10 @@ const getMovieTagSuggestions = async (requester, req, res) =>
 	if(!valid) return;
 	// going to need a tag table
 	// then add tags to good/bad table like the likes table
-	let tags = await models.MovieTags.findByValue(models, value, 10);
+	let tags = await models.MovieTags.findByValue(models, value, 10).catch(error=>{
+		let callerStack = new Error().stack;
+		appendCallerStack(callerStack, error, undefined, true);
+	});
 	if(tags === undefined)
 	{
 		res.status(404).sendResponse({
@@ -228,11 +267,17 @@ const getMovieInfo = async(requester, req, res) =>
 	let movie;
 	if(requester !== "")
 	{
-		movie = await models.Movies.getMovieInfo(movieId, models, requester);
+		movie = await models.Movies.getMovieInfo(movieId, models, requester).catch(error=>{
+			let callerStack = new Error().stack;
+			appendCallerStack(callerStack, error, undefined, true);
+		});
 	}
 	else
 	{
-		movie = await models.Movies.getMovieInfo(movieId, models, undefined);
+		movie = await models.Movies.getMovieInfo(movieId, models, undefined).catch(error=>{
+			let callerStack = new Error().stack;
+			appendCallerStack(callerStack, error, undefined, true);
+		});
 	}
 	if(movie === null)
 	{
@@ -263,7 +308,10 @@ const getWatchList = async(requester, req, res) =>
 	if(!valid) return;
 	max = (max > 50) ? 50 : max;
 	// returns an empty array if no movies found that are associted with the user even if the userId doesn't exist
-	let movies = await models.Users.getWatchList(req.session.userId, models, max, offset);
+	let movies = await models.Users.getWatchList(req.session.userId, models, max, offset).catch(error=>{
+		let callerStack = new Error().stack;
+		appendCallerStack(callerStack, error, undefined, true);
+	});
 	res.status(200).sendResponse({
 		message: "Users watch list successfully found",
 		requester: requester,
@@ -281,7 +329,10 @@ const getWatchedList = async(requester, req, res) =>
 	valid = validateIntegerParameter(res, offset, requester, "The offset for the movies to return is invalid", 0, undefined);
 	if(!valid) return;
 	max = (max > 50) ? 50 : max;
-	let movies = await models.Users.getWatchedList(req.session.userId, models, max, offset);
+	let movies = await models.Users.getWatchedList(req.session.userId, models, max, offset).catch(error=>{
+		let callerStack = new Error().stack;
+		appendCallerStack(callerStack, error, undefined, true);
+	});
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
 	res.status(200).sendResponse({
 		message: "Users watched list successfully found",
@@ -297,7 +348,10 @@ const addToWatchList = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
     if(!valid) return;
     // get the movie along with the user if they alraedy have it on their watch list
-    let movie = await models.Movies.getMovieWithUserWatchList(movieId, req.session.userId, models);
+    let movie = await models.Movies.getMovieWithUserWatchList(movieId, req.session.userId, models).catch(error=>{
+		let callerStack = new Error().stack;
+		appendCallerStack(callerStack, error, undefined, true);
+	});
     if(movie === null || movie === undefined)
     {
         res.status(404).sendResponse({
@@ -308,8 +362,10 @@ const addToWatchList = async (requester, req, res) =>
     }
     if(movie.dataValues.WatchList.length < 1)
     {
-        //let result = await user.addWatchList(movie.id);
-        let result = await movie.addWatchList(req.session.userId);
+        let result = await movie.addWatchList(req.session.userId).catch(error=>{
+			let callerStack = new Error().stack;
+			appendCallerStack(callerStack, error, undefined, true);
+		});
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watch list.  Error code: 1500";
@@ -345,7 +401,10 @@ const removeFromWatchList = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
     if(!valid) return;
     // get the movie along with the user if they alraedy have it on their watch list
-    let movie = await models.Movies.getMovieWithUserWatchList(movieId, req.session.userId, models);
+    let movie = await models.Movies.getMovieWithUserWatchList(movieId, req.session.userId, models).catch(error=>{
+		let callerStack = new Error().stack;
+		appendCallerStack(callerStack, error, undefined, true);
+	});
     if(movie === null || movie === undefined)
     {
         res.status(404).sendResponse({
@@ -356,7 +415,10 @@ const removeFromWatchList = async (requester, req, res) =>
     }
     if(movie.dataValues.WatchList.length > 0)
     {
-        let result = await movie.removeWatchList(req.session.userId);
+        let result = await movie.removeWatchList(req.session.userId).catch(error=>{
+			let callerStack = new Error().stack;
+			appendCallerStack(callerStack, error, undefined, true);
+		});
         if(result === undefined)
         {
 			let message = "A error occurred trying to remove the movie from the users watch list.  Error code: 1501"
@@ -393,7 +455,10 @@ const addToWatched = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
     if(!valid) return;
     // get the movie along with the user if they alraedy have it on their watch list
-    let movie = await models.Movies.getMovieWtithUserWatched(movieId, req.session.userId, models);
+    let movie = await models.Movies.getMovieWtithUserWatched(movieId, req.session.userId, models).catch(error=>{
+		let callerStack = new Error().stack;
+		appendCallerStack(callerStack, error, undefined, true);
+	});
     if(movie === null || movie === undefined)
     {
         res.status(404).sendResponse({
@@ -404,8 +469,10 @@ const addToWatched = async (requester, req, res) =>
     }
     if(movie.dataValues.WatchedList.length < 1)
     {
-        //let result = await user.addWatchList(movie.id);
-        let result = await movie.addWatchedList(req.session.userId);
+        let result = await movie.addWatchedList(req.session.userId).catch(error=>{
+			let callerStack = new Error().stack;
+			appendCallerStack(callerStack, error, undefined, true);
+		});
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watched list.  Error code: 1502"
@@ -441,7 +508,10 @@ const removeFromWatched = async (requester, req, res) =>
     let valid = validateIntegerParameter(res, movieId, requester, "The movie ID is invalid");
     if(!valid) return;
     // get the movie along with the user if they alraedy have it on their watch list
-    let movie = await models.Movies.getMovieWtithUserWatched(movieId, req.session.userId, models);
+    let movie = await models.Movies.getMovieWtithUserWatched(movieId, req.session.userId, models).catch(error=>{
+		let callerStack = new Error().stack;
+		appendCallerStack(callerStack, error, undefined, true);
+	});
     if(movie === null || movie === undefined)
     {
         res.status(404).sendResponse({
@@ -452,8 +522,10 @@ const removeFromWatched = async (requester, req, res) =>
     }
     if(movie.dataValues.WatchedList.length > 0)
     {
-        //let result = await user.addWatchList(movie.id);
-        let result = await movie.removeWatchedList(req.session.userId);
+        let result = await movie.removeWatchedList(req.session.userId).catch(error=>{
+			let callerStack = new Error().stack;
+			appendCallerStack(callerStack, error, undefined, true);
+		});
         if(result === undefined)
         {
 			let message = "A error occurred trying to remove the movie from the users watched list.  Error code: 1503"
@@ -485,7 +557,10 @@ const removeFromWatched = async (requester, req, res) =>
 const getFeaturedMovies = async(requester, req, res) =>
 {
 	res.locals.function = "getFeaturedMovies";
-	let movies = await models.FeaturedMovies.getMovies(models);
+	let movies = await models.FeaturedMovies.getMovies(models).catch(error=>{
+		let callerStack = new Error().stack;
+		appendCallerStack(callerStack, error, undefined, true);
+	});
 	// returns an empty array if no movies found that are associated with the user even if the userid doesn't exist
 	res.status(200).sendResponse({
 		message: "Featured movies successfully found",

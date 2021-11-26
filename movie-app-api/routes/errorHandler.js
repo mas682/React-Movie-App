@@ -1,35 +1,87 @@
-import { allColors } from 'winston/lib/winston/config';
 import {getErrorHandler} from '../src/ErrorHandlers/ErrorReceiver.js';
 import {removeCurrentSession} from '../src/shared/sessions.js';
-import { clearCookie } from './globals.js';
 const Logger = require("../src/shared/logger.js").getLogger();
 
-
 const errorHandler = async(err, req, res, next) => {
-    let result = getErrorHandler(err, res.locals.file, res.locals.function, res.locals.secondaryCode);
-    // function to determine what to do 
-    await checkRemoveSession(req, res);
-    if(result.log)
+    let result = undefined;
+    let errorResult = undefined;
+    try 
     {
-        let error = (result.error === undefined) ? err : result.error;
-        // be careful with what you are logging...
-        Logger.error({name: error.name, message: error.message, stack: error.stack}, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, secondaryCode: result.secondaryCode,  errorMessage: result.logMessage, secondaryMessage: res.locals.secondaryMessage, requestId: req.id});
+        // function to determine what to do 
+        result = getErrorHandler(err, res.locals.file, res.locals.function, res.locals.secondaryCode);
+        errorResult = (result.error === undefined) ? err : result.error;
+        await checkRemoveSession(req, res).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
+        if(result.log)
+        {
+            // be careful with what you are logging...
+            Logger.error({name: errorResult.name, message: errorResult.message, stack: errorResult.stack},
+                {
+                    function: res.locals.function,
+                    file: res.locals.file,
+                    errorCode: result.errorCode, 
+                    secondaryCode: result.secondaryCode,
+                    errorMessage: result.logMessage,
+                    secondaryMessage: res.locals.secondaryMessage,
+                    requestId: req.id
+                }
+            );
+        }
+
+        let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
+        let status = result.status;
+        let message = result.message;
+
+        res.status(status).sendResponse({
+            message: message,
+            requester: requester
+        });
     }
-
-    let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
-    let status = result.status;
-    let message = result.message;
-
-    res.status(status).sendResponse({
-        message: message,
-        requester: requester
-    });
+    catch(error)
+    {
+        // if error occurred after getErrorHandler ran
+        if(result !== undefined && errorResult !== undefined)
+        {
+            res.locals.originalError = {
+                error: {name: errorResult.name, message: errorResult.message, stack: errorResult.stack},
+                function: res.locals.function,
+                file: res.locals.file,
+                errorCode: result.errorCode, 
+                secondaryCode: result.secondaryCode,
+                errorMessage: result.logMessage,
+                secondaryMessage: res.locals.secondaryMessage
+            };
+        }
+        else
+        {
+            let errorObject = JSON.parse(JSON.stringify(err));
+            errorObject = (Object.keys(errorObject).length < 1) ? ({name: err.name, message: err.message, stack: err.stack}) : 
+                ({name: err.name, message: errorObject, stack: err.stack});
+            res.locals.originalError = {
+                error: errorObject,
+                function: res.locals.function,
+                file: res.locals.file,
+                errorCode: undefined, 
+                secondaryCode: undefined,
+                errorMessage: undefined,
+                secondaryMessage: res.locals.secondaryMessage
+            };
+        }
+        res.locals.function = "errorHandler";
+        res.locals.file = "errorHandler";
+        throw error;
+    }
 }
 
 // error handler called if some error occurs in the main error handler
 const finalErrorHandler = (err, req, res, next) => {
+    let errorObject = JSON.parse(JSON.stringify(err));
+    errorObject = (Object.keys(errorObject).length < 1) ? ({name: err.name, message: err.message, stack: err.stack}) : 
+        ({name: err.name, message: errorObject, stack: err.stack});
     let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
-    Logger.error(err, {function: res.locals.function, file: res.locals.file, errorCode: 2200, errorMessage: "An error occurred in the main error handler", requestId: req.id});
+    Logger.error(errorObject, {originalError: res.locals.originalError,function: res.locals.function, file: res.locals.file, errorCode: 2200, errorMessage: "An error occurred in the main error handler", requestId: req.id});
     res.status(500).sendResponse({
         message: "Some unexpected error occurred on the server.  Error code: 2200",
         requester: requester
@@ -43,7 +95,10 @@ const checkRemoveSession = async(req, res) => {
      if(res.locals.regeneratingSession !== undefined && res.locals.regeneratingSession)
      {
          Logger.info("Destorying users session", {requestId: req.id});
-         await removeCurrentSession(req, res);
+         await removeCurrentSession(req, res).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
          clearCookie(req, res, undefined);
      }
      // if the session was regenerated due to using a session just for resetting a password
@@ -51,7 +106,10 @@ const checkRemoveSession = async(req, res) => {
      else if(res.locals.cleanSession === true && req.session !== undefined && req.session.userId === undefined)
      {
          Logger.info("Destorying users session", {requestId: req.id});
-         await removeCurrentSession(req, res);
+         await removeCurrentSession(req, res).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
          clearCookie(req, res, undefined);
      }
      // if the session should be removed because some update to the session failed
@@ -59,14 +117,20 @@ const checkRemoveSession = async(req, res) => {
      else if(res.locals.removeSession !== undefined && res.locals.removeSession && req.session !== undefined)
      {
          Logger.info("Destorying users session", {requestId: req.id});
-         await removeCurrentSession(req, res);
+         await removeCurrentSession(req, res).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
          clearCookie(req, res, undefined);
      }
      // if a uncaught error occurred when in function resetPassword, delete the session
      else if(req.session !== undefined && req.session.active !== undefined && !req.session.active)
      {
          Logger.info("Destorying users session", {requestId: req.id});
-         await removeCurrentSession(req, res);
+         await removeCurrentSession(req, res).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
          clearCookie(req, res, undefined);
      }
 }
@@ -77,7 +141,10 @@ const jsonHandler = (middleware, req, res, next) => {
         if (err) {
             try
             {
-                await checkRemoveSession(req, res);
+                await checkRemoveSession(req, res).catch(error=>{
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, error, undefined, true);
+                });
                 let requester = (req.session === undefined || req.session.user === undefined || req.session.passwordResetSession !== undefined) ? "" : req.session.user;
                 return res.status(400).sendResponse({
                     message: "Invalid json found in request",
@@ -136,6 +203,25 @@ const caughtErrorHandler = async(err, req, res, secondaryCode, secondaryMessage)
         Logger.error({name: error.name, message: error.message, stack: error.stack}, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, secondaryCode: result.secondaryCode,  errorMessage: result.logMessage, secondaryMessage: secondaryMessage, requestId: req.id});
     }
 };
+
+
+// used to tell client to remove cookie if there is no valid session associated
+// with the cookie
+// this also exists in globals.js but put in here as well to avoid circular dependency
+const clearCookie = (req, res, next) => {
+    res.locals.function = "clearCookie";
+    res.locals.file = "globals";
+    // if there is no session associated with the cookie and a cookie is provided
+    if((req.session === undefined || req.session.user === undefined) && req.headers.cookie !== undefined)
+    {
+        let options = {};
+        res.clearCookie(config.app.cookieName, options);
+    }
+    if(next !== undefined)
+    {
+        next();
+    }
+}
 
 module.exports.errorHandler = errorHandler;
 module.exports.checkRemoveSession = checkRemoveSession;

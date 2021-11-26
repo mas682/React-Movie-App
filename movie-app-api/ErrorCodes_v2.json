@@ -498,7 +498,7 @@
         "errorHandler.js":{
             "range":"2200-2300",
             "2200":{
-                "Description": "A error occurred in the main error handler",
+                "Description": "A unexpected error occurred in the main error handler",
                 "function":"errorHandler"
             }
         }

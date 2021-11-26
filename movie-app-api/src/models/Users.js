@@ -1,6 +1,8 @@
 
 const Op = require('sequelize').Op;
 const Logger = require("../shared/logger.js").getLogger();
+const caughtErrorHandler = require("../../routes/errorHandler.js").caughtErrorHandler;
+const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
 
 const user = (sequelize, DataTypes) => {
     const User = sequelize.define('Users', {
@@ -154,11 +156,17 @@ const user = (sequelize, DataTypes) => {
     User.findByLogin = async login => {
         let user = await User.findOne({
             where: { username: login },
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
 
         if (!user) {
             user = await User.findOne({
-            where: { email: login },
+                where: { email: login },
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             });
         }
         return user;
@@ -181,6 +189,9 @@ const user = (sequelize, DataTypes) => {
                     as: "authenticationAttempts"
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
 
         if(!user) {
@@ -199,6 +210,9 @@ const user = (sequelize, DataTypes) => {
                         as: "authenticationAttempts"
                     }
                 ]
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             }); 
         }
         return user;
@@ -217,6 +231,9 @@ const user = (sequelize, DataTypes) => {
                     as: "authenticationAttempts"
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
 
         if(!user) {
@@ -228,6 +245,9 @@ const user = (sequelize, DataTypes) => {
                         as: "authenticationAttempts"
                     }
                 ]
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             }); 
         }
         return user;
@@ -249,6 +269,9 @@ const user = (sequelize, DataTypes) => {
                     required: false
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return user;
     }
@@ -276,6 +299,9 @@ const user = (sequelize, DataTypes) => {
                     required: false
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return user;
     };
@@ -298,6 +324,9 @@ const user = (sequelize, DataTypes) => {
                 verified: false,
                 deleteAt: deleteAtDate
             }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return tempUser;
     }
@@ -312,6 +341,9 @@ const user = (sequelize, DataTypes) => {
             lastName: lastName,
             verified: false,
             deleteAt: deleteAtDate
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return tempUser;
     }
@@ -327,6 +359,9 @@ const user = (sequelize, DataTypes) => {
                 attributes: [[sequelize.fn('concat', sequelize.col("profilePicture.source"),
                             sequelize.col("profilePicture.filename")), "url"]]
             }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
 
         if (!user) {
@@ -339,6 +374,9 @@ const user = (sequelize, DataTypes) => {
                 attributes: [[sequelize.fn('concat', sequelize.col("profilePicture.source"),
                             sequelize.col("profilePicture.filename")), "url"]]
             }
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
             });
         }
         return user;
@@ -347,53 +385,55 @@ const user = (sequelize, DataTypes) => {
     // returns 1 on successful deletion
     // 0 if no deletions occurred
     User.removeExpiredUser = async(req, res, user, throwError, errorCode) => {
-        let result;
-        try 
-        {
-            result = await User.destroy({
-                where: {
-                    id: user.id,
-                    verified: false,
-                    deleteAt: {[Op.lte]: new Date()}
-                }
-            });
-        }
-        catch(err)
-        {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            Logger.error("A unexpected error occurred trying to remove a user with the id of: " + user.id,
-            {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
+        let result = await User.destroy({
+            where: {
+                id: user.id,
+                verified: false,
+                deleteAt: {[Op.lte]: new Date()}
+            }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            let message = "Some unknown error occurred updaing the users(" + username + ") account on login";
             if(throwError)
             {
-                throw err;
+                res.locals.secondaryCode = errorCode;
+				res.locals.secondaryMessage = message;
+                appendCallerStack(callerStack, error, undefined, true);
             }
-        }
+            else
+            {
+                error = appendCallerStack(callerStack, error, undefined, false);
+                caughtErrorHandler(error, req, res, errorCode, message);
+            }
+        });
+
         return result;
     };
 
     // returns 1 on successful deletion
     // 0 if no deletions occurred
     User.removeUnverifiedUser = async(req, res, user, throwError, errorCode) => {
-        let result;
-        try 
-        {
-            result = await User.destroy({
-                where: {
-                    id: user.id,
-                    verified: false
-                }
-            });
-        }
-        catch(err)
-        {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            Logger.error("A unexpected error occurred trying to remove a user with the id of: " + user.id,
-            {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
+        let result = await User.destroy({
+            where: {
+                id: user.id,
+                verified: false
+            }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            let message = "A unexpected error occurred trying to remove a user with the id of: " + user.id;
             if(throwError)
             {
-                throw err;
+                res.locals.secondaryCode = errorCode;
+                res.locals.secondaryMessage = message;
+                appendCallerStack(callerStack, error, undefined, true);
             }
-        }
+            else
+            {
+                error = appendCallerStack(callerStack, error, undefined, false);
+                caughtErrorHandler(error, req, res, errorCode, message);
+            }
+        });
+
         return result;
     };
 
@@ -401,29 +441,27 @@ const user = (sequelize, DataTypes) => {
     // returns 1 on successful deletion
     // 0 if no deletions occurred
     User.removeUnverifiedUserByEmail = async(req, res, email, throwError, errorCode) => {
-        let result;
-        try 
-        {
-            result = await User.destroy({
-                where: {
-                    email: email,
-                    verified: false
-                }
-            });
-        }
-        catch(err)
-        {
-            if(!throwError)
-            {
-                let errorObject = JSON.parse(JSON.stringify(err));
-                Logger.error("A unexpected error occurred trying to remove a user with the email of: " + email,
-                {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
+        let result = await User.destroy({
+            where: {
+                email: email,
+                verified: false
             }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            let message = "A unexpected error occurred trying to remove a user with the email of: " + email;
             if(throwError)
             {
-                throw err;
+                res.locals.secondaryCode = errorCode;
+                res.locals.secondaryMessage = message;
+                appendCallerStack(callerStack, error, undefined, true);
             }
-        }
+            else
+            {
+                error = appendCallerStack(callerStack, error, undefined, false);
+                caughtErrorHandler(error, req, res, errorCode, message);
+            }
+        });
+        
         return result;
     };
 
@@ -437,6 +475,9 @@ const user = (sequelize, DataTypes) => {
                 attributes: ["id"],
                 through: {attributes: []}
             }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         let followers = await User.findOne({
             where: {id: userId},
@@ -444,6 +485,9 @@ const user = (sequelize, DataTypes) => {
             return user.getFollowing().then((users) => {
                 return users;
             });
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return followers;
     }
@@ -462,6 +506,9 @@ const user = (sequelize, DataTypes) => {
                 // include the user
                 required: false
             },
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         // returns null if follower not found
         return user;
@@ -480,6 +527,9 @@ const user = (sequelize, DataTypes) => {
                 // include the user
                 required: false
             },
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         // returns null if follower not found
         return user;
@@ -490,7 +540,10 @@ const user = (sequelize, DataTypes) => {
     // friendName is the username of the user whose friends list you are checking
     // userId is the user id of the requesting user
     User.getFollowers = async (friendName, userId, models) => {
-        let user = await User.findByLogin(friendName);
+        let user = await User.findByLogin(friendName).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         if(user === null)
         {
             return null;
@@ -518,6 +571,9 @@ const user = (sequelize, DataTypes) => {
                     attributes: []
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return followers;
     };
@@ -527,7 +583,10 @@ const user = (sequelize, DataTypes) => {
     // friendName is the username fo the user whose friends list you are checking
     // userId is the user id of the requesting user
     User.getFollowing = async (friendName, userId, models) => {
-        let user = await User.findByLogin(friendName);
+        let user = await User.findByLogin(friendName).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         if(user === null)
         {
             return null;
@@ -555,6 +614,9 @@ const user = (sequelize, DataTypes) => {
                     attributes: []
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return following;
     }
@@ -592,6 +654,9 @@ const user = (sequelize, DataTypes) => {
                     through: {attributes: []}
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return movies;
     }
@@ -629,6 +694,9 @@ const user = (sequelize, DataTypes) => {
                     through: {attributes: []}
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return movies;
     }
@@ -664,6 +732,9 @@ const user = (sequelize, DataTypes) => {
             ],
             attributes: ["username", "firstName", "lastName", [sequelize.fn('concat', sequelize.col("profilePicture.source"),
                         sequelize.col("profilePicture.filename")), "picture"]]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return users;
     };
@@ -674,6 +745,9 @@ const user = (sequelize, DataTypes) => {
             where: {
                 picture: file
             }
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         if(users.length > 0)
         {

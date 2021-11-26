@@ -1,7 +1,10 @@
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Op = require('sequelize').Op;
-import {validateStringParameter, validateEmailParameter, validateUsernameParameter,
-        validateIntegerParameter, validateBooleanParameter} from './globals.js';
+const validateStringParameter = require('./globals.js').validateStringParameter;
+const validateEmailParameter = require('./globals.js').validateEmailParameter;
+const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
+const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
+const validateBooleanParameter = require('./globals.js').validateBooleanParameter;
 import {emailHandler} from './emailHandler.js';
 import {checkHashedValue, hash} from '../src/shared/crypto.js';
 import {createSession, destroySession} from '../src/shared/sessions.js';
@@ -426,7 +429,6 @@ const validatePassCode = async (req, res) =>
     // if passcode incorrect
     if(tempVerificationCode.code !== result.value)
     {
-
         tempVerificationCode = await tempVerificationCode.increment("verificationAttempts").catch(error=>{
             let callerStack = new Error().stack;
             error = appendCallerStack(callerStack, error, undefined, false);

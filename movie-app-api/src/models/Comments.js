@@ -1,4 +1,5 @@
-let moment = require('moment');
+const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+
 const comment = (sequelize, DataTypes) => {
     const Comment = sequelize.define('Comments',
     {
@@ -77,6 +78,9 @@ const comment = (sequelize, DataTypes) => {
                     attributes: ["username"]
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return comments;
     };
@@ -93,6 +97,9 @@ const comment = (sequelize, DataTypes) => {
                     attributes: ["username"]
                 }
             ]
+        }).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
         });
         return comment;
     };

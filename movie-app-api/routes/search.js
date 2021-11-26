@@ -1,7 +1,9 @@
-import {validateStringParameter, validateIntegerParameter} from './globals.js';
+const validateStringParameter = require('./globals.js').validateStringParameter;
+const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Op = require('sequelize').Op;
 const Logger = require("../src/shared/logger.js").getLogger();
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
 
 
 
@@ -23,25 +25,37 @@ const selectPath = (requester, req, res, next) =>
 		{
 			routeFound = true;
 			getAllRelatedItems(requester, req, res)
-			.catch((err) => {next(err)});
+			.catch((err) => {
+				let callerStack = new Error().stack;
+				appendCallerStack(callerStack, err, next, undefined);
+			});
 		}
 		else if(req.params.type === "movies")
 		{
 			routeFound = true;
 			getMovies(requester, req, res)
-			.catch((err) => {next(err)});
+			.catch((err) => {
+				let callerStack = new Error().stack;
+				appendCallerStack(callerStack, err, next, undefined);
+			});
 		}
 		else if(req.params.type === "users")
 		{
 			routeFound = true;
 			getUsers(requester, req, res)
-			.catch((err) => {next(err)});
+			.catch((err) => {
+				let callerStack = new Error().stack;
+				appendCallerStack(callerStack, err, next, undefined);
+			});
 		}
 		else if(req.params.type === "movies_title")
 		{
 			routeFound = true;
 			queryMoviesByTitle(requester, req, res)
-			.catch((err) => {next(err)});
+			.catch((err) => {
+				let callerStack = new Error().stack;
+				appendCallerStack(callerStack, err, next, undefined);
+			});
 		}
 	}
 
@@ -69,8 +83,14 @@ const getAllRelatedItems = async (requester, req, res) =>
 	if(!valid) return;
 	count = (count > defaultMax) ? defaultMax : count;
 	// find the movies containing the value
-	let movies = await models.Movies.findByTitle(value, count, 0);
-    let users = await models.Users.findUsers(value, count, 0);
+	let movies = await models.Movies.findByTitle(value, count, 0).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
+    let users = await models.Users.findUsers(value, count, 0).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
 	res.status(200).sendResponse({
 		requester: requester,
 		message: "Search results successfully found",
@@ -97,7 +117,10 @@ const queryMoviesByTitle = async (requester, req, res) =>
 	if(!valid) return;
 	// if the count is a integer, make sure it is not larger than the max value
 	count = (count > 50) ? 50 : count;
-	let movies = await models.Movies.findByTitle(title, count, offset);
+	let movies = await models.Movies.findByTitle(title, count, offset).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
 	res.status(200).sendResponse({
 		requester: requester,
 		message: "Search results successfully found",
@@ -118,7 +141,10 @@ const getMovies = async (requester, req, res) =>
 	if(!valid) return;
 	max = (max > 50) ? 50 : max;
 	// returns true, movies on success, false on failure
-	let movies = await models.Movies.queryMovies(models, req.query, username, max, offset);
+	let movies = await models.Movies.queryMovies(models, req.query, username, max, offset).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
 	if(!movies[0])
 	{
 		// send the error message
@@ -156,7 +182,10 @@ const getUsers = async (requester, req, res) =>
 	if(!valid) return;
 	// if the count is a integer, make sure it is not larger than the max value
 	count = (count > defaultMax) ? defaultMax : count;
-	let users = await models.Users.findUsers(userToFind, count, offset);
+	let users = await models.Users.findUsers(userToFind, count, offset).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
 	res.status(200).sendResponse({
 		message: "Search results successfully found",
 		requester: requester,

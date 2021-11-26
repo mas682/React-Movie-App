@@ -2,6 +2,9 @@ import {customAlphabet} from 'nanoid';
 const nanoid = customAlphabet('1234567890', 6);
 import {hash} from '../shared/crypto.js';
 const Logger = require("../shared/logger.js").getLogger();
+const caughtErrorHandler = require("../../routes/errorHandler.js").caughtErrorHandler;
+const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+
 
 const tempVerificationCodes = (sequelize, DataTypes) => {
     const TempVerificationCodes = sequelize.define('TempVerificationCodes', {
@@ -84,7 +87,10 @@ const tempVerificationCodes = (sequelize, DataTypes) => {
         let counter = 0;
 
         // delete any existing verification records for the user
-        await TempVerificationCodes.destroy({where: {userId: user.id}});
+        await TempVerificationCodes.destroy({where: {userId: user.id}}).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         while(counter < 5)
         {
             code = nanoid();
@@ -103,6 +109,9 @@ const tempVerificationCodes = (sequelize, DataTypes) => {
                     code: result.value,
                     createdAt: createdDate,
                     expiresAt: expirationDate.toISOString()
+                }).catch(error=>{
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, error, undefined, true);
                 });
                 break;
             }
@@ -131,16 +140,12 @@ const tempVerificationCodes = (sequelize, DataTypes) => {
                     // only remove if just created
                     if(removeUser)
                     {
-                        try
-                        {
-                            await user.destroy();
-                        }
-                        catch (error)
-                        {
-                            let errorObject = JSON.parse(JSON.stringify(error));
-                            Logger.error("Some unexpected error occurred when trying to remove a user",
-                            {errorCode: errorCode, function: res.locals.function, file: res.locals.file, requestId: req.id, error: errorObject});
-                        }
+                        await user.destroy().catch(error=>{
+                            let callerStack = new Error().stack;
+                            error = appendCallerStack(callerStack, error, undefined, false);
+                            let message = "Some unexpected error occurred when trying to remove a user";
+                            caughtErrorHandler(error, req, res, errorCode, message);
+                        });
                     }
                     // throw first error that occurred
                     throw err;

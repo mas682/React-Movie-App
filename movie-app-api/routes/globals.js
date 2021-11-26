@@ -3,6 +3,7 @@
 const config = require('../Config.json');
 var validator = require('validator');
 import {regenerateSession, removeCurrentSession, saveSession} from '../src/shared/sessions.js';
+const appendCallerStack = require("./errorHandler.js").appendCallerStack;
 
 
 // function to validate that a parameter is a actual boolean value
@@ -160,14 +161,6 @@ const clearCookie = (req, res, next) => {
     // if there is no session associated with the cookie and a cookie is provided
     if((req.session === undefined || req.session.user === undefined) && req.headers.cookie !== undefined)
     {
-        // set the cookie options so the browser may remove the cookie
-        /*let options = {
-            httpOnly: req.session.cookie.httpOnly,
-            secure: req.session.cookie.secure,
-            sameSite: req.session.cookie.sameSite,
-            path: req.session.cookie.path
-        }
-        */
         let options = {};
         res.clearCookie(config.app.cookieName, options);
     }
@@ -209,7 +202,10 @@ const checkForPasswordResetCookie = async(req, res, next) => {
                 {
                     // mark session as in use any other incoming cookies with the same session are not used
                     req.session.active = false;
-                    await saveSession(req, res);
+                    await saveSession(req, res).catch(error=>{
+                        let callerStack = new Error().stack;
+                        appendCallerStack(callerStack, error, undefined, true);
+                    });
                 }
             }
             else
@@ -222,11 +218,17 @@ const checkForPasswordResetCookie = async(req, res, next) => {
                 {
                     // mark the session as to be removed if empty in error handler
                     res.locals.cleanSession = true;
-                    await regenerateSession(req, res, false, false);
+                    await regenerateSession(req, res, false, false).catch(error=>{
+                        let callerStack = new Error().stack;
+                        appendCallerStack(callerStack, error, undefined, true);
+                    });
                 }
                 else
                 {
-                    await removeCurrentSession(req, res);
+                    await removeCurrentSession(req, res).catch(error=>{
+                        let callerStack = new Error().stack;
+                        appendCallerStack(callerStack, error, undefined, true);
+                    });
                     // tell frontend to remove cookie
                     clearCookie(req, res, undefined);
                 }
@@ -238,6 +240,11 @@ const checkForPasswordResetCookie = async(req, res, next) => {
         return next(err);
     }
 };
-
-export {validateIntegerParameter, validateUsernameParameter, validateStringParameter,
-     validateEmailParameter, clearCookie, validateBooleanParameter, checkForPasswordResetCookie};
+    
+module.exports.validateIntegerParameter = validateIntegerParameter;
+module.exports.validateUsernameParameter = validateUsernameParameter;
+module.exports.validateStringParameter = validateStringParameter;
+module.exports.validateEmailParameter = validateEmailParameter;
+module.exports.clearCookie = clearCookie;
+module.exports.validateBooleanParameter = validateBooleanParameter;
+module.exports.checkForPasswordResetCookie = checkForPasswordResetCookie;
