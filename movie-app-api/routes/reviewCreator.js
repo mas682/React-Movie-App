@@ -3,7 +3,7 @@ const validateIntegerParameter = require('./globals.js').validateIntegerParamete
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
 import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
-const appendCallerStack = require("./errorHandler.js").appendCallerStack;
+const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
 
 
 // function to run all the checks when a new review comes in or if a review update comes in

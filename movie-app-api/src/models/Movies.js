@@ -1,6 +1,6 @@
 let moment = require('moment');
 const Op = require('sequelize').Op;
-const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+const appendCallerStack = require("../shared/ErrorFunctions.js").appendCallerStack;
 
 const movie = (sequelize, DataTypes) => {
     const Movie = sequelize.define('Movies', {

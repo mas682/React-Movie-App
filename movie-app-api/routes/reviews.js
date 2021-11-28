@@ -3,7 +3,7 @@ const validateStringParameter = require('./globals.js').validateStringParameter;
 const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 import {createReview, updateReview} from './reviewCreator.js';
 const Logger = require("../src/shared/logger.js").getLogger();
-const appendCallerStack = require("./errorHandler.js").appendCallerStack;
+const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
 
 
 // function to post a reviews

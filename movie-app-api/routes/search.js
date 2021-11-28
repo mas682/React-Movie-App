@@ -3,7 +3,7 @@ const validateIntegerParameter = require('./globals.js').validateIntegerParamete
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Op = require('sequelize').Op;
 const Logger = require("../src/shared/logger.js").getLogger();
-const appendCallerStack = require("./errorHandler.js").appendCallerStack;
+const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
 
 
 

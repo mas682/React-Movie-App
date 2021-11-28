@@ -10,8 +10,8 @@ import {checkHashedValue, hash} from '../src/shared/crypto.js';
 import {createSession, destroySession} from '../src/shared/sessions.js';
 const config = require('../Config.json');
 const Logger = require("../src/shared/logger.js").getLogger();
-const appendCallerStack = require("./errorHandler.js").appendCallerStack;
-const caughtErrorHandler = require("./errorHandler.js").caughtErrorHandler;
+const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
+const caughtErrorHandler = require("../src/shared/ErrorFunctions.js").caughtErrorHandler;
 
 // function to see if a user can login and returns a cookie to use
 const login = (req, res, next) => {

@@ -1,4 +1,4 @@
-const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+const appendCallerStack = require("../shared/ErrorFunctions.js").appendCallerStack;
 
 const featuredMovies = (sequelize, DataTypes) => {
     const FeaturedMovies = sequelize.define('FeaturedMovies', {

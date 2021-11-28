@@ -1,7 +1,7 @@
 // handles routes that do not exist
 const Logger = require("../src/shared/logger.js").getLogger();
 const checkRemoveSession = require('./errorHandler.js').checkRemoveSession;
-const appendCallerStack = require("./errorHandler.js").appendCallerStack;
+const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
 
 
 const badPageHandler = async (req, res, next) => {

@@ -1,4 +1,4 @@
-const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+const appendCallerStack = require("../shared/ErrorFunctions.js").appendCallerStack;
 
 const comment = (sequelize, DataTypes) => {
     const Comment = sequelize.define('Comments',

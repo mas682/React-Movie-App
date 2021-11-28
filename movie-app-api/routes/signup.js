@@ -9,7 +9,7 @@ import {checkHashedValue} from '../src/shared/crypto.js';
 import {createSession} from '../src/shared/sessions.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
-const appendCallerStack = require("./errorHandler.js").appendCallerStack;
+const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
 
 // function to create an account
 const signUp = (req, res, next) => {

@@ -14,6 +14,8 @@ const models = require('./src/models/index.js');
 const errorHandlers = require('./routes/errorHandler.js');
 const errorHandler = errorHandlers.errorHandler;
 const jsonHandler = errorHandlers.jsonHandler;
+const appendCallerStack = require('./src/shared/ErrorFunctions.js').appendCallerStack;
+
 const finalErrorHandler = errorHandlers.finalErrorHandler;
 const badPageHandler = require('./routes/badPageHandler.js').badPageHandler;
 
@@ -67,7 +69,10 @@ app.use(function(req, res, next) {
             // essentially makes sure a empty session does not get saved when one is regenerated
             if(res.locals.cleanSession === true && req.session !== undefined && req.session.userId === undefined)
             {
-                await destroySession(req);
+                await destroySession(req).catch(error=>{
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, error, next, undefined);
+                });
             }
             res.locals.message = body.message;
             res.send(body);

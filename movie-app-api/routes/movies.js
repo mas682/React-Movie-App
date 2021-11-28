@@ -3,7 +3,7 @@ const validateUsernameParameter = require('./globals.js').validateUsernameParame
 const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
-const appendCallerStack = require("./errorHandler.js").appendCallerStack;
+const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
 
 // function to get movies and return them to the client
 const movieHandler = (req, res, next) => {

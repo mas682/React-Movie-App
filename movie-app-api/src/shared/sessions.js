@@ -6,8 +6,7 @@ const Op = require('sequelize').Op;
 let redisStore = require('./redisStore.js');
 let redis = require('./redis.js');
 const session = require('express-session');
-const caughtErrorHandler = require("../../routes/errorHandler.js").caughtErrorHandler;
-const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+const appendCallerStack = require("./ErrorFunctions.js").appendCallerStack;
 
 
 const createSession = async(user, req, res, expires, passwordResetSession) =>

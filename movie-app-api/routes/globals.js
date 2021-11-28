@@ -3,7 +3,6 @@
 const config = require('../Config.json');
 var validator = require('validator');
 import {regenerateSession, removeCurrentSession, saveSession} from '../src/shared/sessions.js';
-const appendCallerStack = require("./errorHandler.js").appendCallerStack;
 
 
 // function to validate that a parameter is a actual boolean value
@@ -240,6 +239,7 @@ const checkForPasswordResetCookie = async(req, res, next) => {
         return next(err);
     }
 };
+
     
 module.exports.validateIntegerParameter = validateIntegerParameter;
 module.exports.validateUsernameParameter = validateUsernameParameter;

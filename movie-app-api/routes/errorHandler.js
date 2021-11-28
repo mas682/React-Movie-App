@@ -1,6 +1,8 @@
 import {getErrorHandler} from '../src/ErrorHandlers/ErrorReceiver.js';
 import {removeCurrentSession} from '../src/shared/sessions.js';
 const Logger = require("../src/shared/logger.js").getLogger();
+const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
+const caughtErrorHandler = require("../src/shared/ErrorFunctions.js").caughtErrorHandler;
 
 const errorHandler = async(err, req, res, next) => {
     let result = undefined;
@@ -159,73 +161,7 @@ const jsonHandler = (middleware, req, res, next) => {
       });
 };
 
-// function called inside the catch function on await functions
-// used to append to the stack where the async fuction was actually called
-const appendCallerStack = (callerStack, error, next, throwError) =>{
-    if(callerStack.length > 30)
-    {
-        // 6 is the index of the new line first \n character in the error stack
-        callerStack = callerStack.substring(6);
-        // get index of second lines new line character, starting 25 characters in
-        // string should be like:      at /movie-app-api/routes/login.js:223:31
-        let endIndex = callerStack.indexOf("\n", 25);
-        if(endIndex !== -1)
-        {
-            callerStack = callerStack.substring(0, endIndex);
-        }
-    }
-    error.stack = error.stack + "\n" + callerStack
-
-    if(next !== undefined)
-    {
-        next(error);
-    }
-    else
-    {
-        if(throwError)
-        {
-            throw error;
-        }
-        else
-        {
-            return error;
-        }
-    }
-};
-
-// function to handle logging for errors that are just caught but don't stop the function
-const caughtErrorHandler = async(err, req, res, secondaryCode, secondaryMessage) => {
-    let result = getErrorHandler(err, res.locals.file, res.locals.function, secondaryCode);
-    if(result.log)
-    {
-        let error = (result.error === undefined) ? err : result.error;
-        // be careful with what you are logging...
-        Logger.error({name: error.name, message: error.message, stack: error.stack}, {function: res.locals.function, file: res.locals.file, errorCode: result.errorCode, secondaryCode: result.secondaryCode,  errorMessage: result.logMessage, secondaryMessage: secondaryMessage, requestId: req.id});
-    }
-};
-
-
-// used to tell client to remove cookie if there is no valid session associated
-// with the cookie
-// this also exists in globals.js but put in here as well to avoid circular dependency
-const clearCookie = (req, res, next) => {
-    res.locals.function = "clearCookie";
-    res.locals.file = "globals";
-    // if there is no session associated with the cookie and a cookie is provided
-    if((req.session === undefined || req.session.user === undefined) && req.headers.cookie !== undefined)
-    {
-        let options = {};
-        res.clearCookie(config.app.cookieName, options);
-    }
-    if(next !== undefined)
-    {
-        next();
-    }
-}
-
 module.exports.errorHandler = errorHandler;
 module.exports.checkRemoveSession = checkRemoveSession;
 module.exports.jsonHandler = jsonHandler;
 module.exports.finalErrorHandler = finalErrorHandler;
-module.exports.appendCallerStack = appendCallerStack;
-module.exports.caughtErrorHandler = caughtErrorHandler;

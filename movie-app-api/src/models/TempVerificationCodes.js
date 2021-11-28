@@ -2,8 +2,8 @@ import {customAlphabet} from 'nanoid';
 const nanoid = customAlphabet('1234567890', 6);
 import {hash} from '../shared/crypto.js';
 const Logger = require("../shared/logger.js").getLogger();
-const caughtErrorHandler = require("../../routes/errorHandler.js").caughtErrorHandler;
-const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+const caughtErrorHandler = require("../shared/ErrorFunctions.js").caughtErrorHandler;
+const appendCallerStack = require("../shared/ErrorFunctions.js").appendCallerStack;
 
 
 const tempVerificationCodes = (sequelize, DataTypes) => {

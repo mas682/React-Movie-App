@@ -1,7 +1,7 @@
 import {hash} from '../shared/crypto.js';
 const Logger = require("../shared/logger.js").getLogger();
-const caughtErrorHandler = require("../../routes/errorHandler.js").caughtErrorHandler;
-const appendCallerStack = require("../../routes/errorHandler.js").appendCallerStack;
+const caughtErrorHandler = require("../shared/ErrorFunctions.js").caughtErrorHandler;
+const appendCallerStack = require("../shared/ErrorFunctions.js").appendCallerStack;
 
 const userCredentials = (sequelize, DataTypes) => { 
     const UserCredentials = sequelize.define('UserCredentials', {
