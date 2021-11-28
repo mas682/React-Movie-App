@@ -342,7 +342,7 @@
                 "function":"validateUser"
             },
             "1609":{
-                "Description":"A error occurred removing a users tempVerificationCode when after they validated the verification code",
+                "Description":"A error occurred removing a users tempVerificationCode after they validated the verification code",
                 "function":"validatePassCode"
             }
         },
@@ -378,14 +378,6 @@
             "1002":{
                 "Description": "A user tried to unfollow another user but the update to the database failed",
                 "function": "unfollowUser"
-            },
-            "1003":{
-                "Description":"A user tried to delete their account but the update to the database failed",
-                "function":"removeUser"
-            },
-            "1004":{
-                "Description":"Could not generate a unique salt when trying to store the users new password",
-                "function":"resetPassword"
             }
         },
         "reviewCreator.js":{

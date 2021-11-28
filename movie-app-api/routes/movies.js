@@ -1,5 +1,4 @@
 const validateStringParameter = require('./globals.js').validateStringParameter;
-const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
 const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
@@ -369,8 +368,8 @@ const addToWatchList = async (requester, req, res) =>
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watch list.  Error code: 1500";
-			Logger.error("A error occurred trying to add the movie to the users watch list.",
-				{errorCode: 1500, function: "addToWatchList", file: "movies.js", requestId: req.id});
+			Logger.error("A error occurred trying to add the movie with id of: " + movie.id + " to the users watch list.",
+				{function: "addToWatchList", file: "movies.js", errorCode: 1500,  requestId: req.id});
             // if undefined, usually means the association already exists..
             res.status(500).sendResponse({
                 message: message,
@@ -422,8 +421,8 @@ const removeFromWatchList = async (requester, req, res) =>
         if(result === undefined)
         {
 			let message = "A error occurred trying to remove the movie from the users watch list.  Error code: 1501"
-			Logger.error("A error occurred trying to remove the movie from the users watch list.",
-				{errorCode: 1501, function: "removeFromWatchList", file: "movies.js", requestId: req.id});
+			Logger.error("A error occurred trying to remove the movie with id of: " + movie.id + " from the users watch list.",
+				{function: "removeFromWatchList", file: "movies.js", errorCode: 1501, requestId: req.id});
             // if undefined, usually means the association already exists..
             res.status(500).sendResponse({
                 message: message,
@@ -476,8 +475,8 @@ const addToWatched = async (requester, req, res) =>
         if(result === undefined)
         {
 			let message = "A error occurred trying to add the movie to the users watched list.  Error code: 1502"
-			Logger.error("A error occurred trying to add the movie to the users watched list.",
-				{errorCode: 1502, function: "addToWatched", file: "movies.js", requestId: req.id});
+			Logger.error("A error occurred trying to add the movie with id of: " + movie.id + " to the users watched list.",
+				{function: "addToWatched", file: "movies.js", errorCode: 1502, requestId: req.id});
             // if undefined, usually means the association already exists..
             res.status(500).sendResponse({
                 message: message,
@@ -529,8 +528,8 @@ const removeFromWatched = async (requester, req, res) =>
         if(result === undefined)
         {
 			let message = "A error occurred trying to remove the movie from the users watched list.  Error code: 1503"
-			Logger.error("A error occurred trying to remove the movie from the users watched list.",
-				{errorCode: 1503, function: "removeFromWatched", file: "movies.js", requestId: req.id});
+			Logger.error("A error occurred trying to remove the movie with id of: " + movie.id + " from the users watched list.",
+				{function: "removeFromWatched", file: "movies.js", errorCode: 1503, requestId: req.id});
             // if undefined, usually means the association already exists..
             res.status(500).sendResponse({
                 message: message,

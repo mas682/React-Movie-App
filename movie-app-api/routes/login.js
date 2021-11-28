@@ -1,3 +1,6 @@
+import {emailHandler} from './emailHandler.js';
+import {checkHashedValue} from '../src/shared/crypto.js';
+import {createSession, destroySession} from '../src/shared/sessions.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Op = require('sequelize').Op;
 const validateStringParameter = require('./globals.js').validateStringParameter;
@@ -5,9 +8,6 @@ const validateEmailParameter = require('./globals.js').validateEmailParameter;
 const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
 const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 const validateBooleanParameter = require('./globals.js').validateBooleanParameter;
-import {emailHandler} from './emailHandler.js';
-import {checkHashedValue, hash} from '../src/shared/crypto.js';
-import {createSession, destroySession} from '../src/shared/sessions.js';
 const config = require('../Config.json');
 const Logger = require("../src/shared/logger.js").getLogger();
 const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
@@ -303,7 +303,7 @@ const forgotPassword = async (req, res) =>
         else if(!result.updated)
         {
             Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
-            {errorCode: 1606, function: "forgotPassword", file: "login.js", requestId: req.id});
+            {function: "forgotPassword", file: "login.js", errorCode: 1606, requestId: req.id});
 
             status = 500;
             message = "Some unexpected error occurred on the server.  Error code: 1606"
@@ -360,7 +360,7 @@ const forgotPassword = async (req, res) =>
         else if(successful && !result.updated)
         {
             Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
-            {errorCode: 1606, function: "forgotPassword", file: "login.js", requestId: req.id});
+            {function: "forgotPassword", file: "login.js", errorCode: 1606, requestId: req.id});
             // set to 0 as not sure what the actual count at this point
             resetAttempts = 0;
         }
@@ -377,7 +377,6 @@ const forgotPassword = async (req, res) =>
             {
                 message = message + "  The maximum of 3 unverified verification codes have been sent out.  You can request another 24 hours from now"
             }
-            console.log(message);
             res.status(201).sendResponse({
                 message: message,
                 requester: ""

@@ -1,7 +1,7 @@
+import {createReview, updateReview} from './reviewCreator.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const validateStringParameter = require('./globals.js').validateStringParameter;
 const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
-import {createReview, updateReview} from './reviewCreator.js';
 const Logger = require("../src/shared/logger.js").getLogger();
 const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
 
@@ -191,8 +191,8 @@ const removePost = async (req, res, requester) =>
             if(result === undefined)
             {
                 let message = "Server failed to delete review for some unkown reason.  Error code: 1200";
-                Logger.error("Server failed to delete review for some unkown reason.",
-                    {errorCode: 1200, function: "removePost", file: "reviews.js", requestId: req.id});
+                Logger.error("Server failed to delete review with id of: " + review.id + " for some unkown reason",
+                    {function: "removePost", file: "reviews.js", errorCode: 1200, requestId: req.id});
                 res.status(500).sendResponse({
                     message: message,
                     requester: requester
@@ -244,7 +244,7 @@ const addLike = async (requester, req, res) =>
         // if undefined, a association already exists
         if(result === undefined)
         {
-            let message = "Some error occurred trying to like the post.  Error code: 1201"
+            let message = "Some unexpected error occurred trying to like the post.  Error code: 1201"
             res.status(500).sendResponse({
                 message: message,
                 requester: requester
@@ -303,7 +303,7 @@ const removeLike = async (requester, req, res) =>
         // if undefined, a association already exists
         if(result === undefined)
         {
-            let message = "Some error occurred trying to remove like from the post.  Error code: 1202"
+            let message = "Some unexpected error occurred trying to remove like from the post.  Error code: 1202"
             res.status(500).sendResponse({
                 message: message,
                 requester: requester

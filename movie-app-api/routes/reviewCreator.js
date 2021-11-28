@@ -2,8 +2,8 @@ const validateStringParameter = require('./globals.js').validateStringParameter;
 const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
-import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
 const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
+const caughtErrorHandler = require("../src/shared/ErrorFunctions.js").caughtErrorHandler;
 
 
 // function to run all the checks when a new review comes in or if a review update comes in
@@ -95,13 +95,13 @@ const createReview = async (requester, req, res) =>
     if(review === null)
     {
         let message = "Review creation failed for some unexpected reason.  Error code: 1100"
+        Logger.error("Review creation failed for user with id of: " + userId + " for some unexpected reason",
+            {function: "createReview", file: "reviewCreator.js", errorCode: 1100, requestId: req.id});
         // review creation failed, should just about never occur
         res.status(500).sendResponse({
             message: message,
             requester: requester
         });
-        Logger.error("Review creation failed for some unexpected reason",
-            {errorCode: 1100, function: "createReview", file: "reviewCreator.js", requestId: req.id});
     }
     else
     {
@@ -470,7 +470,10 @@ const addTagsToReview = async (tags, type, review, userId, usedTags, warnings) =
         }
         // remove getTagIds function above?
         // find the tag or create it if it does not exist
-        let tagCreationResult = await findOrCreateTag(models, tag, review.id, type);
+        let tagCreationResult = await findOrCreateTag(models, tag, review.id, type).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
         let newTag = tagCreationResult.newTag;
         if(newTag === null || newTag === undefined)
         {
@@ -601,17 +604,13 @@ const createReviewTagAssociation = async (review, tagId, userId, type) => {
             else
             {
                 serverError = true;
-                let error = getSanitizedOutput(errorObject)
-                Logger.error("Some unknown constraint error occurred: " + errorObject.original.constraint,
-                    {errorCode: 1101, function: "createReviewTagAssociation", file: "reviewCreator.js", requestId: req.id, error: error});
-
+                caughtErrorHandler(err, req, res, 1101, undefined);    
             }
         }
         else
         {
             serverError = true;
-            Logger.error("Some unknown error occurred during posting a tag: " + errorObject.name,
-                {errorCode: 1102, function: "createReviewTagAssociation", file: "reviewCreator.js", requestId: req.id, error: errorObject});
+            caughtErrorHandler(err, req, res, 1102, undefined); 
         }
         successful = false;
     }

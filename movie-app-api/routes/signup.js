@@ -1,12 +1,11 @@
 
-const Op = require('sequelize').Op;
+import {emailHandler} from './emailHandler.js';
+import {checkHashedValue} from '../src/shared/crypto.js';
+import {createSession} from '../src/shared/sessions.js';
 const validateStringParameter = require('./globals.js').validateStringParameter;
 const validateEmailParameter = require('./globals.js').validateEmailParameter;
 const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
 const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
-import {emailHandler} from './emailHandler.js';
-import {checkHashedValue} from '../src/shared/crypto.js';
-import {createSession} from '../src/shared/sessions.js';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
 const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
@@ -187,7 +186,7 @@ const createTempUser = async (requester, req, res) =>
         {
             let message = "Verification email not sent.  Error code: 1300";
             Logger.error("Verifcation email not sent",
-                {errorCode: 1300, function: "createTempUser", file: "signup.js", requestId: req.id});
+                {function: "createTempUser", file: "signup.js", errorCode: 1300, requestId: req.id});
             res.status(500).sendResponse({
                 message: message,
                 requester: ""
@@ -235,7 +234,7 @@ const resendVerificationCode = async (requester, req, res) =>
     else if(authRecord === null)
     {
         Logger.error("A unverified user exists without a verification attempts record. User ID: " + tempUser.id + " Email: " + email,
-         {errorCode: 1308, function: res.locals.function, file: res.locals.file, requestId: req.id});
+         {function: res.locals.function, file: res.locals.file, errorCode: 1308, requestId: req.id});
          // try to remove the user as they shouldn't even exist
         await models.Users.removeUnverifiedUser(req, res, tempUser, false, 1315).catch(error=>{
             let callerStack = new Error().stack;
@@ -298,7 +297,7 @@ const resendVerificationCode = async (requester, req, res) =>
         {
             let message = "Verification email not sent.  Error code: 1301";
             Logger.error("Verifcation email not sent",
-                {errorCode: 1301, function: "resendVerificationCode", file: "signup.js", requestId: req.id});
+                {function: "resendVerificationCode", file: "signup.js", errorCode: 1301, requestId: req.id});
             res.status(500).sendResponse({
                 message: message,
                 requester: ""
@@ -348,7 +347,7 @@ const verifyAccount = async (requester, req, res) =>
     else if(tempUser.authenticationAttempts === null)
     {
         Logger.error("A unverified user exists without a verification attempts record. Email: " + email + " User ID: " + tempUser.id,
-        {errorCode: 1309, function: res.locals.function, file: res.locals.file, requestId: req.id});
+        {function: res.locals.function, file: res.locals.file, errorCode: 1309, requestId: req.id});
         // try to remove the user as they shouldn't even exist
         await models.Users.removeUnverifiedUser(req, res, tempUser, false, 1311).catch(error=>{
             let callerStack = new Error().stack;

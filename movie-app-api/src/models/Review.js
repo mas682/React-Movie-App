@@ -1,7 +1,6 @@
 const Op = require('sequelize').Op;
 const appendCallerStack = require("../shared/ErrorFunctions.js").appendCallerStack;
 
-
 const review = (sequelize, DataTypes) => {
     const Review = sequelize.define('Reviews', {
         id: {

@@ -1,13 +1,13 @@
-const validateStringParameter = require('./globals.js').validateStringParameter;
-const validateEmailParameter = require('./globals.js').validateEmailParameter;
-const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
-const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
-const clearCookie = require('./globals.js').clearCookie;
 //import {removeImage} from './fileHandler.js';
 import {hash, checkHashedValue} from '../src/shared/crypto.js';
 import {regenerateSession, removeAllSessions} from '../src/shared/sessions.js';
 //import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
 import { removeCurrentSession } from '../src/shared/sessions.js';
+const validateStringParameter = require('./globals.js').validateStringParameter;
+const validateEmailParameter = require('./globals.js').validateEmailParameter;
+const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
+const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
+const clearCookie = require('./globals.js').clearCookie;
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
 const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
@@ -972,28 +972,16 @@ const removeUser = async (requester, req, res, next) =>
             let callerStack = new Error().stack;
             appendCallerStack(callerStack, error, undefined, true);
         });
-        if(result === undefined)
+        
+        // if the user just deleted themself, return a empty cookie
+        if(currentUser)
         {
-            Logger.error("Error in database occurred removing a user",
-                {errorCode: 1003, function: "removeUser", file: "profile.js", requestId: req.id});
-            let message = "Server failed to remove user for some unkown reason.  Error code: 1003";
-            res.status(500).sendResponse({
-                message: message,
-                requester: requester
-            });
+            requester = "";
         }
-        else
-        {
-            // if the user just deleted themself, return a empty cookie
-            if(currentUser)
-            {
-                requester = "";
-            }
-            res.status(200).sendResponse({
-                message: "User successfully removed",
-                requester: requester
-            });
-        }
+        res.status(200).sendResponse({
+            message: "User successfully removed",
+            requester: requester
+        });
     }
     else
     {
