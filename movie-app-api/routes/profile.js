@@ -729,7 +729,7 @@ const updatePassword = async (requester, req, res) =>
     }
     else
     {
-        let user = await models.Users.findByLogin(requester).catch(error=>{
+        let user = await models.Users.findByLoginForAuth(requester).catch(error=>{
             let callerStack = new Error().stack;
             appendCallerStack(callerStack, error, undefined, true);
         });
@@ -741,24 +741,22 @@ const updatePassword = async (requester, req, res) =>
             });
             return;
         }
-        let result = checkHashedValue(req.body.oldPassword, "password", user.salt);
-        if(user.password === result.value)
+        let result = checkHashedValue(req.body.oldPassword, "password", user.credentials.salt);
+        if(user.credentials.password === result.value)
         {
             let password = req.body.newPass;
-            let result = hash(password, "password");
-            user.salt = result.salt;
-            user.password = result.value;
-            user.lastLogin = new Date();
-            user.passwordUpdatedAt = new Date();
             // remove all existing sessions except for this one
             await removeAllSessions(req, res, user.id, [req.session.id]).catch(error=>{
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
             });
-            await user.save().catch(error=>{
+
+            // update user credential record
+            await models.UserCredentials.createOrUpdatePassword(req, res, user, password, false, undefined, false).catch(error=>{
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
             });
+
             // update the session
             req.session.userId = user.id;
             req.session.user = user.username;
@@ -822,7 +820,7 @@ const updateInfo = async (requester, req, res, next) =>
         return;
     }
     // find the user by their login
-    let user = await models.Users.findByLogin(requester).catch(error=>{
+    let user = await models.Users.findByLoginForAuth(requester).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -835,8 +833,8 @@ const updateInfo = async (requester, req, res, next) =>
         });
         return;
     }
-    let result = checkHashedValue(req.body.password, "password", user.salt);
-    if(user.password === result.value)
+    let result = checkHashedValue(req.body.password, "password", user.credentials.salt);
+    if(user.credentials.password === result.value)
     {
         // remove all existing sessions except for this one
         await removeAllSessions(req, res, user.id, [req.session.id]).catch(error=>{
@@ -922,7 +920,7 @@ const removeUser = async (requester, req, res, next) =>
         return;
     }
     // get the requester
-    let user = await models.Users.findByLogin(requester).catch(error=>{
+    let user = await models.Users.findByLoginForAuth(requester).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -958,10 +956,10 @@ const removeUser = async (requester, req, res, next) =>
         return;
     }
     // hash the users password that was passed in
-    let result = checkHashedValue(password, "password", user.salt);
+    let result = checkHashedValue(password, "password", user.credentials.salt);
     password = result.value;
     // check the users password against the requesters password
-    let passwordValid = (currentUser) ? (userToRemove.password === password) : (user.password === password);
+    let passwordValid = (currentUser) ? (userToRemove.credentials.password === password) : (user.credentials.password === password);
     if(passwordValid)
     {
         // remove all existing sessions for the user
@@ -1138,60 +1136,11 @@ const resetPassword = async (requester, req, res) =>
         appendCallerStack(callerStack, error, undefined, true);
     });
 
-
-    let result;
-    let counter = 0;
-    while(counter < 5)
-    {
-        result = hash(password, "password");
-        try
-        {
-            await models.UserCredentials.update({
-                password: result.value,
-                salt: result.salt,
-            },
-            {
-                where: { userId: user.id}
-            }).catch(error=>{
-                let callerStack = new Error().stack;
-                appendCallerStack(callerStack, error, undefined, true);
-            });
-            // break out of loop
-            counter = 10;
-        }
-        catch(err)
-        {
-            let errorObject = JSON.parse(JSON.stringify(err));
-            let errorType = errorObject.name;
-            if(errorType !== undefined && errorType.includes("Sequelize"))
-            {
-                if(!(err.name.includes("UniqueConstraint") &&
-                 errorObject.original.constraint === "UserCredentials_salt_key"))
-                 {
-                    throw err;
-                 }
-            }
-            else
-            {
-                throw err;
-            }
-            if(counter >= 4)
-            {
-                Logger.error("Error generating a unique salt for a users new password",
-                {errorCode: 1004, function: "resetPassword", file: "profile.js", requestId: req.id, error: errorObject});
-                req.session.cookie.maxAge = req.session.cookie.maxAge;
-                // set session back to active
-                req.session.active = true;
-                res.status(500).sendResponse({
-                    message: "Some unexpected error occurred on the server, please try again.  Error code: 1004",
-                    requester: ""
-                });
-                return;
-            }
-        }
-        counter = counter + 1;
-    }
-
+    // update user credential record
+    await models.UserCredentials.createOrUpdatePassword(req, res, user, password, false, undefined, false).catch(error=>{
+        let callerStack = new Error().stack;
+        appendCallerStack(callerStack, error, undefined, true);
+    });
 
     await models.UserAuthenticationAttempts.update({
         passwordAttempts: 0,

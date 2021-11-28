@@ -3,6 +3,7 @@ import {removeCurrentSession} from '../src/shared/sessions.js';
 const Logger = require("../src/shared/logger.js").getLogger();
 const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
 const caughtErrorHandler = require("../src/shared/ErrorFunctions.js").caughtErrorHandler;
+const clearCookie = require('./globals.js').clearCookie;
 
 const errorHandler = async(err, req, res, next) => {
     let result = undefined;

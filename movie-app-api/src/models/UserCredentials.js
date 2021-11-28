@@ -87,7 +87,7 @@ const userCredentials = (sequelize, DataTypes) => {
                 }
                 else
                 {
-                    await UserCredentials.findOrCreate({
+                    await UserCredentials.update({
                         password: result.value,
                         salt: result.salt,
                     },
