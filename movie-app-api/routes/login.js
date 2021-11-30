@@ -1,6 +1,7 @@
 import {emailHandler} from './emailHandler.js';
 import {checkHashedValue} from '../src/shared/crypto.js';
 import {createSession, destroySession} from '../src/shared/sessions.js';
+import { allColors } from 'winston/lib/winston/config';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Op = require('sequelize').Op;
 const validateStringParameter = require('./globals.js').validateStringParameter;
@@ -185,11 +186,13 @@ const checkLogin = async (req, res) =>
     let password = req.body.password;
     let username = req.body.username;
     let stayLoggedIn = req.body.stayLoggedIn;
-    // set to 30 as if allowing email will have to be longer
+    let loginType = 0;
+
     let valid = validateUsernameParameter(undefined, username, "", "");
     // if not a valid username, check to see if valid email
     if(!valid)
     {
+        loginType = 1;
         valid = validateEmailParameter(res, username, "", "Username or email address is invalid");
         if(!valid) return;
     }
@@ -198,7 +201,7 @@ const checkLogin = async (req, res) =>
     valid = validateBooleanParameter(res, stayLoggedIn, "", "Stay logged in must be either true or false");
     if(!valid) return;
     // find a user by their login
-    let user = await models.Users.findByLoginForAuth(username).catch(error=>{
+    let user = await models.Users.findByLoginForAuth(username, loginType).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -263,18 +266,15 @@ const forgotPassword = async (req, res) =>
     res.locals.function = "forgotPassword";
     let username = req.body.username;
     let valid = validateUsernameParameter(undefined, username, "", "");
-    // if not a valid username, check to see if valid email
-    //allow this to accept emails and usernames
-    //    - fix front end as well
-    // you could have some issues if you let a user use someones email as their username...
-
+    let loginType = 0;
     if(!valid)
     {
+        loginType = 1;
         valid = validateEmailParameter(res, username, "", "Username or email address is invalid");
         if(!valid) return;
     }
     // find a user by their login
-    let user = await models.Users.findByLoginForVerification(req.body.username).catch(error=>{
+    let user = await models.Users.findByLoginForVerification(username, loginType).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -398,20 +398,15 @@ const validatePassCode = async (req, res) =>
     res.locals.function = "validatePassCode";
     let username = req.body.username;
     let verificationCode = req.body.verificationCode;
-    let valid = validateUsernameParameter(undefined, username, "", "");
-    // if not a valid username, check to see if valid email
-    if(!valid)
-    {
-        valid = validateEmailParameter(res, username, "", "Username or email address is invalid");
-        if(!valid) return;
-    }
+    let valid = validateUsernameParameter(undefined, username, "", "Username is invalid");
+    if(!valid) return;
     valid = validateStringParameter(res, verificationCode, 6, 6, "", "Verification code invalid");
     if(!valid) return;
     // validate the value passed does not contain any characters, only numbers
     valid = validateIntegerParameter(res, verificationCode, "", "Verification code invalid", undefined, undefined);
     if(!valid) return;
     // find a user by their login
-    let user = await models.Users.findByLoginForVerification(req.body.username).catch(error=>{
+    let user = await models.Users.findByLoginForVerification(req.body.username, 0).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });

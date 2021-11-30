@@ -152,7 +152,7 @@ const movie = (sequelize, DataTypes) => {
                 {
                     model: models.Users,
                     as: "WatchList",
-                    where: {id: userId},
+                    where: {id: userId, verified: true},
                     required: false
                 }
             ]
@@ -168,7 +168,7 @@ const movie = (sequelize, DataTypes) => {
                 {
                     model: models.Users,
                     as: "WatchedList",
-                    where: {id: userId},
+                    where: {id: userId, verified: true},
                     required: false
                 }
             ]
@@ -889,7 +889,8 @@ const movie = (sequelize, DataTypes) => {
                 as: "WatchList",
                 required: false,
                 where: {
-                    username: user
+                    username: user,
+                    verified: true
                 },
                 attributes:["username"],
                 through: {
@@ -901,7 +902,8 @@ const movie = (sequelize, DataTypes) => {
                 as: "WatchedList",
                 required: false,
                 where: {
-                    username: user
+                    username: user,
+                    verified: true
                 },
                 attributes:["username"],
                 through: {
@@ -946,7 +948,8 @@ const movie = (sequelize, DataTypes) => {
                 as: "WatchList",
                 required: false,
                 where: {
-                    username: username
+                    username: username,
+                    verified: true
                 },
                 attributes:["username"],
                 through: {
@@ -958,7 +961,8 @@ const movie = (sequelize, DataTypes) => {
                 as: "WatchedList",
                 required: false,
                 where: {
-                    username: username
+                    username: username,
+                    verified: true
                 },
                 attributes: ["username"],
                 through: {

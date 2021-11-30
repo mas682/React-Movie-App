@@ -68,19 +68,37 @@ const validateIntegerParameter = (res, value, requester, message, minValue, maxV
     return true;
 };
 
+// going to update this to allow two types of messages...
+// messages is either a string or a dict
+// if a string, that string will always be used as the message
+// messages is a dict with two keys: 1 and 2
+// 1 is the error message for length being too short
+// 2 is the error message for invalid characters being found
 const validateUsernameParameter = (res, username, requester, message) => {
-    if(username === undefined || typeof(username) !== "string" || username.length > 20 || username.length < 6
-    || !validator.isAlphanumeric(username, 'en-US',{"ignore": "_-$"}))
+    let valid = true;
+    let outputMessage;
+    if(username === undefined || typeof(username) !== "string" || username.length > 20 || username.length < 6)
+    {
+        valid = false;
+        outputMessage = (typeof(message) === "string") ? message : message[1];
+    }
+    else if(!validator.isAlphanumeric(username, 'en-US',{"ignore": "_-$"}))
+    {
+        valid = false;
+        outputMessage = (typeof(message) === "string") ? message : message[2];
+    }
+    if(!valid)
     {
         if(res !== undefined)
         {
             res.status(400).sendResponse({
-                message: message,
+                message: outputMessage,
                 requester: requester
             });
         }
         return false;
     }
+
     return true;
 };
 

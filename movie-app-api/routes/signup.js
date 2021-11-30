@@ -82,7 +82,8 @@ const createTempUser = async (requester, req, res) =>
     let password = req.body.password;
     let firstName = req.body.firstName;
     let lastName = req.body.lastName;
-    let valid = validateUsernameParameter(res, username, "", "Username must be between 6-20 characters");
+    let outputMessages = {1: "Username must be between 6-20 characters", 2: "Username can only contain letters, numbers, or the following characters: _-$"};
+    let valid = validateUsernameParameter(res, username, "", outputMessages);
     if(!valid) return;
     valid = validateEmailParameter(res, email, "", "The email provided is not a valid email address");
     if(!valid) return;

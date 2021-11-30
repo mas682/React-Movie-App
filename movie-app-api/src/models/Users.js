@@ -127,7 +127,6 @@ const user = (sequelize, DataTypes) => {
             foreignKey: 'followerId',
             otherKey: "followedId"
         });
-        // https://stackoverflow.com/questions/63657141/sequelize-joined-table-column-names-for-belongstomany-association
         User.belongsToMany(models.Reviews,
              { as: "user",
               through: models.Likes,
@@ -152,16 +151,20 @@ const user = (sequelize, DataTypes) => {
     };
 
     // method to find a user by username or email if email were in the
+    // type is either 0, 1, or 2: 0 being a username, 1 being a email, 2 being a id
     // database yet
-    User.findByLogin = async login => {
-        let user = await User.findOne({
-            where: { username: login },
-        }).catch(error=>{
-            let callerStack = new Error().stack;
-            appendCallerStack(callerStack, error, undefined, true);
-        });
-
-        if (!user) {
+    User.findByLogin = async (login, type) => {
+        let user = undefined;
+        if(type === 0)
+        {
+            user = await User.findOne({
+                where: { username: login },
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
+        }
+        else if (type === 1) {
             user = await User.findOne({
                 where: { email: login },
             }).catch(error=>{
@@ -169,32 +172,51 @@ const user = (sequelize, DataTypes) => {
                 appendCallerStack(callerStack, error, undefined, true);
             });
         }
+        else if(type === 2)
+        {
+            user = await User.findOne({
+                where: { id: login },
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
+        }
+        else
+        {
+            throw new Error("Type must be either 0, 1, or 2 type provided: " + type);
+        }
         return user;
     };
 
     // get user, verification record, and credentials
-    User.findByLoginForAuth = async id => {
-        let user = await User.findOne({
-            where: { 
-                username: id,
-                verified: true
-            },
-            include: [
-                {
-                    model: sequelize.models.UserCredentials,
-                    as: "credentials"
+    // type is either 0, 1, or 2: 0 being a username, 1 being a email, 2 being a id
+    // username cannot have same format as email can
+    User.findByLoginForAuth = async(id, type) => {
+        let user = undefined;
+        if(type === 0)
+        {
+            user = await User.findOne({
+                where: { 
+                    username: id,
+                    verified: true
                 },
-                {
-                    model: sequelize.models.UserAuthenticationAttempts,
-                    as: "authenticationAttempts"
-                }
-            ]
-        }).catch(error=>{
-            let callerStack = new Error().stack;
-            appendCallerStack(callerStack, error, undefined, true);
-        });
-
-        if(!user) {
+                include: [
+                    {
+                        model: sequelize.models.UserCredentials,
+                        as: "credentials"
+                    },
+                    {
+                        model: sequelize.models.UserAuthenticationAttempts,
+                        as: "authenticationAttempts"
+                    }
+                ]
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
+        }
+        else if(type === 1)
+        {
             user = await User.findOne({
                 where: { 
                     email: id,
@@ -215,28 +237,59 @@ const user = (sequelize, DataTypes) => {
                 appendCallerStack(callerStack, error, undefined, true);
             }); 
         }
+        else if(type === 2)
+        {
+            user = await User.findOne({
+                where: { 
+                    id: id,
+                    verified: true
+                },
+                include: [
+                    {
+                        model: sequelize.models.UserCredentials,
+                        as: "credentials"
+                    },
+                    {
+                        model: sequelize.models.UserAuthenticationAttempts,
+                        as: "authenticationAttempts"
+                    }
+                ]
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            }); 
+        }
+        else
+        {
+            throw new Error("Type must be either 0, 1, or 2 type provided: " + type);
+        }
+
         return user;
     };
 
     // get user and their verification record
-    User.findByLoginForVerification = async id => {
-        let user = await User.findOne({
-            where: { 
-                username: id,
-                verified: true
-            },
-            include: [
-                {
-                    model: sequelize.models.UserAuthenticationAttempts,
-                    as: "authenticationAttempts"
-                }
-            ]
-        }).catch(error=>{
-            let callerStack = new Error().stack;
-            appendCallerStack(callerStack, error, undefined, true);
-        });
-
-        if(!user) {
+    // type is either 0, 1, or 2: 0 being a username, 1 being a email, 2 being a id
+    User.findByLoginForVerification = async(id, type) => {
+        let user = undefined;
+        if(type === 0)
+        {
+            user = await User.findOne({
+                where: { 
+                    username: id,
+                    verified: true
+                },
+                include: [
+                    {
+                        model: sequelize.models.UserAuthenticationAttempts,
+                        as: "authenticationAttempts"
+                    }
+                ]
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
+        }
+        else if(type === 1) {
             user = await User.findOne({
                 where: { email: id },
                 include: [
@@ -249,6 +302,25 @@ const user = (sequelize, DataTypes) => {
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
             }); 
+        }
+        else if(type === 2)
+        {
+            user = await User.findOne({
+                where: { id: id },
+                include: [
+                    {
+                        model: sequelize.models.UserAuthenticationAttempts,
+                        as: "authenticationAttempts"
+                    }
+                ]
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            }); 
+        }
+        else
+        {
+            throw new Error("Type must be either 0, 1, or 2 type provided: " + type);
         }
         return user;
     }
@@ -348,25 +420,28 @@ const user = (sequelize, DataTypes) => {
         return tempUser;
     }
 
-
-    User.findByLoginWithPicture = async login => {
-        let user = await User.findOne({
-            where: { username: login },
-            attributes: {exclude: ['picture']},
-            include: {
-                model: sequelize.models.DefaultProfilePictures,
-                as: "profilePicture",
-                attributes: [[sequelize.fn('concat', sequelize.col("profilePicture.source"),
-                            sequelize.col("profilePicture.filename")), "url"]]
-            }
-        }).catch(error=>{
-            let callerStack = new Error().stack;
-            appendCallerStack(callerStack, error, undefined, true);
-        });
-
-        if (!user) {
+    // type is either 0, 1, or 2: 0 being a username, 1 being a email, 2 being a id
+    User.findByLoginWithPicture = async (login, type) => {
+        let user = undefined;
+        if(type === 0)
+        {
             user = await User.findOne({
-            where: { email: login },
+                where: { username: login, verified: true },
+                attributes: {exclude: ['picture']},
+                include: {
+                    model: sequelize.models.DefaultProfilePictures,
+                    as: "profilePicture",
+                    attributes: [[sequelize.fn('concat', sequelize.col("profilePicture.source"),
+                                sequelize.col("profilePicture.filename")), "url"]]
+                }
+            }).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
+        }
+        else if (type === 1) {
+            user = await User.findOne({
+            where: { email: login, verified: true },
             attributes: {exclude: ['picture']},
             include: {
                 model: sequelize.models.DefaultProfilePictures,
@@ -378,6 +453,26 @@ const user = (sequelize, DataTypes) => {
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
             });
+        }
+        else if (type === 2)
+        {
+            user = await User.findOne({
+                where: { id: login, verified: true },
+                attributes: {exclude: ['picture']},
+                include: {
+                    model: sequelize.models.DefaultProfilePictures,
+                    as: "profilePicture",
+                    attributes: [[sequelize.fn('concat', sequelize.col("profilePicture.source"),
+                                sequelize.col("profilePicture.filename")), "url"]]
+                }
+                }).catch(error=>{
+                    let callerStack = new Error().stack;
+                    appendCallerStack(callerStack, error, undefined, true);
+                });
+        }
+        else
+        {
+            throw new Error("Type must be either 0, 1, or 2 type provided: " + type);
         }
         return user;
     };
@@ -467,7 +562,7 @@ const user = (sequelize, DataTypes) => {
 
     User.getAllFollowers = async (userId) => {
         let user = await User.findOne({
-            where: {id: userId},
+            where: {id: userId, verified: true},
             attributes: ["id", "username"],
             include: {
                 model: User,
@@ -497,12 +592,12 @@ const user = (sequelize, DataTypes) => {
     // returns null if the user does not follow the user
     User.findWithFollower = async (login, followedId) => {
         let user = await User.findOne({
-            where: { username: login },
+            where: { username: login, verified: true },
             include: {
                 // include the user that is followed
                 model: User,
                 as: "Following",
-                where: {id: followedId},
+                where: {id: followedId, verified: true},
                 // include the user
                 required: false
             },
@@ -518,12 +613,12 @@ const user = (sequelize, DataTypes) => {
     User.findWithFollowing = async (username, follower) =>
     {
         let user = await User.findOne({
-            where: { username: username },
+            where: { username: username, verified: true },
             include: {
                 // include the user that is followed
                 model: User,
                 as: "Followers",
-                where: {id: follower},
+                where: {id: follower, verified: true},
                 // include the user
                 required: false
             },
@@ -540,7 +635,7 @@ const user = (sequelize, DataTypes) => {
     // friendName is the username of the user whose friends list you are checking
     // userId is the user id of the requesting user
     User.getFollowers = async (friendName, userId, models) => {
-        let user = await User.findByLogin(friendName).catch(error=>{
+        let user = await User.findByLogin(friendName, 0).catch(error=>{
             let callerStack = new Error().stack;
             appendCallerStack(callerStack, error, undefined, true);
         });
@@ -556,7 +651,7 @@ const user = (sequelize, DataTypes) => {
                     model: User,
                     as: "Followers",
                     attributes:["username"],
-                    where: {id: userId},
+                    where: {id: userId, verified: true},
                     required: false,
                     through: {attributes:[]}
                 },
@@ -583,7 +678,7 @@ const user = (sequelize, DataTypes) => {
     // friendName is the username fo the user whose friends list you are checking
     // userId is the user id of the requesting user
     User.getFollowing = async (friendName, userId, models) => {
-        let user = await User.findByLogin(friendName).catch(error=>{
+        let user = await User.findByLogin(friendName, 0).catch(error=>{
             let callerStack = new Error().stack;
             appendCallerStack(callerStack, error, undefined, true);
         });
@@ -599,7 +694,7 @@ const user = (sequelize, DataTypes) => {
                     model: User,
                     as: "Followers",
                     attributes: ["username"],
-                    where: {id: userId},
+                    where: {id: userId, verified: true},
                     required: false,
                     through: {attributes: []}
                 },
@@ -628,20 +723,20 @@ const user = (sequelize, DataTypes) => {
             offset: offset,
             include: [
                 {
-                    model: models.Users,
+                    model: User,
                     as: "WatchList",
                     required: true,
-                    where: {id: userId},
+                    where: {id: userId, verified: true},
                     attributes: ["username"],
                     through: {
                         attributes: []
                     }
                 },
                 {
-                    model: models.Users,
+                    model: User,
                     as: "WatchedList",
                     required: false,
-                    where: {id: userId},
+                    where: {id: userId, verified: true},
                     attributes: ["username"],
                     through: {
                         attributes: []
@@ -668,20 +763,20 @@ const user = (sequelize, DataTypes) => {
             offset: offset,
             include: [
                 {
-                    model: models.Users,
+                    model: User,
                     as: "WatchList",
                     required: false,
-                    where: {id: userId},
+                    where: {id: userId, verified: true},
                     attributes: ["username"],
                     through: {
                         attributes: []
                     }
                 },
                 {
-                    model: models.Users,
+                    model: User,
                     as: "WatchedList",
                     required: true,
-                    where: {id: userId},
+                    where: {id: userId, verified: true},
                     attributes: ["username"],
                     through: {
                         attributes: []
@@ -705,7 +800,6 @@ const user = (sequelize, DataTypes) => {
     // username is the username to look for
     // count is the maximum number of users to return
     User.findUsers = async (username, count, offset) => {
-        //let endsWith = "%" + username;
         let contains = "%" + username + "%";
         let startsWith = username + "%";
         let users = await User.findAll({
@@ -714,7 +808,8 @@ const user = (sequelize, DataTypes) => {
             where: {
                 username: {
                     [Op.or]: [username, {[Op.iLike]: startsWith}, {[Op.iLike]: contains}]
-                }
+                },
+                verified: true
             },
             include: [
                 {
@@ -743,7 +838,8 @@ const user = (sequelize, DataTypes) => {
     User.hasPictureFileName = async(file) => {
         let users = await User.findAll({
             where: {
-                picture: file
+                picture: file,
+                verified: true
             }
         }).catch(error=>{
             let callerStack = new Error().stack;

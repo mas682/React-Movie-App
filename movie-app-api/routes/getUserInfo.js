@@ -44,7 +44,7 @@ const getUser = async (requester, res) =>
 {
     res.locals.function = "getUser";
     // find a user by their login
-    let user = await models.Users.findByLogin(requester).catch(error=>{
+    let user = await models.Users.findByLogin(req.session.userId, 2).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });

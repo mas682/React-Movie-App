@@ -290,7 +290,7 @@ class SignUpPopup extends React.Component {
         }
         if(!resultFound)
         {
-            let output = "Some unexpected " + status + " code was returned by the server";
+            let output = "Some unexpected " + status + " code was returned by the server.  " + message;
             this.setState({
                 messageId: this.state.messageId + 1,
                 messages: [{type: "failure", message: output, timeout: 0}],
@@ -527,7 +527,7 @@ class SignUpPopup extends React.Component {
         }
         if(!resultFound)
         {
-            let output = "Some unexpected " + status + " code was returned by the server";
+            let output = "Some unexpected " + status + " code was returned by the server.  " + message;
             this.setState({
                 messageId: this.state.messageId + 1,
                 messages: [{type: "failure", message: output, timeout: 0}],

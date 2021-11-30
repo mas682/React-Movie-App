@@ -414,7 +414,7 @@ const getUserHeaderInfo = async (requester, req, res, cookieValid) =>
     let valid = validateUsernameParameter(res, username, loggedInUser, "Username is invalid");
     if(!valid) return;
     // find a user by their login
-    let user = await models.Users.findByLoginWithPicture(username).catch(error=>{
+    let user = await models.Users.findByLoginWithPicture(username, 0).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -492,7 +492,7 @@ const getReviews = async (requester, req, res, cookieValid) =>
     if(!valid) return;
     max = (max > 50) ? 50 : max;
     // find the user by their login
-    let user = await models.Users.findByLogin(username).catch(error=>{
+    let user = await models.Users.findByLogin(username, 0).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -706,7 +706,8 @@ const updatePassword = async (requester, req, res) =>
     res.locals.function = "updatePassword";
     let username = requester;
     // if the password is not provided, automatically deny
-    let valid = validateUsernameParameter(res, req.params.username, requester, "Username must be between 6-20 characters");
+    let outputMessages = {1: "Username must be between 6-20 characters", 2: "Username can only contain letters, numbers, or the following characters: _-$"};
+    let valid = validateUsernameParameter(res, req.params.username, requester, outputMessages);
     if(!valid) return;
     valid = validateStringParameter(res, req.body.oldPassword, 6, 15, requester, "Password must be betweeen 6-15 characters", true);
     if(!valid) return;
@@ -729,7 +730,7 @@ const updatePassword = async (requester, req, res) =>
     }
     else
     {
-        let user = await models.Users.findByLoginForAuth(requester).catch(error=>{
+        let user = await models.Users.findByLoginForAuth(req.session.userId, 2).catch(error=>{
             let callerStack = new Error().stack;
             appendCallerStack(callerStack, error, undefined, true);
         });
@@ -799,7 +800,8 @@ const updateInfo = async (requester, req, res, next) =>
     // set the function
     res.locals.function = "updateInfo";
     let username = req.params.username;
-    let valid = validateUsernameParameter(res, req.body.username, requester, "Username must be between 6-20 characters");
+    let outputMessages = {1: "Username must be between 6-20 characters", 2: "Username can only contain letters, numbers, or the following characters: _-$"};
+    let valid = validateUsernameParameter(res, req.body.username, requester, outputMessages);
     if(!valid) return;
     /* to be implemented later
     valid = validateEmailParameter(res, req.body.email, requester, "The email provided is not a valid email address");
@@ -809,7 +811,7 @@ const updateInfo = async (requester, req, res, next) =>
     if(!valid) return;
     valid = validateStringParameter(res, req.body.lastName, 1, 20, requester, "Last name must be between 1-20 characters", true);
     if(!valid) return;
-    valid = validateUsernameParameter(res, req.body.password, requester, "Password must be between 6-15 characters", true);
+    valid = validateStringParameter(res, req.body.password, 6, 15, requester, "Password must be betweeen 6-15 characters", true);
     if(!valid) return;
     if(requester !== username)
     {
@@ -820,7 +822,7 @@ const updateInfo = async (requester, req, res, next) =>
         return;
     }
     // find the user by their login
-    let user = await models.Users.findByLoginForAuth(requester).catch(error=>{
+    let user = await models.Users.findByLoginForAuth(req.session.userId, 2).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -920,7 +922,7 @@ const removeUser = async (requester, req, res, next) =>
         return;
     }
     // get the requester
-    let user = await models.Users.findByLoginForAuth(requester).catch(error=>{
+    let user = await models.Users.findByLoginForAuth(req.session.userId, 2).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -941,7 +943,7 @@ const removeUser = async (requester, req, res, next) =>
         {
             // update the user to remove to the correct user if the requester
             // is an admin
-            userToRemove = await models.Users.findByLogin(userNameToRemove).catch(error=>{
+            userToRemove = await models.Users.findByLogin(userNameToRemove, 0).catch(error=>{
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
             });
@@ -1046,7 +1048,7 @@ const setProfilePicture = async(requester, req, res, next) =>
         return;
     }
     // find the user
-    let user = await models.Users.findByLogin(requester).catch(error=>{
+    let user = await models.Users.findByLogin(req.session.userId, 2).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -1099,7 +1101,7 @@ const resetPassword = async (requester, req, res) =>
         return;
     }
 
-    let user = await models.Users.findByLogin(requester).catch(error=>{
+    let user = await models.Users.findByLogin(req.session.userId, 2).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
