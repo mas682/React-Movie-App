@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS public."UserAuthenticationAttempts"
 	"verificationLocked" timestamp without time zone,
     -- when account got locked from invalid passwords
 	"passwordLocked" timestamp without time zone,
+    -- only used if a admin decides to suspend a users account
+    "suspendedAt" timestamp without time zone,
     "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "UserAuthenticationAttempts_pkey" PRIMARY KEY ("userId"),
@@ -60,6 +62,21 @@ DO $$ BEGIN
             ON public."UserAuthenticationAttempts"
             FOR EACH ROW
             EXECUTE PROCEDURE public.trigger_set_verification_locked_ts();
+    END IF;
+
+    IF NOT EXISTS(
+        SELECT *
+        FROM  information_schema.triggers
+        WHERE event_object_table = 'UserAuthenticationAttempts'
+        and trigger_schema = 'public'
+        and trigger_name = 'trigger_set_account_locked_ts'
+    )
+    THEN
+        CREATE TRIGGER set_password_locked_timestamp
+            BEFORE INSERT OR UPDATE OF "passwordAttempts"
+            ON public."UserAuthenticationAttempts"
+            FOR EACH ROW
+            EXECUTE PROCEDURE public.trigger_set_account_locked_ts();
     END IF;
 
 END $$;

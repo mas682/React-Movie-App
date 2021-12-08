@@ -512,7 +512,6 @@ class SearchDropDown extends React.Component {
     // called when search box gains focus
     async onFocusHandler()
     {
-
         // if a value is in the search box, get suggestions for it
         let tempSuggestions = await this.props.getSuggestions(this.state.value);
         let suggestionIndex = (this.state.allowNoSuggestion) ? -1 : 0;

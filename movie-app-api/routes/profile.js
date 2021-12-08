@@ -1,13 +1,16 @@
 //import {removeImage} from './fileHandler.js';
-import {hash, checkHashedValue} from '../src/shared/crypto.js';
+import {checkHashedValue} from '../src/shared/crypto.js';
 import {regenerateSession, removeAllSessions} from '../src/shared/sessions.js';
 //import {getSanitizedOutput} from '../src/ErrorHandlers/SequelizeErrorHandler.js';
 import { removeCurrentSession } from '../src/shared/sessions.js';
-const validateStringParameter = require('./globals.js').validateStringParameter;
-const validateEmailParameter = require('./globals.js').validateEmailParameter;
-const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
-const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
-const clearCookie = require('./globals.js').clearCookie;
+const globals = require('./globals.js');
+const validateStringParameter = globals.validateStringParameter;
+const validateEmailParameter = globals.validateEmailParameter;
+const validateUsernameParameter = globals.validateUsernameParameter;
+const validateIntegerParameter = globals.validateIntegerParameter;
+const validatePasswordParameter = globals.validatePasswordParameter;
+const clearCookie = globals.clearCookie;
+const validateUser = globals.validateUser;
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Logger = require("../src/shared/logger.js").getLogger();
 const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
@@ -709,9 +712,11 @@ const updatePassword = async (requester, req, res) =>
     let outputMessages = {1: "Username must be between 6-20 characters", 2: "Username can only contain letters, numbers, or the following characters: _-$"};
     let valid = validateUsernameParameter(res, req.params.username, requester, outputMessages);
     if(!valid) return;
-    valid = validateStringParameter(res, req.body.oldPassword, 6, 15, requester, "Password must be betweeen 6-15 characters", true);
+    valid = validatePasswordParameter(res, req.body.oldPassword, requester, undefined);
     if(!valid) return;
-    valid = validateStringParameter(res, req.body.newPass, 6, 15, requester, "New password must be betweeen 6-15 characters", true);
+    let errorMessage = "New password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+        "at least 1 number, and at least 1 special character";
+    valid = validatePasswordParameter(res, req.body.newPass, requester, errorMessage);
     if(!valid) return;
 
     if(req.params.username !== requester)
@@ -734,14 +739,25 @@ const updatePassword = async (requester, req, res) =>
             let callerStack = new Error().stack;
             appendCallerStack(callerStack, error, undefined, true);
         });
-        if(user === null)
-        {
-            res.status(404).sendResponse({
-                message: "Could not find the user to update",
-                requester: requester
-            });
-            return;
-        }
+        let messages = {
+            null: "Could not find the user to update",
+            suspended: "Users account is currently suspended.  Please contact an administrator to unlock the account",
+            locked: "Users password is currently locked out.  Please change your password via forgot password"
+        };
+        let status = {
+            null:404,
+            suspended: 401,
+            locked: 401
+        };
+        let resRequester = {
+            null: "",
+            suspended: "",
+            // user can stay somewhat logged in but limited in what they can do
+            locked: requester
+        };
+        valid = validateUser(user, messages, status, true, req, res, resRequester);
+        if(!valid.valid) return;
+
         let result = checkHashedValue(req.body.oldPassword, "password", user.credentials.salt);
         if(user.credentials.password === result.value)
         {
@@ -774,7 +790,7 @@ const updatePassword = async (requester, req, res) =>
         }
         else
         {
-            let attempts = await updateUserLoginAttempts(user, username).catch(error=>{
+            let attempts = await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, undefined, true).catch(error=>{
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
             });
@@ -811,7 +827,7 @@ const updateInfo = async (requester, req, res, next) =>
     if(!valid) return;
     valid = validateStringParameter(res, req.body.lastName, 1, 20, requester, "Last name must be between 1-20 characters", true);
     if(!valid) return;
-    valid = validateStringParameter(res, req.body.password, 6, 15, requester, "Password must be betweeen 6-15 characters", true);
+    valid = validatePasswordParameter(res, req.body.password, requester, undefined);
     if(!valid) return;
     if(requester !== username)
     {
@@ -826,15 +842,25 @@ const updateInfo = async (requester, req, res, next) =>
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
-    if(user === null)
-    {
-        // sending 401 as if null user does not exist
-        res.status(401).sendResponse({
-            message: "Could not find the user to update",
-            requester: ""
-        });
-        return;
-    }
+    let messages = {
+        null: "Could not find the user to update",
+        suspended: "Users account is currently suspended.  Please contact an administrator to unlock the account",
+        locked: "Users password is currently locked out.  Please change your password via forgot password"
+    };
+    let status = {
+        null:404,
+        suspended: 401,
+        locked: 401
+    };
+    let resRequester = {
+        null: "",
+        suspended: "",
+        // user can stay somewhat logged in but limited in what they can do
+        locked: requester
+    };
+    valid = validateUser(user, messages, status, true, req, res, resRequester);
+    if(!valid.valid) return;
+
     let result = checkHashedValue(req.body.password, "password", user.credentials.salt);
     if(user.credentials.password === result.value)
     {
@@ -886,7 +912,7 @@ const updateInfo = async (requester, req, res, next) =>
     }
     else
     {
-        let attempts = await updateUserLoginAttempts(user, username).catch(error=>{
+        let attempts = await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, undefined, false).catch(error=>{
             let callerStack = new Error().stack;
             appendCallerStack(callerStack, error, undefined, true);
         });
@@ -913,19 +939,32 @@ const removeUser = async (requester, req, res, next) =>
     let valid = validateUsernameParameter(res, userNameToRemove, requester,
          "Username for the user to remove is invalid");
     if(!valid) return;
-    if(password === undefined || password.length < 8)
-    {
-        res.status(401).sendResponse({
-            message: "Password incorrect",
-            requester: requester
-        });
-        return;
-    }
+    valid = validatePasswordParameter(res, password, requester, undefined);
+    if(!valid) return;
     // get the requester
     let user = await models.Users.findByLoginForAuth(req.session.userId, 2).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
+    let messages = {
+        null: "Could not find the requesting users account",
+        suspended: "Requesting users account is currently suspended.  Please contact an administrator to unlock the account",
+        locked: "Requestring users password is currently locked out.  Please change your password via forgot password"
+    };
+    let status = {
+        null:404,
+        suspended: 401,
+        locked: 401
+    };
+    let resRequester = {
+        null: "",
+        suspended: "",
+        // user can stay somewhat logged in but limited in what they can do
+        locked: requester
+    };
+    valid = validateUser(user, messages, status, true, req, res, resRequester);
+    if(!valid.valid) return;
+
     let userToRemove = user;
     let currentUser = (userNameToRemove === requester);
     // if the password is not provided, automatically deny
@@ -1086,26 +1125,29 @@ const resetPassword = async (requester, req, res) =>
     // be careful in the function with what happens if an error occurs...
 
     let password = req.body.password;
-    let valid = validateStringParameter(undefined, password, 6, 15, undefined, undefined, true);
+    let valid = validatePasswordParameter(undefined, req.body.password, undefined, undefined);
     // regenerate session but keep time limited so the user has to reauthenticate after so long
     // do not want cookie being sent over internet a ton and keep being reused
     if(!valid) 
     {
+        let message = "New password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+        "at least 1 number, and at least 1 special character";
         req.session.cookie.maxAge = req.session.cookie.maxAge;
         // set session back to active
         req.session.active = true;
         res.status(400).sendResponse({
-            message: "New password must be betweeen 6-15 characters",
+            message: message,
             requester: requester
         });
         return;
     }
 
-    let user = await models.Users.findByLogin(req.session.userId, 2).catch(error=>{
+    let user = await models.Users.findByLoginForAuth(req.session.userId, 2).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
-    if(user === null)
+    let suspendedAt = (user === null) ? null : user.authenticationAttempts.suspendedAt;
+    if(user === null || suspendedAt !== null)
     {
         // need to destroy the session as the user could not be found
         await removeCurrentSession(req, res).catch(error=>{
@@ -1113,12 +1155,52 @@ const resetPassword = async (requester, req, res) =>
             appendCallerStack(callerStack, error, undefined, true);
         });
         clearCookie(req, res, undefined);
-        res.status(404).sendResponse({
-            message: "Could not find the user to update",
+        let message = "Could not find the user to update";
+        let status = 404;
+        if(suspendedAt !== null)
+        {
+            message = "Users account is currently suspended.  Please contact an administrator to unlock the account";
+            status = 401;
+        }
+        res.status(401).sendResponse({
+            message: message,
             requester: ""
         });
         return;
     }
+    // see if the new password matches the old password
+    let result = checkHashedValue(password, "password", user.credentials.salt);
+    // regenerate session but keep time limited so the user has to reauthenticate after so long
+    // do not want cookie being sent over internet a ton and keep being reused
+    if(result.value === user.credentials.password) 
+    {
+        req.session.cookie.maxAge = req.session.cookie.maxAge;
+        // set session back to active
+        req.session.active = true;
+        // increment the number of times the user tried to set the password
+        req.session.passwordAttempts = req.session.passwordAttempts + 1;
+        let message = "New password cannot match the old password";
+        let status = 400;
+        if(req.session.passwordAttempts > 10)
+        {
+            // need to destroy the session as the user could not be found
+            await removeCurrentSession(req, res).catch(error=>{
+                let callerStack = new Error().stack;
+                appendCallerStack(callerStack, error, undefined, true);
+            });
+            clearCookie(req, res, undefined);
+            message = "The maximum number of attempts to set the password have been met.  You must reauthenticate to proceed";
+            status = 401;
+            requester = "";
+        }
+        res.status(status).sendResponse({
+            message: message,
+            requester: requester
+        });
+        return;
+    }
+
+
     // remove all sessions except for this one as going to reset password
     // on failure of password update, users just logged out
     await removeAllSessions(req, res, user.id, [req.session.id]).catch(error=>{

@@ -84,10 +84,22 @@ class PasswordResetPopUp extends React.Component {
         {
             // boolean to override other checks
             let priority = false;
-            if(this.state.newPass.length < 6 || this.state.newPass.length > 15)
+            let regex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-#!\$@%\^&*\(\)_+\|~=\`\{\}\\[\\]:\"`;'<>\?,\./\\\\])(?=.{10,30})");
+            if(!regex.test(this.state.oldPassword))
             {
                 this.setState({
-                    newPassError: "Your password must be between 6-15 characters characters",
+                    newPassError: "",
+                    oldPasswordError: "Password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+                    "at least 1 number, and at least 1 special character",
+                    newPass2Error: ""
+                });
+                error = true;
+            }
+            else if(!regex.test(this.state.newPass))
+            {
+                this.setState({
+                    newPassError: "Password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+                    "at least 1 number, and at least 1 special character",
                     oldPasswordError: "",
                     newPass2Error: ""
                 });
@@ -159,7 +171,7 @@ class PasswordResetPopUp extends React.Component {
             if(status === 400)
             {
                 this.props.updateLoggedIn(requester);
-                if(message === "New password must be betweeen 6-15 characters")
+                if(message.startsWith("New password must be between 10-30 characters"))
                 {
                     this.setState({
                         newPassError: message,
@@ -185,7 +197,7 @@ class PasswordResetPopUp extends React.Component {
                         awaitingResults: false
                     });
                 }
-                else if(message === "Password must be betweeen 6-15 characters")
+                else if(message.startsWith("Password must be between 10-30 characters"))
                 {
                     this.setState({
                         newPassError: "",
@@ -223,17 +235,21 @@ class PasswordResetPopUp extends React.Component {
                 else if(message === "You are not logged in")
                 {
                     // should cause a redirect to the home page
-                    this.props.showLoginPopUp();
                     this.props.updateLoggedIn(requester);
                 }
-                else if(message.startsWith("Password incorrect. User account"))
+                else if(message.startsWith("Password incorrect. User account") || 
+                    message.startsWith("Users account is currently suspended") || 
+                    message.startsWith("Users password is currently locked"))
                 {
                     this.props.updateLoggedIn(requester);
-                    // "Password incorrect. User account is currently locked due to too many failed password attempts"
+                    this.setState({
+                        awaitingResults: false
+                    });
                     this.props.setMessages({
                         messages: [{type: "failure", message: message}],
                         clearMessages: true
                     });
+                    this.closeModal();
                 }
                 else
                 {
@@ -243,15 +259,16 @@ class PasswordResetPopUp extends React.Component {
             }
             else if(status === 404)
             {
-                // Could not find the user to update
-                // "The profile path sent to the server does not exist"
                 if(message === "Could not find the user to update")
                 {
                     // this should cause a redirect to the home page
-                    this.props.showLoginPopUp();
                     this.props.updateLoggedIn(requester);
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
                 }
-                else if(message === "The profile path sent to the server does not exist")
+                else if(message === "The profile path sent to the server does not exist" || message === "Could not find the user to update")
                 {
                     this.props.updateLoggedIn(requester);
                     this.setState({
@@ -283,9 +300,9 @@ class PasswordResetPopUp extends React.Component {
             }
             if(!resultFound)
             {
-                let output = "Some unexpected " + status + " code was returned by the server";
+                let output = "Some unexpected " + status + " code was returned by the server.  Message: " + message;
                 this.setState({
-                    messages: [{type: "failure", message: output}],
+                    messages: [{type: "failure", message: output, timeout: 0}],
                     messageId: this.state.messageId + 1,
                     awaitingResults: false
                 });

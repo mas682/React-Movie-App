@@ -16,7 +16,7 @@ const getUserInfo = (req, res, next) => {
         if(req.method === "GET")
         {
             // get the reviews and pass the cookie
-            getUser(requester, res)
+            getUser(requester, req, res)
             .catch((err) => {
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, err, next, undefined);
@@ -40,7 +40,7 @@ const getUserInfo = (req, res, next) => {
     }
 };
 
-const getUser = async (requester, res) =>
+const getUser = async (requester, req, res) =>
 {
     res.locals.function = "getUser";
     // find a user by their login

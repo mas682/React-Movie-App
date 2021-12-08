@@ -15,7 +15,6 @@ import {apiGetJsonRequest} from './StaticFunctions/ApiFunctions.js';
 class Header extends React.Component {
     constructor(props){
         super(props);
-        console.log(props);
         this.state = {
             reviewFormOpen: false,
             currentUser: this.props.currentUser,
@@ -407,42 +406,25 @@ class Header extends React.Component {
         {
             return {};
         }
+        
+        let url = "/search/query_all?value=" + value + "&max=10";
+        return apiGetJsonRequest(url).then((result) =>{
+            let status = result[0];
+            let message = result[1].message;
+            let requester = result[1].requester;
+            if(status !== 200)
+            {
+                return {};
+            }
+            else
+            {
+                return {
+                    Movies: result[1].Movies,
+                    Users: result[1].Users
+                };
+            }
+        });
 
-          // Simple POST request with a JSON body using fetch
-          const requestOptions = {
-              method: 'GET',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-          };
-
-          let status = 0;
-          let url = "/search/query_all?value=" + value + "&max=10";
-          return fetch(url, requestOptions)
-              .then(async(res) => {
-                  status = res.status;
-                  if(status === 200)
-                  {
-                      let result = await res.json();
-                      return {
-                          Movies: result.Movies,
-                          Users: result.Users
-                      };
-                      //return res.json();
-                  }
-                  else
-                  {
-                      return res.text();
-                  }
-              }).then(result=> {
-                  if(status !== 200)
-                  {
-                    return {};
-                  }
-                  else
-                  {
-                      return result;
-                  }
-              });
     }
 
 

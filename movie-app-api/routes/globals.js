@@ -118,6 +118,35 @@ const validateEmailParameter = (res, email, requester, message) => {
     return true;
 }
 
+// function to validate a password
+// returns true if the value passed in is valid, false otherwise
+// eventually may want to use validator.isStrongPassword to give password a score
+const validatePasswordParameter = (res, param, requester, message) => {
+    if(message === undefined)
+    {
+        message = "Password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+        "at least 1 number, and at least 1 special character";
+    }
+    let valid = validateStringParameter(undefined, param, 10, 30, requester, message, true);
+    if(valid)
+    {
+        let regex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-#!\$@%\^&*\(\)_+\|~=\`\{\}\\[\\]:\"`;'<>\?,\./\\\\])(?=.{10,30})");
+        if(regex.test(param))
+        {
+            return true;
+        }
+    }
+    if(res !== undefined)
+    {
+        console.log("sending response");
+        res.status(400).sendResponse({
+            message: message,
+            requester: requester
+        });
+    }
+    return false;
+};
+
 // function to validate that a variable is in fact a string and is not empty
 // if maxLength is undefined it will be skipped
 const validateStringParameter = (res, param, minLength, maxLength, requester, message, ascii = false) => {
@@ -258,6 +287,58 @@ const checkForPasswordResetCookie = async(req, res, next) => {
     }
 };
 
+
+// function to check if a user is locked out or suspended and send appropriate repsonse if so
+// user is a user record including their authenticationAttempts record
+// messages is a object in the form of {null: "", suspended: "", locked: ""}
+// status can either be a integer or a object in the form of {null: 404, suspended: 401, locked: 401}
+// sendResponse is a boolean for whether or not to send the reponse from this function
+// requester can either be a string or a object in the form of 
+// returns a object in the form of {valid: true, null: false, passwordLocked: false, suspended: false}
+// valid set to false if user is null, suspeneded, or locked {null: "", suspended: "", locked: ""}
+const validateUser = (user, messages, status, sendResponse, req, res, requester) =>{
+    let suspendedAt = (user === null) ? null : user.authenticationAttempts.suspendedAt;
+    let passwordLocked = (user === null) ? null : user.authenticationAttempts.passwordLocked;
+    let response = {valid: true, null: false, passwordLocked: false, suspended: false};
+    if(user === null || suspendedAt !== null || passwordLocked !== null)
+    {
+        let message = messages.null;
+        console.log(typeof(status));
+        if(suspendedAt !== null)
+        {   
+            // tell client to remove the cookie
+            clearCookie(req, res, undefined);
+            status = (typeof(status) === "number") ? status : status.suspended;
+            message = messages.suspended;
+            requester = (typeof(requester) === "string") ? requester : requester.suspended;
+            status = 401;
+            response.suspended = true;
+        }
+        else if(passwordLocked !== null)
+        {
+            message = messages.locked;
+            status = (typeof(status) === "number") ? status : status.locked;
+            requester = (typeof(requester) === "string") ? requester : requester.locked;
+            response.passwordLocked = true;
+        }
+        else
+        {
+            response.null = true;
+            status = (typeof(status) === "number") ? status : status.null;
+            requester = (typeof(requester) === "string") ? requester : requester.null;
+        }
+        if(sendResponse)
+        {
+            res.status(status).sendResponse({
+                message: message,
+                requester: requester
+            });
+        }
+        response.valid = false;
+    }
+    return response;
+};
+
     
 module.exports.validateIntegerParameter = validateIntegerParameter;
 module.exports.validateUsernameParameter = validateUsernameParameter;
@@ -266,3 +347,5 @@ module.exports.validateEmailParameter = validateEmailParameter;
 module.exports.clearCookie = clearCookie;
 module.exports.validateBooleanParameter = validateBooleanParameter;
 module.exports.checkForPasswordResetCookie = checkForPasswordResetCookie;
+module.exports.validateUser = validateUser;
+module.exports.validatePasswordParameter = validatePasswordParameter;

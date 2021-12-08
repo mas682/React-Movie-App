@@ -1,7 +1,6 @@
 import {emailHandler} from './emailHandler.js';
 import {checkHashedValue} from '../src/shared/crypto.js';
 import {createSession, destroySession} from '../src/shared/sessions.js';
-import { allColors } from 'winston/lib/winston/config';
 const models = require('../src/shared/sequelize.js').getClient().models;
 const Op = require('sequelize').Op;
 const validateStringParameter = require('./globals.js').validateStringParameter;
@@ -9,6 +8,7 @@ const validateEmailParameter = require('./globals.js').validateEmailParameter;
 const validateUsernameParameter = require('./globals.js').validateUsernameParameter;
 const validateIntegerParameter = require('./globals.js').validateIntegerParameter;
 const validateBooleanParameter = require('./globals.js').validateBooleanParameter;
+const validatePasswordParameter = require('./globals.js').validatePasswordParameter;
 const config = require('../Config.json');
 const Logger = require("../src/shared/logger.js").getLogger();
 const appendCallerStack = require("../src/shared/ErrorFunctions.js").appendCallerStack;
@@ -196,7 +196,7 @@ const checkLogin = async (req, res) =>
         valid = validateEmailParameter(res, username, "", "Username or email address is invalid");
         if(!valid) return;
     }
-    valid = validateStringParameter(res, password, 6, 15, "", "Password must be between 6-15 characters");
+    valid = validatePasswordParameter(res, password, "", undefined);
     if(!valid) return;
     valid = validateBooleanParameter(res, stayLoggedIn, "", "Stay logged in must be either true or false");
     if(!valid) return;
@@ -206,7 +206,7 @@ const checkLogin = async (req, res) =>
         appendCallerStack(callerStack, error, undefined, true);
     });
     // make sure the user is not null, not locked out of account
-    let userValid = await validateUser(res, username, user, true).catch(error=>{
+    let userValid = await validateUser(req, res, username, user, true).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -245,7 +245,7 @@ const checkLogin = async (req, res) =>
     }
     else
     {
-        let attempts = await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1607).catch(error=>{
+        let attempts = await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1607, true).catch(error=>{
             let callerStack = new Error().stack;
             appendCallerStack(callerStack, error, undefined, true);
         });
@@ -281,12 +281,18 @@ const forgotPassword = async (req, res) =>
     // make sure user exists and see if a verification record already exists
     let message;
     let status = 0;
-    let lockedTime = user.authenticationAttempts.verificationLocked;
-    let resetAttempts = user.verificationAttempts;
+    let lockedTime = (user === null) ? null : user.authenticationAttempts.verificationLocked;
+    let suspendedAt = (user === null) ? null : user.authenticationAttempts.suspendedAt;
+    let resetAttempts = (user === null) ? null : user.verificationAttempts;
     if(user === null)
     {
         message = "The username or email provided does not exist";
         status = 404;
+    }
+    else if(suspendedAt !== null)
+    {
+        message = "Users account is currently suspended.  Please contact an administrator to unlock the account";
+        status = 401;
     }
     else if(lockedTime !== null && new Date(lockedTime) > new Date())
     {
@@ -310,7 +316,7 @@ const forgotPassword = async (req, res) =>
         }
         else
         {
-            message = message = "Could not send another verification code as the maximum number of codes " +
+            message = "Could not send another verification code as the maximum number of codes " +
             " to send out (3) has been met.  Another code can be sent 24 hours from now or contact an adminstrator."
             status = 401;
         }
@@ -499,7 +505,7 @@ const sendVerificationEmail = async (res, verificationCode, email) =>
 // username - user being validated
 // user is the user object to valdiate
 // updateAttempts is a boolean to update user password attempts on failure
-const validateUser = async (res, username, user, updateAttempts) =>
+const validateUser = async (req, res, username, user, updateAttempts) =>
 {
     res.locals.function = "validateUser";
     // false on failure
@@ -514,9 +520,15 @@ const validateUser = async (res, username, user, updateAttempts) =>
         status = 404;
         result = false;
     }
-    else if(user.authenticationAttempts.passwordAttempts >= 5)
+    else if(user.authenticationAttempts.suspendedAt !== null)
     {
-        message = "User account is currently locked due to too many login attempts";
+        message = "Users account is currently suspended.  Please contact an administrator to unlock the account";
+        status = 401;
+        result = false;
+    }
+    else if(user.authenticationAttempts.passwordLocked != null)
+    {
+        message = "Users account is currently locked due to too many login attempts";
         status = 401;
         updateUser = true;
         result = false;
@@ -526,7 +538,7 @@ const validateUser = async (res, username, user, updateAttempts) =>
     {
         if(updateAttempts && updateUser)
         {
-            await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1608).catch(error=>{
+            await models.UserAuthenticationAttempts.updateUserLoginAttempts(req, res, user.id, username, 1608, true).catch(error=>{
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
             });
@@ -554,11 +566,17 @@ const validateUserForVerification = async (user, res) => {
         status = 404;
         result = false;
     }
+    else if(user.authenticationAttempts.suspendedAt !== null)
+    {
+        message = "Users account is currently suspended.  Please contact an administrator to unlock the account";
+        status = 401;
+        result = false;
+    }
     else if(user.authenticationAttempts.verificationLocked !== null)
     {
         if(new Date(user.verificationLocked) > new Date())
         {
-            message = "User account temporarily locked due to too many verification attempts";
+            message = "User account locked due to too many verification attempts";
             status = 401;
             result = false;
         }

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link, Redirect } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 import './css/SignIn/ForgotPassword.css';
 import style from './css/SignIn/ForgotPassword.module.css';
@@ -153,8 +152,6 @@ class ForgotPasswordPopup extends React.Component {
         else if(status === 401)
         {
             this.props.updateLoggedIn(requester);
-            // tested
-            // tested resend
             if(message === "User account tempoarily locked due to too many verification attempts")
             {
                 this.props.setMessages({
@@ -171,6 +168,14 @@ class ForgotPasswordPopup extends React.Component {
                 });
                 this.closeModal();
             }
+            else if(message.startsWith("Users account is currently suspended"))
+            {
+                this.props.setMessages({
+                    messages: [{type: "failure", message: message}],
+                    clearMessages: true
+                });
+                this.closeModal();
+            }
             else
             {
                 resultFound = false;
@@ -180,8 +185,6 @@ class ForgotPasswordPopup extends React.Component {
         else if(status === 400)
         {
             this.props.updateLoggedIn(requester);
-            // tested
-            // tested 2
             if(message === "Username or email address is invalid")
             {
                 this.setState({
@@ -267,7 +270,7 @@ class ForgotPasswordPopup extends React.Component {
         }
         if(!resultFound)
         {
-            let output = "Some unexpected " + status + " code was returned by the server";
+            let output = "Some unexpected " + status + " code was returned by the server.  Message: " + message;
             this.setState({
                 messageId: this.state.messageId + 1,
                 messages: [{type: "failure", message: output, timeout: 0}],
@@ -396,6 +399,14 @@ class ForgotPasswordPopup extends React.Component {
                 });
                 this.closeModal();
             }
+            else if(message.startsWith("Users account is currently suspended"))
+            {
+                this.props.setMessages({
+                    messages: [{type: "failure", message: message}],
+                    clearMessages: true
+                });
+                this.closeModal();
+            }
             else
             {
                 resultFound = false;
@@ -470,7 +481,7 @@ class ForgotPasswordPopup extends React.Component {
         }
         if(!resultFound)
         {
-            let output = "Some unexpected " + status + " code was returned by the server";
+            let output = "Some unexpected " + status + " code was returned by the server.  Message: " + message;
             this.setState({
                 messageId: this.state.messageId + 1,
                 messages: [{type: "failure", message: output, timeout: 0}],
@@ -511,10 +522,12 @@ class ForgotPasswordPopup extends React.Component {
         }
         else
         {
-            if(this.state.password.length < 6 || this.state.password.length > 15)
+            let regex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-#!\$@%\^&*\(\)_+\|~=\`\{\}\\[\\]:\"`;'<>\?,\./\\\\])(?=.{10,30})");
+            if(!regex.test(this.state.password))
             {
                 this.setState({
-                    passwordError: "Your password must be between 6-15 characters characters",
+                    passwordError: "Password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+                    "at least 1 number, and at least 1 special character",
                     password2Error: ""
                 });
                 error = true;
@@ -575,8 +588,15 @@ class ForgotPasswordPopup extends React.Component {
             if(status === 400)
             {
                 //this.props.updateLoggedIn(requester);
-                // tested
-                if(message === "New password must be betweeen 6-15 characters")
+                if(message.startsWith("New password must be between 10-30 characters"))
+                {
+                    this.setState({
+                        passwordError: message,
+                        password2Error: "",
+                        awaitingResults: false
+                    });
+                }
+                else if(message === "New password cannot match the old password")
                 {
                     this.setState({
                         passwordError: message,
@@ -586,6 +606,7 @@ class ForgotPasswordPopup extends React.Component {
                 }
                 else
                 {
+                    this.props.updateLoggedIn(requester);
                     resultFound = false;
                 }
             }
@@ -611,10 +632,28 @@ class ForgotPasswordPopup extends React.Component {
                     this.props.updateLoggedIn(requester);
                     this.closeModal();
                 }
+                else if(message.startsWith("Users account is currently suspended"))
+                {
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                    this.props.updateLoggedIn(requester);
+                    this.closeModal();
+                }
                 else if(message === "You do not have permission to update a users password as the cookie is invalid")
                 {
                     this.props.setMessages({
                         messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                    this.props.updateLoggedIn(requester);
+                    this.closeModal();
+                }
+                else if(message.startsWith("The maximum number of attempts"))
+                {
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message, timeout: 0}],
                         clearMessages: true
                     });
                     this.props.updateLoggedIn(requester);
@@ -671,9 +710,9 @@ class ForgotPasswordPopup extends React.Component {
             }
             if(!resultFound)
             {
-                let output = "Some unexpected " + status + " code was returned by the server";
+                let output = "Some unexpected " + status + " code was returned by the server.  Message: " + message;
                 this.setState({
-                    messages: [{type: "failure", message: output}],
+                    messages: [{type: "failure", message: output, timeout: 0}],
                     messageId: this.state.messageId + 1,
                     awaitingResults: false
                 });
@@ -882,9 +921,6 @@ class ForgotPasswordPopup extends React.Component {
                         <a className="close" onClick={this.closeModal}>
                         &times;
                         </a>
-                        <div className="header">
-                            <h3 className="inlineH3"> Forgot Password </h3>
-                        </div>
                         <div className={style.alertContent}>
                             <Alert
                                 messages={this.state.messages}
@@ -896,6 +932,9 @@ class ForgotPasswordPopup extends React.Component {
                                 outterContainerStyle={{position: "inherit"}}
                                 style={{"margin-bottom":"5px"}}
                             />
+                        </div>
+                        <div className="header">
+                            <h3 className="inlineH3"> Forgot Password </h3>
                         </div>
                         {content}
                     </div>

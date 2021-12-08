@@ -1,7 +1,5 @@
 import React from 'react';
 import Popup from 'reactjs-popup';
-import { Link, Redirect } from 'react-router-dom';
-import history from './History'
 import style from './css/signin.module.css';
 import './css/signin.css';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
@@ -86,13 +84,17 @@ class SignInPopup extends React.Component {
 			this.setState({usernameError: ""});
 		}
 
+		let regex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-#!\$@%\^&*\(\)_+\|~=\`\{\}\\[\\]:\"`;'<>\?,\./\\\\])(?=.{10,30})");
 		if(!this.state.password) {
 			this.setState({passwordError: "Password is required"});
 			error = true;
 		}
-		else if(this.state.password.length < 6 || this.state.password.length > 15)
+		else if(!regex.test(this.state.password))
 		{
-			this.setState({passwordError: "Password must be between 6-15 characters"});
+			this.setState({
+				passwordError: "Password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+				"at least 1 number, and at least 1 special character"
+			});
 			error = true;
 		}
 		else {
@@ -136,7 +138,7 @@ class SignInPopup extends React.Component {
 					usernameError: message
 				});
 			}
-			else if(message === "Password must be between 6-15 characters")
+			else if(message.startsWith("Password must be between 10-30 characters"))
 			{
 				this.setState({
 					awaitingResults: false,
@@ -169,7 +171,23 @@ class SignInPopup extends React.Component {
 					passwordError: "Incorrect password",
 					awaitingResults: false,
 					messageId: this.state.messageId + 1,
-					messages: [{type: "failure", message: "User account is currently locked due to too many login attempts"}]
+					messages: [{type: "failure", message: "User account is currently locked due to too many login attempts.  Reset your password using forgot password"}]
+				});
+			}
+			else if(message.startsWith("Users account is currently locked"))
+			{
+				this.setState({
+					awaitingResults: false,
+					messageId: this.state.messageId + 1,
+					messages: [{type: "failure", message: "User account is currently locked due to too many login attempts.  Reset your password using forgot password"}]
+				});
+			}
+			else if(message.startsWith("Users account is currently suspended"))
+			{
+				this.setState({
+					awaitingResults: false,
+					messageId: this.state.messageId + 1,
+					messages: [{type: "failure", message: "User account is currently locked due to too many login attempts.  Reset your password using forgot password"}]
 				});
 			}
 			else

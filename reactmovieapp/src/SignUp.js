@@ -125,9 +125,13 @@ class SignUpPopup extends React.Component {
         }
 
         // if password lenght < 8
-        if(this.state.password.length < 6 || this.state.password.length > 15)
+        let regex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-#!\$@%\^&*\(\)_+\|~=\`\{\}\\[\\]:\"`;'<>\?,\./\\\\])(?=.{10,30})");
+        if(!regex.test(this.state.password))
         {
-            this.setState({passwordError: "Password must be between 6-15 characters"});
+            this.setState({
+                passwordError: "Password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+                "at least 1 number, and at least 1 special character"
+            });
             error = true;
         }
         else
@@ -232,7 +236,7 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false
                 });
             }
-            else if(message === "Password must be betweeen 6-15 characters")
+            else if(message.startsWith("Password must be between 10-30 characters"))
             {
                 this.setState({
                     emailError: "",

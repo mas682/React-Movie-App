@@ -67,6 +67,8 @@ const createSession = async(user, req, res, expires, passwordResetSession) =>
         // boolean flag used to mark if session used yet
         req.session.active = true;
         req.session.cookie.maxAge = config.sessions.maxPasswordResetSessionDuration;
+        // keep track of how many times the user tried to set the password
+        req.session.passwordAttempts = 0;
     }
     // if the user wants a non expiring token
     else if(!expires)

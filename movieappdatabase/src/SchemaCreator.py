@@ -106,6 +106,7 @@ if __name__ == '__main__':
         './triggerFunctions/public/trigger_create_movie_rating.sql',
         './triggerFunctions/public/trigger_delete_movie_rating.sql',
         './triggerFunctions/public/trigger_remove_expired_verificaiton_codes.sql',
+        './triggerFunctions/public/trigger_set_account_locked_ts.sql',
         './triggerFunctions/public/trigger_set_movie_rating.sql',
         './triggerFunctions/public/trigger_set_timestamp.sql',
         './triggerFunctions/public/trigger_set_verification_locked_ts.sql',

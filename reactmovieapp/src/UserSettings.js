@@ -167,8 +167,10 @@ class UserSettings extends React.Component {
 	updateUserResultsHandler(status, message, requester, result)
 	{
 		let resultFound = true;
+		console.log(status);
 		if(status === 200)
 		{
+			console.log("200 Received");
 			let user = result[1].user;
 			this.setState({
 				firstName: user.firstName,
@@ -195,23 +197,22 @@ class UserSettings extends React.Component {
 		{
 			if(status === 401)
 			{
-				this.setState({
-					awaitingResults: false
-				});
 				this.props.updateLoggedIn(requester);
 				// You are not logged in
-				// tested
-				if(message === "You are not logged in" || message === "Could not find the user to update")
-				{
-					this.props.showLoginPopUp();
-				}
-				// tested
-				else if(message === "You cannot update another users information")
+				if(message === "You are not logged in")
 				{
 					this.setState({
-						displayPasswordValidationPopUp: false
+						awaitingResults: false
 					});
-					// "You cannot change information for another user"
+				}
+				else if(message === "You cannot update another users information" || 
+					message.startsWith("Users account is currently suspended") || 
+					message.startsWith("Users password is currently locked out.  Please change your password via forgot password"))
+				{
+					this.setState({
+						displayPasswordValidationPopUp: false,
+						awaitingResults: false
+					});
 					this.props.setMessages({
 						messages: [{type: "failure", message: message}],
 						clearMessages: true
@@ -224,7 +225,7 @@ class UserSettings extends React.Component {
 			}
 			else if(status === 404)
 			{
-				if(message === "The profile path sent to the server does not exist")
+				if(message === "The profile path sent to the server does not exist" || message === "Could not find the user to update")
 				{
 					this.setState({
 						awaitingResults: false,
@@ -327,9 +328,9 @@ class UserSettings extends React.Component {
 			}
 			if(!resultFound)
 			{
-				let output = "Some unexpected " + status + " code was returned by the server";
+				let output = "Some unexpected " + status + " code was returned by the server.  Message: " + message;
 				this.props.setMessages({
-					messages: [{type: "failure", message: output}],
+					messages: [{type: "failure", message: output, timeout: 0}],
 					clearMessages: true
 				});
 				this.setState({
@@ -383,9 +384,9 @@ class UserSettings extends React.Component {
 					loading: false,
 					loadingError: true
 				});
-				let output = "Some unexpected " + status + " code was returned by the server";
+				let output = "Some unexpected " + status + " code was returned by the server.  Message: " + message;
 				this.props.setMessages({
-					messages: [{type: "failure", message: output}],
+					messages: [{type: "failure", message: output, timeout: 0}],
 					clearMessages: true
 				});
 				this.props.updateLoggedIn(requester);
@@ -560,6 +561,7 @@ class UserSettings extends React.Component {
 						username={this.state.username}
 						removeFunction={this.showRemoveAccountPopUp}
 						updateLoggedIn={this.props.updateLoggedIn}
+						setMessages={this.props.setMessages}
 					/>;
 		}
 		return "";
@@ -614,6 +616,7 @@ class UserSettings extends React.Component {
         let firstInput = this.generateInput("editFirst", "firstName", "First Name", "oldFirst", 20);
         let lastInput = this.generateInput("editLast", "lastName", "Last Name", "oldLast", 20);
         let submitButton = "";
+		console.log(this.state);
         if(this.state.editFirst || this.state.editLast || this.state.editUser)
         {
             submitButton = (

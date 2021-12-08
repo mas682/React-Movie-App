@@ -51,8 +51,21 @@ class DeleteAccountPopUp extends React.Component {
             this.props.updateLoggedIn(requester);
             if(status === 401)
             {
-                // You are not logged in
-                if(message !== "You are not logged in")
+                if(message.startsWith("Requesting users account is currently suspended"))
+                {
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                }
+                else if(message.startsWith("Requesting users password is currently locked"))
+                {
+                    this.setState({
+                        messages: [{type: "failure", message: message}],
+                        messageId: this.state.messageId + 1
+                    });
+                }
+                else if(message !== "You are not logged in")
                 {
                     // you are logged in, but the password provided in incorrect
                     this.setState({
@@ -60,24 +73,48 @@ class DeleteAccountPopUp extends React.Component {
                         messageId: this.state.messageId + 1
                     });
                 }
+                else
+                {
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                }
             }
             else if(status === 400)
             {
-                // username in url not correct
-                // display alert with message as username to remove is invalid
-                this.setState({
-                    messages: [{type: "failure", message: message}],
-                    messageId: this.state.messageId + 1
-                });
+                if(message.startsWith("Password must be between 10-30 characters"))
+                {
+                    this.setState({
+                        passwordError: message
+                    });
+                }
+                else
+                {
+                    // username in url not correct
+                    // display alert with message as username to remove is invalid
+                    this.setState({
+                        messages: [{type: "failure", message: message}],
+                        messageId: this.state.messageId + 1
+                    });
+                }
             }
             else if(status === 404)
             {
-                // user to remove could not be found
-                // display alert with message
-                this.setState({
-                    messages: [{type: "failure", message: message}],
-                    messageId: this.state.messageId + 1
-                });
+                if(message === "Could not find the requesting users account")
+                {
+                    this.props.setMessages({
+                        messages: [{type: "failure", message: message}],
+                        clearMessages: true
+                    });
+                }
+                else
+                {
+                    this.setState({
+                        messages: [{type: "failure", message: message}],
+                        messageId: this.state.messageId + 1
+                    });
+                }
             }
             else
             {
@@ -122,10 +159,12 @@ class DeleteAccountPopUp extends React.Component {
         {
             // boolean to override other checks
             let priority = false;
-            if(this.state.password.length < 8)
+            let regex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-#!\$@%\^&*\(\)_+\|~=\`\{\}\\[\\]:\"`;'<>\?,\./\\\\])(?=.{10,30})");
+            if(!regex.test(this.state.password))
             {
                 this.setState({
-                    passwordError: "Your password must be at least 8 characters",
+                    passwordError: "Password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+                    "at least 1 number, and at least 1 special character"
                 });
                 error = true;
             }

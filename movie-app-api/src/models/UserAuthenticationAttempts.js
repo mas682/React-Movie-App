@@ -39,6 +39,9 @@ const userAuthenticationAttempts = (sequelize, DataTypes) => {
         },
         passwordLocked: {
             type: DataTypes.DATE
+        },
+        suspendedAt: {
+            type: DataTypes.DATE
         }
     }, 
     {
@@ -125,7 +128,7 @@ const userAuthenticationAttempts = (sequelize, DataTypes) => {
     }
 
     // function to increment user login attempts
-    UserAuthenticationAttempts.updateUserLoginAttempts = async (req, res, id, username, errorCode) => {
+    UserAuthenticationAttempts.updateUserLoginAttempts = async (req, res, id, username, errorCode, catchError) => {
         let result = 0;
         try
         {
@@ -147,8 +150,15 @@ const userAuthenticationAttempts = (sequelize, DataTypes) => {
         }
         catch (err)
         {
-            let message = "Some unknown error occurred updaing the users(" + username + ") account on login failure";
-            caughtErrorHandler(err, req, res, errorCode, message);
+            if(catchError)
+            {
+                let message = "Some unknown error occurred updaing the users(" + username + ") account on login failure";
+                caughtErrorHandler(err, req, res, errorCode, message);
+            }
+            else
+            {
+                throw err;
+            }
         }
         return result;
     }

@@ -45,10 +45,12 @@ class PasswordValidationPopUp extends React.Component {
     async validateForm(event) {
         event.preventDefault();
         let error = false;
-        if(!this.state.password || this.state.password.length < 6 || this.state.password.length > 15)
+        let regex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-#!\$@%\^&*\(\)_+\|~=\`\{\}\\[\\]:\"`;'<>\?,\./\\\\])(?=.{10,30})");
+        if(!this.state.password || !regex.test(this.state.password))
         {
             this.setState({
-                passwordError: "Your password must be between 6-15 characters",
+                passwordError: "Password must be between 10-30 characters, contain at least 1 lowercase character, at least 1 uppercase character," + 
+                "at least 1 number, and at least 1 special character"
             });
             error = true;
         }
@@ -98,7 +100,7 @@ class PasswordValidationPopUp extends React.Component {
             if(status === 400)
             {
                 this.props.updateLoggedIn(requester);
-                if(message === "Password must be between 6-15 characters")
+                if(message.startsWith("Password must be between 10-30 characters"))
                 {
                     this.setState({
                         passwordError: message,
