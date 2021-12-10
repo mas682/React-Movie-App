@@ -163,7 +163,7 @@ const createTempUser = async (requester, req, res) =>
 
     // generate verification code
     errorCodes = {saltError: 1302, unexpectedError: 1303};
-    let result = await models.TempVerificationCodes.generateTempVerificationCode(req, res, tempUser, errorCodes, true, 10, 1).catch(error=>{
+    let result = await models.TempVerificationCodes.generateTempVerificationCode(req, res, tempUser, errorCodes, true, 10, 1, tempUser.deleteAt).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -174,6 +174,40 @@ const createTempUser = async (requester, req, res) =>
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
+
+
+    let lockedTime = null;
+    if(emailResult)
+    {
+        let successful = true;
+        result = await models.UserAuthenticationAttempts.updateVerificationAttempts(tempUser.id).catch(error=>{
+            let callerStack = new Error().stack;
+            error = appendCallerStack(callerStack, error, undefined, false);
+            caughtErrorHandler(error, req, res, 1317, undefined);
+            successful = false;
+        });
+
+        if(successful && (result === undefined || result.record === undefined))
+        {
+            res.status(404).sendResponse({
+                message: "Some unexpected error occurred on the server.  Error code: 1319",
+                requester: ""
+            });
+            return;
+        }
+        // update failed for some reason
+        else if(successful && !result.updated)
+        {
+            Logger.error("An error occurred when a temp user with id of(" + tempUser.id + ") tried to request a verification code",
+            {function: "createTempUser", file: "signup.js", errorCode: 1318, requestId: req.id});
+            lockedTime = result.record.verificationLocked;
+        }
+        else if(successful)
+        {
+            lockedTime = result.record.verificationLocked;
+        }
+    }
+
     Logger.debug("Code: " + code);
     Logger.debug("Adding 2 second delay");
     setTimeout(() =>{
@@ -181,7 +215,8 @@ const createTempUser = async (requester, req, res) =>
         {
             res.status(201).sendResponse({
                 message: "Verification email sent",
-                requester: ""
+                requester: "",
+                resendLockedTime: lockedTime
             });
         }
         else
@@ -255,15 +290,53 @@ const resendVerificationCode = async (requester, req, res) =>
         return;
     }
 
-    // at this point, a user can have a code resent
-    // delete any existing verification records for the user
-    await models.TempVerificationCodes.destroy({where: {userId: tempUser.id}}).catch(error=>{
-        let callerStack = new Error().stack;
-        appendCallerStack(callerStack, error, undefined, true);
-    });
+    status = 0;
+    let sendLockTime = false;
+    let lockedTime = authRecord.verificationLocked;
+    // if the account cannot currently send another verification code
+    if(lockedTime !== null && new Date(lockedTime) > new Date())
+    {
+        let result = await models.UserAuthenticationAttempts.updateVerificationAttempts(tempUser.id).catch(error=>{
+            let callerStack = new Error().stack;
+            appendCallerStack(callerStack, error, undefined, true);
+        });
+        if(result.record === undefined)
+        {
+            status = 404;
+            message = "Could not find a user with the provided email";
+        }
+        // update failed for some reason
+        else if(!result.updated)
+        {
+            Logger.error("An error occurred when a temp user with id of(" + tempUser.id + ") tried to request a verification code",
+            {function: "resendVerificationCode", file: "signup.js", errorCode: 1316, requestId: req.id});
 
+            status = 500;
+            message = "Some unexpected error occurred on the server.  Error code: 1316"
+        }
+        else
+        {
+            message = "Could not send another verification code.";
+            status = 401;
+            sendLockTime = true;
+            lockedTime = result.record.verificationLocked;
+        }
+
+        let response = {
+            message: message,
+            requester: ""
+        };
+        if(sendLockTime)
+        {
+            response["resendLockedTime"] = lockedTime;
+        }
+        res.status(status).sendResponse(response);
+        return;
+    }
+
+    // at this point, a user can have a code resent
     // generate verification code
-    let result = await models.TempVerificationCodes.generateTempVerificationCode(req, res, tempUser, undefined, false, 10, 1).catch(error=>{
+    let result = await models.TempVerificationCodes.generateTempVerificationCode(req, res, tempUser, undefined, false, 10, 1, tempUser.deleteAt).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -276,23 +349,45 @@ const resendVerificationCode = async (requester, req, res) =>
     });
     Logger.debug("Code: " + code);
     Logger.debug("Adding 2 second delay");
+    lockedTime = null;
     if(emailResult)
     {
+        let successful = true;
         // increment user password reset attempts, db handles logic around it to lock or not
-        await models.UserAuthenticationAttempts.increment(
-            "verificationAttempts",{where: {userId: tempUser.id}}).catch(error=>{
+        result = await models.UserAuthenticationAttempts.updateVerificationAttempts(tempUser.id).catch(error=>{
 		        let callerStack = new Error().stack;
 		        error = appendCallerStack(callerStack, error, undefined, false);
 		        let message = "Some unexpected error occurred when trying increment a temp users codes resent";
 		        caughtErrorHandler(error, req, res, 1304, message);
+                successful = false;
             });
+        if(successful && (result === undefined || result.record === undefined))
+        {
+            res.status(404).sendResponse({
+                message: "Could not find a user with the provided email",
+                requester: ""
+            });
+            return;
+        }
+        // update failed for some reason
+        else if(successful && !result.updated)
+        {
+            Logger.error("An error occurred when a temp user with id of(" + tempUser.id + ") tried to request a verification code",
+            {function: "resendVerificationCode", file: "signup.js", errorCode: 1319, requestId: req.id});
+            //lockedTime = result.record.verificationLocked;
+        }
+        else if(successful)
+        {
+            lockedTime = result.record.verificationLocked;
+        }
     }
     setTimeout(() =>{
         if(emailResult)
         {
             res.status(201).sendResponse({
                 message: "Verification email sent.",
-                requester: ""
+                requester: "",
+                resendLockedTime: lockedTime
             });
         }
         else

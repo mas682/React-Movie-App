@@ -281,9 +281,9 @@ const forgotPassword = async (req, res) =>
     // make sure user exists and see if a verification record already exists
     let message;
     let status = 0;
+    let sendLockTime = false;
     let lockedTime = (user === null) ? null : user.authenticationAttempts.verificationLocked;
     let suspendedAt = (user === null) ? null : user.authenticationAttempts.suspendedAt;
-    let resetAttempts = (user === null) ? null : user.verificationAttempts;
     if(user === null)
     {
         message = "The username or email provided does not exist";
@@ -316,22 +316,28 @@ const forgotPassword = async (req, res) =>
         }
         else
         {
-            message = "Could not send another verification code as the maximum number of codes " +
-            " to send out (3) has been met.  Another code can be sent 24 hours from now or contact an adminstrator."
+            message = "Could not send another verification code.";
             status = 401;
+            sendLockTime = true;
+            lockedTime = result.record.verificationLocked;
         }
     }
     if(status !== 0)
     {
-        res.status(status).sendResponse({
+        let response = {
             message: message,
             requester: ""
-        });
+        };
+        if(sendLockTime)
+        {
+            response["resendLockedTime"] = lockedTime;
+        }
+        res.status(status).sendResponse(response);
         return;
     }
 
     // generate verification code
-    let result = await models.TempVerificationCodes.generateTempVerificationCode(req, res, user, undefined, false, 10, 2).catch(error=>{
+    let result = await models.TempVerificationCodes.generateTempVerificationCode(req, res, user, undefined, false, 10, 2, undefined).catch(error=>{
         let callerStack = new Error().stack;
         appendCallerStack(callerStack, error, undefined, true);
     });
@@ -342,6 +348,7 @@ const forgotPassword = async (req, res) =>
     });
     Logger.debug("Code: " + code);
     Logger.debug("Adding 2 second delay");
+    lockedTime = null;
     if(emailResult)
     {
         let successful = true;
@@ -349,8 +356,6 @@ const forgotPassword = async (req, res) =>
             let callerStack = new Error().stack;
             error = appendCallerStack(callerStack, error, undefined, false);
             caughtErrorHandler(error, req, res, 1605, undefined);
-            // set to 0 as not sure what the actual count is at this point
-            resetAttempts = 0;
             successful = false;
         });
 
@@ -367,27 +372,22 @@ const forgotPassword = async (req, res) =>
         {
             Logger.error("An error occurred when a user with id of(" + user.id + ") tried to request a verification code",
             {function: "forgotPassword", file: "login.js", errorCode: 1606, requestId: req.id});
-            // set to 0 as not sure what the actual count at this point
-            resetAttempts = 0;
+            lockedTime = result.record.verificationLocked;
         }
         else if(successful)
         {
-            resetAttempts = result.record.verificationAttempts;
+            lockedTime = result.record.verificationLocked;
         }
     }
     setTimeout(() =>{
         if(emailResult)
         {
-            let message = "Verification email sent.";
-            if(resetAttempts > 2)
-            {
-                message = message + "  The maximum of 3 unverified verification codes have been sent out.  You can request another 24 hours from now"
-            }
             res.status(201).sendResponse({
-                message: message,
-                requester: ""
+                message: "Verification email sent.",
+                requester: "",
+                resendLockedTime: lockedTime
             });
-            }
+        }
         else
         {
             res.status(500).sendResponse({

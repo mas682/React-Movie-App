@@ -72,7 +72,8 @@ const tempVerificationCodes = (sequelize, DataTypes) => {
     // removeUser is a boolean to remove the user if an error occurred
     // duration is the number of minutes the code is valid for
     // type is the integer representing the type of verification code
-    TempVerificationCodes.generateTempVerificationCode = async (req, res, user, errorCodes, removeUser, duration, type) =>
+    // expiresAt will only be used if for a temp user, should match when the temp user expires
+    TempVerificationCodes.generateTempVerificationCode = async (req, res, user, errorCodes, removeUser, duration, type, expiresAt) =>
     {
         let code;
         let date;
@@ -98,8 +99,15 @@ const tempVerificationCodes = (sequelize, DataTypes) => {
             createdDate = date.toISOString();
             secret = code + Date.parse(date);
             result = hash(secret, "verificationCode");
-            expirationDate = new Date();
-            expirationDate.setMinutes(expirationDate.getMinutes() + duration);
+            if(type === 1 && expiresAt !== undefined)
+            {
+                expirationDate = expiresAt;
+            }
+            else
+            {
+                expirationDate = new Date();
+                expirationDate.setMinutes(expirationDate.getMinutes() + duration);
+            }
             try 
             {
                 result = await TempVerificationCodes.create({

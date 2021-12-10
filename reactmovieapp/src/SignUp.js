@@ -5,6 +5,7 @@ import './css/signup.css';
 import style from './css/signup.module.css';
 import {apiPostJsonRequest} from './StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
+import { runInThisContext } from 'vm';
 
 // documentation for PopUp https://react-popup.elazizi.com/component-api/
 class SignUpPopup extends React.Component {
@@ -24,6 +25,7 @@ class SignUpPopup extends React.Component {
             passwordError: "",
             messages: [],
             messageId: -1,
+            clearMessages: false,
             showResendInput: false,
             showVerificationPage: false,
             verificationCode: "",
@@ -31,7 +33,15 @@ class SignUpPopup extends React.Component {
             awaitingResults: false,
             lockVerificationInput: false,
             resendingCode: false,
-            created: false
+            created: false,
+            // used to keep track of all the timeouts that were created so they can be cancelled
+            timeoutIds: [],
+            // the next time the user can request a code to be resent
+            nextSendAt: null,
+            // set to the last email that was sent to resend a code for
+            lockedUser: null,
+            // keeps track if a user tried to resend a verification code from the verification code screen
+            resendLocked: false
         };
 
         this.closeModal = this.closeModal.bind(this);
@@ -51,10 +61,18 @@ class SignUpPopup extends React.Component {
         this.validateVerification = this.validateVerification.bind(this);
         this.registrationResultsHandler = this.registrationResultsHandler.bind(this);
         this.resendVerificationCode = this.resendVerificationCode.bind(this);
+
+        this.schedulePopUpMessage = this.schedulePopUpMessage.bind(this);
+        this.removeResendLock = this.removeResendLock.bind(this);
     }
 
     closeModal() {
         this.setState({open: false});
+        // stop any existing timeouts
+        for(let id of this.state.timeoutIds)
+        {
+            clearTimeout(id);
+        }
         this.props.removeFunction();
     }
 
@@ -64,10 +82,49 @@ class SignUpPopup extends React.Component {
     }
 
     showResendInput() {
+        // stop any existing timeouts
+        for(let id of this.state.timeoutIds)
+        {
+            clearTimeout(id);
+        }
         this.setState({
-            showResendInput: true
+            showResendInput: !this.state.showResendInput,
+            timeoutIds: [],
+            messageId: -1
         });
     }
+
+    // function used to schedule a pop up message for the user to know when they can resend a verification code
+    // autoSet is a boolean to add the timeout regardless of if no timeouts existing
+    schedulePopUpMessage(timeoutIds, username, nextSendAt, autoSet)
+    {
+        let timeouts = [...timeoutIds];
+        // if no timeouts exist, create one for the user to know when they can resend their verification code
+        // may not exist as when they send a verification code these get cleared
+        if(nextSendAt !== null && ((timeoutIds).length < 1 || autoSet))
+        {
+            let timeout = setTimeout(() => {
+                this.removeResendLock(username);
+            }, (nextSendAt.getTime() - new Date().getTime()));
+            timeouts.push(timeout);
+        }
+        return timeouts;
+    }
+
+    removeResendLock(email)
+    {
+        if(this.state.resendLocked)
+        {
+            let message = "You can now send another verification code for " + email;
+            this.setState({
+                messageId: this.state.messageId + 1,
+                clearMessages: true,
+                messages: [{type: "info", message: message, timeout: 0}],
+                resendLocked: false
+            });
+        }
+    }
+
 
     // function called when CREATE AN ACCOUNT button is clicked
     // to validate that the fields are correct and handle sending
@@ -156,19 +213,27 @@ class SignUpPopup extends React.Component {
                 let status = result[0];
                 let message = result[1].message;
                 let requester = result[1].requester;
-                this.registrationResultsHandler(status, message, requester);
+                let resendLockedTS = (result[1].resendLockedTime === null) ? null : new Date(result[1].resendLockedTime);
+                this.registrationResultsHandler(status, message, resendLockedTS, requester);
             });
         }
     }
 
-    registrationResultsHandler(status, message, requester)
+    registrationResultsHandler(status, message, resendLockedTS, requester)
     {
         let resultFound = true;
         if(status === 201)
         {
+            
+            let timeouts = this.schedulePopUpMessage(this.state.timeoutIds, this.state.email, resendLockedTS, true);
+
             this.setState({
                 showVerificationPage: true,
-                awaitingResults: false
+                awaitingResults: false,
+                nextSendAt: resendLockedTS,
+                lockedUser: this.state.email,
+                timeoutIds: timeouts,
+                resendLocked: false
             });
             this.props.updateLoggedIn(requester);
         }
@@ -274,6 +339,23 @@ class SignUpPopup extends React.Component {
                 resultFound = false;
             }
         }
+        else if(status === 404)
+        {
+            if(message.startsWith("Some unexpected error occurred on the server"))
+            {
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: message, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    verificationError: ""
+                });
+            }
+            else
+            {
+                resultFound = false;
+            }
+        }
         else if(status === 500)
         {
             this.setState({
@@ -294,7 +376,7 @@ class SignUpPopup extends React.Component {
         }
         if(!resultFound)
         {
-            let output = "Some unexpected " + status + " code was returned by the server.  " + message;
+            let output = "Some unexpected " + status + " code was returned by the server.  Message: " + message;
             this.setState({
                 messageId: this.state.messageId + 1,
                 messages: [{type: "failure", message: output, timeout: 0}],
@@ -330,6 +412,12 @@ class SignUpPopup extends React.Component {
 
         if(!error)
         {
+            // stop any existing timeouts
+            for(let id of this.state.timeoutIds)
+            {
+                clearTimeout(id);
+            }
+
             let params = {
                 email: this.state.email,
                 verificationCode: this.state.verificationCode
@@ -337,7 +425,8 @@ class SignUpPopup extends React.Component {
             let url = "/signup/verify_account";
             this.setState({
                 awaitingResults: true,
-                messageId: -1
+                messageId: -1,
+                timeoutIds: []
             });
             apiPostJsonRequest(url, params).then((result)=>{
                 let status = result[0];
@@ -350,28 +439,49 @@ class SignUpPopup extends React.Component {
 
     async resendVerificationCode(event) {
         event.preventDefault();
-        let error = false;
-        if(!error)
+
+        if(this.state.nextSendAt !== null && this.state.nextSendAt > new Date() && this.state.email === this.state.lockedUser)
         {
-            let params = {
-                email: this.state.email
-            };
-            let url = "/signup/resend_verification_code";
+            let timeouts = this.schedulePopUpMessage(this.state.timeoutIds, this.state.username, this.state.nextSendAt, false);
+            let message = "Another code can be sent at: " + (this.state.nextSendAt).toLocaleTimeString();
             this.setState({
-                awaitingResults: true,
-                messageId: -1,
-                resendingCode: true
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: message, timeout: 0}],
+                clearMessages: true,
+                timeoutIds: timeouts,
+                resendLocked: true
             });
-            apiPostJsonRequest(url, params).then((result)=>{
-                let status = result[0];
-                let message = result[1].message;
-                let requester = result[1].requester;
-                this.verificationResultsHandler(status, message, requester, "resend");
-            });
+            return;
         }
+
+        // stop any existing timeouts
+        for(let id of this.state.timeoutIds)
+        {
+            clearTimeout(id);
+        }
+
+        let params = {
+            email: this.state.email
+        };
+        let url = "/signup/resend_verification_code";
+        this.setState({
+            awaitingResults: true,
+            messageId: -1,
+            resendingCode: true,
+            timeoutIds: [],
+            lockedUser: this.state.email
+        });
+        apiPostJsonRequest(url, params).then((result)=>{
+            let status = result[0];
+            let message = result[1].message;
+            let requester = result[1].requester;
+            let resendLockedTS = (result[1].resendLockedTime === null) ? null : new Date(result[1].resendLockedTime);
+            this.verificationResultsHandler(status, message, requester, "resend", resendLockedTS);
+        });
+    
     }
 
-    verificationResultsHandler(status, message, requester, type)
+    verificationResultsHandler(status, message, requester, type, resendLockedTS)
     {
         let resultFound = true;
         if(status === 201)
@@ -388,6 +498,8 @@ class SignUpPopup extends React.Component {
             }
             else
             {
+                let timeouts = this.schedulePopUpMessage(this.state.timeoutIds, this.state.email, resendLockedTS, true);
+
                 this.setState({
                     messageId: this.state.messageId + 1,
                     messages: [{type: "info", message: message, timeout: 0}],
@@ -396,7 +508,11 @@ class SignUpPopup extends React.Component {
                     showResendInput: false,
                     resendingCode: false,
                     lockVerificationInput: false,
-                    verificationCode: ""
+                    verificationCode: "",
+                    nextSendAt: resendLockedTS,
+                    lockedUser: this.state.email,
+                    timeoutIds: timeouts,
+                    resendLocked: false
                 });
             }
         }
@@ -431,6 +547,25 @@ class SignUpPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     verificationCode: ""
+                });
+            }
+            else if(message.startsWith("Could not send another verification code"))
+            {
+                let timeouts = this.schedulePopUpMessage(this.state.timeoutIds, this.state.email, resendLockedTS, true);
+                if(resendLockedTS !== null)
+                {
+                    message = "Could not send a verification code for " + this.state.email + ". Another code can be " + 
+                        "sent at: "  + resendLockedTS.toLocaleTimeString();
+                }
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: message, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    nextSendAt: resendLockedTS,
+                    lockedUser: this.state.email,
+                    timeoutIds: timeouts,
+                    resendLocked: true
                 });
             }
             else
@@ -834,6 +969,9 @@ class SignUpPopup extends React.Component {
                     <div className={style.padding10}>
                         <button className="logInLink" onClick={this.showResendInput}>Resend Verification Code</button>
                     </div>
+                    <div className={style.verificationButtonContainer}>
+                        Note: The account will be removed if not verified after so long
+                    </div>
                 </div>
             </React.Fragment>);
     }
@@ -966,6 +1104,12 @@ class SignUpPopup extends React.Component {
                         >RESEND VERIFICATION CODE
                         </button>
                     </div>
+                    <div className={style.padding10}>
+                        <button className="logInLink" onClick={this.showLoginPopUp}>Already have an account? Log In Here!</button>
+                    </div>
+                    <div className={style.padding10}>
+                        <button className="logInLink" onClick={this.showResendInput}>New Here? Sign Up!</button>
+                    </div>
                     <div className={style.verificationButtonContainer}>
                         Note: The account will be removed if not verified after so long
                     </div>
@@ -1008,7 +1152,6 @@ class SignUpPopup extends React.Component {
             content = this.generateLoadingContent("Resending verification code...");
         }
 
-
         return (
             <div>
                 <Popup
@@ -1029,6 +1172,7 @@ class SignUpPopup extends React.Component {
                             <Alert
                                 messages={this.state.messages}
                                 messageId={this.state.messageId}
+                                clearMessages={this.state.clearMessages}
                                 innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%", "padding-top": "10px"}}
                                 symbolStyle={{"width": "8%", "margin-top": "4px"}}
                                 messageBoxStyle={{width: "80%"}}

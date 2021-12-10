@@ -476,6 +476,26 @@
             "1315":{
                 "Description":"A unexpected error occurred when trying to remove a unverified user",
                 "function":"resendVerificationCode"
+            },
+            "1316":{
+                "Description":"An error occurred when updating a temp users verification attempts.  The user either did not exist or the update did not succeed for some reason",
+                "function":"resendVerificationCode"
+            },
+            "1317":{
+                "Description":"A unexpected error occurred when updating a users verifcation attempts after the verification code was sent out",
+                "function":"createTempUser"
+            },
+            "1318":{
+                "Description":"An error occurred when updating a users verification attempts.  The user either did not exist or the update did not succeed for some reason",
+                "function":"createTempUser"
+            },
+            "1319":{
+                "Description":"When updating a users verification attempts record after the first verification code was sent out, the record could not be found",
+                "function":"createTempUser"
+            },
+            "1320":{
+                "Description":"An error occurred when updating a users verification attempts.  The user either did not exist or the update did not succeed for some reason",
+                "function":"resendVerificationCode"
             }
         },
         "sequelizeErrorHandler.js":{},

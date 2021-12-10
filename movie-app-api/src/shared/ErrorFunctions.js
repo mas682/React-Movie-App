@@ -1,4 +1,5 @@
 import {getErrorHandler} from '../ErrorHandlers/ErrorReceiver.js';
+const Logger = require("./logger.js").getLogger();
 
 // function called inside the catch function on await functions
 // used to append to the stack where the async fuction was actually called

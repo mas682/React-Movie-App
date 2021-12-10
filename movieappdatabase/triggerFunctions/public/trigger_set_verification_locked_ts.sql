@@ -22,53 +22,21 @@ DO $$ BEGIN
             COST 100
             VOLATILE NOT LEAKPROOF
         AS $BODY$
-        declare expires_time timestamp without time zone;
-        declare verification_attempts integer;
-        declare verified_user integer;
 
         BEGIN
             
-            select
-                case when "verified"
-                    then 1
-                else
-                    0
-                end
-                into verified_user
-            from public."Users"
-            where "id" = new."userId";
-            
-            if(verified_user)
+            -- if not locked; if locked do nothing
+            if(new."verificationLocked" is null or (new."verificationLocked" is not null and new."verificationLocked" <= CURRENT_TIMESTAMP))
             then
-                select 
-                    into verification_attempts
-                    case
-                        -- currently locked, but shouldn't be anymore
-                        when new."verificationAttempts" >= 4 and new."verificationLocked" is not null and new."verificationLocked" <= CURRENT_TIMESTAMP
-                            then 1
-                        else
-                            new."verificationAttempts"
-                    end;
-                new."verificationAttempts" = verification_attempts;
-
-                select 
-                    into expires_time
-                    case
-                        -- not locked yet but should be on
-                        when new."verificationLocked" is null and new."verificationAttempts" >= 3
-                            then CURRENT_TIMESTAMP + interval '24 hours'
-                        -- when attempts less than 3
-                        when new."verificationAttempts" < 3
-                            then null
-                        -- already locked
-                        when new."verificationLocked" is not null and new."verificationAttempts" >= 3 and new."verificationLocked" > CURRENT_TIMESTAMP
-                            then new."verificationLocked"
-                        -- already marked as locked but in past
-                        else
-                            CURRENT_TIMESTAMP + interval '24 hours'
-                end;
-                new."verificationLocked" = expires_time;
-            END IF;
+                if(new."verificationAttempts" > 0)
+                then
+                    new."verificationAttempts" = 1;
+                    new."verificationLocked" = CURRENT_TIMESTAMP + interval '1 minutes';
+                else
+                    -- if attempts = 0, set locked to null
+                    new."verificationLocked" = null;
+                end if;
+            end if;
             
             return new;
         END;

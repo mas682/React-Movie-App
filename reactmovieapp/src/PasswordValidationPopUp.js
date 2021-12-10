@@ -92,6 +92,8 @@ class PasswordValidationPopUp extends React.Component {
                 messages: [{type: "success", message: message}],
                 clearMessages: true
             });
+            // pass result to parent
+            this.props.updateUserResultsHandler(status, message, requester, result);
             this.props.updateLoggedIn(requester);
             this.closeModal();
         }

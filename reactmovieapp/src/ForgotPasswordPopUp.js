@@ -20,13 +20,21 @@ class ForgotPasswordPopup extends React.Component {
             password2Error: "",
             messages: [],
             messageId: -1,
+            clearMessages: false,
             showVerificationPage: false,
             showPasswordInput: false,
             verificationCode: "",
             verificationError: "",
             awaitingResults: false,
             lockVerificationInput: false,
-            resends: 0,
+            // used to keep track of all the timeouts that were created so they can be cancelled
+            timeoutIds: [],
+            // the next time the user can request a code to be resent
+            nextSendAt: null,
+            // set to the last username that was sent to resend a code for
+            lockedUser: null,
+            // keeps track if a user tried to resend a verification code from the verification code screen
+            resendLocked: false,
             resendingCode: false,
             authenticated: false
         };
@@ -44,9 +52,17 @@ class ForgotPasswordPopup extends React.Component {
         this.generatePasswordInputForm = this.generatePasswordInputForm.bind(this);
         this.sendNewPassword = this.sendNewPassword.bind(this);
         this.updatePasswordResultsHandler = this.updatePasswordResultsHandler.bind(this);
+
+        this.removeResendLock = this.removeResendLock.bind(this);
+        this.schedulePopUpMessage = this.schedulePopUpMessage.bind(this);
     }
 
     closeModal() {
+        // stop any existing timeouts
+        for(let id of this.state.timeoutIds)
+        {
+            clearTimeout(id);
+        }
         this.props.removeFunction();
     }
 
@@ -80,6 +96,18 @@ class ForgotPasswordPopup extends React.Component {
                 error = true;
             }
         }
+        // if user previously tried to request a passcode and server replied with user being locked out for x time
+        // also only does this if the previous user that was sent, if username changed ignore
+        else if(this.state.nextSendAt !== null && this.state.nextSendAt > new Date() && this.state.username === this.state.lockedUser)
+        {
+            let message = "Another code for " + this.state.username + " can be sent at: " + (this.state.nextSendAt).toLocaleTimeString();
+            this.setState({
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: message, timeout: 0}],
+                clearMessages: true
+            });
+            error = true;
+        }
         else
         {
             this.setState({usernameError: ""});
@@ -87,28 +115,12 @@ class ForgotPasswordPopup extends React.Component {
 
         if(!error)
         {
-            let params = {
-                username: this.state.username
-            };
-            let url = "/login/forgot_password";
-            this.setState({
-                awaitingResults: true,
-                messageId: -1
-            });
-            apiPostJsonRequest(url, params).then((result)=>{
-                let status = result[0];
-                let message = result[1].message;
-                let requester = result[1].requester;
-                this.requestCodeResultsHandler(status, message, requester, false);
-            });
-        }
-    }
+            // remove any existing timeouts
+            for(let id of this.state.timeoutIds)
+            {
+                clearTimeout(id);
+            }
 
-    async resendVerificationCode(event) {
-        event.preventDefault();
-        let error = false;
-        if(!error)
-        {
             let params = {
                 username: this.state.username
             };
@@ -116,34 +128,114 @@ class ForgotPasswordPopup extends React.Component {
             this.setState({
                 awaitingResults: true,
                 messageId: -1,
-                resendingCode: true
+                lockedUser: this.state.username,
+                timeoutIds: []
             });
             apiPostJsonRequest(url, params).then((result)=>{
                 let status = result[0];
                 let message = result[1].message;
                 let requester = result[1].requester;
-                this.requestCodeResultsHandler(status, message, requester, true);
+                let resendLockedTS = (result[1].resendLockedTime === null) ? null : new Date(result[1].resendLockedTime);
+                this.requestCodeResultsHandler(status, message, requester, resendLockedTS, false);
             });
         }
     }
 
-    requestCodeResultsHandler(status, message, requester, resend)
+    // function used to schedule a pop up message for the user to know when they can resend a verification code
+    // autoSet is a boolean to add the timeout regardless of if no timeouts existing
+    schedulePopUpMessage(timeoutIds, username, nextSendAt, autoSet)
+    {
+        let timeouts = [...timeoutIds];
+        // if no timeouts exist, create one for the user to know when they can resend their verification code
+        // may not exist as when they send a verification code these get cleared
+        if(nextSendAt !== null && ((timeoutIds).length < 1 || autoSet))
+        {
+            let timeout = setTimeout(() => {
+                this.removeResendLock(username);
+            }, (nextSendAt.getTime() - new Date().getTime()));
+            timeouts.push(timeout);
+        }
+        return timeouts;
+    }
+
+    async resendVerificationCode(event) {
+        event.preventDefault();
+
+        if(this.state.nextSendAt !== null && this.state.nextSendAt > new Date())
+        {
+            let timeouts = this.schedulePopUpMessage(this.state.timeoutIds, this.state.username, this.state.nextSendAt, false);
+            let message = "Another code can be sent at: " + (this.state.nextSendAt).toLocaleTimeString();
+            this.setState({
+                messageId: this.state.messageId + 1,
+                messages: [{type: "failure", message: message, timeout: 0}],
+                clearMessages: true,
+                timeoutIds: timeouts,
+                resendLocked: true
+            });
+            return;
+        }
+
+        // stop any existing timeouts
+        for(let id of this.state.timeoutIds)
+        {
+            clearTimeout(id);
+        }
+
+        let params = {
+            username: this.state.username
+        };
+        let url = "/login/forgot_password";
+        this.setState({
+            awaitingResults: true,
+            messageId: -1,
+            resendingCode: true,
+            lockedUser: this.state.username,
+            timeoutIds: []
+        });
+        apiPostJsonRequest(url, params).then((result)=>{
+            let status = result[0];
+            let message = result[1].message;
+            let requester = result[1].requester;
+            let resendLockedTS = (result[1].resendLockedTime === null) ? null : new Date(result[1].resendLockedTime);
+            this.requestCodeResultsHandler(status, message, requester, resendLockedTS, true);
+        });
+    }
+
+    removeResendLock(username)
+    {
+        if(this.state.resendLocked)
+        {
+            let message = "You can now send another verification code for " + username;
+            this.setState({
+                messageId: this.state.messageId + 1,
+                clearMessages: true,
+                messages: [{type: "info", message: message, timeout: 0}],
+                resendLocked: false
+            });
+        }
+    }
+
+    requestCodeResultsHandler(status, message, requester, resendLockedTS, resend)
     {
         let resultFound = true;
         if(status === 201)
         {
+            let timeouts = this.schedulePopUpMessage(this.state.timeoutIds, this.state.username, resendLockedTS, true);
             let state = {
                 showVerificationPage: true,
                 awaitingResults: false,
                 messages: [{type: "success", message: message, timeout: 5000}],
                 messageId: this.state.messageId + 1,
-                lockVerificationInput: false
+                lockVerificationInput: false,
+                nextSendAt: resendLockedTS,
+                lockedUser: this.state.username,
+                timeoutIds: timeouts,
+                resendLocked: false
             };
             if(resend)
             {
                 state["messages"] = [{type: "success", message: message, timeout: 5000}];
                 state["messageId"] = this.state.messageId + 1;
-                state["resends"] = this.state.resends + 1;
                 state["resendingCode"] = false;
             }
             this.setState(state);
@@ -152,13 +244,24 @@ class ForgotPasswordPopup extends React.Component {
         else if(status === 401)
         {
             this.props.updateLoggedIn(requester);
-            if(message === "User account tempoarily locked due to too many verification attempts")
+            if(message.startsWith("Could not send another verification code"))
             {
-                this.props.setMessages({
-                    messages: [{type: "failure", message: message}],
-                    clearMessages: true
+                let timeouts = this.schedulePopUpMessage(this.state.timeoutIds, this.state.username, resendLockedTS, true);
+                if(!resend && resendLockedTS !== null)
+                {
+                    message = "Could not send a verification code for " + this.state.username + ". Another code can be " + 
+                        "sent at: "  + resendLockedTS.toLocaleTimeString();
+                }
+                this.setState({
+                    messageId: this.state.messageId + 1,
+                    messages: [{type: "failure", message: message, timeout: 0}],
+                    awaitingResults: false,
+                    resendingCode: false,
+                    nextSendAt: resendLockedTS,
+                    lockedUser: this.state.username,
+                    timeoutIds: timeouts,
+                    resendLocked: true
                 });
-                this.closeModal();
             }
             else if(message === "User already logged in")
             {
@@ -191,8 +294,7 @@ class ForgotPasswordPopup extends React.Component {
                     usernameError: message,
                     awaitingResults: false,
                     showVerificationPage: false,
-                    resendingCode: false,
-                    resends: 0
+                    resendingCode: false
                 });
             }
             else
@@ -203,43 +305,32 @@ class ForgotPasswordPopup extends React.Component {
         else if(status === 404)
         {
             this.props.updateLoggedIn(requester);
-            // tested
             if(message === "The username or email provided does not exist")
             {
                 this.setState({
                     usernameError: message,
                     awaitingResults: false,
                     showVerificationPage: false,
-                    resends: 0,
                     resendingCode: false
                 });
             }
-            // tested
             else if(message === "The login path sent to the server does not exist")
             {
-                console.log(message);
                 this.props.setMessages({
                     messages: [{type: "failure", message: message}],
                     clearMessages: true
                 });
                 this.closeModal();
             }
-            // tested
-            // tested 2
+
             else
             {
-                /*
-                    "Could not send another verification code as the maximum number "
-                     + "of codes to send out (3) has been met.  Another code can be sent "
-                     + "within 10 minutes.";
-                */
                 if(resend)
                 {
                     this.setState({
                         messages: [{type: "warning", message: message, timeout: 0}],
                         messageId: this.state.messageId + 1,
                         awaitingResults: false,
-                        resends: 2,
                         resendingCode: false
                     });
                 }
@@ -305,6 +396,12 @@ class ForgotPasswordPopup extends React.Component {
 
         if(!error)
         {
+            // stop any existing timeouts
+            for(let id of this.state.timeoutIds)
+            {
+                clearTimeout(id);
+            }
+
             let params = {
                 username: this.state.username,
                 verificationCode: this.state.verificationCode
@@ -312,7 +409,8 @@ class ForgotPasswordPopup extends React.Component {
             let url = "/login/validate_passcode";
             this.setState({
                 awaitingResults: true,
-                messageId: -1
+                messageId: -1,
+                timeoutIds: []
             });
             apiPostJsonRequest(url, params).then((result)=>{
                 let status = result[0];
@@ -347,15 +445,6 @@ class ForgotPasswordPopup extends React.Component {
                     verificationCode: ""
                 });
             }
-            // tested
-            else if(message === "User account tempoarily locked due to too many verification attempts")
-            {
-                this.props.setMessages({
-                    messages: [{type: "failure", message: message}],
-                    clearMessages: true
-                });
-                this.closeModal();
-            }
             else if(message === "User already logged in")
             {
                 this.props.setMessages({
@@ -364,16 +453,6 @@ class ForgotPasswordPopup extends React.Component {
                 });
                 this.closeModal();
             }
-            // tested
-            else if(message === "Verification code is invalid.  User account tempoarily locked due to too many verification attempts")
-            {
-                this.props.setMessages({
-                    messages: [{type: "failure", message: message}],
-                    clearMessages: true
-                });
-                this.closeModal();
-            }
-            // tested
             else if(message === "Verification code is invalid.  Verification code is no longer valid so user must "
                       + "request that a new verification code is sent out.")
             {
@@ -388,16 +467,6 @@ class ForgotPasswordPopup extends React.Component {
                     lockVerificationInput: true,
                     verificationCode: ""
                 });
-            }
-            // tested
-            else if(message === "Verification code is invalid.  Verification code is no longer valid.  User may try to " +
-                      "get a new verification code in 10 minutes as the limit of (3) codes have been sent out recently")
-            {
-                this.props.setMessages({
-                    messages: [{type: "failure", message: message}],
-                    clearMessages: true
-                });
-                this.closeModal();
             }
             else if(message.startsWith("Users account is currently suspended"))
             {
@@ -424,7 +493,6 @@ class ForgotPasswordPopup extends React.Component {
                     showVerificationPage: false,
                     awaitingResults: false,
                     resendingCode: false,
-                    resends: 0,
                     verificationCode: ""
                 });
             }
@@ -456,7 +524,6 @@ class ForgotPasswordPopup extends React.Component {
                     awaitingResults: false,
                     resendingCode: false,
                     showVerificationPage: false,
-                    resends: 0,
                     verificationCode: ""
                 });
             }
@@ -739,6 +806,17 @@ class ForgotPasswordPopup extends React.Component {
             error: this.state.usernameError
         };
         let usernameInput = generateInput(config, style);
+        let sendButton = (
+            <React.Fragment>
+                <button
+                        form="form1"
+                        value="create_account"
+                        className="submitButton"
+                        onClick={this.requestVerificationCode}
+                    >Send Verification Code
+                </button>
+            </React.Fragment>
+        );
 
         return (
             <React.Fragment>
@@ -747,13 +825,7 @@ class ForgotPasswordPopup extends React.Component {
                     {usernameInput}
                 </div>
                 <div className="actions">
-                    <button
-                        form="form1"
-                        value="create_account"
-                        className="submitButton"
-                        onClick={this.requestVerificationCode}
-                    >Send Verification Code
-                    </button>
+                    {sendButton}
                 </div>
             </React.Fragment>);
     }
@@ -805,10 +877,7 @@ class ForgotPasswordPopup extends React.Component {
                 </button>
             </div>
         );
-        if(this.state.resends >= 2)
-        {
-            resendButton = "";
-        }
+
         let content = (
             <React.Fragment>
                 <div className="content">
@@ -921,10 +990,14 @@ class ForgotPasswordPopup extends React.Component {
                         <a className="close" onClick={this.closeModal}>
                         &times;
                         </a>
+                        <div className="header">
+                            <h3 className="inlineH3"> Forgot Password </h3>
+                        </div>
                         <div className={style.alertContent}>
                             <Alert
                                 messages={this.state.messages}
                                 messageId={this.state.messageId}
+                                clearMessages={this.state.clearMessages}
                                 innerContainerStyle={{"z-index": "2", "font-size": "1.25em", "width":"90%", "margin-left":"5%", "margin-right":"5%", "padding-top": "10px"}}
                                 symbolStyle={{"width": "8%", "margin-top": "4px"}}
                                 messageBoxStyle={{width: "80%"}}
@@ -932,9 +1005,6 @@ class ForgotPasswordPopup extends React.Component {
                                 outterContainerStyle={{position: "inherit"}}
                                 style={{"margin-bottom":"5px"}}
                             />
-                        </div>
-                        <div className="header">
-                            <h3 className="inlineH3"> Forgot Password </h3>
                         </div>
                         {content}
                     </div>

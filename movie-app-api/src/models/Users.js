@@ -158,7 +158,7 @@ const user = (sequelize, DataTypes) => {
         if(type === 0)
         {
             user = await User.findOne({
-                where: { username: login },
+                where: { username: login, verified: true },
             }).catch(error=>{
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
@@ -166,7 +166,7 @@ const user = (sequelize, DataTypes) => {
         }
         else if (type === 1) {
             user = await User.findOne({
-                where: { email: login },
+                where: { email: login, verified: true },
             }).catch(error=>{
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
@@ -175,7 +175,7 @@ const user = (sequelize, DataTypes) => {
         else if(type === 2)
         {
             user = await User.findOne({
-                where: { id: login },
+                where: { id: login, verified: true },
             }).catch(error=>{
                 let callerStack = new Error().stack;
                 appendCallerStack(callerStack, error, undefined, true);
@@ -291,7 +291,10 @@ const user = (sequelize, DataTypes) => {
         }
         else if(type === 1) {
             user = await User.findOne({
-                where: { email: id },
+                where: { 
+                    email: id,
+                    verified: true
+                },
                 include: [
                     {
                         model: sequelize.models.UserAuthenticationAttempts,
@@ -306,7 +309,10 @@ const user = (sequelize, DataTypes) => {
         else if(type === 2)
         {
             user = await User.findOne({
-                where: { id: id },
+                where: { 
+                    id: id,
+                    verified: true
+                },
                 include: [
                     {
                         model: sequelize.models.UserAuthenticationAttempts,
