@@ -170,7 +170,8 @@ class ForgotPasswordPopup extends React.Component {
                 messages: [{type: "failure", message: message, timeout: 0}],
                 clearMessages: true,
                 timeoutIds: timeouts,
-                resendLocked: true
+                resendLocked: true,
+                verificationError: ""
             });
             return;
         }
@@ -190,7 +191,8 @@ class ForgotPasswordPopup extends React.Component {
             messageId: -1,
             resendingCode: true,
             lockedUser: this.state.username,
-            timeoutIds: []
+            timeoutIds: [],
+            verificationError: ""
         });
         apiPostJsonRequest(url, params).then((result)=>{
             let status = result[0];
@@ -453,10 +455,9 @@ class ForgotPasswordPopup extends React.Component {
                 });
                 this.closeModal();
             }
-            else if(message === "Verification code is invalid.  Verification code is no longer valid so user must "
-                      + "request that a new verification code is sent out.")
+            else if(message === "Verification code is invalid.  Verification code is no longer valid.")
             {
-                let output = " Verification code is no longer valid so user must "
+                let output = "Verification code is invalid.  Verification code is no longer valid so user must "
                             + "request that a new verification code is sent out."
                 this.setState({
                     verificationError: "Verification code is invalid",
@@ -796,7 +797,7 @@ class ForgotPasswordPopup extends React.Component {
     generateUserNameInputForm()
     {
         let config = {
-            label: "Username",
+            label: "Username or Email",
             type: "text",
             name: "username",
             form: "form1",

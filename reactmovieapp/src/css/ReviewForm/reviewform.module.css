@@ -235,7 +235,7 @@
 /* this sets the height for the textbox for the optional review */
 /* need to combine some of this stuff */
 .reviewInputField {
-    width: auto;
+    width: 100%;
     resize: none;
     line-height: 18px;
     max-height: 700px;

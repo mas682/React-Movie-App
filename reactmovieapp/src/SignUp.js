@@ -449,7 +449,8 @@ class SignUpPopup extends React.Component {
                 messages: [{type: "failure", message: message, timeout: 0}],
                 clearMessages: true,
                 timeoutIds: timeouts,
-                resendLocked: true
+                resendLocked: true,
+                verificationError: ""
             });
             return;
         }
@@ -469,7 +470,8 @@ class SignUpPopup extends React.Component {
             messageId: -1,
             resendingCode: true,
             timeoutIds: [],
-            lockedUser: this.state.email
+            lockedUser: this.state.email,
+            verificationError: ""
         });
         apiPostJsonRequest(url, params).then((result)=>{
             let status = result[0];

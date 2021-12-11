@@ -438,13 +438,11 @@ const validatePassCode = async (req, res) =>
         if((user.authenticationAttempts.verificationLocked !== null && user.authenticationAttempts.verificationLocked > new Date()
          && tempVerificationCode.verificationAttempts >= 3))
         {
-            message = "Verification code is invalid.  Verification code is no longer valid.  User may try to " +
-                      "get a new verification code in 10 minutes as the limit of (3) codes have been sent out recently";
+            message = "Verification code is invalid.  Verification code is no longer valid.";
         }
         else if(tempVerificationCode.verificationAttempts >= 3)
         {
-            message = "Verification code is invalid.  Verification code is no longer valid so user must "
-                      + "request that a new verification code is sent out.";
+            message = "Verification code is invalid.  Verification code is no longer valid.";
         }
         res.status(401).sendResponse({
             message: message,
