@@ -1,7 +1,7 @@
 import React from 'react';
-import Routes from './Router.js';
+import Routes from './Components/Router.js';
 import './css/forms.css';
-import './App.css';
+import './css/App.css';
 import './css/header.css';
 
 
