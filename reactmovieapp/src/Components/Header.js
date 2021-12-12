@@ -743,7 +743,6 @@ class Header extends React.Component {
                                 <div class="menuDropContent">
                                     <Link to="/watch_list" onClick={this.searchCloseHandler}>My Watch List</Link>
                                     <Link to="/watched_list" onClick={this.searchCloseHandler}>My Watched Movies</Link>
-                                    <Link to="/movie" onClick={this.searchCloseHandler}>Top Rated</Link>
                                     <Link to="/upcoming" onClick={this.searchCloseHandler}>Upcoming</Link>
                                     <Link to="/new_releases" onClick={this.searchCloseHandler}>New Releases</Link>
                                 </div>
@@ -753,8 +752,10 @@ class Header extends React.Component {
                                     Shows
                                 </div>
                                 <div class="menuDropContent">
-                                    <Link to="/" onClick={this.searchCloseHandler}>Top Rated</Link>
-                                    <Link to="/" onClick={this.searchCloseHandler}>Schedule</Link>
+                                    <Link to="/shows/watch_list" onClick={this.searchCloseHandler}>My Watch List</Link>
+                                    <Link to="/shows/watched_list" onClick={this.searchCloseHandler}>My Watched Movies</Link>
+                                    <Link to="/shows/upcoming" onClick={this.searchCloseHandler}>Upcoming</Link>
+                                    <Link to="/shows/new_releases" onClick={this.searchCloseHandler}>New Releases</Link>
                                 </div>
                             </div>
         					<button class="addButton" onClick={()=>{this.searchCloseHandler(); this.generateReviewForm();}}>+</button>
@@ -765,10 +766,11 @@ class Header extends React.Component {
                                 <div class="menuDropContent">
                                     <Link to="/feed" onClick={this.searchCloseHandler}>My Feed</Link>
                                     <Link to={profilePath} onClick={this.searchCloseHandler}>My Profile</Link>
+                                    <Link to="/my_account" onClick={this.searchCloseHandler}>My Account</Link>
                                 </div>
                             </div>
-                            <Link className="actionButton" to={"/settings"} onClick={this.searchCloseHandler}>
-                                <div>Settings</div>
+                            <Link className="actionButton" to={"/about"} onClick={this.searchCloseHandler}>
+                                <div>About</div>
                             </Link>
                             <button class="actionButton"  onClick={()=>{this.searchCloseHandler(); this.logout();}}>
                                 <div>Logout</div>
@@ -830,9 +832,7 @@ class Header extends React.Component {
                                 Movies
                             </div>
                             <div class="menuDropContent">
-                                <Link to="/movie" onClick={this.searchCloseHandler}>Top Rated</Link>
                                 <Link to="/upcoming" onClick={this.searchCloseHandler}>Upcoming</Link>
-                                <Link to="/movie" onClick={this.searchCloseHandler}>In Theaters</Link>
                                 <Link to="/new_releases" onClick={this.searchCloseHandler}>New Releases</Link>
                             </div>
                         </div>
@@ -841,14 +841,14 @@ class Header extends React.Component {
                                 Shows
                             </div>
                             <div class="menuDropContent">
-                                <Link to="/" onClick={this.searchCloseHandler}>Top Rated</Link>
-                                <Link to="/" onClick={this.searchCloseHandler}>Schedule</Link>
+                                <Link to="/shows/upcoming" onClick={this.searchCloseHandler}>Upcoming</Link>
+                                <Link to="/shows/new_releases" onClick={this.searchCloseHandler}>New Releases</Link>
                             </div>
                         </div>
                         <button class="addButton" onClick={() => {this.searchCloseHandler(); this.generateReviewForm()}}>+</button>
-                        <button class="actionButton"  onClick={()=>{this.searchCloseHandler(); this.props.showLoginPopUpFunction()}}>
+                        <Link class="actionButton" to="/about" onClick={()=>{this.searchCloseHandler();}}>
                             <div>About</div>
-                        </button>
+                        </Link>
                         <button class="actionButton"  onClick={()=>{this.searchCloseHandler(); this.props.showLoginPopUpFunction();}}>
                             <div>Login</div>
                         </button>

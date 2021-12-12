@@ -11,6 +11,7 @@ import SearchPage from './SearchPages.js';
 import {apiGetJsonRequest} from '../StaticFunctions/ApiFunctions.js';
 import Alert from './Alert.js';
 import {getErrorDisplay} from '../StaticFunctions/ErrorHtmlFunctions.js';
+import {getAboutDisplay} from './About.js';
 
 class Routes extends React.Component
 {
@@ -179,9 +180,15 @@ class Routes extends React.Component
                         <Route exact path="/new_releases" render={(props)=> <MovieFilterPage {...props} type="New Releases" updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>}/>
                         <Route exact path="/profile/:id" render={(props)=> <UserProfile {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} removeLoginPopUp={this.removeLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages} newReview={this.state.newReview}/> } />
                         <Route exact path="/feed" render={()=> <UserFeed updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/> } />
-                        <Route exact path="/settings" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn} setMessages={this.setMessages} currentUser={this.state.currentUser} showLoginPopUp={this.showLoginPopUp}/>} />
+                        <Route exact path="/my_account" render={()=> <UserSettings updateLoggedIn={this.updateLoggedIn} setMessages={this.setMessages} currentUser={this.state.currentUser} showLoginPopUp={this.showLoginPopUp}/>} />
                         <Route exact path="/movie/:id" render={(props)=> <MovieInfoPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
                         <Route exact path="/search" render={(props)=> <SearchPage {...props} updateLoggedIn={this.updateLoggedIn} showLoginPopUp={this.showLoginPopUp} currentUser={this.state.currentUser} setMessages={this.setMessages}/>} />
+                        <Route exact path="/about" render={()=>getAboutDisplay()} />
+                        <Route exact path="/shows/upcoming" render={()=>getErrorDisplay("This page will be coming soon")}/>
+                        <Route exact path="/shows/new_releases" render={()=>getErrorDisplay("This page will be coming soon")}/>
+                        <Route exact path="/shows/watch_list" render={()=>getErrorDisplay("This page will be coming soon")}/>
+                        <Route exact path="/shows/watched_list" render={()=>getErrorDisplay("This page will be coming soon")}/>
+                        <Route render={()=>getErrorDisplay("The requested page does not exist")} />
                         <Route render={()=>getErrorDisplay("The requested page does not exist")} />
                     </Switch>
                 </main>

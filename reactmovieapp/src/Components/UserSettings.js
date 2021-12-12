@@ -639,7 +639,7 @@ class UserSettings extends React.Component {
 		return (
 			<div className={style.mainBodyContainer}>
 			        <div className={style.header}>
-                        <h2>Settings</h2>
+                        <h2>My Account</h2>
 		            </div>
                     <form id="form1" onSubmit={this.validateForm} noValidate/>
 					{emailInput}
