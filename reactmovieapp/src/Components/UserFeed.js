@@ -113,6 +113,7 @@ class UserFeed extends React.Component {
 
     checkApiResults(status, message, requester, result, offset, max)
     {
+        let resultFound = true;
         if(status === 200)
         {
             console.log(result);
@@ -141,6 +142,35 @@ class UserFeed extends React.Component {
                 // should just about never happen
                 this.props.setMessages({messages: [{type: "failure", message: message}]});
             }
+            else if(status === 500)
+            {
+                this.props.updateLoggedIn(requester);
+                // username in url incorrect format
+                // should just about never happen
+                this.setState({
+                    loading: false,
+                    loadingData: false
+                });
+                this.props.setMessages({messages: [{type: "failure", message: message, timeout: 0}]});
+            }
+            else
+            {
+                this.setState({
+                    loading: false,
+                    loadingData: false
+                });
+                resultFound = false;
+            }
+        }
+        if(!resultFound)
+        {
+            let output = "Some unexpected " + status + " code was returned by the server.  Message: " + message;
+            this.setState({
+                loading: false,
+                loadingData: false
+            });
+            this.props.setMessages({messages: [{type: "failure", message: output, timeout: 0}]});
+            this.props.updateLoggedIn(requester);
         }
     }
 

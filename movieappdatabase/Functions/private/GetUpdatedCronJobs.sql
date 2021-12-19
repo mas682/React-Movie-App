@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION private."GetUpdatedCronJobs"(
     ROWS 1000
     
 AS $BODY$
-select 
+    select 
 		cj."lastRun",
 		r.*
     from private."CronJobControl" cj
@@ -42,7 +42,7 @@ select
 			cs."updatedAt" as "scheduleUpdatedAt"
         from private."ScheduledJobs" s
         join private."JobSteps" js on s."id" = js."jobId"
-		join private."CronJobSchedule" cs on cs."stepId" = js."id"
+		join private."CronJobSchedule" cs on cs."id" = js."CronJobScheduleId"
 		left join private."JobContainerControl" cc on cc."id" = js."ContainerControlId"
     ) r on r."jobUpdatedAt" > cj."lastRun" or r."stepUpdatedAt" > cj."lastRun" or r."scheduleUpdatedAt" > cj."lastRun"
     where cj."id" = 1

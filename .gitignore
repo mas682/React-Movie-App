@@ -19,3 +19,7 @@ node_modules/
 *.env
 *.conf
 movieappdatabase/src/__pycache__/config.cpython-38.pyc
+*.log
+movieappdatabase/BaseModel
+movieappdatabase/backup
+__pycache__

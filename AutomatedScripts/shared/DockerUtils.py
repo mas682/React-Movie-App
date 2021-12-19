@@ -47,6 +47,7 @@ def startDockerContainer(dockerCli, job, engine, environment, jobDetailsId):
     memReservation = job[0][14] if job[0][14] is not None else ""
     autoRemove = job[0][15] if job[0][15] is not None else True
     pidsLimit = job[0][16] if job[0][16] is not None else 100
+    networkName = job[0][17] if job[0][17] is not None else ""
     
     # if this is a job engine, just append the number to the name
     if(engine is not None and containerName != ""):
@@ -65,6 +66,7 @@ def startDockerContainer(dockerCli, job, engine, environment, jobDetailsId):
     print("Memory Reservation: " + str(memReservation))
     print("Auto remove: " + str(autoRemove))
     print("PIDs limit: " + str(pidsLimit))
+    print("Network name: " + networkName)
 
     #have table set up and pulled in query here but need to just update command below
     # path here is the path to the script to run, only used for lock file
@@ -81,7 +83,13 @@ def startDockerContainer(dockerCli, job, engine, environment, jobDetailsId):
     # restart policy?
     # user - what user to run the container as?
 
-    result = dockerCli.containers.run(image=imageName, command='bash -c "' + command + '"',
-     mounts=[mount], auto_remove=False, detach=True,environment=config, name=containerName,
-     cpuset_cpus=cpusToRunOn, cpu_shares=cpuShares, cpu_period=cpuPeriod, cpu_quota=cpuQuota,
-     mem_limit=memoryLimit, mem_reservation=memReservation, pids_limit=pidsLimit)
+    try:
+        result = dockerCli.containers.run(image=imageName, command='bash -c "' + command + '"',
+        mounts=[mount], auto_remove=autoRemove, detach=True,environment=config, name=containerName,
+        cpuset_cpus=cpusToRunOn, cpu_shares=cpuShares, cpu_period=cpuPeriod, cpu_quota=cpuQuota,
+        mem_limit=memoryLimit, mem_reservation=memReservation, pids_limit=pidsLimit, network=networkName)
+        print("Container started")
+    except:
+        print("ERROR CAUGHT")
+        print(result)
+        raise

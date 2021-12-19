@@ -24,7 +24,7 @@ parser.add_argument("-stepId", action="store", dest="stepId", required=True, typ
 args = parser.parse_args()
 
 
-def getCronJob(db, jobId, stepId):
+def getCronJob(db, jobId, stepId, logger, extras):
     print("Getting cron job to start for job id: " + str(jobId) + " with step id: " + str(stepId))
     script = """
         select 
@@ -44,13 +44,14 @@ def getCronJob(db, jobId, stepId):
             cc."cpu_quota",
             cc."mem_reservation",
             cc."auto_remove",
-            cc."pids_limit"
+            cc."pids_limit",
+            cc."network_name"
         from private."ScheduledJobs" s
         join private."JobSteps" js on js."jobId" = s."id" and js."id" = """ + str(jobId) + """ and js."jobId" = """ + str(stepId) + """
         join private."JobContainerControl" cc on cc."id" = js."ContainerControlId"
     """
     print("Executing query: " + script)
-    db._cur.execute(script)
+    db.executeQuery(script, "select statement that caused the error:", logger, extras)
     result = db._cur.fetchall()
     return result
 
@@ -117,7 +118,7 @@ if __name__ == '__main__':
         try:
             dockerCli = docker.from_env()
             # get the job details...
-            result = getCronJob(db, stepId, jobId)
+            result = getCronJob(db, stepId, jobId, logger, extras)
             if(len(result) < 1):
                 raise Exception("Could not find an existing job matching the given job id and step id")
             else:

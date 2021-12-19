@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS private."JobSteps"
     CONSTRAINT "JobSteps_ScheduledJobs_fkey" FOREIGN KEY ("jobId")
         REFERENCES private."ScheduledJobs" (id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE CASCADE,
+        ON DELETE SET NULL,
     CONSTRAINT "JobSteps_JobContainerControl_fkey" FOREIGN KEY ("ContainerControlId")
         REFERENCES private."JobContainerControl" (id) MATCH SIMPLE
         ON UPDATE NO ACTION

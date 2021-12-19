@@ -177,7 +177,7 @@ def generateSQL(movieDetails):
     return {"insert":result, "update":updateResult}    
 
 # function to insert movie into db
-def insertMovie(insertValue, updateValue, id, db):
+def insertMovie(insertValue, updateValue, id, db, logger, extras):
     print("Inserting movie into database with id of: " + str(id))
     sql =   """INSERT INTO public."Movies"(
                     title,
@@ -205,11 +205,11 @@ def insertMovie(insertValue, updateValue, id, db):
                 ON CONFLICT (tmdb_id) DO
                 UPDATE SET """ + updateValue + """
                 RETURNING id;"""
-    
-    db._cur.execute(sql)
+    db.executeQuery(sql, "Insert statement that caused the error:", logger, extras)
+
 
 # function to insert movie genres and associate them to movies
-def insertGenres(genres, movieId, db):
+def insertGenres(genres, movieId, db, logger, extras):
     genreSQL = None
     genreString = None
     genreCount = len(genres)
@@ -242,7 +242,7 @@ def insertGenres(genres, movieId, db):
                     )
                     VALUES """ + genreSQL + """
                     ON CONFLICT (value) DO NOTHING;"""
-        db._cur.execute(sql)
+        db.executeQuery(sql, "Insert statement that caused the error:", logger, extras)
 
         # associate the movie with the genres
         sql = """
@@ -255,7 +255,7 @@ def insertGenres(genres, movieId, db):
                     join public."Movies" m on m."tmdb_id" = """ +  str(movieId) + """
                     where value in (""" + genreString + """)
                     ON CONFLICT("GenreId","movieId") DO NOTHING;"""
-        db._cur.execute(sql)
+        db.executeQuery(sql, "Insert statement that caused the error:", logger, extras)
 
 # function to control parsing of movie data
 def getMovieDetails(movie, apiKey):
@@ -288,7 +288,7 @@ def getMovieDetails(movie, apiKey):
 
 
 # function to control the whole process
-def getMovies(db, startDate, endDate, jobType):
+def getMovies(db, startDate, endDate, jobType, logger, extras):
     environment = os.getenv('ENVIRONMENT')
     params = config(environment, section='TMDB')
     apiKey = params["key"]
@@ -320,8 +320,8 @@ def getMovies(db, startDate, endDate, jobType):
             movieDetails = getMovieDetails(movie, apiKey)
             if movieDetails is not None:
                 sqlValues = generateSQL(movieDetails)
-                insertMovie(sqlValues["insert"], sqlValues["update"], id, db)
-                insertGenres(movieDetails["genres"], id, db)
+                insertMovie(sqlValues["insert"], sqlValues["update"], id, db,  logger, extras)
+                insertGenres(movieDetails["genres"], id, db, logger, extras)
                 moviesInserted = moviesInserted + 1
             print("Sleeping for 0.5 seconds")
             sleep(0.5)
@@ -333,12 +333,12 @@ def getMovies(db, startDate, endDate, jobType):
 
 def main(logger, db, extras, jobId, jobDetailsId, arguments):
     print("Getting last run time from the control table...")
-    id = "3"
+    id = "1"
     script = """
         SELECT * FROM private."TMDB_API_Control" 
         where "id" = """ + id + """ and enabled
     """
-    db._cur.execute(script)
+    db.executeQuery(script, "select statement that caused the error:", logger, extras)
     result = db._cur.fetchall()
     moviesProcessed = 0
     end = None
@@ -356,7 +356,7 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
         end = lastRun + timedelta(days=90)
         endDate = end.strftime("%Y-%m-%d")
         print("End date: " + endDate)
-        moviesProcessed = getMovies(db, startDate, endDate, type)
+        moviesProcessed = getMovies(db, startDate, endDate, type, logger, extras)
 
     # update the next job run time
     if(end is not None and lastRun is not None):
@@ -379,6 +379,6 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
         """
         print("Executing sql to update the last run date on the control table:")
         print(sql)
-        db._cur.execute(sql)
+        db.executeQuery(script, "insert statement that caused the error:", logger, extras)
 
     return "Finished Successfully"

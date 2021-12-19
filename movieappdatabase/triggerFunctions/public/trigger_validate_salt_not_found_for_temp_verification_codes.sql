@@ -8,7 +8,7 @@ DO $$ BEGIN
         SELECT routines.routine_name, parameters.data_type, parameters.ordinal_position, routines.specific_schema
         FROM information_schema.routines
         LEFT JOIN information_schema.parameters ON routines.specific_name=parameters.specific_name
-        WHERE routines.specific_schema='public' and routine_name = 'trigger_validate_salt_not_found_usercredentials'
+        WHERE routines.specific_schema='public' and routine_name = 'trigger_validate_salt_not_found_for_temp_verification_codes'
     )
     THEN
         CREATE FUNCTION public.trigger_validate_salt_not_found_for_temp_verification_codes()
@@ -35,7 +35,7 @@ DO $$ BEGIN
                     else
                         return new;
                     end if;
-                end
+                end;
         $BODY$;
 
         ALTER FUNCTION public.trigger_validate_salt_not_found_for_temp_verification_codes()

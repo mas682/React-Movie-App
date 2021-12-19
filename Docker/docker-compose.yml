@@ -1,16 +1,26 @@
 version: "3.7"
 
 services:
-  #extract-volume:
-  #  image: ubuntu
-  #  profiles: 
-  #    - db-reset
-  #  volumes: 
-  #    - pgdatabase:
-  #    - .:/backup
-  #  command: bash -c "cd /backup && tar xvf /backup/backup.tar --strip 1"
+  extract-db-volume:
+    image: ubuntu
+    profiles: 
+      - db-reset
+    volumes: 
+      - pgdatabase:/recover
+      - ../movieappdatabase/backup:/backup
+    networks:
+      - python-db-local
+    command: bash -c "cd /recover && tar xvf /backup/backup.tar --strip 1"
+
+  backend-engine:
+    build: 
+        context: ../AutomatedScripts/Docker
+        dockerfile: python.Dockerfile
+    image: pyengine2
+    profiles:
+      - backend
   
-  movie-api-database:
+  movie-app-database:
     build: 
         context: ../movieappdatabase/src
         dockerfile: database.Dockerfile
@@ -31,28 +41,33 @@ services:
           cpus: "${DATABASE_CPU_SHARE}"
     volumes:
       - pgdatabase:/var/lib/postgresql/data
+    networks:
+      - db-redisListener
+      - db-api
+      - python-db
+      - python-db-local
 
   python-db-builder:
       build: 
-          context: ./src/AutomatedScripts/Docker
+          context: ../AutomatedScripts/Docker
           dockerfile: python.Dockerfile
       image: python-db-builder
       profiles: 
         - db-builder
       command: python3 src/SchemaCreator.py 
       environment:
-        SERVER: "${SERVER}"
-        ENVIRONMENT: "${ENVIRONMENT}"
+        SERVER: "${CONTAINER_SERVER}"
+        ENVIRONMENT: "${CONTAINER_ENVIRONMENT}"
       working_dir: /movieappdatabase
       volumes:
         - ../movieappdatabase:/movieappdatabase
+      networks:
+        - python-db
 
   redis:
     image: redis
     profiles:
       - backend
-    ports:
-      - "6379:6379"
     volumes:
       - ./redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
@@ -63,6 +78,10 @@ services:
         reservations:
           memory: "${REDIS_MEM_RES}"
           cpus: "${REDIS_CPU_SHARE}"
+
+    networks:
+      - redis-redisListener
+      - redis-api
 
   movie-api-app:
     image: node:14
@@ -83,11 +102,14 @@ services:
           memory: "${NODE_MEM_RES}"
           cpus: "${NODE_CPU_SHARE}"
     volumes:
-      - ./:/movie-app-api
+      - ../movie-app-api:/movie-app-api
     depends_on:
-      - movie-api-database
+      - movie-app-database
       - redis
       - redis-listener
+    networks:
+      - db-api
+      - redis-api
 
   redis-listener:
     image: python-engine
@@ -98,8 +120,8 @@ services:
       ENVIRONMENT: "LOCAL-DEV"
       CONTAINER: "TRUE"
     volumes:
-      - ./src/AutomatedScripts:/home/AutomatedScripts
-    command: python3 -m AutomatedScripts.Scripts.ScriptController -path AutomatedScripts.Scripts.Redis.redisListener -jobId 2 -stepId 2 -dbConnectionRetryAttempts 1
+      - ../AutomatedScripts:/home/AutomatedScripts
+    command: python3 -m AutomatedScripts.Scripts.ScriptController -path AutomatedScripts.Scripts.Redis.redisListener -jobId 2 -stepId 3 -dbConnectionRetryAttempts 1
     deploy:
       resources:
         limits:
@@ -110,8 +132,11 @@ services:
       restart_policy:
         delay: 5s
     depends_on:
-      - movie-api-database
+      - movie-app-database
       - redis
+    networks:
+      - db-redisListener
+      - redis-redisListener
 
   react-frontend:
     image: node:14
@@ -138,6 +163,22 @@ services:
     stdin_open: true 
     depends_on: 
       - movie-api-app
+    networks:
+      - frontend
   
 volumes:
   pgdatabase:
+
+networks:
+  db-redisListener:
+    internal: true
+  db-api:
+    internal: true
+  redis-redisListener:
+    internal: true
+  redis-api:
+    internal: true  
+  frontend:
+  python-db-local:
+    internal: true
+  python-db:

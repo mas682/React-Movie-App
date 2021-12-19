@@ -1,0 +1,51 @@
+version: "3.7"
+
+services:
+  #extract-volume:
+  #  image: ubuntu
+  #  profiles: 
+  #    - db-reset
+  #  volumes: 
+  #    - pgdatabase:
+  #    - .:/backup
+  #  command: bash -c "cd /backup && tar xvf /backup/backup.tar --strip 1"
+  
+  movie-api-database:
+    build: 
+        context: ../movieappdatabase/src
+        dockerfile: database.Dockerfile
+    image: movie-app-db
+    profiles: 
+      - backend
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+    deploy:
+      resources:
+        limits:
+          memory: "${DATABASE_MEM}"
+        reservations:
+          memory: "${DATABASE_MEM_RES}"
+          cpus: "${DATABASE_CPU_SHARE}"
+    volumes:
+      - pgdatabase2:/var/lib/postgresql/data
+
+  python-db-builder:
+      build: 
+          context: ../AutomatedScripts/Docker
+          dockerfile: python.Dockerfile
+      image: python-db-builder
+      profiles: 
+        - db-builder
+      command: python3 src/SchemaCreator.py 
+      environment:
+        SERVER: "${CONTAINER_SERVER}"
+        ENVIRONMENT: "${CONTAINER_ENVIRONMENT}"
+      working_dir: /movieappdatabase
+      volumes:
+        - ../movieappdatabase:/movieappdatabase
+  
+volumes:
+  pgdatabase2:

@@ -191,7 +191,7 @@ if __name__ == '__main__':
             logger = logging.getLogger()
 
     # if the job was marked as started
-    if(not jobLogError):
+    if(not jobLogError and jobEnabled):
         try:
             lockExists = Utils.getLockFile(lockFilePath, 2)
         except:

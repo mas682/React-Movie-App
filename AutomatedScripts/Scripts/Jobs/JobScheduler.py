@@ -8,5 +8,5 @@
 def main(logger, db, extras, jobId, jobDetailsId, arguments):
     script = """call private."UpdateJobQueue"() """
     print("Executing stored procedure: \n" + script)
-    db._cur.execute(script)
+    db.executeQuery(script, "sql statement that caused the error:", logger, extras)
     return "Finished Successfully"

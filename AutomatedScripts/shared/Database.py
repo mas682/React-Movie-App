@@ -64,13 +64,14 @@ class Database:
 
 
     # function to see if a job with a given id is enabled
-    def getJobEnabled(self, id):
+    def getJobEnabled(self, id, logger, extras):
         enabled = False
         id = str(id)
-        self._cur.execute("""
+        sql = """
             SELECT * from private."ScheduledJobs"
 	        WHERE id=""" + id + """ and "Enabled" = True;
-        """)
+        """
+        self.executeQuery(sql, "select statement that caused the error:", logger, extras)
         result = self._cur.fetchall()
         if(len(result) > 0):
             enabled = True
@@ -79,19 +80,20 @@ class Database:
 
     # this will update the databse to create a record of a running cron job, specifically for cron jobs 
     # that run inside of containers 
-    def startContainerCronJob(self, id, stepId, server):
+    def startContainerCronJob(self, id, stepId, server, logger, extras):
         startTime = None
         jobId = -1
         id = str(id)
         stepId = str(stepId)
 
-        self._cur.execute("""
+        sql = """
             UPDATE private."ScheduledJobs"
                SET
                      "lastRun"=CURRENT_TIMESTAMP
                WHERE id=""" + id + """
                RETURNING "lastRun";
-        """)
+        """
+        self.executeQuery(sql, "update statement that caused the error:", logger, extras)
         result = self._cur.fetchall()
         if(len(result) > 0):
             startTime = str(result[0][0])
@@ -104,7 +106,7 @@ class Database:
                     server + """', CURRENT_TIMESTAMP)
                     RETURNING "id";
                     """)
-            self._cur.execute(sql)
+            self.executeQuery(sql, "insert statement that caused the error:", logger, extras)
             result = self._cur.fetchall()
             if(len(result) > 0):
                 jobId = result[0][0]
@@ -115,7 +117,7 @@ class Database:
     # cron job ran via container
     # the job will have already been marked as started so just need to get if enabled 
     # and update log to say the job is actually running now
-    def updateContainerCronJob(self, id, stepId, server, jobDetailsId):
+    def updateContainerCronJob(self, id, stepId, server, jobDetailsId, logger, extras):
         enabled = False
         startTime = None
         id = str(id)
@@ -124,7 +126,7 @@ class Database:
         scriptPath = None
         agruments = None
 
-        self._cur.execute("""
+        sql = """
             SELECT 
                 case when s."Enabled" and js."enabled"
                     then true
@@ -138,7 +140,8 @@ class Database:
             left join private."JobSteps" js on js."id" = """ + stepId + """
             and js."jobId" = """ + id + """
             where s."id" = """ + id + """
-        """)
+        """
+        self.executeQuery(sql, "select statement that caused the error:", logger, extras)
         result = self._cur.fetchall()
         if(len(result) > 0):
             enabled = result[0][0]
@@ -153,13 +156,13 @@ class Database:
                             "state"='Running'
                     WHERE id=""" + jobDetailsId + """;
             """)
-            self._cur.execute(sql)
+            self.executeQuery(sql, "update statement that caused the error:", logger, extras)
 
         return {"enabled": enabled, "jobDetailsId": int(jobDetailsId), "scriptPath": scriptPath, "arguments": arguments, "logArguments": logArguments}
 
 
     # this will update the database to create a record of a running job
-    def startJob(self, id, stepId, server, engine):
+    def startJob(self, id, stepId, server, engine, logger, extras):
         enabled = False
         startTime = None
         jobId = -1
@@ -169,7 +172,7 @@ class Database:
         scriptPath = None
         agruments = None
 
-        self._cur.execute("""
+        sql = """
             UPDATE private."ScheduledJobs"
                SET
                      "lastRun"=CURRENT_TIMESTAMP
@@ -189,7 +192,8 @@ class Database:
             left join private."JobSteps" js on js."id" = """ + stepId + """
             and js."jobId" = """ + id + """
             where s."id" = """ + id + """
-        """)
+        """
+        self.executeQuery(sql, "sql statement that caused the error:", logger, extras)
         result = self._cur.fetchall()
         if(len(result) > 0):
             enabled = result[0][0]
@@ -206,7 +210,7 @@ class Database:
                     server + """', CURRENT_TIMESTAMP)
                     RETURNING "id";
                     """)
-            self._cur.execute(sql)
+            self.executeQuery(sql, "insert statement that caused the error:", logger, extras)
             result = self._cur.fetchall()
             if(len(result) > 0):
                 jobId = result[0][0]
@@ -216,26 +220,41 @@ class Database:
 
     # this function updates the database to indicate this job is still active
     # and this returns whether the database still has this job enabled
-    def updateRunningJob(self, jobDetailsId):
+    def updateRunningJob(self, jobDetailsId, logger, extras):
         jobDetailsId = str(jobDetailsId)
-        self._cur.execute("""
+        script = """
             UPDATE private."JobDetails"
                SET
                      "lastActive"=CURRENT_TIMESTAMP
                WHERE id=""" + jobDetailsId + """;
-        """)
+        """
+        self.executeQuery(script, "update statement that caused the error:", logger, extras)
 
 
     # function to update a database to indicate a job finsihed
     # state is the state of the job finishing...successful, failed, etc.
-    def stopJob(self, jobDetailsId, state):
+    def stopJob(self, jobDetailsId, state, logger, extras):
         jobDetailsId = str(jobDetailsId)
 
-        self._cur.execute("""
+        script = """
             UPDATE private."JobDetails"
                    SET
     	                 "lastActive"=CURRENT_TIMESTAMP,
                          "finished"=CURRENT_TIMESTAMP,
                          "state"='""" + state + """'
                    WHERE id=""" + jobDetailsId + """;
-        """)
+        """
+        self.executeQuery(script, "update statement that caused the error:", logger, extras)
+
+    # function to execute some sql
+    # catches any errors and prints out the sql that caused the error to the log file
+    # sql is the sql statement to run
+    # error message is the message to prefix the sql statement with in the log file
+    def executeQuery(self, sql, errorMessage, logger, extras):
+        try:
+            self._cur.execute(sql)
+        except:
+            print("The following sql caused an error:")
+            print(sql)
+            logger.info(errorMessage + "\n" + sql, extra=extras)
+            raise

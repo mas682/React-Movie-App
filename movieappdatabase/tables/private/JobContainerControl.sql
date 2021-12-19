@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS private."JobContainerControl"
     type character varying(100) COLLATE pg_catalog."default" NOT NULL,
     image_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
     container_name character varying(100) COLLATE pg_catalog."default",
+    network_name character varying(100) COLLATE pg_catalog."default",
     memory_limit character varying(50) COLLATE pg_catalog."default",
     cpus_to_run_on character varying(50) COLLATE pg_catalog."default",
     cpu_shares integer,

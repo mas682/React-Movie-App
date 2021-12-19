@@ -3,7 +3,7 @@ const config = require('../../Config.json');
 let sequelize;
 
 function createClient() {
-    let host = (process.env.NODE_DOCKER == "true") ? "movie-api-database:5432/movie-app" : config.database.host;
+    let host = (process.env.NODE_DOCKER == "true") ? "movie-app-database:5432/movie-app" : config.database.host;
     sequelize = new Sequelize(
         "postgres://" + config.database.username + ":" + config.database.password + "@" + host,
          {

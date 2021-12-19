@@ -43,7 +43,7 @@ def startJob(db, logger, jobId, stepId, extras={}):
     if(engine is None):
         engine = "null"
     try:
-        result = db.startJob(jobId, stepId, server, engine)
+        result = db.startJob(jobId, stepId, server, engine, logger, extras)
     except:
         traceback.print_exc()
         logger.info("An error occurred when attempting to start the job with the id of: " + str(jobId), exc_info=sys.exc_info(), extra=extras)
@@ -71,7 +71,7 @@ def updateContainerCronJob(db, logger, jobId, stepId, jobDetailsId, extras={}):
         server = "Unknown"
 
     try:
-        result = db.updateContainerCronJob(jobId, stepId, server, jobDetailsId)
+        result = db.updateContainerCronJob(jobId, stepId, server, jobDetailsId, logger, extras)
     except:
         traceback.print_exc()
         logger.info("An error occurred when attempting to start the job with the id of: " + str(jobId) + " and with job details id of: " + str(jobDetailsId), exc_info=sys.exc_info(), extra=extras)
@@ -94,7 +94,7 @@ def startContainerCronJob(db, logger, jobId, stepId, extras={}):
         server = "Unknown"
 
     try:
-        result = db.startContainerCronJob(jobId, stepId, server)
+        result = db.startContainerCronJob(jobId, stepId, server, logger, extras)
     except:
         traceback.print_exc()
         logger.info("An error occurred when attempting to start the job with the id of: " + str(jobId), exc_info=sys.exc_info(), extra=extras)
@@ -142,7 +142,7 @@ def getLockFile(lockFilePath, maxLines):
 
 def stopJob(db, logger, jobDetailsId, state, extras={}):
     try:
-        db.stopJob(jobDetailsId, state)
+        db.stopJob(jobDetailsId, state, logger, extras)
     except:
         traceback.print_exc()
         logger.info("An error occurred trying mark the job with the job details id(" + jobDetailsId  + ") as finished", exc_info=sys.exc_info(), extra=extras)
@@ -154,7 +154,7 @@ def getJobEnabled(db, logger, id, extras={}):
     enabled = False
     error = False
     try:
-        enabled = db.getJobEnabled(id)
+        enabled = db.getJobEnabled(id, logger, extras)
     except:
         traceback.print_exc()
         logger.info("An error occurred trying to determine if the job with id of " + str(id) + " is enabled", exc_info=sys.exc_info(), extra=extras)
@@ -165,7 +165,7 @@ def getJobEnabled(db, logger, id, extras={}):
 def updateRunningJob(db, logger, id, extras={}):
     error = False
     try:
-        db.updateRunningJob(id)
+        db.updateRunningJob(id, logger, extras)
     except:
         traceback.print_exc()
         logger.info("An error occurred trying to mark the job with id of " + str(id) + " as still running", exc_info=sys.exc_info(), extra=extras)

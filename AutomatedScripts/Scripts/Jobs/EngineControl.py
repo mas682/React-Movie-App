@@ -12,7 +12,7 @@ import os
 
 from AutomatedScripts.shared import DockerUtils
 
-def getNumberOfEngines(db):
+def getNumberOfEngines(db, logger, extras):
     print("\nGetting number of engines to run...")
     script = """
         select 
@@ -21,7 +21,7 @@ def getNumberOfEngines(db):
         where "type" = 'Scheduled Jobs'
     """
     print("Executing query: " + script)
-    db._cur.execute(script)
+    db.executeQuery(script, "select statement that caused the error:", logger, extras)
     result = db._cur.fetchall()
     engineCount = 0
     if(len(result) > 0):
@@ -30,14 +30,14 @@ def getNumberOfEngines(db):
     return engineCount
 
 
-def getQueuedJob(db, server, engine):
+def getQueuedJob(db, server, engine, logger, extras):
     # call out to mark a job for the engine
     print("\nGetting a job for engine: " + str(engine))
     script = """
         call private."GetJobQueueLock"('""" + server + """',""" + engine + """);
     """
     print("Executing query: " + script)
-    db._cur.execute(script)
+    db.executeQuery(script, "sql statement that caused the error:", logger, extras)
     # get the job that was marked
     script = """
         select 
@@ -57,7 +57,8 @@ def getQueuedJob(db, server, engine):
             cc."cpu_quota",
             cc."mem_reservation",
             cc."auto_remove",
-            cc."pids_limit"
+            cc."pids_limit",
+            cc."network_name"
         from private."JobQueue" j
         left join private."ScheduledJobs" s on s."id" = j."jobId"
         left join private."JobSteps" js on js."id" = j."stepId"
@@ -70,11 +71,11 @@ def getQueuedJob(db, server, engine):
         limit 1
     """
     print("Executing query: " + script)
-    db._cur.execute(script)
+    db.executeQuery(script, "select statement that caused the error:", logger, extras)
     result = db._cur.fetchall()
     return result
 
-def updateStartedJob(db, jobQueueIds):
+def updateStartedJob(db, jobQueueIds, logger, extras):
     if(len(jobQueueIds) < 1):
         return
     idString = ""
@@ -90,10 +91,10 @@ def updateStartedJob(db, jobQueueIds):
         where "id" in (""" + idString + """)
     """
     print("Executing query: " + script)
-    db._cur.execute(script)
+    db.executeQuery(script, "update statement that caused the error:", logger, extras)
 
 
-def updateJobNotStarted(db, jobQueueIds):
+def updateJobNotStarted(db, jobQueueIds, logger, extras):
     if(len(jobQueueIds) < 1):
         return
     idString = ""
@@ -111,7 +112,7 @@ def updateJobNotStarted(db, jobQueueIds):
         where "id" in (""" + idString + """)
     """
     print("Executing query: " + script)
-    db._cur.execute(script)
+    db.executeQuery(script, "update statement that caused the error:", logger, extras)
 
 
 
@@ -129,14 +130,16 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
     print("Running containers: " + str(len(containers)))
 
     # remove any python-engine containers that are not running
-    containersToRemove = dockerCli.containers.list(filters={'ancestor':'python-engine', 'status':'exited'})
+    containersToRemove = dockerCli.containers.list(filters={'ancestor':'python-engine', 'status':'created'})
+    containersToRemove = containersToRemove + dockerCli.containers.list(filters={'ancestor':'python-engine', 'status':'exited'})
+    containersToRemove = containersToRemove + dockerCli.containers.list(filters={'ancestor':'python-engine', 'status':'dead'})
     print("\nContainers not running: " + str(len(containersToRemove)))
     print(containersToRemove)
     for container in containersToRemove:
         print("Removing container: " + container.name)
         container.remove()
 
-    numContainersToRun = getNumberOfEngines(db)    
+    numContainersToRun = getNumberOfEngines(db, logger, extras)    
     # if less than max containers are running
     if(len(containers) < numContainersToRun):
         counter = 1
@@ -160,7 +163,7 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
         # iterate through the available engines to try to start them
         for engine in keys:
             # get a job from the queue for this server/engine pair
-            result = getQueuedJob(db, server, engine)
+            result = getQueuedJob(db, server, engine, logger, extras)
             # if no job was returned, done trying to assign jobs
             if(len(result) < 1):
                 print("No more jobs to run currently so exiting out of loop")
@@ -172,13 +175,13 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
             except:
                 print("An error occurred starting the container for engine " + str(engine))
                 print("\nUpdating all jobs that have been successfully started:")
-                updateStartedJob(db, startedJobs)
+                updateStartedJob(db, startedJobs, logger, extras)
                 print("Updating the job queue to indicate the job with id of " + str(jobId) + " was not started")
-                updateJobNotStarted(db, [jobId])
+                updateJobNotStarted(db, [jobId], logger, extras)
                 raise
         
         print("Updating all jobs that have been successfully started:")
-        updateStartedJob(db, startedJobs)
+        updateStartedJob(db, startedJobs, logger, extras)
             
         # for scalability, going to request one job at a time
         # when a job is requested, mark it as pending

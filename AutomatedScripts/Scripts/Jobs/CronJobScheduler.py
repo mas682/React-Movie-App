@@ -40,9 +40,9 @@ def removeJob(cron, jobId):
 
 def updateOrCreateJob(cron, jobId, stepId, runAsContainer, scriptPath, timeout, minute, hour, month, dayOfMonth, dayOfWeek):
     if(not runAsContainer):
-        command = "cd /home/react-movie-app/movie-app-api/src; timeout --kill-after=10 " + str(timeout) + " /usr/bin/python3 -m AutomatedScripts.Scripts.ScriptController -path " + scriptPath + " -jobId " + jobId + " -stepId " + stepId
+        command = "cd /home/react-movie-app; timeout --kill-after=10 " + str(timeout) + " /usr/bin/python3 -m AutomatedScripts.Scripts.ScriptController -path " + scriptPath + " -jobId " + jobId + " -stepId " + stepId
     else:
-        command = "cd /home/react-movie-app/movie-app-api/src; timeout --kill-after=10 30 /usr/bin/python3 -m AutomatedScripts.Scripts.Jobs.CronJobContainerStarter -jobId " + jobId + " -stepId " + stepId
+        command = "cd /home/react-movie-app; timeout --kill-after=10 30 /usr/bin/python3 -m AutomatedScripts.Scripts.Jobs.CronJobContainerStarter -jobId " + jobId + " -stepId " + stepId
     print(command)
     job = findExistingJob(cron, jobId)
     if job is None:
@@ -118,7 +118,7 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
     # set to utc to match db
     lastRun = datetime.now(timezone.utc)
     lastRun = lastRun.strftime("%Y-%m-%d %H:%M:%S.%f")
-    db._cur.execute(script)
+    db.executeQuery(script, "select statement that caused the error:", logger, extras)
     result = db._cur.fetchall()
     updateJobs(result)
 
@@ -129,9 +129,6 @@ def main(logger, db, extras, jobId, jobDetailsId, arguments):
         where "id" = 1
     """
     print("Executing query: " + script)
-    db._cur.execute(script)
+    db.executeQuery(script, "update statement that caused the error:", logger, extras)
 
     return "Finished Successfully"
-
-    #sample:
-    #* * * * 5 cd /home/react-movie-app/movie-app-api/src; timeout 10 /usr/bin/python3 -m AutomatedScripts.Scripts.ScriptController -path AutomatedScripts.Scripts.Jobs.JobScheduler -jobId 3 -stepId 11 >> /tmp/listener.log 2>&1

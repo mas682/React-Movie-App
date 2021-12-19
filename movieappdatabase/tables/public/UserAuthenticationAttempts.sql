@@ -69,7 +69,7 @@ DO $$ BEGIN
         FROM  information_schema.triggers
         WHERE event_object_table = 'UserAuthenticationAttempts'
         and trigger_schema = 'public'
-        and trigger_name = 'trigger_set_account_locked_ts'
+        and trigger_name = 'set_password_locked_timestamp'
     )
     THEN
         CREATE TRIGGER set_password_locked_timestamp

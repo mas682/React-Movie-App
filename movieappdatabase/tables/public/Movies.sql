@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS public."Movies"
     "physicalReleaseDate" date,
     "tvReleaseDate" date,
     status character varying(100) COLLATE pg_catalog."default",
-    homepage character varying(100) COLLATE pg_catalog."default",
+    homepage character varying(200) COLLATE pg_catalog."default",
     imdb_id character varying(50) COLLATE pg_catalog."default",
     tmdb_id integer NOT NULL,
     "originalLanguage" character varying(20) COLLATE pg_catalog."default",

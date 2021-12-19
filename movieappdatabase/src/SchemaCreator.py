@@ -49,6 +49,7 @@ def connect():
     print("Connecting to database")
     try:
         environment = os.getenv('ENVIRONMENT')
+        print(environment)
         if(environment is None):
             logger.info("Could not determine what environment the script is running on", extra=extras)
             raise Exception("Could not determine what environment the script is running on")
@@ -105,7 +106,7 @@ if __name__ == '__main__':
         # trigger functions - public
         './triggerFunctions/public/trigger_create_movie_rating.sql',
         './triggerFunctions/public/trigger_delete_movie_rating.sql',
-        './triggerFunctions/public/trigger_remove_expired_verificaiton_codes.sql',
+        './triggerFunctions/public/trigger_remove_expired_verification_code.sql',
         './triggerFunctions/public/trigger_set_account_locked_ts.sql',
         './triggerFunctions/public/trigger_set_movie_rating.sql',
         './triggerFunctions/public/trigger_set_timestamp.sql',
@@ -135,8 +136,8 @@ if __name__ == '__main__':
         './tables/public/Genres.sql',
         './tables/public/Likes.sql',
         './tables/public/MovieGenres.sql',
-        './tables/public/Retailers.sql',
-        './tables/public/MoviesProviders.sql',
+        #'./tables/public/Retailers.sql',
+        #'./tables/public/MoviesProviders.sql',
         './tables/public/MovieTags.sql',
         './tables/public/ReviewBadTags.sql',
         './tables/public/ReviewGoodTags.sql',
@@ -147,12 +148,12 @@ if __name__ == '__main__':
         './tables/public/UserSessions.sql', 
         './tables/public/UsersFriends.sql',
         './tables/public/UsersWatchedMovies.sql',
-        './tables/public/VerificationQuestions.sql',
+        #'./tables/public/VerificationQuestions.sql',
         './tables/public/UserWatchLists.sql',
-        './tables/public/UserVerificationQuestions.sql',
+        #'./tables/public/UserVerificationQuestions.sql',
         # procedures - private
         './Procedures/private/GetJobQueueLock.sql',
-        './Procedures/private/UpdateJobQueue.sql'
+        './Procedures/private/UpdateJobQueue.sql',
         # functions - private
         './Functions/private/GetUpdatedCronJobs.sql'
     ]
