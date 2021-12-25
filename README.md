@@ -3,7 +3,7 @@
 ## Index
 - [Project Tracking](https://github.com/users/mas682/projects/1) - This link will take you to my GitHub kanban board I am using to track the projects progress.  I started using this a few months into the project so some tracking of early stage tasks are missing
 - [What did I learn](https://github.com/mas682/React-Movie-App/blob/master/README.md#what-did-i-learn)
-- [Future Plans]()
+- [Future Plans](https://github.com/mas682/React-Movie-App/blob/master/README.md#future-plans)
 - [AutomatedScripts](https://github.com/mas682/React-Movie-App/tree/master/AutomatedScripts) - This directory contains all the code related to the job scheduler that is ran on Linux with Python and Docker containers
 - [Docker](https://github.com/mas682/React-Movie-App/tree/master/Docker) - This directory contains the Docker files needed to run the application
 - [movie-app-api](https://github.com/mas682/React-Movie-App/tree/master/movie-app-api) - This directory contains all the code related to the backend Express.js server
