@@ -1,5 +1,12 @@
 # React Movie App (MovieFanatics)
 
+# Index
+- [AutomatedScripts](https://github.com/mas682/React-Movie-App/tree/master/AutomatedScripts) - This directory contains all the code related to the job scheduler that is ran on Linux with Python and Docker containers
+- [Docker](https://github.com/mas682/React-Movie-App/tree/master/Docker) - This directory contains the Docker files needed to run the application
+- [movie-app-api](https://github.com/mas682/React-Movie-App/tree/master/movie-app-api) - This directory contains all the code related to the backend Express.js server
+- [movieappdatabase](https://github.com/mas682/React-Movie-App/tree/master/movieappdatabase) - This directory contains all the code related to the PostgreSQL database setup
+- [reactmovieapp](https://github.com/mas682/React-Movie-App/tree/master/reactmovieapp/src) - This directory contains all the code related to the front-end of the application![image](https://user-images.githubusercontent.com/47037892/147378396-a2537850-826b-4467-b761-54f02e813954.png)
+
 ## Overview
 This project started around June 2020 with the intent of building a web application in which users can rate movies and share it with their friends.  There were a few reasons for building the project.  The first reason is I wanted to just have fun building something that I wanted to build.  In the past, just about all of my project have been something for work or school in which there were some sort of guidelines for what I was building.  The second reason is that I wanted to learn new technologies and tools that I have never used before.  Prior to this project, I had no previous experience with React or Express.js, and I also had limited prior exposure to technologies such as Docker and PostgreSQL.  Lastly, I wanted to put together everything I have learned over the years into one project to see what I could build.  Overall, I can say I have thoroughly enjoyed building this project.  I have been able to learn things I have never knew while also being tasked with challenges that I could have never anticipated.  I think the project has and will continue to make me a better software developer as well as continue to push me to places I have never gone before. 
 
