@@ -14,7 +14,6 @@ I could go on for a long time about what I learned from this project.  As I allu
 - How should the forgot password process work?
 - How should the job scheduler work?
 - Should the job scheduler be ran on a Windows server or Linux?
-- How can I know when something goes wrong on the backend?
 - How can I set up the application so that I can easily move it from one server to another?
 - What should the layout of the front-end UI be?
 
