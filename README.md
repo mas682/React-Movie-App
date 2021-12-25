@@ -1,6 +1,6 @@
 # React Movie App (MovieFanatics)
 
-# Index
+## Index
 - [AutomatedScripts](https://github.com/mas682/React-Movie-App/tree/master/AutomatedScripts) - This directory contains all the code related to the job scheduler that is ran on Linux with Python and Docker containers
 - [Docker](https://github.com/mas682/React-Movie-App/tree/master/Docker) - This directory contains the Docker files needed to run the application
 - [movie-app-api](https://github.com/mas682/React-Movie-App/tree/master/movie-app-api) - This directory contains all the code related to the backend Express.js server
