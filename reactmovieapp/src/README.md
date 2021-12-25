@@ -1,4 +1,3 @@
-# Overview
 This directory contains all the code related to the front-end of the application.  
 
 # Index
